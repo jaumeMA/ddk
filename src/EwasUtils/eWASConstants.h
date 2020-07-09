@@ -1,0 +1,1578 @@
+/*!
+ * \file eWASConstants.h
+ *
+ * \brief eWAS Contants
+ */
+
+#pragma once
+
+#if defined(__LINUX__)
+    #pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
+/* Constant declarations */
+/* ***************** */
+
+/** Maximum geometry elements */
+#define MAX_GEOMELT			500
+
+/** Maximum points in fp */
+#define AC_REQUEST_FP_SIZE	512
+
+/** Used to convert from minutes to milliseconds */
+#define MIN_TO_MS		    60000
+
+/** Used to convert from minutes to seconds */
+#define MIN_TO_S		    60
+
+/** Used to convert from hours to minutes */
+#define H_TO_MIN		    60
+
+/** Used to convert from hours to seconds */
+#define H_TO_S				3600
+
+/** Used to convert from minutes to seconds */
+#define S_TO_MIN		    1/60
+
+/** To convert from milliseconds to seconds  */
+#define MS_TO_S				0.001
+
+/** To convert from hours to milliseconds  */
+#define H_TO_MS				3600000.0
+
+/** To convert from seconds to milliseconds  */
+#define S_TO_MS				1000.0
+
+/** To convert from days to minutes  */
+#define DAY_TO_MIN			1440.0
+
+/** Used to convert from Nautic Mile to meters */
+#define NAUTICMILE_IN_M		1852.0000015630880013192462731134
+
+/** Used to convert from Statute Mile to meters */
+#define STATUTEMILE_IN_M	1609.344
+
+/** Used to convert from Nautic Mile to kilometers */
+#define NAUTICMILE_IN_KM	1.8520000015630880013192462731134
+
+#define KM_IN_NAUTICMILE	1/NAUTICMILE_IN_KM
+
+/** Number of Wind FLs for vertical display*/
+#define VERTICAL_WIND_FL_NUMBER     10
+
+/** Number of Wind FLs for horizontal display*/
+#define H_WIND_FL_NUMBER	3
+
+/** Number of latitude degrees wind for horizontal display*/
+#define H_WIND_LAT_DEGREES	180
+
+/** Number of longitude degrees wind for horizontal display*/
+#define H_WIND_LON_DEGREES	360
+
+/** Converts track range from -180/180 deg to 0/360 deg */
+#define ANGLE_TO_360(x)     (x < 0 ? x + 360 : (x >= 360 ? x - 360 : x))
+
+/** Converts track range from 0/360 deg to 180/-180 deg */
+#define ANGLE_TO_180(x)     (x > 180 ? x - 360 : (x < -180 ? x + 360 : x))
+
+/** Converts track range from 0/180 deg to 90/-90 deg */
+#define ANGLE_TO_90(x)     (x > 90 ? x - 180 : (x < -90 ? x + 180 : x))
+
+/** Converts degrees to radians */
+#define DEGREES_TO_RADIANS(degrees)     ((M_PI * (degrees))/180)
+
+/** Converts radians to degrees */
+#define RADIANS_TO_DEGREES(radians)     ((radians) * (180.0 / M_PI))
+
+#define DIRECTION_TO_TRACK(x)			x+180
+
+/** Used to convert from flight level to feets */
+#define	FL_TO_FEET			100
+
+/** Used to convert from feet to meters */
+#define	FEET_TO_METERS		0.3048
+
+/** Used to convert from meters to feet */
+#define METERS_TO_FEET		3.2808399
+
+/** Used to convert from km to meters */
+#define KM_TO_METERS		1000
+
+/** Used to convert from knots to meters per second */
+#define KNOTS_TO_MS			(NAUTICMILE_IN_M/3600.0f)
+
+/** Used to convert from meters per second to knots*/
+#define MS_TO_KNOTS			1.943844492
+
+/** Used to convert from km per h to meters per second */
+#define KMH_TO_MS			0.277778
+
+/** To convert from pounds to kilograms */
+#define LB_TO_KG		    0.45359237
+
+/** Number of Jetstream points*/
+#define MAX_JETSTREAM_POINTS		2048
+
+/** Number of Jetstream flight levels*/
+#define JETSTREAM_LINES_FL			5
+
+/** Number of Jetstream lines*/
+#define MIN_JETSTREAM_WIND_SPEED    60
+
+/** Max distance between points of the same jetstream*/
+#define MAX_JETSTREAM_DEGREES_DIST	2
+
+/** Max diff between points the speed of the jetstream*/
+#define MAX_JETSTREAM_SPEED_DIFF	5
+
+/** Default Cruise FL */
+#define DEFAULT_ALTITUDE_FL		350
+
+/** Default Cruise Speed */
+#define DEFAULT_SPEED_KT		450
+
+/** Minimum Cruise Altitude */
+#define MINIMUM_CRUISE_ALTITUDE_FT		15000
+
+/** Max Distance to Flight Plan for searching airports */
+#define MAX_DISTANCE_SEARCH_AIRPORT		3000*NAUTICMILE_IN_M
+
+/** Pi constant */
+#ifndef PI
+#define PI					3.14159265359
+#endif // PI
+
+/** Degrees to radians */
+#define DEGTORAD            0.01745329
+
+/** Radepsilon constant */
+#define RADEPSILON			1.0E-6*PI/180.0
+
+/** Cutoff  */
+#define CUTOFF				1.0E-5
+#define APPLY_CUTOFF(x)		x = (fabs(x) <= CUTOFF ? 0.0 : x)
+
+/** Maximum string size */
+#define	MAX_STRING_SIZE		2048
+
+/** Sampling step in meters */
+#define SAMPLING_STEP_IN_M	100.0
+#define OWN_PTP_SAMPLING_STEP		(SAMPLING_STEP_IN_M * 2.5) // 250m
+#define PRECISE_PTP_SAMPLING_STEP	(SAMPLING_STEP_IN_M * 200.0) // 20Km
+#define EXTENDED_PTP_SAMPLING_STEP	(SAMPLING_STEP_IN_M * 500.0) // 50Km
+
+/** Maximum number of points describing WIMS Coverage Area */
+#define MAX_COV_AREA_POINTS	50
+
+/** Maximum number of points in polygon of a Fused Object */
+#define MAX_FUSED_ELEM		8
+
+/** Minimum number of points defining polygon (first and last point are the same) */
+#define MIN_POLYGON_POINTS	4
+
+/** Maximum distance for calculations */
+#define HUGE_VALUE			100000000.0
+
+/* Default values */
+#define UNKNOWN_VALUE		"UNKNOWN"
+
+#define TO_FL(x)			(int)((x)/1000.0 + 0.5)*10
+
+#define STRAIGHT_ANGLE		180
+
+#define MAX_DISTANCE_IN_NM			20
+
+#define MIN_CORRIDOR_WIDTH_IN_NM		50
+
+/** */
+#define ROUND(x)				(int) (fabs(x) + 0.5)
+#define ROUND_SIGNED(x)			(int) (x > 0.0 ? (x + 0.5) : (x - 0.5))
+#define LAT_LON_RESOLUTION						100.0
+#define LAT_LON_EXTRA_RESOLUTION				10000.0
+#define LATLON_ROUND(x)			(ROUND(x*LAT_LON_EXTRA_RESOLUTION)/LAT_LON_EXTRA_RESOLUTION)
+#define LATLON_ROUND_SIGNED(x)	(ROUND_SIGNED(x*LAT_LON_EXTRA_RESOLUTION)/LAT_LON_EXTRA_RESOLUTION)
+#define GROUNDSPEED_RESOLUTION					10.0
+#define GS_ROUND(x)				(ROUND(x*GROUNDSPEED_RESOLUTION)/GROUNDSPEED_RESOLUTION)
+#define LATLON_NO_VALUE			555.0
+
+/** */
+#define MAX_VALIDITY_PERIOD				21*H_TO_S
+#define MAX_FORECAST_PERIOD				33*H_TO_S
+#define MAX_FORECAST_PERIOD_V2			36*H_TO_S
+
+/** */
+#define DEFAULT_TAXI_TIME					10
+#define DEFAULT_FLIGHT_LEVEL				350
+#define DEFAULT_SPEED						300
+
+#define WEATHER_FORECAST_MAX_SIZE			4
+
+/** Maximum number of weather conflicts sent to DAM */
+#define MAX_WEATHER_CONFLICTS_TO_DAM 15
+
+/** Maximum size of the auxiliar vector with unsorted conflicts */
+#define MAX_WEATHER_CONFLICTS_AUX 100
+
+/** Maximum no go areas for DAM */
+#define DAM_MAX_NOGOAREAS 10
+
+/** Maximum no go areas */
+#define WEA_MAX_NOGOAREAS			100
+
+/** Maximum no go areas with distance*/
+#define WEA_MAX_NOGOAREAS_WITH_DIST 500
+
+/* VND Selection */
+#define VERTICAL_ALTITUDE_SELECTION_RANGE		2500
+#define	NO_ELEVATION							-1
+
+/* Special WayPoints */
+#define		TOD			"TOD"
+#define		TOC			"TOC"
+#define		TOS			"TOS"
+
+/* WayPoint FlightPhase */
+typedef enum {
+    Taxi,
+    TakeOff,
+    Climb,
+    Cruise,
+    Descent,
+    Landing
+}FlightPhase;
+
+/** Default USER profile */
+#define DEFAULT_USER_PROFILE	1
+#define DEFAULT_USER_PROFILE_DESC	"GUEST"
+
+/** Default ENTERPRISE identifier (DEMO) */
+#define DEFAULT_ENTERPRISE_ID	29
+
+#define EUROCONTROL_FLIGHTPLAN_EVENT_TYPE		3
+#define EUROCONTROL_UNIQUE_FLIGHTPLAN_ID		11
+#define EUROCONTROL_REGULATION					64
+#define EUROCONTROL_REROUTABLE					32
+#define AIRLINE_ICAO_SIZE						3
+#define AIRLINE_IATA_SIZE						2
+#define AIRPORT_ICAO_SIZE						4
+#define AIRPORT_IATA_SIZE						3
+#define FLIGHT_NUMBER_MIN_SIZE					3
+#define AIRPORT_NAME_SIZE						32
+#define RUNWAY_IDENT_SIZE						5
+#define	FLIGHT_NUMBER_SIZE						8
+#define	OFFICE_ID_SIZE							8
+#define	UNKNOWN_OFFICE							"UNK"
+#define	COMPANY_AREA_NAME_SIZE_OLD				16
+#define	COMPANY_AREA_DESCRIPTION_SIZE_OLD		128
+#define	COMPANY_AREA_NAME_SIZE					20
+#define	COMPANY_AREA_DESCRIPTION_SIZE_V2		512
+#define MAX_COMPANY_AREA_COORD_SIZE				20
+#define MAX_COMPANY_AREA_COORD_SIZE_V2			35
+#define MAX_COMPANY_AREA_POLYGON_SIZE			8192
+#define FIR_NAME_SIZE							4
+#define COUNTRY_NAME_SIZE						30
+#define SERIALIZE_STRING_MAX_SIZE				4096
+#define OPS_TYPE_SIZE							7
+#define COMPANY_ROUTE_NAME_SIZE					15
+#define COMPANY_ROUTE_FIELD_SIZE				4
+#define OPTIFLIGHT_MSG_SIZE						512
+#define TELEX_ADDRESS_SIZE						20
+#define ACARS_MAX_MSG_SIZE						700
+#define ACARS_MAX_MSG_LINES						49
+#define ACARS_MAX_MSG_LINE_SIZE					46
+#define FREE_TALK_SIZE                          512
+#define DATIS_ADDRESS_SIZE                      10
+#define DATIS_MSG_SIZE							1000
+#define DATIS_HEADER_SIZE                       30
+#define DATIS_TEXT_SIZE                         870
+#define USER_NICK_SIZE							16
+#define USER_PWD_SIZE							64
+#define USER_NICK_SIZE_V2						128
+#define USER_PWD_SIZE_V2						128
+#define COMPANY_AREA_UNIQUE_NAME_SIZE           COMPANY_AREA_NAME_SIZE + USER_NICK_SIZE + TIME_STRING_SIZE
+#define	AIRCOM_STRING_MAX_SIZE		128
+
+#define MAX_ETOPS_POINTS		8
+#define MAX_ALT_AIRPORTS		4
+
+// Timeouts to manage flights (Dispatch)
+#define TIME_TO_CLOSURE_AFTER_ARRIVAL_IN_S				1*H_TO_S
+#define TIME_TO_CLOSURE_AFTER_CANCELATION_IN_S			24*H_TO_S
+#define TIME_TO_CLOSURE_AFTER_LANDING_IN_S				4*H_TO_S
+#define TIME_TO_CLOSURE_AFTER_DEPARTURE_IN_S			24*H_TO_S
+#define TIME_TO_DISCARD_DASHBOARD_FLIGHT_IN_S			48*H_TO_S
+
+// Default OFP version
+#define DEFAULT_OFP_VERSION "OFP1"
+
+// Surface Fronts
+#define SURFACE_FRONT_MIN_DISTANCE_POINTS	50*KM_TO_METERS
+#define SURFACE_FRONT_PATTERN_DISTANCE		300*KM_TO_METERS
+#define SURFACE_FRONT_SMOOTH_ANGLE			5
+#define SURFACE_FRONT_MAX_DEGREES_DIST		1
+#define SURFACE_FRONT_MAX_POINTS			2048
+#define SURFACE_FRONT_SMOOTH_FACTOR			5
+
+// Default LEG number
+#define	DEFAULT_LEG_NUMBER					":1"
+
+// Default eWAS License Filename
+#define LICENSE_FILENAME								"eWAS_LICENSE"
+
+/* Enum declarations */
+/* ***************** */
+/* Weather Object Severities */
+typedef enum {
+	UNDEFINED_SEVERITY = 0,
+	LIGHT_SEVERITY = 1,
+	MODERATE_SEVERITY = 2,
+	SEVERE_SEVERITY = 3,
+	WEATHER_OBJECT_SEVERITY_SIZE
+}WEATHER_OBJECT_SEVERITY;
+
+/* Airports */
+typedef enum
+{
+	AIRPORT_UNKNOWN = -1,
+	AIRPORT_DEPARTURE = 0,
+	AIRPORT_DESTINATION,
+	AIRPORT_PRIMARY_DESTINATION_ALTERNATE,
+	AIRPORT_DESTINATION_ALTERNATE,
+	AIRPORT_ETOPS_ALTERNATE,
+	AIRPORT_ENROUTE_ALTERNATE,
+	AIRPORT_ENROUTE,
+	AIRPORT_MANUAL,
+	AIRPORT_DISPATCH,
+	AIRPORT_ERA_ALTERNATE,
+	AIRPORT_RECLEARENCE,
+	AIRPORT_RECLEARENCE_ALTERNATE,
+	AIRPORT_DEPARTURE_ALTERNATE,
+	AIRPORT_DIVERSION,
+	AIRPORT_MODE_TYPE_SIZE
+}AIRPORT_MODE_TYPE;
+
+typedef enum {
+	AIRPORT_LEVEL_0			= 0,
+	AIRPORT_LEVEL_1			= 1,
+	AIRPORT_LEVEL_2			= 2,
+	AIRPORT_LEVEL_3			= 3,
+	AIRPORT_LEVEL_UNKNOWN	= 4,
+	AIRPORT_LEVEL_DISPATCH	= 5,
+	AIRPORT_LEVEL_TYPE_SIZE
+}AIRPORT_LEVEL_TYPE;
+
+typedef enum {
+	AIRPORT_ETOPS_NONE		= 0,
+	AIRPORT_ETOPS_SUITABLE	= 1,
+	AIRPORT_ETOPS_ADEQUATE  = 2,
+	AIRPORT_ETOPS_TYPE_SIZE
+} AIRPORT_ETOPS_TYPE;
+
+/** eWAS Functionalities */
+typedef enum {
+	FUNC_DISPATCH_DATA_HIDING					= 0,
+	FUNC_DISPATCH_EDITION						= 1,
+	FUNC_DISPATCH_ALERTS						= 2,
+	FUNC_DISPATCH_COMMENTS						= 3,
+	FUNC_DISPATCH_ACARS							= 4,
+	FUNC_DISPATCH_REROUTING						= 5,
+	FUNC_DISPATCH_ROUTEFINDER					= 6,
+	FUNC_DISPATCH_LIGHT_DASHBOARD				= 7,
+	FUNC_DISPATCH_OTH_AREAS						= 8,
+	FUNC_DISPATCH_NFZ_CTN_AREAS					= 9,
+	FUNC_DISPATCH_SIAR_AREAS					= 10,
+	FUNC_DISPATCH_FLYOVER_AREAS					= 11,
+	FUNC_DISPATCH_AIRLINE_CONFIG				= 12,
+	FUNC_DISPATCH_MAINTENANCE_FLIGHT_SELECTOR	= 13,
+	FUNC_PILOT_LIST_ALL_OFP						= 14,
+	FUNC_DISPATCH_FUEL_DESTINATION				= 15,
+	FUNC_DISPATCH_HIDE_OFFICES					= 16,
+	FUNC_PILOT_WHATS_NEW						= 17,
+	FUNC_PILOT_FEEDBACK							= 18,
+	FUNC_PILOT_PIREP							= 19,
+	FUNC_PILOT_REVERSE_FP						= 20,
+	FUNC_CONFIGURABLE_CONNECTION				= 21,
+	FUNC_DISPATCH_HIDE_FOB						= 22,
+	FUNC_PILOT_SIMULATION						= 23,
+	FUNC_PILOT_OFP								= 24,
+	FUNC_PILOT_AIRPORTS							= 25,
+	FUNC_PILOT_OPTIFLIGHT						= 26,
+	FUNC_DISPATCH_HIDE_MANUAL_POSITION			= 27,
+	FUNC_DISPATCH_HIDE_FUEL_DEVIATION			= 28,
+	FUNC_DISPATCH_HIDE_EXPORT_TO_CSV			= 29,
+	FUNC_DISPATCH_HIDE_FLYOVER_LAYER			= 30,
+	FUNC_DISPATCH_HIDE_HISTORIC_POSITION		= 31,
+	FUNC_HIDE_SATELLITE_IMAGES					= 32,
+	FUNC_DISPATCH_CTOT							= 33,
+	FUNC_DISPATCH_SEND_MULTI_MSG				= 34,
+	FUNC_DISPATCH_HIDE_MANUAL_OPS				= 35,
+	FUNC_DISPATCH_SHOW_AC_IN_TAXI				= 36,
+	FUNC_PILOT_BYPASS_PASSWORD					= 37,
+	FUNC_PILOT_GPS								= 38,
+	FUNC_PILOT_OPTIFLIGHT_CLIMB					= 39,
+	FUNC_PILOT_OPTIFLIGHT_CRUISE				= 40,
+	FUNC_PILOT_OPTIFLIGHT_ENGINE_OUT			= 41,
+	FUNC_PILOT_DONOT_CHECK_NEW_RELEASE			= 42,
+	FUNC_DISPATCH_SHOW_LANDED					= 43,
+	FUNC_PILOT_OPTIFLIGHT_BRIEFING				= 44,
+	FUNC_DISPATCH_COMPANY_ROUTES				= 45,
+	USER_FUNCTIONALITY_MAX_SIZE
+} USER_FUNCTIONALITY;
+
+/** eWAS Weather Providers */
+typedef enum {
+	PROV_IATA           = 0,
+	PROV_MF				= 1,
+	PROV_WSI			= 2,
+	PROV_DTN			= 3,
+    PROV_JEPPESEN		= 4,
+	PROV_UKM			= 5,
+	PROV_NOAA			= 6,
+	PROV_FAA			= 7,
+	PROV_GTD			= 8,
+	PROV_DELTA			= 9,
+	PROV_METEORAGE		= 10,
+	PROV_WNI			= 11,
+	PROV_DWD			= 12,
+	EWAS_PROVIDERS_SIZE
+} WEATHER_DATA_PROVIDER;
+
+/** eWAS Airline Providers */
+typedef enum {
+	PROV_AIRLINE        = 0,
+	PROV_SITA,
+	PROV_AFR_TEST,
+	PROV_AFR,
+	PROV_SIA,
+	PROV_MAS,
+	PROV_THT,
+	PROV_FLIGHTAWARE,
+	PROV_REU,
+	PROV_SAFETYLINE,
+	PROV_EUROCONTROL,
+	PROV_SVW,
+	PROV_KLM,
+	PROV_TVF,
+	PROV_BOX,
+	PROV_ETD,
+	PROV_XLF,
+	PROV_AAF,
+	PROV_AKKA,
+	PROV_PPS,
+	PROV_FWI,
+	PROV_TRA,
+	PROV_CFG,
+	AIRLINE_PROVIDERS_SIZE
+} AIRLINE_DATA_PROVIDER;
+
+/** Type of Providers */
+typedef enum {
+	WEATHER_PROV	= 0,
+	AIRLINE_PROV	= 1,
+	FLIGHT_OPS_PROV	= 2
+} PROVIDER_TYPE;
+
+/** Type of User Airports */
+typedef enum
+{
+	USER_AIRPORTS_NONE				= 0,
+	USER_AIRPORTS_SIMPLE			= 1,
+	USER_AIRPORTS_BY_LEVEL_FILTER	= 2,
+	USER_AIRPORTS_BY_LEVEL_ALL		= 3
+}USER_AIRPORTS_TYPE;
+
+/** Type of OFP files */
+typedef enum
+{
+	USER_OFP_NONE					= 0,
+	USER_OFP_LIDO_A633_XML			= 1,
+	USER_OFP_LIDO_A633_AFR			= 2,
+	USER_OFP_LIDO_A633_MAS			= 3,
+	USER_OFP_JEP_X12				= 4,
+	USER_OFP_SITA_LIGHTXML			= 5,
+	USER_OFP_SITA_A633				= 6,
+	USER_OFP_JEP_X12_REU    		= 7,
+	USER_OFP_EUROCONTROL    		= 8,
+	USER_OFP_LIDO_A633_EFF          = 9,
+	USER_OFP_JEP_X12_SVW    		= 10,
+	USER_OFP_AVIOBOOK               = 11,
+	USER_OFP_PPS_A633				= 12,
+	USER_OFP_JEP_A633_EFF           = 13
+}USER_OFP_TYPE;
+
+/** Type of FDNOTIF files */
+typedef enum
+{
+	USER_FDNOTIF_NONE			    = 0,
+	USER_FDNOTIF_AFR                = 1,
+	USER_FDNOTIF_LIDO               = 2
+}USER_FDNOTIF_TYPE;
+
+/** Type of OPS files */
+typedef enum
+{
+	USER_OPS_NONE				    = 0,
+	USER_OPS_AFR				    = 1,
+	USER_OPS_ACARS                  = 2,
+	USER_OPS_ACARS_MAIL				= 3
+}USER_OPS_TYPE;
+
+/** Type of ACARS OPS files */
+typedef enum
+{
+    USER_ACARS_OPS_NONE				= 0,
+    USER_ACARS_OPS_ARINC_620		= 1,
+    USER_ACARS_OPS_MXX              = 2,
+	USER_ACARS_OPS_MVA		        = 3,
+	USER_ACARS_OPS_ASM_RPL          = 4,
+	USER_ACARS_OPS_ASM_CNL          = 5,
+	USER_ACARS_OPS_FML_PRG          = 6,
+	USER_ACARS_OPS_MXC              = 7
+}USER_ACARS_OPS_TYPE;
+
+/** Type of POS files */
+typedef enum
+{
+	USER_POS_NONE				    = 0,
+	USER_POS_AFR				    = 1,
+	USER_POS_ACARS                  = 2,
+	USER_POS_ACARS_MAIL				= 3
+}USER_POS_TYPE;
+
+/** Type of ACARS POS files */
+typedef enum
+{
+    USER_ACARS_POS_NONE				= 0,
+    USER_ACARS_POS_ARINC_620		= 1,
+    USER_ACARS_POS_A83              = 2,
+    USER_ACARS_POS_FML              = 3,
+    USER_ACARS_POS_M2L              = 4,
+    USER_ACARS_POS_LIDO_M16         = 5,
+    USER_ACARS_POS_M16              = 6,
+    USER_ACARS_POS_ADSC             = 7
+}USER_ACARS_POS_TYPE;
+
+/** Type of eWAS Product Types */
+typedef enum
+{
+	PROD_CBBOTTOM			   = 0,
+	PROD_CBTOP				   = 1,
+	PROD_FSCT_CAT			   = 2,
+	PROD_FSCT_ICE			   = 3,
+	PROD_FSCT_VA			   = 4,
+	PROD_LIGHTNING			   = 5,
+	PROD_PIREP				   = 6,
+	PROD_SIGMET				   = 7,
+	PROD_METAR				   = 8,
+	PROD_SPECI				   = 9,
+	PROD_TAF				   = 10,
+	PROD_TROPO				   = 11,
+	PROD_FEEDBACK			   = 12,
+	PROD_WIND_TEMP			   = 13,
+	PROD_GRIB				   = 14,
+	PROD_METAR_TAF			   = 15,
+	PROD_JETSTREAM			   = 16,
+	PROD_NOTAM				   = 17,
+	PROD_AIRLINE_APT		   = 18,
+	PROD_AIRLINE_OFP		   = 19,
+	PROD_AIRPORT			   = 20,
+	PROD_OST_TRACK			   = 21,
+	PROD_AIRLINE_OPS_MSGS      = 22,
+	PROD_AIRLINE_POS_MSGS      = 23,
+	PROD_AIRLINE_FDNOTIF_MSGS  = 24,
+	PROD_AIRLINE_FIREHOSE_MSGS = 25,
+	PROD_AIRLINE_COMPANY_AREA  = 26,
+	PROD_AIRLINE_IFM_MSGS	   = 27,
+	PROD_AIRLINE_ROUTES        = 28,
+	PROD_OPENSKY_POS_MSGS	   = 29,
+	PROD_OPTIFLIGHT_MSGS       = 30,
+	PROD_AIRLINE_TEXT_MSGS     = 31,
+	PROD_IMAGE_FILE			   = 32,
+	PROD_LIDO_NAVDB			   = 33,
+	PROD_FRONT				   = 34,
+	PROD_FIR_UIR			   = 35,
+	PROD_CTOT				   = 36,
+	PROD_DATIS				   = 37,
+	EWAS_DATATYPES_SIZE
+} WEATHER_DATA_TYPE;
+
+/** Type of Weather Data Products */
+typedef enum {
+	PRODUCT_UNKNOWN				= 0,
+	MF_ASPOC_FRANCE				= 1,	// Cb Obsv (France)
+	MF_RDT_EUROPE				= 2,	// Cb Obsv (Europe)
+	MF_RDT_AFRICA				= 3,	// Cb Obsv (Africa)
+	MF_RDT_GOESE				= 4,	// Cb Obsv (America)
+	MF_RDT_DIRRE				= 5,	// Cb Obsv (DIRRE)
+	MF_RDT_GOESW				= 6,	// Cb Obsv (Pacific)
+	MF_CAT						= 7,
+	MF_ICE						= 8,
+	MF_ICEDIAG					= 9,
+	MF_LIGHTNING				= 10,
+	MF_SIGMET					= 11,
+	MF_TROPO					= 12,
+	AIRLINE_PIREP				= 13,
+	NOAA_SIGMET					= 14,
+	NOAA_PIREP					= 15,
+	WSI_SIGMET					= 16,
+	WSI_FPG						= 17,
+	DTN_EDR_NAM					= 18,
+	DTN_TS_NAM					= 19,
+	DTN_EDR_WORLD				= 20,
+	DTN_TS_WORLD				= 21,
+    BOEING_ICECR				= 22,
+	MF_RDT_MSGOI				= 23,	// Cb Obsv (Indien/Asia)
+	GTD_FEEDBACK				= 24,
+	DTN_ICE_MEDIUM_NAM			= 25,
+	DTN_ICE_LARGE_NAM			= 26,
+	DTN_ICE_MEDIUM_WORLD		= 27,
+	DTN_ICE_LARGE_WORLD			= 28,
+	MF_WIND_TEMP				= 29,
+	MF_LIGHTNING_CELL			= 30,
+	NOAA_METAR					= 31,
+	NOAA_TAF					= 32,
+	NOAA_METAR_TAF				= 33,
+	MF_RDT_HIMAW				= 34,	// Cb Obsv (Japan/Aus)
+	MF_RDT_MSG					= 35,	// Cb Obsv (Eur/Afr)
+	MF_METAR					= 36,
+	MF_TAF					    = 37,
+	MF_METAR_TAF				= 38,
+	MF_JETSTREAM				= 39,
+	MF_CAT_WORLD				= 40,
+	MF_ICE_WORLD				= 41,
+	MF_CAT_EU					= 42,
+	MF_ICE_EU					= 43,
+	FAA_NOTAM					= 44,
+	AIRLINE_AIRPORTS			= 45,
+	AIRLINE_FLIGHTPLANS			= 46,
+	EWAS_AIRPORT				= 47,
+	EWAS_OST_NAT_TRACKS			= 48,
+	EWAS_OST_PACOT_TRACKS		= 49,
+	AIRLINE_OPS_MSGS            = 50,
+	AIRLINE_POS_MSGS            = 51,
+	AIRLINE_FDNOTIF_MSGS        = 52,
+	AIRLINE_FIREHOSE_MSGS       = 53,
+	AIRLINE_COMPANY_AREA		= 54,
+	DELTA_SIGMET				= 55,
+	MF_LIGHTNING_STRIKES		= 56,
+	AIRLINE_IFM_MSGS			= 57,
+	MF_ADVISORY					= 58,
+	AIRLINE_ROUTES              = 59,
+	OPENSKY_POS_MSGS			= 60,
+	LIDO_NAVDB					= 61,
+	OPTIFLIGHT_MSGS				= 62,
+	AIRLINE_TEXT_MSGS			= 63,
+	DTN_GLOBAL_RADAR			= 64,
+	DTN_GLOBAL_PRECIPITATION	= 65,
+	DTN_LIGHTNING				= 66,
+	DTN_FRONT					= 67,
+	EWAS_FIR_UIR			    = 68,
+	METEORAGE_LIGHTNING			= 69,
+	PIREP_EDR                   = 70,
+	WNI_CONV					= 71,
+	WNI_ICE						= 72,
+	WNI_CAT						= 73,
+	MF_GLOBAL_PREP				= 74,
+	DWD_TURBULENCE				= 75,
+	AIRLINE_CTOT				= 76,
+	FAA_DATIS					= 77,
+	EWAS_PRODUCTS_SIZE
+} WEATHER_DATA_PRODUCT;
+
+
+/** Type of Weather Phenomenon */
+typedef enum {
+	PHENOMENON_TYPE_UNKNOWN = 0,
+	PHENOMENON_TYPE_OBSERVATION = 1,
+	PHENOMENON_TYPE_FORECAST = 2,
+	PHENOMENON_TYPE_WINDS = 3,
+	PHENOMENON_TYPE_TROPO = 4,
+	PHENOMENON_TYPE_METARTAF = 5,
+	PHENOMENON_TYPE_IMAGERY = 6,
+	PHENOMENON_TYPE_AIRPORT = 7,
+	PHENOMENON_TYPE_OST_TRACK = 8,
+	PHENOMENON_TYPE_COMPANY_AREA = 9,
+	PHENOMENON_TYPE_SIZE
+} WEATHER_PHENOMENON_TYPE;
+
+/** Type of Weather Phenomenon */
+typedef enum {
+	PHENOMENON_UNKNOWN				= 0,
+	PHENOMENON_CBBOTTOM_OBSV		= 1,
+	PHENOMENON_CBSAT_OBSV			= 2,
+	PHENOMENON_LIGHTNING_OBSV		= 3,
+	PHENOMENON_PIREP_OBSV			= 4,
+	PHENOMENON_PIREP_EDR_OBSV		= 5,
+	PHENOMENON_ICECRYSTAL_OBSV		= 6,
+	PHENOMENON_SIGMET_FCST			= 7,
+	PHENOMENON_CAT_FCST				= 8,
+	PHENOMENON_ICE_FCST				= 9,
+	PHENOMENON_CBTOP_FCST			= 10,
+	PHENOMENON_EDR_FCST				= 11,
+	PHENOMENON_TROPO_FCST			= 12,
+	PHENOMENON_WIND_FCST			= 13,
+	PHENOMENON_JETSTREAM_FCST		= 14,
+	PHENOMENON_VA_FCST				= 15,
+	PHENOMENON_METARTAF				= 16,
+	PHENOMENON_NOTAM				= 17,
+	PHENOMENON_AIRPORT				= 18,
+	PHENOMENON_OST_TRACK			= 19,
+	PHENOMENON_COMPANY_AREA			= 20,
+	PHENOMENON_LN_CELLS_OBSV		= 21,
+	PHENOMENON_LN_STRIKES_OBSV		= 22,
+	PHENOMENON_GR_RADAR_OBSV		= 23,
+	PHENOMENON_SAT_RADAR_OBSV		= 24,
+	PHENOMENON_FRONT_FCST			= 25,
+	PHENOMENON_DATIS_OBSV			= 26,
+	EWAS_PHENOMENON_SIZE
+} WEATHER_PHENOMENON;
+
+/** Groups of Advanced Filtering*/
+typedef enum {
+	ADVANCED_FILTER_GROUP_UNKNOWN		= 0,
+	ADVANCED_FILTER_GROUP_OBSERVATION	= 1,
+	ADVANCED_FILTER_GROUP_FORECAST		= 2,
+	ADVANCED_FILTER_GROUP_IMAGERY		= 3,
+	ADVANCED_FILTER_GROUP_TROPO			= 4,
+	ADVANCED_FILTER_GROUP_WINDS			= 5,
+	ADVANCED_FILTER_GROUP_METARTAF		= 6,
+	ADVANCED_FILTER_GROUP_SIGMET		= 7,
+	ADVANCED_FILTER_GROUP_AIRPORTS		= 8,
+	ADVANCED_FILTER_GROUP_COMPANY_AREA	= 9,
+	ADVANCED_FILTER_GROUP_FLYOVER_AREA	= 10,
+	ADVANCED_FILTER_GROUP_OST			= 11,
+	ADVANCED_FILTER_GROUP_FIR_UIR		= 12,
+	ADVANCED_FILTER_GROUP_OPTIFLIGHT	= 13,
+	ADVANCED_FILTER_GROUP_SIZE
+} ADVANCED_FILTER_GROUP;
+
+/** Types of Advanced Filter */
+typedef enum {
+	ADVANCED_FILTER_UNKNOWN				= 0,
+	ADVANCED_FILTER_OBSV_CB				= 1,
+	ADVANCED_FILTER_OBSV_GR_RADAR		= 2,
+	ADVANCED_FILTER_OBSV_SAT_RADAR		= 3,
+	ADVANCED_FILTER_OBSV_LIGHTNING		= 4,
+	ADVANCED_FILTER_OBSV_PIREP			= 5,
+	ADVANCED_FILTER_OBSV_PIREP_EDR		= 6,
+	ADVANCED_FILTER_OBSV_ICECRYSTAL		= 7,
+	ADVANCED_FILTER_FCST_CB				= 8,
+	ADVANCED_FILTER_FCST_TURB			= 9,
+	ADVANCED_FILTER_FCST_ICE			= 10,
+	ADVANCED_FILTER_FCST_TC				= 11,
+	ADVANCED_FILTER_FCST_VA				= 12,
+	ADVANCED_FILTER_FCST_SANDSTORM		= 13,
+	ADVANCED_FILTER_FCST_FRONT			= 14,
+	ADVANCED_FILTER_FCST_OTHER			= 15,
+	ADVANCED_FILTER_TROPO				= 16,
+	ADVANCED_FILTER_WIND				= 17,
+	ADVANCED_FILTER_METARTAF			= 18,
+	ADVANCED_FILTER_OPTIFLIGHT			= 19,
+	ADVANCED_FILTER_AP_REGULATORY		= 20,
+	ADVANCED_FILTER_AP_ENROUTE			= 21,
+	ADVANCED_FILTER_AP_ADEQUATE			= 22,
+	ADVANCED_FILTER_AP_EMERGENCY		= 23,
+	ADVANCED_FILTER_AP_DISPATCH			= 24,
+	ADVANCED_FILTER_OST_NAT_PACOT		= 25,
+	ADVANCED_FILTER_COMPANY_AREA		= 26,
+	ADVANCED_FILTER_FLYOVER_AREA		= 27,
+	ADVANCED_FILTER_SIGMET				= 28,
+	ADVANCED_FILTER_ADVISORY			= 29,
+	ADVANCED_FILTER_OFF_SIGMET			= 30,
+	ADVANCED_FILTER_OTH_SIGMET			= 31,
+	ADVANCED_FILTER_FIR					= 32,
+	ADVANCED_FILTER_UIR					= 33,
+	ADVANCED_FILTER_OST_W_NAT			= 34,
+	ADVANCED_FILTER_OST_E_NAT			= 35,
+	ADVANCED_FILTER_OST_W_PACOT			= 36,
+	ADVANCED_FILTER_OST_E_PACOT			= 37,
+	EWAS_ADVANCED_FILTER_SIZE
+} ADVANCED_FILTER;
+
+/** Type for Hazards  */
+typedef enum
+{
+	HAZARD_UNKNOWN					= 0,
+	HAZARD_CBTOP					= 1,
+	HAZARD_MOD_CBTOP				= 2,
+	HAZARD_STR_CBTOP				= 3,
+	HAZARD_SEV_CBTOP				= 4,
+	HAZARD_LT_CBBOTTOM				= 10,
+	HAZARD_MOD_CBBOTTOM				= 11,
+	HAZARD_SEV_CBBOTTOM				= 12,
+	HAZARD_LT_CAT					= 20,
+	HAZARD_MOD_CAT					= 21,
+	HAZARD_SEV_CAT					= 22,
+	HAZARD_LT_ICE					= 30,
+	HAZARD_MOD_ICE					= 31,
+	HAZARD_SEV_ICE					= 32,
+	HAZARD_SEV_ICE_SLD				= 33,
+    HAZARD_ICE_CRISTAL				= 34,
+	HAZARD_LT_VA					= 40,
+	HAZARD_MOD_VA					= 41,
+	HAZARD_SEV_VA					= 42,
+	HAZARD_LIGHTNING				= 50,
+	HAZARD_EDR_1					= 60,
+	HAZARD_EDR_2					= 61,
+	HAZARD_EDR_3					= 62,
+	HAZARD_EDR_4					= 63,
+	HAZARD_EDR_5					= 64,
+	HAZARD_EDR_6					= 65,
+	HAZARD_EDR_7					= 66,
+	HAZARD_EDR_8					= 67,
+	HAZARD_EDR_9					= 68,
+	HAZARD_TS_10					= 70,
+	HAZARD_TS_20					= 71,
+	HAZARD_TS_30					= 72,
+	HAZARD_TS_40					= 73,
+	HAZARD_TS_50					= 74,
+	HAZARD_SIGMET_CB				= 100,
+	HAZARD_SIGMET_GR				= 101,
+	HAZARD_SIGMET_TS				= 102,
+	HAZARD_SIGMET_TSGR				= 103,
+	HAZARD_SIGMET_EMBD_TS			= 104,
+	HAZARD_SIGMET_EMBD_TSGR			= 105,
+	HAZARD_SIGMET_FRQ_CB			= 106,
+	HAZARD_SIGMET_FRQ_TS			= 107,
+	HAZARD_SIGMET_FRQ_TSGR			= 108,
+	HAZARD_SIGMET_ISOL_CB			= 109,
+	HAZARD_SIGMET_ISOL_TS			= 111,
+	HAZARD_SIGMET_ISOL_TSGR			= 112,
+	HAZARD_SIGMET_OCNL_TS			= 113,
+	HAZARD_SIGMET_OCNL_TSGR			= 114,
+	HAZARD_SIGMET_SQL_TS			= 115,
+	HAZARD_SIGMET_SQL_TSGR			= 116,
+	HAZARD_SIGMET_FC				= 117,
+	HAZARD_SIGMET_TC				= 118,
+	HAZARD_SIGMET_TCU				= 119,
+	HAZARD_SIGMET_WTSPT				= 120,
+	HAZARD_SIGMET_LT_TURB			= 121,
+	HAZARD_SIGMET_MOD_TURB			= 122,
+	HAZARD_SIGMET_SEV_TURB			= 123,
+	HAZARD_SIGMET_LT_CAT			= 124,
+	HAZARD_SIGMET_MOD_CAT			= 125,
+	HAZARD_SIGMET_SEV_CAT			= 126,
+	HAZARD_SIGMET_LT_MTW			= 128,
+	HAZARD_SIGMET_MOD_MTW			= 129,
+	HAZARD_SIGMET_SEV_MTW			= 130,
+	HAZARD_SIGMET_LT_TBCA			= 131,
+	HAZARD_SIGMET_MOD_TBCA			= 132,
+	HAZARD_SIGMET_SEV_TBCA			= 133,
+	HAZARD_SIGMET_LT_LLWS			= 134,
+	HAZARD_SIGMET_MOD_LLWS			= 135,
+	HAZARD_SIGMET_SEV_LLWS			= 136,
+	HAZARD_SIGMET_LT_ICE			= 137,
+	HAZARD_SIGMET_MOD_ICE			= 138,
+	HAZARD_SIGMET_SEV_ICE			= 139,
+	HAZARD_SIGMET_SEV_ICE_FZRA		= 140,
+	HAZARD_SIGMET_SEV_ICE_FZDZ		= 141,
+	HAZARD_SIGMET_SEV_ICE_FZFG		= 142,
+	HAZARD_SIGMET_HVY_SS			= 143,
+	HAZARD_SIGMET_BLSA				= 144,
+	HAZARD_SIGMET_HVY_DS			= 145,
+	HAZARD_SIGMET_BLDU				= 146,
+	HAZARD_SIGMET_RDOACT_CLD		= 147,
+	HAZARD_SIGMET_VA				= 148,
+	HAZARD_SIGMET_VA_CLD			= 149,
+	HAZARD_SIGMET_SKY_COND			= 150,
+	HAZARD_SIGMET_LT_CLD			= 151,
+	HAZARD_SIGMET_BKN_CLD			= 152,
+	HAZARD_SIGMET_OVC_CLD			= 153,
+	HAZARD_SIGMET_MT_OBSC			= 154,
+	HAZARD_SIGMET_IFR				= 155,
+	HAZARD_SIGMET_SN				= 156,
+	HAZARD_SIGMET_BLSN				= 157,
+	HAZARD_SIGMET_CIG				= 158,
+	HAZARD_SIGMET_CLD				= 159,
+	HAZARD_SIGMET_VIS				= 160,
+	HAZARD_SIGMET_GUSTS				= 161,
+	HAZARD_SIGMET_WINDS				= 162,
+	HAZARD_SIGMET_WS				= 163,
+	HAZARD_SIGMET_OZNE				= 164,
+	HAZARD_SIGMET_SPEC				= 165,
+    HAZARD_SIGMET_OBSC_TS			= 167,
+    HAZARD_SIGMET_OCNL_CB			= 171,
+	HAZARD_SIGMET_EMBD_CB			= 172,
+	HAZARD_SIGMET_OBSC_TSGR			= 173,
+	HAZARD_SIGMET_OCNL_EMBD_TS		= 174,
+	HAZARD_SIGMET_OCNL_MOD_ICE		= 175,
+	HAZARD_SIGMET_ISOL_EMBD_CB		= 176,
+	HAZARD_SIGMET_ISOL_EMBD_TS		= 177,
+	HAZARD_SIGMET_SPACE_WX			= 178,
+	HAZARD_VA_ADVISORY				= 198,
+	HAZARD_TC_ADVISORY				= 199,
+	HAZARD_PIREP_LT_TURB			= 200,
+	HAZARD_PIREP_MOD_TURB			= 201,
+	HAZARD_PIREP_SEV_TURB			= 202,
+	HAZARD_PIREP_LT_ICE				= 203,
+	HAZARD_PIREP_MOD_ICE			= 204,
+	HAZARD_PIREP_SEV_ICE			= 205,
+	HAZARD_PIREP_VA					= 206,
+	HAZARD_PIREP_SKY_COND			= 207,
+	HAZARD_TROPOPAUSE				= 208,
+	HAZARD_WIND_TEMP				= 209,
+	HAZARD_WIND_ISO70				= 210,
+	HAZARD_METAR_VFR				= 211,
+	HAZARD_METAR_MVFR 				= 212,
+	HAZARD_METAR_IFR				= 213,
+	HAZARD_METAR_EXPIRED			= 214,
+	HAZARD_TAF						= 215,
+	HAZARD_JETSTREAM				= 216,
+	HAZARD_NOTAM					= 217,
+	HAZARD_AP_REGULATORY			= 218,
+	HAZARD_AP_ENROUTE				= 219,
+	HAZARD_AP_ADEQUATE				= 220,
+	HAZARD_AP_EMERGENCY				= 221,
+	HAZARD_AP_DISPATCH				= 222,
+	HAZARD_PIREP_IC					= 223,
+	HAZARD_PIREP_OTHER				= 224,
+	HAZARD_OST_TRACK				= 225,
+	HAZARD_COMPANY_AREA_CTN			= 226,
+	HAZARD_COMPANY_AREA_NFZ			= 227,
+	HAZARD_COMPANY_AREA_WX			= 228,
+	HAZARD_COMPANY_AREA_ETOPS		= 229,
+	HAZARD_COMPANY_AREA_OTH			= 230,
+	HAZARD_PIREP_NEG_TURB			= 231,
+	HAZARD_PIREP_NEG_ICE			= 232,
+	HAZARD_LIGHTNING_STRIKE_0		= 233,
+	HAZARD_LIGHTNING_STRIKE_10		= 234,
+	HAZARD_LIGHTNING_STRIKE_20		= 235,
+	HAZARD_LIGHTNING_STRIKE_30		= 236,
+	HAZARD_LIGHTNING_STRIKE_45		= 237,
+	HAZARD_COMPANY_AREA_SIAR		= 238,
+	HAZARD_FLYOVER_AREA_FREE		= 239,
+	HAZARD_FLYOVER_AREA_RESTRICTED	= 240,
+	HAZARD_FLYOVER_AREA_FORCED		= 241,
+	HAZARD_FLYOVER_AREA_NFZ			= 242,
+	HAZARD_GLOBAL_RADAR				= 243,
+	HAZARD_GLOBAL_PRECIPITATION		= 244,
+	HAZARD_SURFACE_FRONT_COLD		= 245,
+	HAZARD_SURFACE_FRONT_WARM		= 246,
+	HAZARD_SURFACE_FRONT_STATIONARY = 247,
+	HAZARD_SURFACE_FRONT_OCCLUDED	= 248,
+	HAZARD_SURFACE_FRONT_TROUGH		= 249,
+	HAZARD_SURFACE_FRONT_UNDEFINED	= 250,
+	HAZARD_FIR						= 251,
+	HAZARD_UIR						= 252,
+	HAZARD_FIR_UIR					= 253,
+	HAZARD_OST_TRACK_W_NAT			= 254,
+	HAZARD_OST_TRACK_E_NAT			= 255,
+	HAZARD_OST_TRACK_W_PACOT		= 256,
+	HAZARD_OST_TRACK_E_PACOT		= 257,
+	HAZARD_PIREP_EDR_NEG_TURB		= 258,
+	HAZARD_PIREP_EDR_LT_TURB		= 259,
+	HAZARD_PIREP_EDR_MOD_TURB		= 260,
+	HAZARD_PIREP_EDR_SEV_TURB		= 261,
+	HAZARD_PIREP_EDR_EXT_TURB		= 262,
+	HAZARD_OPTIFLIGHT_MSG			= 263,
+	HAZARD_EDP_MOD_TURB				= 264,
+	HAZARD_EDP_SEV_TURB				= 265,
+	HAZARD_EDP_EXT_TURB				= 266,
+	HAZARD_DATIS					= 267,
+	EWAS_HAZARDS_SIZE
+}WEATHER_DATA_HAZARD;
+
+/** Source Type  */
+typedef enum
+{
+	UNKNOWN_DATA,
+	WEATHER_DATA,
+	AIRPORT_DATA,
+	AIRLINE_DATA
+}DATA_SOURCE_TYPE;
+
+
+/** Product Feature Mask  */
+typedef enum
+{
+	PRODUCT_NONE_MASK				= 0x0000,
+	PRODUCT_INCREMENTAL_MASK		= 0x0001,
+	PRODUCT_RESETONMANUAL_MASK		= 0x0002,
+	PRODUCT_NO_INTERSECTION_MASK	= 0x0004,
+	PRODUCT_NO_AIRBONE_MASK			= 0x0008,
+	PRODUCT_NO_SELECTABLE_MASK		= 0x0010,
+	PRODUCT_NO_MISSION_MASK			= 0x0020,
+	PRODUCT_DEPRECATED_MASK			= 0x0040
+}PRODUCT_FEATURE_MASK;
+
+// GRIB defines inserted parameters bit activations
+typedef enum
+{
+	GRIB_PRESSURE = 0,
+	GRIB_PRESSURE_HEIGHT_ABOVE_GROUND = 1,
+	GRIB_GEOP_HEIGHT = 2,
+	GRIB_TEMPERATURE = 3,
+	GRIB_WINDDIR = 4,
+	GRIB_WINDSPEED = 5,
+	GRIB_WINDU = 6,
+	GRIB_WINDV = 7,
+	GRIB_TROPO = 8
+}GRIB_DATA_TYPE;
+
+/** Type for WIMS Confidence Level Attribute [TBD] */
+typedef enum {
+	ConfidLevel_0 = 0,
+	ConfidLevel_1 = 1,
+	ConfidLevel_2 = 2,
+	ConfidLevel_3 = 3,
+	ConfidLevel_4 = 4,
+	ConfidLevel_5 = 5
+} CONFIDENCE_LEVEL_TYPE;
+
+/** Type of Weather Request */
+typedef enum {
+	REQUEST_UNKNOWN		= 0,
+	REQUEST_TAOI		= 1,
+	REQUEST_ON_FP		= 2,
+	REQUEST_AIRPORTS	= 3,
+	REQUEST_FLAOI		= 4,
+	REQUEST_LAST_TILE	= 5,
+	REQUEST_EMPTY		= 6
+} WEATHER_REQUEST_TYPE;
+
+typedef enum {
+	SUNDAY		 = 0,
+	MONDAY       = 1,
+	TUESDAY		 = 2,
+	WEDNESDAY	 = 3,
+	THURSDAY     = 4,
+	FRIDAY       = 5,
+	SATURDAY     = 6,
+	DAY_WEEK_NUM
+}DAY_WEEK;
+
+/** Type for Flight Plans */
+typedef enum {
+	FPActive							= 0,
+	FPAlternative						= 1,
+	FPTrack								= 2,
+	FPOptiFlightDirect					= 3,
+// Only for Dispatch
+	FPDispatchSelected					= 4,
+	FPDispatchVisible					= 5,
+	FPDispatchACARSPosition				= 6,
+	FPDispatchFlightAwareADSBPosition	= 7,
+	FPRcfRoute							= 8,
+	FPRcfAlternateRoute					= 9,
+	FPEtopsPoints						= 10,
+	FPCompanyRoute						= 11,
+	FPDispatchManualPosition			= 12,
+	FLIGHT_PLAN_COLOR_SIZE
+} FLIGHT_PLAN_TYPE;
+
+#define FLIGHT_PLAN_SIZE			2
+
+/** Type for AOI */
+typedef enum {
+	ACARS_AOI	= 0,
+	IP_AOI		= 1,
+	AOI_SIZE
+} AOI_TYPE;
+
+/** Type for DISPLAYED AOI */
+typedef enum {
+	ACARS_DISPLAYED_AOI		= 0,
+	WEATHER_DISPLAYED_AOI	= 1,
+	AROUNDFP_DISPLAYED_AOI	= 2,
+	DISPLAYED_AOI_SIZE
+} DISPLAYED_AOI_TYPE;
+
+/** Type for Request AOI */
+typedef enum {
+	NONE_IP_AOI			= 0,
+	GLOBAL_IP_AOI		= 1,
+	AROUNDFP_IP_AOI		= 2,
+	CUSTOM_IP_AOI		= 3,
+	MISSION_IP_AOI		= 4,
+	IP_AOI_SIZE
+} IP_AOI_TYPE;
+
+#define AOI_SELECTION_MASK(type)		(0x01 << type)
+
+/** AOI Mode */
+typedef enum {
+	DEFAULT_AOI	= 0,
+	MISSION_AOI	= 1,
+	AOI_MODE_SIZE
+} AOI_MODE;
+
+//Modes
+typedef enum {
+	ePLAN_MODE,
+	eWAS_MODE,
+	eSIM_MODE,
+	eTIMEVIEW_MODE,
+	DISPLAY_MODE_SIZE
+}DISPLAY_MODE;
+
+typedef enum
+{
+	DISPLAY_OWNSHIP_NONE = 0,
+	DISPLAY_OWNSHIP_CIRCLE = 1,
+	DISPLAY_OWNSHIP_AC = 2,
+}DISPLAY_OWNSHIP;
+
+typedef enum {
+	eSIM_LOCAL,
+	eSIM_REMOTE
+}eSIM_TYPE;
+
+typedef enum {
+	MET_REQ = 110,				// Meteo Logs
+	MET_RSP_OK = 120,
+	MET_RSP_NODATA = 121,
+	MET_RSP_NA = 122,
+	MET_RSP_NOUSR = 123,		// End Meteo Logs
+	FTP_MON = 210,				// WDDI message acronyms
+	FTP_FLG = 211,
+	FTP_DWN = 212,
+	FTP_RMV = 213,
+	ZIP_ERR = 214,
+	IMP_OK = 300,
+	IMP_KO = 301,				// End of WDDI message acronyms
+	FP_REQ = 400,				// FlightPlan Logs
+	FP_UPD = 401,
+	FP_ARL_REQ = 402,			// Flight Plan Airline Request
+	FP_RSP_OK = 410,
+	FP_RSP_ERR = 411,
+	FP_RSP_NODATA = 412,		// End FlightPlan Logs
+	FPLIST_REQ = 500,			// FlightPlanList Logs
+	FPLIST_RSP_OK = 510,
+	FPLIST_RSP_ERR = 511,
+	FPLIST_RSP_NODATA = 512,	// End FlightPlanList Logs
+	FILE_CP = 600,
+	MISSION_REQ = 700,			// Mission Logs
+	MISSION_RSP_OK = 710,
+	MISSION_RSP_ERR = 711,
+	MISSION_RSP_NODATA = 712,	// End Mission Logs
+	DISPATCH_REQ = 800,			// Dispatch Request
+	DISPATCH_RSP_OK = 810,		// Dispatch Response OK
+	DISPATCH_RSP_ERR = 811,		// Dispatch Response ERROR
+	DISPATCH_RSP_NODATA = 812	// Dispatch Response NO DATA
+}WDSP_MESSAGES;
+
+/** Type for USER status */
+typedef enum {
+	UserDisabled = 0,
+	UserEnabled = 1,
+	USER_STATUS_TYPE_SIZE
+} USER_STATUS_TYPE;
+
+/** Type for USER type */
+typedef enum {
+	USER_UNKNONW = 0,
+	USER_PILOT = 1,
+	USER_AIRCRAFT = 2,
+	USER_DISPATCHER = 3,
+	USER_MAINTENANCE = 4,
+	USER_TYPE_SIZE
+} USER_TYPE;
+
+/** Type for DIRECTION_INFO type */
+typedef enum {
+	HORIZONTAL_INFO = 0,
+	VERTICAL_INFO = 1
+} DIRECTION_INFO;
+
+typedef enum {
+	LANDINGSYSTEM_TYPE_UNKNOWN = 0,
+	LANDINGSYSTEM_TYPE_ILS,
+	LANDINGSYSTEM_TYPE_ILS_MLS_GLS_I,
+	LANDINGSYSTEM_TYPE_ILS_MLS_GLS_II,
+	LANDINGSYSTEM_TYPE_ILS_MLS_GLS_III,
+	LANDINGSYSTEM_TYPE_IGS,
+	LANDINGSYSTEM_TYPE_LDA_GS,
+	LANDINGSYSTEM_TYPE_LDA,
+	LANDINGSYSTEM_TYPE_SDF_GS,
+	LANDINGSYSTEM_TYPE_SDF,
+	LANDINGSYSTEM_TYPE_SIZE
+}LANDINGSYSTEM_TYPE;
+
+typedef enum {
+	APPROACH_ROUTE_TYPE_UNKNOWN = 0,
+	APPROACH_ROUTE_TYPE_MISSED,
+	APPROACH_ROUTE_TYPE_TRANSITION,
+	APPROACH_ROUTE_TYPE_LOC_BACK,
+	APPROACH_ROUTE_TYPE_VORDME,
+	APPROACH_ROUTE_TYPE_FMS,
+	APPROACH_ROUTE_TYPE_IGS,
+	APPROACH_ROUTE_TYPE_RNAV_RNP,
+	APPROACH_ROUTE_TYPE_ILS,
+	APPROACH_ROUTE_TYPE_GLS,
+	APPROACH_ROUTE_TYPE_LOC,
+	APPROACH_ROUTE_TYPE_MLS,
+	APPROACH_ROUTE_TYPE_NDB,
+	APPROACH_ROUTE_TYPE_GPS,
+	APPROACH_ROUTE_TYPE_NDB_DME,
+	APPROACH_ROUTE_TYPE_RNAV,
+	APPROACH_ROUTE_TYPE_VORDME_VORTAC,
+	APPROACH_ROUTE_TYPE_TACAN,
+	APPROACH_ROUTE_TYPE_SDF,
+	APPROACH_ROUTE_TYPE_VOR,
+	APPROACH_ROUTE_TYPE_MLS_A,
+	APPROACH_ROUTE_TYPE_LDA,
+	APPROACH_ROUTE_TYPE_MLS_B_C,
+	APPROACH_ROUTE_TYPE_SIZE
+}APPROACH_ROUTE_TYPE;
+
+typedef enum {
+	APPROACH_QUALIFIER1_TYPE_UNKNOWN = 0,
+	APPROACH_QUALIFIER1_TYPE_A_RNP,
+	APPROACH_QUALIFIER1_TYPE_RNAV_VISUAL,
+	APPROACH_QUALIFIER1_TYPE_DME,
+	APPROACH_QUALIFIER1_TYPE_RNP_AR,
+	APPROACH_QUALIFIER1_TYPE_GPS,
+	APPROACH_QUALIFIER1_TYPE_GBAS,
+	APPROACH_QUALIFIER1_TYPE_NO_DME,
+	APPROACH_QUALIFIER1_TYPE_GNSS,
+	APPROACH_QUALIFIER1_TYPE_GPS_DME_DME,
+	APPROACH_QUALIFIER1_TYPE_DME_DME,
+	APPROACH_QUALIFIER1_TYPE_RNAV,
+	APPROACH_QUALIFIER1_TYPE_VOR_DME_RNAV,
+	APPROACH_QUALIFIER1_TYPE_SBAS,
+	APPROACH_QUALIFIER1_TYPE_SIZE
+}APPROACH_QUALIFIER1_TYPE;
+
+typedef enum {
+	APPROACH_TYPE_UNKNOWN = 0,
+	APPROACH_TYPE_TRANSITION,
+	APPROACH_TYPE_NDB,
+	APPROACH_TYPE_NDB_DME,
+	APPROACH_TYPE_VOR,
+	APPROACH_TYPE_VORTAC,
+	APPROACH_TYPE_VORDME,
+	APPROACH_TYPE_VOR_DME,
+	APPROACH_TYPE_TACAN,
+	APPROACH_TYPE_SDF,
+	APPROACH_TYPE_GNSS,
+	APPROACH_TYPE_RNAV,
+	APPROACH_TYPE_RNAV_RNP,
+	APPROACH_TYPE_RNAV_GNSS,
+	APPROACH_TYPE_LOC,
+	APPROACH_TYPE_LOC_BC,
+	APPROACH_TYPE_LDA,
+	APPROACH_TYPE_LOC_DME,
+	APPROACH_TYPE_LOC_BC_DME,
+	APPROACH_TYPE_LDA_DME,
+	APPROACH_TYPE_IGS,
+	APPROACH_TYPE_MLS,
+	APPROACH_TYPE_MLS_A,
+	APPROACH_TYPE_MLS_B_C,
+	APPROACH_TYPE_ILS,
+	APPROACH_TYPE_ILS_CAT1,
+	APPROACH_TYPE_ILS_CAT2,
+	APPROACH_TYPE_ILS_CAT3,
+	APPROACH_TYPE_SIZE
+}APPROACH_TYPE;
+
+typedef enum {
+	AIRPORT_CLASS_UNKNOWN = 0,
+	AIRPORT_CLASS_A,
+	AIRPORT_CLASS_B,
+	AIRPORT_CLASS_C,
+	AIRPORT_CLASS_D,
+	AIRPORT_CLASS_E,
+	AIRPORT_CLASS_TYPE_SIZE
+}AIRPORT_CLASS;
+
+typedef enum {
+	DEPARTURE_AIRPORT,
+	DESTINATION_AIRPORT
+}AIRPORT_TYPE;
+
+typedef enum {
+	APP_EWAS_UNKNOWN = 0,
+	APP_EWAS_IPAD = 1,
+	APP_EWAS_WINDOWS = 2,
+	APP_EWAS_IPHONE = 3,
+	APP_EWAS_TYPE_SIZE
+}APP_EWAS_TYPE;
+
+typedef enum {
+	ALTERNATE_NONE  = 0,
+	ALTERNATE_FIRST = 1,
+	ALTERNATE_ALL   = 2,
+	ALTERNATE_ROUTE_VISIBILITY_SIZE
+}ALTERNATE_ROUTE_VISIBILITY;
+
+typedef enum
+{
+	ACPositionInvalid			= 0,
+	ACPositionProjected			= 1,
+	ACPositionScheduled			= 2,
+	ACPositionACARS				= 3,
+	ACPositionFlightAwareADSB	= 4,
+	ACPositionManual			= 5,
+	AC_POSITION_SOURCE_SIZE
+}ACPositionSource;
+
+typedef enum
+{
+	ARINC_HIGH_ALTITUDE,
+	ARINC_LOW_ALTITUDE,
+	ARINC_BOTH_ALTITUDE
+}ArincAltitude;
+
+/** Coordinates Format */
+typedef enum {
+	COORD_DMS_FORMAT = 0, // Degrees Minutes Seconds
+	COORD_DDM_FORMAT = 1, // Degrees Decimal Minutes
+	COORD_DD_FORMAT  = 2, // Decimal Degrees
+	COORD_ICAO_FORMAT= 3  // Format used by ICAO
+} COORDINATES_FORMAT;
+
+/* Filter Options */
+typedef enum {
+    FILTER_WINDS		= 0,
+    FILTER_OBSERVATIONS = 1,
+    FILTER_FORECASTS	= 2,
+    FILTER_METARTAF		= 3,
+    FILTER_SIGMET		= 4,
+    FILTER_FLYOVER		= 5,
+	FILTER_IMAGERY		= 6,
+    FILTER_TYPE_SIZE
+}FILTER_TYPE;
+
+#define FILTER_SELECTION_MASK(type)		(0x01 << type)
+
+typedef enum
+{
+	ProgramDataFolder,
+	UserFolder,
+	CustomCommonFolder,
+	CustomUserFolder
+}DirectoryData;
+
+typedef enum {
+	OptiApt	= 0,
+	OptiWpt	= 1,
+	OptiBrf = 2,
+	OptiFlightMsgSize
+}OptiFlightMsgType;
+
+typedef enum
+{
+	INFLIGHT,
+	PREFLIGHT,
+	FP_DISPATCH_LIST_TYPE_SIZE
+}FP_DISPATCH_LIST_TYPE;
+
+typedef enum {
+	NoSourceWindShear	= 0,
+	TafWindShear		= 1,
+	MetarWindShear		= 2
+}WindShearIndicator;
+
+typedef enum {
+	NotamDiscarded		= 0,
+	NotamStandard		= 1,
+	NotamHighlighted	= 2,
+	NotamQCodeTypeNum   = 3
+}NotamQCodeType;
+
+static const char *NOTAM_Q_CODE_TYPE_DESC[NotamQCodeTypeNum] = { "discarded", "medium", "high"};
+
+/** Define Weather Data Result Codes */
+typedef enum {
+	DataPending,
+	DataFailure,
+	NoData,
+	DataNotUpToDate,
+	DataOK,
+}WDSPDataResultCode;
+
+typedef enum {
+   UPDATE_STATUS_DISABLED = 0,
+   UPDATE_STATUS_PAUSED = 1,
+   UPDATE_STATUS_AUTO = 2,
+   UPDATE_STATUS_DISABLED_ONCE = 3,
+   UPDATE_STATUS_AUTO_ONCE = 4,
+   UPDATE_STATUS_SIZE
+} UPDATE_STATUS;
+
+/** Define Navigation/Weather Summary Status */
+typedef enum {
+   UPDATE_NONE_CMD = 0,
+   UPDATE_DISABLED_ON_PROFILE_CMD = 1,
+   UPDATE_AUTO_ON_PROFILE_CMD = 3,
+   UPDATE_DISABLED_CMD = 4,
+   UPDATE_AUTO_CMD = 5,
+   UPDATE_MANUAL_CMD = 6,
+} UPDATE_MODE_CMD;
+
+typedef enum {
+	UPDATE_PROFILE_FULL = 0,
+	UPDATE_PROFILE_AIRBONE = 1,
+	UPDATE_PROFILE_ACARS = 2,
+	UPDATE_PROFILE_SIZE
+} UPDATE_MODE_PROFILE;
+
+typedef enum {
+   UPDATE_MODE_UNKNOWN = 0,
+   UPDATE_MODE_DISABLED = 1,
+   UPDATE_MODE_AUTO = 2,
+   UPDATE_MODE_SIZE
+} UPDATE_MODE;
+
+/** Define Weather Data Status */
+typedef enum {
+   WEATHER_DATA_UNKNOWN = 0,
+   NO_WEATHER_DATA = 1,
+   WEATHER_DATA_NOT_UPTODATE = 2,
+   WEATHER_DATA_UPTODATE = 3,
+   WEATHER_DATA_EXPIRED = 4,
+   WEATHER_DATA_STATUS_SIZE
+} WEATHER_DATA_STATUS;
+
+/** Pairing Mode */
+typedef enum {
+	PAIRING_MODE_NONE	= 0,
+	PAIRING_MODE_MASTER	= 1,
+	PAIRING_MODE_SLAVE	= 2,
+	PAIRING_MODE_SIZE
+} PAIRING_MODE_TYPE;
+
+typedef enum {
+	NON_ACTIVE,
+	ACTIVE_IP,
+	ACTIVE_ACARS,
+	ACTIVE_CONN_TYPE_SIZE
+}WDSPActiveConnectionType;
+
+/** Define Weather Data Status */
+typedef enum {
+   InvalidPosition = 0,
+   InvalidUser = 1,
+   ConnectionUnknown = 2,
+   Connecting = 3,
+   ConnectionOK = 4,
+   UploadingOK = 5,
+   ConnectionTimeout = 6,
+   ConnectionFailure = 7,
+   UploadingTimeout = 8,
+   UploadingFailure = 9,
+   WDSP_CONNECTION_STATUS_TYPE_SIZE
+} WDSPConnectionStatusType;
+
+/** Define WDSP Message Response */
+typedef enum
+{
+	ResponseOK,
+	ResponseError,
+	ResponseTimeout,
+	ResponseInvalidCredentials,
+	ResponseNickInUse,
+	ResponseLicenseExpired,
+	ResponseLicenseDisabled,
+	ResponseInvalidUserFlight,
+	ResponseFpInvalidFlight,
+	ResponseFpEurocontrolError,
+	ResponseFpError,
+	ResponseFpManagerNotStarted,
+	ResponseFPInvalidRoute,
+	ResponseFpListError,
+	ResponseFpFromAirlineError,
+	ResponseInvalidDevice,
+	ResponseMaxDevicesExceeded,
+	ResponseInvalidAirport,
+	ResponseSomeInvalidAirport,
+	ResponseWeatherObjectsError,
+	ResponseFlightAreaAndTime,
+	ResponseOFPNotFound,
+	ResponseOFPParsingError,
+	ResponseEurocontrolNotFound,
+	ResponseDispatchManagerNotStarted,
+	ResponseDispatchInvalidOfficeRequested,
+	ResponseDispatchPOSError,
+	ResponseDispatchAlertNotInitialized,
+	ResponseUnauthorizedUser,
+	ResponseConnectionBroken,
+	ResponseNotAllowedInACARSMode,
+	ResponseNotAllowedInSlaveMode,
+	WDSP_REQUEST_RESPONSE_MAX
+}WDSPResponseCode;
+
+#define WDSP_STRING_MAX_SIZE 128
+
+static const char *const WDSPRequestResponseDesc[WDSP_REQUEST_RESPONSE_MAX] = {
+	"OK","Error processing request", "Timeout Expired. Try again","Invalid credentials", "Nick in use", "User License Expired", "User License Disabled",
+	"Invalid User for this Flight", "Invalid Flight ID", "Error retrieving FP from Eurocontrol", "Flight Plan not found", "FP Service not started",
+	"Invalid Route", "Error obtaining Flight Plan List", "Airline code error", "Invalid Device", "Max. Number of Devices Exceeded. Log in to 'My eWAS Account' to manage your devices.",
+	"Invalid Airport", "Some Invalid Airport", "Error retrieving weather objects"," Error calculating flight area and time",
+	"No OFP was found","Error parsing the OFP file","No Flight Plan Found in Eurocontrol","Dispatch Request service not started",
+	"Invalid Office was requested","Error processing POS message", "Dispatch alerts not initialized","Unauthorized user",
+	"Connection Broken", "Not allowed in ACARS Mode", "Not allowed in SLAVE Mode"
+};
+
+typedef enum {
+   SUMMARY_STATUS_OK = 0,
+   SUMMARY_STATUS_COMM_FAILURE = 1,
+   SUMMARY_STATUS_COMM_DOWNLOADING = 2,
+   SUMMARY_STATUS_WEATHER_WARNING = 4,
+   SUMMARY_STATUS_WEATHER_ERROR = 8
+} SUMMARY_STATUS;
+
+typedef enum
+{
+	AVIONIC_LONGITUDE = 0,
+	AVIONIC_LATITUDE = 1,
+	AVIONIC_ALTITUDE = 2,
+	AVIONIC_GROUNDSPEED = 3,
+	AVIONIC_TRUEHEADING = 4,
+	AVIONIC_TAILNUMBER = 5,
+	AVIONIC_FLIGHTNUMBER = 6,
+	AVIONIC_WOW = 7,
+	AVIONIC_VARIABLE_SIZE = 8
+} AVIONIC_VARIABLE_ID;
+
+typedef enum
+{
+	DatalinkUnknown,
+	DatalinkACARS,
+	DatalinkMIAM,
+	DatalinkIP
+} WDSPDatalinkType;
+
+typedef enum
+{
+	MediumUnknown,
+	MediumIPWiFi,
+	MediumIPWiMax,
+	MediumIPSatcom,
+	MediumACARSHFDL,
+	MediumACARSVDL,
+	MediumACARSIridium,
+	MediumACARSInmarsat,
+} WDSPMediumType;
+
+typedef struct
+{
+	WDSPDatalinkType	datalink;
+	WDSPMediumType		medium;
+}WDSPRoutingInfo;
+
+typedef enum
+{
+	DISPLAY_DEFAULT = 0,
+	DISPLAY_DISPATCH = 1,
+	DISPLAY_AIRCRAFT = 2,
+	DISPLAY_NAVAERO = 3,
+	DISPLAY_DASSAULT = 4,
+	DISPLAY_TYPE_SIZE
+}DISPLAY_TYPE;
+
+static const char *const DISPLAY_TYPE_DESC[DISPLAY_TYPE_SIZE] = { "DEFAULT", "DISPATCH", "AIRCRAFT", "NAVAERO", "DASSAULT"};
+
+typedef enum
+{
+	NO_MESSAGE,
+	LICENSE_EXPIRATION,
+	PENDING_FEEDBACKS,
+	NEW_APP_RELEASE
+}WARNING_MESSAGE;
+
+#define WINDOW_ND_HEIGHT_P  0.65
+#define WINDOW_VND_HEIGHT_P 0.30
+
+#define BUTTON_PANEL_X_MOVE 20
+#define BUTTON_PANEL_Y_MOVE 5

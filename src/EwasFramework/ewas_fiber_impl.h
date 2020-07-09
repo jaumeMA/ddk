@@ -1,0 +1,72 @@
+#pragma once
+
+#include "ewas_fiber_defs.h"
+#include "unique_reference_wrapper.h"
+#include "lent_reference_wrapper.h"
+#include "ewas_ucontext.h"
+#include "ewas_fiber_local.h"
+#include "ewas_stack_allocator.h"
+#include "ewas_thread_yielder.h"
+#include "ewas_fiber_scheduler_interface.h"
+
+namespace ewas
+{
+namespace detail
+{
+
+struct this_fiber_t
+{
+public:
+	this_fiber_t();
+
+	ucontext_t* get_context();
+	const ucontext_t* get_context() const;
+	fiber_id get_id() const;
+
+private:
+	mutable ucontext_t m_context;
+};
+
+struct fiber_impl
+{
+public:
+	fiber_impl();
+	fiber_impl(stack_alloc_const_shared_ref i_allocImpl);
+	fiber_impl(const fiber_impl&) = delete;
+	~fiber_impl();
+	template<typename Return>
+	void start_from(this_fiber_t& other, const std::function<Return()>& i_function);
+	void start(const std::function<void()>& i_function);
+	void stop();
+	yielder_context* resume_from(this_fiber_t& other);
+	void resume_to(this_fiber_t& other, yielder_context* i_context = nullptr);
+	fiber_id get_id() const;
+	void set_state(FiberExecutionState i_state);
+	FiberExecutionState get_state() const;
+	ucontext_t* get_context() const;
+	void set_executor(fiber_scheduler_interface_lent_ptr i_executor);
+	bool operator==(const fiber_impl& other) const;
+
+private:
+	fiber_id m_id;
+	fiber_scheduler_interface_lent_ptr m_executor;
+	mutable ucontext_t m_context;
+	FiberExecutionState m_state;
+	stack_allocator m_alloc;
+};
+
+typedef unique_reference_wrapper<fiber_impl> fiber_impl_unique_ref;
+typedef unique_reference_wrapper<const fiber_impl> fiber_impl_const_unique_ref;
+typedef unique_pointer_wrapper<fiber_impl> fiber_impl_unique_ptr;
+typedef unique_pointer_wrapper<const fiber_impl> fiber_impl_const_unique_ptr;
+
+typedef lent_reference_wrapper<fiber_impl> fiber_impl_lent_ref;
+typedef lent_reference_wrapper<const fiber_impl> fiber_impl_const_lent_ref;
+typedef lent_pointer_wrapper<fiber_impl> fiber_impl_lent_ptr;
+typedef lent_pointer_wrapper<const fiber_impl> fiber_impl_const_lent_ptr;
+
+}
+
+}
+
+#include "ewas_fiber_impl.inl"

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+<Type Name="ewas::optional&lt;*&gt;">
+    <DisplayString Condition="m_storage.m_empty == true">empty</DisplayString>
+	<DisplayString Condition="m_storage.m_empty == false">{*($T1*)(&amp;m_storage.m_storage)}</DisplayString>	
+	<Expand>
+      <Item Name="[value]" Condition="m_storage.m_empty == false">*($T1*)(&amp;m_storage.m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::variant&lt;*,*&gt;">  
+    <DisplayString Condition="m_currentType == _numTypes">empty</DisplayString>
+    <DisplayString Condition="m_currentType == 0">{*($T1*)(&amp;m_storage.m_storage)}</DisplayString>
+    <DisplayString Condition="m_currentType == 1">{*($T2*)(&amp;m_storage.m_storage)}</DisplayString>
+	<Expand>
+      <Item Name="[value]" Condition="m_currentType == 0">*($T1*)(&amp;m_storage.m_storage)</Item>
+      <Item Name="[value]" Condition="m_currentType == 1">*($T2*)(&amp;m_storage.m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::variant&lt;*,*,*&gt;">  
+    <DisplayString Condition="m_currentType == _numTypes">empty</DisplayString>
+    <DisplayString Condition="m_currentType == 0">{*($T1*)(&amp;m_storage.m_storage)}</DisplayString>
+    <DisplayString Condition="m_currentType == 1">{*($T2*)(&amp;m_storage.m_storage)}</DisplayString>
+    <DisplayString Condition="m_currentType == 2">{*($T3*)(&amp;m_storage.m_storage)}</DisplayString>
+	<Expand>
+      <Item Name="[value]" Condition="m_currentType == 0">*($T1*)(&amp;m_storage.m_storage)</Item>
+      <Item Name="[value]" Condition="m_currentType == 1">*($T2*)(&amp;m_storage.m_storage)</Item>
+      <Item Name="[value]" Condition="m_currentType == 2">*($T3*)(&amp;m_storage.m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::variant&lt;*,*,*,*&gt;">  
+    <DisplayString Condition="m_currentType == _numTypes">empty</DisplayString>
+    <DisplayString Condition="m_currentType == 0">{*($T1*)(&amp;m_storage.m_storage)}</DisplayString>
+    <DisplayString Condition="m_currentType == 1">{*($T2*)(&amp;m_storage.m_storage)}</DisplayString>
+    <DisplayString Condition="m_currentType == 2">{*($T3*)(&amp;m_storage.m_storage)}</DisplayString>
+    <DisplayString Condition="m_currentType == 3">{*($T4*)(&amp;m_storage.m_storage)}</DisplayString>
+	<Expand>
+      <Item Name="[value]" Condition="m_currentType == 0">*($T1*)(&amp;m_storage.m_storage)</Item>
+      <Item Name="[value]" Condition="m_currentType == 1">*($T2*)(&amp;m_storage.m_storage)</Item>
+      <Item Name="[value]" Condition="m_currentType == 2">*($T3*)(&amp;m_storage.m_storage)</Item>
+      <Item Name="[value]" Condition="m_currentType == 3">*($T4*)(&amp;m_storage.m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::atomic32&lt;*&gt;">
+    <DisplayString Condition="m_storage.m_empty == true">empty</DisplayString>
+	<DisplayString Condition="m_storage.m_empty == false">{*($T1*)(&amp;m_storage.m_storage)}</DisplayString>	
+	<Expand>
+      <Item Name="[value]" Condition="m_storage.m_empty == false">*($T1*)(&amp;m_storage.m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::atomic64&lt;*&gt;">
+    <DisplayString Condition="m_arena.m_empty == true">empty</DisplayString>
+	<DisplayString Condition="m_arena.m_empty == false">{*($T1*)(&amp;m_arena.m_storage)}</DisplayString>	
+	<Expand>
+      <Item Name="[value]" Condition="m_arena.m_empty == false">*($T1*)(&amp;m_arena.m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::typed_arena&lt;*&gt;">
+    <DisplayString Condition="m_empty == true">empty</DisplayString>
+	<DisplayString Condition="m_empty == false">{*($T1*)(&amp;m_storage)}</DisplayString>	
+	<Expand>
+      <Item Name="[value]" Condition="m_empty == false">*($T1*)(&amp;m_storage)</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::lent_reference_wrapper&lt;*&gt;">
+    <DisplayString>{m_data}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >m_data</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::lent_pointer_wrapper&lt;*&gt;">
+    <DisplayString>{m_data}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >m_data</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::unique_reference_wrapper&lt;*&gt;">
+    <DisplayString>{m_data}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >m_data</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::unique_pointer_wrapper&lt;*&gt;">
+    <DisplayString>{m_data}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >m_data</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::shared_reference_wrapper&lt;*&gt;">
+    <DisplayString>{m_data}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >m_data</Item>
+	</Expand>
+</Type>
+<Type Name="ewas::shared_pointer_wrapper&lt;*&gt;">
+    <DisplayString>{m_data}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >m_data</Item>
+	</Expand>
+</Type>
+<Type Name="tagged_pointer&lt;*&gt;">
+    <DisplayString>{*($T1*)((*(uintptr_t*)(&amp;m_data)) &amp; bitMask)}</DisplayString>
+	<Expand>
+      <Item Name="[value]" >*($T1*)((*(uintptr_t*)(&amp;m_data)) &amp; bitMask)</Item>
+	</Expand>
+</Type>
+</AutoVisualizer>
