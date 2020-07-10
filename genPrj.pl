@@ -47,34 +47,22 @@ my $installdir=getcwd . '/bin';
 
 GetOptions ('project=s' => \$project, 'platform=s' => \$platform, 'Mode=s' => \$optmode, 'install_dir=s' => \$installdir);
 
-if($project eq 'WinServices')
-{
-	$Mode='Dispatch';
-	$Binaries='WDSPAlertServer;WDSPDispatchServer;WDSPPilotServer;WeatherDataDetectionImportation;DispatchDataProcessor;GlobalPositionDSP';
-	$SolutionName='eWasWinServices';
-}
-elsif($project eq "Test")
-{
-	$Mode='Dispatch';
-	$Binaries='DispatchSerializationLibTests;EffNodeApiTests;EwasUtilsTests;MetarTafLibTests;MeteoParserLibTests;NavigationTabsDisplayTests;PilotLibTests;PilotSerializationLibTests;SerializationLibTests;ServerDataLibTests;UnitTests;WDSPConnectionLibTests;WDSPServerCommonTests;eWasPilotTests;EuroControlFlightPlanExporterTests;EwasFrameworkTests';
-	$SolutionName='Test';
-}
-elsif($project eq "ALL_Windows")
+if($project eq "Windows")
 {
 	$Mode='ALL_Windows';
-	$Binaries='eWasPilot;eWasDispatch;eWASTest;eWASLicense;WDSPAlertServer;WDSPDispatchServer;WDSPPilotServer;WeatherDataDetectionImportation;DispatchDataProcessor;GlobalPositionDSP';
+	$Binaries='EwasFramework';
 	$SolutionName='eWasWindows';
 }
-elsif($project eq "ALL_Linux")
+elsif($project eq "Linux")
 {
 	$Mode='ALL_Linux';
-	$Binaries='eWASTest;WeatherDataDetectionImportation;DispatchDataProcessor;WDSPAlertServer;eWASMQClient;eWASFirehoseClient;eWASAMQPClient;eWASPPSClient;EuroControlFlightPlanExporter;WDSPAlertServer;WDSPDispatchServer;WDSPPilotServer;GlobalPositionDSP';
+	$Binaries='EwasFramework';
 	$SolutionName='eWasLinux';
 }
-elsif($project eq "ALL_iOS")
+elsif($project eq "iOS")
 {
 	$Mode='ALL_iOS';
-	$Binaries='ConsoleController';
+	$Binaries='EwasFramework';
 	$SolutionName='eWasIOS';
 }
 else
@@ -102,14 +90,6 @@ elsif($platform eq "Linux")
 elsif($platform eq "iOS")
 {
 	generate_target('iOS',"\"Xcode\"",$SolutionName,$Mode,$Binaries,$optmode,$installdir);
-}
-elsif($platform eq "Dassault")
-{
-	generate_target('win64',$Compiler,$SolutionName,$Mode,$Binaries,$optmode,$installdir);	
-	
-	system('perl -pi.bak -e s/"<AdditionalOptions>[^<]*<\/AdditionalOptions>"/"<AdditionalOptions><\/AdditionalOptions>"/g ./build/eWASdisplayActiveX/eWASdisplayActiveX.vcxproj');
-	copy("src/FalconSphere_eWAS/FalconSphere_eWAS.csproj","build/FalconSphere_eWAS/FalconSphere_eWAS.csproj");
-	copy("src/FalconSphereConnectorLib/FalconSphereConnectorLib.csproj","build/FalconSphereConnectorLib/FalconSphereConnectorLib.csproj");
 }
 else
 {
