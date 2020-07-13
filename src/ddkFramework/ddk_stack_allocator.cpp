@@ -148,13 +148,10 @@ size_t getpagesize()
 
 	return sSysInfo.dwPageSize;
 }
-size_t stack_allocator_interface::s_pageSize = getpagesize();
-
-#elif defined(__LINUX__) || defined(__APPLE__)
-
-size_t stack_allocator_interface::s_pageSize = getpagesize();
 
 #endif
+
+size_t stack_allocator_interface::s_pageSize = getpagesize();
 
 stack_allocator::stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl)
 : m_stackAllocImpl(i_stackAllocImpl)

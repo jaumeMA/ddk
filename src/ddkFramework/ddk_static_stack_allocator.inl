@@ -9,14 +9,14 @@ namespace detail
 template<size_t Size>
 void* static_stack_allocator<Size>::reserve(size_t) const
 {
-	return reinterpret_cast<char*>(size_t(m_arena.get_ptr<char>() + s_pageSize) & ~0xFFF);
+	return reinterpret_cast<char*>(size_t(m_arena.get_ptr<char>() + s_stackSize) & ~0xFFF);
 }
 template<size_t Size>
 void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
 {
 	DDK_ASSERT(m_underUse == false, "Trying to allocate in already used arena");
 
-	return reinterpret_cast<char*>(i_ref) + (Size - i_size) * s_pageSize;
+	return reinterpret_cast<char*>(i_ref) - i_size * s_pageSize;
 }
 template<size_t Size>
 bool static_stack_allocator<Size>::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const
