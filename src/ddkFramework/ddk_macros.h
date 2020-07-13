@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WASLogger.h"
+#include "DDKLogger.h"
 #include "ddk_crash.h"
 #include "ddk_flagset.h"
 

@@ -1,5 +1,5 @@
 #include "ddk_writer_waiting_room.h"
-#include "WASLogger.h"
+#include "DDKLogger.h"
 
 namespace ddk
 {

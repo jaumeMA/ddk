@@ -1,5 +1,5 @@
 #include "ddk_reader_waiting_room.h"
-#include "WASLogger.h"
+#include "DDKLogger.h"
 #include <system_error>
 #include "ddk_thread_utils.h"
 #include <thread>
