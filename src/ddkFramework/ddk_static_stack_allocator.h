@@ -15,15 +15,15 @@ public:
 	static_stack_allocator() = default;
 
 private:
-	typedef char aligned_page[4096];
+	static const size_t s_stackSize = (Size+1) * 4096;
 
 	void* reserve(size_t) const override;
-	void* allocate(void* i_ref, size_t i_size) const;
+	void* allocate(void* i_ref, size_t i_size) const override;
 	bool reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const override;
 	void deallocate(void*,size_t) const override;
-	void release(void*,size_t)
+	void release(void*,size_t) const override;
 
-	mutable arena<(Size+1) * 4096,4096> m_arena;
+	mutable arena<s_stackSize,4096> m_arena;
 	mutable bool m_underUse = false;
 };
 

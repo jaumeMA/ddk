@@ -11,9 +11,11 @@ friend ewas::TypeInfo ewas::rtti(); \
 template<typename> \
 friend struct ewas::detail::is_rtti_available; \
 typedef ewas::detail::rtti_tag_t rtti_tag; \
-virtual ewas::TypeInfo __get_rtti_type_info() const \
+virtual const ewas::TypeInfo& __get_rtti_type_info() const \
 { \
-	return #_TYPE_NAME; \
+	static const ewas::TypeInfo res(#_TYPE_NAME); \
+	\
+	return res; \
 } \
 static ewas::TypeInfo __get_static_rtti_type_info() \
 { \

@@ -325,28 +325,40 @@ private:
 	typename detail::resolve_critical_access_type<ACCESS,collector_t>::type _enterCriticalSection(Reentrancy i_reentrancy, const mpl::sequence<Seq...>& i_seq) const
 	{
 		typedef typename detail::resolve_critical_access_type<ACCESS,collector_t>::type critical_section_t;
-		typedef bool(AccessProviderCollector<Types...>::*ask_func)(Reentrancy,critical_section_t&) const;
-		static const ask_func s_askFunc[s_numTypes] = { &AccessProviderCollector<Types...>::__askCriticalSection<Seq,ACCESS> ...};
+		typedef void(AccessProviderCollector<Types...>::*enter_critical_func)(Reentrancy,critical_section_t&) const;
+		typedef bool(AccessProviderCollector<Types...>::*ask_critical_func)(Reentrancy,critical_section_t&) const;
+		static const enter_critical_func s_enterFunc[s_numTypes] = { &AccessProviderCollector<Types...>::__enterCriticalSection<Seq,ACCESS> ...};
+		static const ask_critical_func s_askFunc[s_numTypes] = { &AccessProviderCollector<Types...>::__askCriticalSection<Seq,ACCESS> ...};
 		critical_section_t res;
 		bool alreadyLocked = false;
+		size_t enterIndex = 0;
+		size_t lastEnterIndex = 0;
 
 		do
 		{
 			alreadyLocked = false;
 
-			__enterCriticalSection<0,ACCESS>(i_reentrancy,res);
+			(this->*s_enterFunc[enterIndex])(i_reentrancy,res);
+
+			lastEnterIndex = enterIndex;
 
 			for(size_t seqIndex=1;seqIndex<s_numTypes;++seqIndex)
 			{
-				if((this->*s_askFunc[seqIndex])(i_reentrancy,res) == false)
+				const size_t currIndex = (enterIndex + seqIndex)%s_numTypes;
+
+				if((this->*s_askFunc[currIndex])(i_reentrancy,res) == false)
 				{
-					_leaveCriticalSection<ACCESS>(res,i_seq,seqIndex);
+					_leaveCriticalSection<ACCESS>(res,i_seq,enterIndex,lastEnterIndex);
 
 					alreadyLocked = true;
 
-					sleep(10);
+					enterIndex = currIndex;
 
 					break;
+				}
+				else
+				{
+					lastEnterIndex = currIndex;
 				}
 			}
 		}
@@ -367,7 +379,10 @@ private:
 		{
 			if((this->*s_askFunc[seqIndex])(i_reentrancy,res) == false)
 			{
-				_leaveCriticalSection<ACCESS>(res,i_seq,seqIndex);
+				if(seqIndex > 0)
+				{
+					_leaveCriticalSection<ACCESS>(res,i_seq,0,seqIndex-1);
+				}
 
 				break;
 			}
@@ -376,15 +391,20 @@ private:
 		return std::move(res);
 	}
 	template<IAccessProvider::Access ACCESS, size_t ... Seq>
-	void _leaveCriticalSection(typename detail::resolve_critical_access_type<ACCESS,collector_t>::type& i_criticalSection, const mpl::sequence<Seq...>&, size_t i_criticalSectionIndexMax = s_numTypes) const
+	void _leaveCriticalSection(typename detail::resolve_critical_access_type<ACCESS,collector_t>::type& i_criticalSection, const mpl::sequence<Seq...>&, size_t i_criticalSectionIndexMin = 0, size_t i_criticalSectionIndexMax = s_numTypes - 1) const
 	{
 		typedef typename detail::resolve_critical_access_type<ACCESS,collector_t>::type critical_section_t;
 		typedef void(AccessProviderCollector<Types...>::*leave_func)(critical_section_t&) const;
 		static const leave_func s_leaveFunc[s_numTypes] = { &AccessProviderCollector<Types...>::__leaveCriticalSection<Seq,ACCESS> ...};
 
-		for(size_t seqIndex=1;seqIndex<=i_criticalSectionIndexMax;++seqIndex)
+		int indexDistance = (static_cast<int>(i_criticalSectionIndexMax) - static_cast<int>(i_criticalSectionIndexMin)) % s_numTypes;
+		while(indexDistance >= 0)
 		{
-			(this->*s_leaveFunc[i_criticalSectionIndexMax - seqIndex])(i_criticalSection);
+			size_t seqIndex = (i_criticalSectionIndexMin + indexDistance) % s_numTypes;
+
+			(this->*s_leaveFunc[seqIndex])(i_criticalSection);
+
+			--indexDistance;
 		}
 	}
 	template<size_t Seq, IAccessProvider::Access ACCESS>

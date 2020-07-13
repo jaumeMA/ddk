@@ -12,7 +12,7 @@ void* static_stack_allocator<Size>::reserve(size_t) const
 	return reinterpret_cast<char*>(size_t(m_arena.get_ptr<char>() + s_pageSize) & ~0xFFF);
 }
 template<size_t Size>
-std::pair<void*,void*> static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
+void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
 {
 	EWAS_ASSERT(m_underUse == false, "Trying to allocate in already used arena");
 
@@ -33,7 +33,7 @@ void static_stack_allocator<Size>::deallocate(void*,size_t) const
 	m_underUse = false;
 }
 template<size_t Size>
-void static_stack_allocator<Size>::release(void*,size_t)
+void static_stack_allocator<Size>::release(void*,size_t) const
 {
 	EWAS_ASSERT(m_underUse == false, "Trying to release in non used arena");
 }
