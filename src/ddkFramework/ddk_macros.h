@@ -161,9 +161,9 @@
 #endif
 
 #define MAKE_IT_CRASH \
-		WAS_LOG_ERROR("Crashing at file: " << __FILE__ << ", line: " << __LINE__); \
+		DDK_LOG_ERROR("Crashing at file: " << __FILE__ << ", line: " << __LINE__); \
 		*reinterpret_cast<volatile int*>(0xDEAD);
 
 #define CRASH_ON_RETURN(_TYPE) \
-		WAS_LOG_ERROR("Crashing at file: " << __FILE__ << ", line: " << __LINE__); \
+		DDK_LOG_ERROR("Crashing at file: " << __FILE__ << ", line: " << __LINE__); \
 		return ddk::crash_on_return<_TYPE>::value();

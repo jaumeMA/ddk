@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "ExclusionArea.h"
-#include "ewas_thread.h"
+#include "ddk_exclusion_area.h"
+#include "ddk_thread.h"
 #include <array>
 
 //#define STRESS_TEST
@@ -8,97 +8,97 @@
 using namespace testing;
 using testing::Types;
 
-class EwasExclusionAreaTest : public Test
+class DDKExclusionAreaTest : public Test
 {
 };
 
-TEST(EwasExclusionAreaTest,defaultConstruction)
+TEST(DDKExclusionAreaTest,defaultConstruction)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 }
-TEST(EwasExclusionAreaTest,singleReaderNonReentrant)
+TEST(DDKExclusionAreaTest,singleReaderNonReentrant)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
-	exclArea.enterReader(Reentrancy::NON_REENTRANT);
-
-	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
-
-	exclArea.leaverReader();
-}
-TEST(EwasExclusionAreaTest,singleWriterNonReentrant)
-{
-	ExclusionArea exclArea;
-
-	exclArea.enterWriter(Reentrancy::NON_REENTRANT);
-
-	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
-
-	exclArea.leaveWriter();
-}
-TEST(EwasExclusionAreaTest,singleReaderReentrant)
-{
-	ExclusionArea exclArea;
-
-	exclArea.enterReader(Reentrancy::REENTRANT);
+	exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 
 	exclArea.leaverReader();
 }
-TEST(EwasExclusionAreaTest,singleWriterReentrant)
+TEST(DDKExclusionAreaTest,singleWriterNonReentrant)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
-	exclArea.enterWriter(Reentrancy::REENTRANT);
+	exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 
 	exclArea.leaveWriter();
 }
-TEST(EwasExclusionAreaTest,singleReaderTryToNonReentrant)
+TEST(DDKExclusionAreaTest,singleReaderReentrant)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
-	EXPECT_EQ(exclArea.tryToEnterReader(Reentrancy::NON_REENTRANT),true);
+	exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 
 	exclArea.leaverReader();
 }
-TEST(EwasExclusionAreaTest,singleWriterTryToNonReentrant)
+TEST(DDKExclusionAreaTest,singleWriterReentrant)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
-	EXPECT_EQ(exclArea.tryToEnterWriter(Reentrancy::NON_REENTRANT),true);
+	exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 
 	exclArea.leaveWriter();
 }
-TEST(EwasExclusionAreaTest,singleReaderTryToReentrant)
+TEST(DDKExclusionAreaTest,singleReaderTryToNonReentrant)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
-	EXPECT_EQ(exclArea.tryToEnterReader(Reentrancy::REENTRANT),true);
+	EXPECT_EQ(exclArea.tryToEnterReader(ddk::Reentrancy::NON_REENTRANT),true);
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 
 	exclArea.leaverReader();
 }
-TEST(EwasExclusionAreaTest,singleWriterTryToReentrant)
+TEST(DDKExclusionAreaTest,singleWriterTryToNonReentrant)
 {
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
-	EXPECT_EQ(exclArea.tryToEnterWriter(Reentrancy::REENTRANT),true);
+	EXPECT_EQ(exclArea.tryToEnterWriter(ddk::Reentrancy::NON_REENTRANT),true);
 
 	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
 
 	exclArea.leaveWriter();
 }
-TEST(EwasExclusionAreaTest,multipleReadersNonReentrant)
+TEST(DDKExclusionAreaTest,singleReaderTryToReentrant)
+{
+	ddk::exclusion_area exclArea;
+
+	EXPECT_EQ(exclArea.tryToEnterReader(ddk::Reentrancy::REENTRANT),true);
+
+	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
+
+	exclArea.leaverReader();
+}
+TEST(DDKExclusionAreaTest,singleWriterTryToReentrant)
+{
+	ddk::exclusion_area exclArea;
+
+	EXPECT_EQ(exclArea.tryToEnterWriter(ddk::Reentrancy::REENTRANT),true);
+
+	EXPECT_EQ(exclArea.getReaderState().hasWaitingWriters(), false);
+
+	exclArea.leaveWriter();
+}
+TEST(DDKExclusionAreaTest,multipleReadersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -109,13 +109,13 @@ TEST(EwasExclusionAreaTest,multipleReadersNonReentrant)
 		raceData.push_back(std::rand());
 	}
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData]()
 	{
 		for(size_t index=0;index<raceDataSize;++index)
 		{
-			exclArea.enterReader(Reentrancy::NON_REENTRANT);
+			exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
 			const int value = raceData[index];
 
@@ -126,7 +126,7 @@ TEST(EwasExclusionAreaTest,multipleReadersNonReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 	for(size_t index=0;index<100;++index)
 	{
 		threadPool[index].start(raceFunc);
@@ -138,7 +138,7 @@ TEST(EwasExclusionAreaTest,multipleReadersNonReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleReadersReentrant)
+TEST(DDKExclusionAreaTest,multipleReadersReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -149,13 +149,13 @@ TEST(EwasExclusionAreaTest,multipleReadersReentrant)
 		raceData.push_back(std::rand());
 	}
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData]()
 	{
 		for(size_t index=0;index<raceDataSize;++index)
 		{
-			exclArea.enterReader(Reentrancy::REENTRANT);
+			exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 			const int value = raceData[index];
 
@@ -163,12 +163,12 @@ TEST(EwasExclusionAreaTest,multipleReadersReentrant)
 
 			exclArea.leaverReader();
 
-			ewas::sleep(10);
+			ddk::sleep(10);
 		}
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 	for(size_t index=0;index<100;++index)
 	{
 		threadPool[index].start(raceFunc);
@@ -180,20 +180,20 @@ TEST(EwasExclusionAreaTest,multipleReadersReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleWritersNonReentrant)
+TEST(DDKExclusionAreaTest,multipleWritersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData]()
 	{
 		for(size_t index=0;index<raceDataSize;++index)
 		{
-			exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+			exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 			const int randValue = std::rand();
 
@@ -203,12 +203,12 @@ TEST(EwasExclusionAreaTest,multipleWritersNonReentrant)
 
 			exclArea.leaveWriter();
 
-			ewas::sleep(10);
+			ddk::sleep(10);
 		}
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 	for(size_t index=0;index<100;++index)
 	{
 		threadPool[index].start(raceFunc);
@@ -220,20 +220,20 @@ TEST(EwasExclusionAreaTest,multipleWritersNonReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleWritersReentrant)
+TEST(DDKExclusionAreaTest,multipleWritersReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData]()
 	{
 		for(size_t index=0;index<raceDataSize;++index)
 		{
-			exclArea.enterWriter(Reentrancy::REENTRANT);
+			exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
 
 			const int randValue = std::rand();
 
@@ -243,12 +243,12 @@ TEST(EwasExclusionAreaTest,multipleWritersReentrant)
 
 			exclArea.leaveWriter();
 
-			ewas::sleep(10);
+			ddk::sleep(10);
 		}
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 	for(size_t index=0;index<100;++index)
 	{
 		threadPool[index].start(raceFunc);
@@ -260,7 +260,7 @@ TEST(EwasExclusionAreaTest,multipleWritersReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
+TEST(DDKExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -268,7 +268,7 @@ TEST(EwasExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -276,7 +276,7 @@ TEST(EwasExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::NON_REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -287,14 +287,14 @@ TEST(EwasExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -310,7 +310,7 @@ TEST(EwasExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	threadPool[0].start(std::bind(raceFunc,true));
 
@@ -329,7 +329,7 @@ TEST(EwasExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 
 	threadPool[0].stop();
 }
-TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
+TEST(DDKExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -337,7 +337,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -345,7 +345,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -356,14 +356,14 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -379,7 +379,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	threadPool[0].start(std::bind(raceFunc,true));
 
@@ -397,7 +397,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 
 	threadPool[0].stop();
 }
-TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
+TEST(DDKExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -405,7 +405,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -413,7 +413,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -424,14 +424,14 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -447,7 +447,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	threadPool[0].start(std::bind(raceFunc,true));
 
@@ -465,7 +465,7 @@ TEST(EwasExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 
 	threadPool[0].stop();
 }
-TEST(EwasExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
+TEST(DDKExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 {
 	static const size_t raceDataSize = 100;
 	std::vector<int> raceData;
@@ -473,7 +473,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -481,7 +481,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::NON_REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -492,14 +492,14 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -516,7 +516,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
@@ -532,7 +532,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
+TEST(DDKExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 {
 	static const size_t raceDataSize = 100;
 	std::vector<int> raceData;
@@ -540,7 +540,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -548,7 +548,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -559,14 +559,14 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -582,7 +582,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
@@ -598,7 +598,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
+TEST(DDKExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 {
 	static const size_t raceDataSize = 100;
 	std::vector<int> raceData;
@@ -606,7 +606,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -614,7 +614,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -625,14 +625,14 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -648,7 +648,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
@@ -664,7 +664,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant)
+TEST(DDKExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -672,7 +672,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -680,7 +680,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::NON_REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -691,14 +691,14 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -714,7 +714,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	size_t threadIndex=0;
 	for(;threadIndex<30;++threadIndex)
@@ -738,7 +738,7 @@ TEST(EwasExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
+TEST(DDKExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -746,7 +746,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -754,7 +754,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -765,14 +765,14 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -788,7 +788,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	size_t threadIndex=0;
 	for(;threadIndex<30;++threadIndex)
@@ -812,7 +812,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 		threadPool[index].stop();
 	}
 }
-TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
+TEST(DDKExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
@@ -820,7 +820,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
 	{
@@ -828,7 +828,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -839,14 +839,14 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(size_t index=0;index<raceDataSize;++index)
 			{
-				exclArea.enterWriter(Reentrancy::REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -862,7 +862,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	size_t threadIndex=0;
 	for(;threadIndex<30;++threadIndex)
@@ -889,7 +889,7 @@ TEST(EwasExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 
 #if defined(STRESS_TEST)
 
-TEST(EwasExclusionAreaTest,stressTest)
+TEST(DDKExclusionAreaTest,stressTest)
 {
 	static const size_t raceDataSize = 1000;
 	size_t raceIndex = 0;
@@ -898,7 +898,7 @@ TEST(EwasExclusionAreaTest,stressTest)
 
 	raceData.reserve(raceDataSize);
 
-	ExclusionArea exclArea;
+	ddk::exclusion_area exclArea;
 
 	auto raceFunc = [&exclArea,&raceData,&raceIndex,&stop](bool i_reader)
 	{
@@ -906,7 +906,7 @@ TEST(EwasExclusionAreaTest,stressTest)
 		{
 			while(stop == false)
 			{
-				exclArea.enterReader(Reentrancy::NON_REENTRANT);
+				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
 				if(raceData.empty() == false)
 				{
@@ -917,14 +917,14 @@ TEST(EwasExclusionAreaTest,stressTest)
 
 				exclArea.leaverReader();
 
-				ewas::sleep(1);
+				ddk::sleep(1);
 			}
 		}
 		else
 		{
 			for(;raceIndex<raceDataSize;++raceIndex)
 			{
-				exclArea.enterWriter(Reentrancy::NON_REENTRANT);
+				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
 				const int randValue = std::rand();
 
@@ -940,7 +940,7 @@ TEST(EwasExclusionAreaTest,stressTest)
 	};
 
 	static const size_t threadPoolSize = 5000;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	size_t threadIndex=0;
 	for(;threadIndex<4800;++threadIndex)

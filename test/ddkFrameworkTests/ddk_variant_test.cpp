@@ -1,22 +1,22 @@
 #include <gtest/gtest.h>
-#include "ewas_variant.h"
+#include "ddk_variant.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
-#include "ewas_static_visitor.h"
+#include "ddk_static_visitor.h"
 
 using namespace testing;
 
 template<typename T>
-class EwasTypedVariantTest : public Test
+class DDKTypedVariantTest : public Test
 {
 };
 
-class EwasVariantTest : public Test
+class DDKVariantTest : public Test
 {
 };
 
-class TestVisitor : public ewas::static_visitor<int>
+class TestVisitor : public ddk::static_visitor<int>
 {
 public:
 	int visit(const DefaultType& i_value)
@@ -44,41 +44,41 @@ public:
 
 using testing::Types;
 
-TEST(EwasVariantTest,defaultConstruction)
+TEST(DDKVariantTest,defaultConstruction)
 {
-	ewas::variant<int,char,std::string> foo;
+	ddk::variant<int,char,std::string> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 }
-TEST(EwasVariantTest,construction1)
+TEST(DDKVariantTest,construction1)
 {
-	ewas::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType> foo(DefaultType(0xFF));
+	ddk::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType> foo(DefaultType(0xFF));
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.is<DefaultType>(),true);
 	EXPECT_EQ(foo.get<DefaultType>(),0xFF);
 }
-TEST(EwasVariantTest,construction2)
+TEST(DDKVariantTest,construction2)
 {
 	nonCopyConstructibleType nestedFoo(0xFF);
-	ewas::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType> foo(std::move(nestedFoo));
+	ddk::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType> foo(std::move(nestedFoo));
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.is<nonCopyConstructibleType>(),true);
 	EXPECT_EQ(foo.get<nonCopyConstructibleType>(),0xFF);
 }
-TEST(EwasVariantTest,construction3)
+TEST(DDKVariantTest,construction3)
 {
 	nonMoveConstructibleType nestedFoo(0xFF);
-	ewas::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType> foo(nestedFoo);
+	ddk::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType> foo(nestedFoo);
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.is<nonMoveConstructibleType>(),true);
 	EXPECT_EQ(foo.get<nonMoveConstructibleType>(),0xFF);
 }
-TEST(EwasVariantTest,assignment1)
+TEST(DDKVariantTest,assignment1)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -88,9 +88,9 @@ TEST(EwasVariantTest,assignment1)
 	EXPECT_EQ(foo.is<DefaultType>(),true);
 	EXPECT_EQ(foo.get<DefaultType>(),0xFF);
 }
-TEST(EwasVariantTest,assignment2)
+TEST(DDKVariantTest,assignment2)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -101,9 +101,9 @@ TEST(EwasVariantTest,assignment2)
 	EXPECT_EQ(foo.is<nonCopyAssignableType>(),true);
 	EXPECT_EQ(foo.get<nonCopyAssignableType>(),0xFF);
 }
-TEST(EwasVariantTest,assignment3)
+TEST(DDKVariantTest,assignment3)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -114,9 +114,9 @@ TEST(EwasVariantTest,assignment3)
 	EXPECT_EQ(foo.is<nonMoveAssignableType>(),true);
 	EXPECT_EQ(foo.get<nonMoveAssignableType>(),0xFF);
 }
-TEST(EwasVariantTest,reconstruction)
+TEST(DDKVariantTest,reconstruction)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo(DefaultType(0xFF));
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo(DefaultType(0xFF));
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.is<DefaultType>(),true);
@@ -136,9 +136,9 @@ TEST(EwasVariantTest,reconstruction)
 	EXPECT_EQ(foo.is<nonMoveAssignableType>(),true);
 	EXPECT_EQ(foo.get<nonMoveAssignableType>(),0xDD);
 }
-TEST(EwasVariantTest,is)
+TEST(DDKVariantTest,is)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -160,9 +160,9 @@ TEST(EwasVariantTest,is)
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.is<nonMoveAssignableType>(),true);
 }
-TEST(EwasVariantTest,get)
+TEST(DDKVariantTest,get)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -176,9 +176,9 @@ TEST(EwasVariantTest,get)
 
 	EXPECT_EQ(nestedFooRef,0xFF);
 }
-TEST(EwasVariantTest,getRef)
+TEST(DDKVariantTest,getRef)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -196,9 +196,9 @@ TEST(EwasVariantTest,getRef)
 
 	EXPECT_EQ(foo.get<nonCopyAssignableType>(),0xEE);
 }
-TEST(EwasVariantTest,extract)
+TEST(DDKVariantTest,extract)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -213,19 +213,19 @@ TEST(EwasVariantTest,extract)
 	EXPECT_EQ(foo.empty(),true);
 	EXPECT_EQ(nestedFooRef,0xFF);
 }
-TEST(EwasVariantTest,comparison)
+TEST(DDKVariantTest,comparison)
 {
-	ewas::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo(DefaultType(0xFF));
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo(DefaultType(0xFF));
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo == DefaultType(0xFF),true);
 	EXPECT_EQ(foo == nonCopyAssignableType(0xFF),false);
 	EXPECT_EQ(foo == nonMoveAssignableType(0xFF),false);
 }
-TEST(EwasVariantTest,visitation)
+TEST(DDKVariantTest,visitation)
 {
 	TestVisitor visitor;
-	ewas::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyConstructibleType,nonMoveConstructibleType,nonCopyAssignableType,nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 

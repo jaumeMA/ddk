@@ -1,25 +1,25 @@
 #include <gtest/gtest.h>
-#include "ewas_lock_free_stack.h"
+#include "ddk_lock_free_stack.h"
 #include "test_utils.h"
-#include "ewas_thread.h"
+#include "ddk_thread.h"
 #include <array>
 
 using namespace testing;
 using testing::Types;
 
-class EwasLockFreeStackTest : public Test
+class DDKLockFreeStackTest : public Test
 {
 };
 
-TEST(EwasLockFreeStackTest,defaultConstruction)
+TEST(DDKLockFreeStackTest,defaultConstruction)
 {
-	ewas::lock_free_stack<DefaultType> lockFreeStack;
+	ddk::lock_free_stack<DefaultType> lockFreeStack;
 
 	EXPECT_EQ(lockFreeStack.empty(),true);
 }
-TEST(EwasLockFreeStackTest,singleProducerSingleConsumer)
+TEST(DDKLockFreeStackTest,singleProducerSingleConsumer)
 {
-	ewas::lock_free_stack<DefaultType> lockFreeStack;
+	ddk::lock_free_stack<DefaultType> lockFreeStack;
 
 	const size_t numEntries = 1000;
 	for(size_t index=0;index<numEntries;++index)
@@ -32,7 +32,7 @@ TEST(EwasLockFreeStackTest,singleProducerSingleConsumer)
 	size_t index = 0;
 	while(true)
 	{
-		if(ewas::optional<DefaultType> currValue = lockFreeStack.pop())
+		if(ddk::optional<DefaultType> currValue = lockFreeStack.pop())
 		{
 			EXPECT_EQ(*currValue,static_cast<int>(index));
 		}
@@ -47,35 +47,35 @@ TEST(EwasLockFreeStackTest,singleProducerSingleConsumer)
 
 	EXPECT_EQ(lockFreeStack.empty(),true);
 }
-TEST(EwasLockFreeStackTest,singleProducerMultipleConsumer)
+TEST(DDKLockFreeStackTest,singleProducerMultipleConsumer)
 {
-	ewas::lock_free_stack<DefaultType> lockFreeStack;
+	ddk::lock_free_stack<DefaultType> lockFreeStack;
 	bool stop = false;
 
 	auto consumerFunc = [&stop,&lockFreeStack]()
 	{
 		while(stop == false || lockFreeStack.empty() == false)
 		{
-			if(ewas::optional<DefaultType> currValueOpt = lockFreeStack.pop())
+			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
 			{
 				DefaultType currValue = *currValueOpt;
 
 				EXPECT_GT(currValue,0);
 			}		
 
-			ewas::sleep(10);
+			ddk::sleep(10);
 		}
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
 		threadPool[index].start(consumerFunc);
 	}
 
-	ewas::sleep(100);
+	ddk::sleep(100);
 
 	const size_t numEntries = 1000;
 	for(size_t index=0;index<numEntries;++index)
@@ -85,7 +85,7 @@ TEST(EwasLockFreeStackTest,singleProducerMultipleConsumer)
 
 	while(lockFreeStack.empty() == false)
 	{
-		ewas::sleep(100);
+		ddk::sleep(100);
 	}
 
 	stop = true;
@@ -98,9 +98,9 @@ TEST(EwasLockFreeStackTest,singleProducerMultipleConsumer)
 
 	EXPECT_EQ(lockFreeStack.empty(),true);
 }
-TEST(EwasLockFreeStackTest,multipleProducerSingleConsumer)
+TEST(DDKLockFreeStackTest,multipleProducerSingleConsumer)
 {
-	ewas::lock_free_stack<DefaultType> lockFreeStack;
+	ddk::lock_free_stack<DefaultType> lockFreeStack;
 	bool stop1 = false;
 	bool stop2 = false;
 
@@ -118,7 +118,7 @@ TEST(EwasLockFreeStackTest,multipleProducerSingleConsumer)
 	{
 		while((stop2 == false) || (lockFreeStack.empty() == false))
 		{
-			if(ewas::optional<DefaultType> currValueOpt = lockFreeStack.pop())
+			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
 			{
 				DefaultType currValue = *currValueOpt;
 
@@ -128,7 +128,7 @@ TEST(EwasLockFreeStackTest,multipleProducerSingleConsumer)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	threadPool[0].start(consumerFunc);
 
@@ -137,7 +137,7 @@ TEST(EwasLockFreeStackTest,multipleProducerSingleConsumer)
 		threadPool[index].start(producerFunc);
 	}
 
-	ewas::sleep(1000);
+	ddk::sleep(1000);
 
 	stop1 = true;
 
@@ -152,9 +152,9 @@ TEST(EwasLockFreeStackTest,multipleProducerSingleConsumer)
 
 	EXPECT_EQ(lockFreeStack.empty(),true);
 }
-TEST(EwasLockFreeStackTest,multipleProducerMultipleConsumer)
+TEST(DDKLockFreeStackTest,multipleProducerMultipleConsumer)
 {
-	ewas::lock_free_stack<DefaultType> lockFreeStack;
+	ddk::lock_free_stack<DefaultType> lockFreeStack;
 	bool stop1 = false;
 	bool stop2 = false;
 
@@ -171,7 +171,7 @@ TEST(EwasLockFreeStackTest,multipleProducerMultipleConsumer)
 	{
 		while(stop2 == false || lockFreeStack.empty() == false)
 		{
-			if(ewas::optional<DefaultType> currValueOpt = lockFreeStack.pop())
+			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
 			{
 				DefaultType currValue = *currValueOpt;
 
@@ -181,7 +181,7 @@ TEST(EwasLockFreeStackTest,multipleProducerMultipleConsumer)
 	};
 
 	static const size_t threadPoolSize = 100;
-	std::array<ewas::thread,threadPoolSize> threadPool;
+	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	for(size_t index=0;index<50;++index)
 	{
@@ -192,7 +192,7 @@ TEST(EwasLockFreeStackTest,multipleProducerMultipleConsumer)
 		threadPool[index].start(consumerFunc);
 	}
 
-	ewas::sleep(5000);
+	ddk::sleep(5000);
 
 	stop1 = true;
 

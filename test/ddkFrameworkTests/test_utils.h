@@ -1,9 +1,9 @@
 #pragma once
 
-#include "reference_wrapper_deleter.h"
+#include "ddk_reference_wrapper_deleter.h"
 
 template<typename T>
-class TestDynamicFactory : public ewas::IReferenceWrapperDeleter
+class TestDynamicFactory : public ddk::IReferenceWrapperDeleter
 {
 public:
 	template<typename ... Args>

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "ewas_optional.h"
+#include "ddk_optional.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
@@ -7,11 +7,11 @@
 using namespace testing;
 
 template<typename T>
-class EwasTypedOptionalTest : public Test
+class DDKTypedOptionalTest : public Test
 {
 };
 
-class EwasOptionalTest : public Test
+class DDKOptionalTest : public Test
 {
 };
 
@@ -19,38 +19,38 @@ using testing::Types;
 
 typedef Types<int, std::string, nonMoveConstructibleType, nonCopyConstructibleType,nonMoveAssignableType,nonCopyAssignableType> Implementations;
 
-TYPED_TEST_SUITE(EwasTypedOptionalTest, Implementations);
+TYPED_TEST_SUITE(DDKTypedOptionalTest, Implementations);
 
-TYPED_TEST(EwasTypedOptionalTest,defaultConstruction)
+TYPED_TEST(DDKTypedOptionalTest,defaultConstruction)
 {
-	ewas::optional<TypeParam> foo;
+	ddk::optional<TypeParam> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 }
-TEST(EwasOptionalTest,construction1)
+TEST(DDKOptionalTest,construction1)
 {
-	ewas::optional<DefaultType> foo(0xFF);
+	ddk::optional<DefaultType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,construction2)
+TEST(DDKOptionalTest,construction2)
 {
-	ewas::optional<nonCopyConstructibleType> foo(0xFF);
+	ddk::optional<nonCopyConstructibleType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,construction3)
+TEST(DDKOptionalTest,construction3)
 {
-	ewas::optional<nonMoveConstructibleType> foo(0xFF);
+	ddk::optional<nonMoveConstructibleType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,assignment1)
+TEST(DDKOptionalTest,assignment1)
 {
-	ewas::optional<DefaultType> foo;
+	ddk::optional<DefaultType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -60,9 +60,9 @@ TEST(EwasOptionalTest,assignment1)
 
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,assignment2)
+TEST(DDKOptionalTest,assignment2)
 {
-	ewas::optional<nonCopyAssignableType> foo;
+	ddk::optional<nonCopyAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -73,9 +73,9 @@ TEST(EwasOptionalTest,assignment2)
 
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,assignment3)
+TEST(DDKOptionalTest,assignment3)
 {
-	ewas::optional<nonMoveAssignableType> foo;
+	ddk::optional<nonMoveAssignableType> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 
@@ -86,33 +86,33 @@ TEST(EwasOptionalTest,assignment3)
 
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,get1)
+TEST(DDKOptionalTest,get1)
 {
-	ewas::optional<DefaultType> foo(0xFF);
+	ddk::optional<DefaultType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 
 	EXPECT_EQ(foo.get(),0xFF);
 }
-TEST(EwasOptionalTest,get2)
+TEST(DDKOptionalTest,get2)
 {
-	ewas::optional<DefaultType> foo(0xFF);
+	ddk::optional<DefaultType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 
 	EXPECT_EQ(*foo,0xFF);
 }
-TEST(EwasOptionalTest,accessor)
+TEST(DDKOptionalTest,accessor)
 {
-	ewas::optional<DefaultType> foo(0xFF);
+	ddk::optional<DefaultType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 
 	EXPECT_EQ(foo->getValue(),0xFF);
 }
-TEST(EwasOptionalTest,extraction)
+TEST(DDKOptionalTest,extraction)
 {
-	ewas::optional<DefaultType> foo(0xFF);
+	ddk::optional<DefaultType> foo(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 
@@ -124,10 +124,10 @@ TEST(EwasOptionalTest,extraction)
 
 	EXPECT_EQ(value,0xFF);
 }
-TYPED_TEST(EwasTypedOptionalTest,OptionalCompilationError)
+TYPED_TEST(DDKTypedOptionalTest,OptionalCompilationError)
 {
-	ewas::optional<TypeParam> foo1;
-	//ewas::optional<TypeParam> foo2 = std::move(foo1); //this line causes compilation error for those non construct/assign movable
+	ddk::optional<TypeParam> foo1;
+	//ddk::optional<TypeParam> foo2 = std::move(foo1); //this line causes compilation error for those non construct/assign movable
 
 	//foo1 = std::move(foo2); //this line causes compilation error for those non construct/assign movable
 

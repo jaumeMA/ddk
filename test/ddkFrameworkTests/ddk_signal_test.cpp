@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include "ewas_signal.h"
+#include "ddk_signal.h"
 #include "test_utils.h"
 
 using namespace testing;
 using testing::Types;
 
-class EwasSignalTest : public Test
+class DDKSignalTest : public Test
 {
 };
 
@@ -33,43 +33,43 @@ void freeFunction(int,char,const std::string&)
 	freeFunctionCalled = true;
 }
 
-TEST(EwasSignalTest,defaultConstruction)
+TEST(DDKSignalTest,defaultConstruction)
 {
-	ewas::signal<void()> tmp;
+	ddk::signal<void()> tmp;
 }
-TEST(EwasSignalTest,signalToFreeFunctionConnect)
+TEST(DDKSignalTest,signalToFreeFunctionConnect)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(freeFunction);
+	ddk::connection tmpConn = tmp.connect(freeFunction);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
 }
-TEST(EwasSignalTest,signalToStaticFunctionConnect)
+TEST(DDKSignalTest,signalToStaticFunctionConnect)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(&SignalCallee::staticCall);
+	ddk::connection tmpConn = tmp.connect(&SignalCallee::staticCall);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
 }
-TEST(EwasSignalTest,signalToMemberFunctionConnect)
+TEST(DDKSignalTest,signalToMemberFunctionConnect)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
 	SignalCallee callee;
-	ewas::connection tmpConn = tmp.connect(&callee,&SignalCallee::memberCall);
+	ddk::connection tmpConn = tmp.connect(&callee,&SignalCallee::memberCall);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
 }
-TEST(EwasSignalTest,signalDisable)
+TEST(DDKSignalTest,signalDisable)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(freeFunction);
+	ddk::connection tmpConn = tmp.connect(freeFunction);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
@@ -85,11 +85,11 @@ TEST(EwasSignalTest,signalDisable)
 
 	EXPECT_EQ(freeFunctionCalled,false);
 }
-TEST(EwasSignalTest,signalReenable)
+TEST(DDKSignalTest,signalReenable)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(freeFunction);
+	ddk::connection tmpConn = tmp.connect(freeFunction);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
@@ -111,11 +111,11 @@ TEST(EwasSignalTest,signalReenable)
 
 	EXPECT_EQ(freeFunctionCalled,true);
 }
-TEST(EwasSignalTest,signalDisconnect)
+TEST(DDKSignalTest,signalDisconnect)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(freeFunction);
+	ddk::connection tmpConn = tmp.connect(freeFunction);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
@@ -130,11 +130,11 @@ TEST(EwasSignalTest,signalDisconnect)
 
 	EXPECT_EQ(freeFunctionCalled,false);
 }
-TEST(EwasSignalTest,signalReconnect)
+TEST(DDKSignalTest,signalReconnect)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(freeFunction);
+	ddk::connection tmpConn = tmp.connect(freeFunction);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);
@@ -158,11 +158,11 @@ TEST(EwasSignalTest,signalReconnect)
 
 	EXPECT_EQ(freeFunctionCalled,true);
 }
-TEST(EwasSignalTest,signalExecute)
+TEST(DDKSignalTest,signalExecute)
 {
-	ewas::signal<void(int,char,const std::string&)> tmp;
+	ddk::signal<void(int,char,const std::string&)> tmp;
 
-	ewas::connection tmpConn = tmp.connect(freeFunction);
+	ddk::connection tmpConn = tmp.connect(freeFunction);
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 

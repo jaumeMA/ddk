@@ -1,31 +1,31 @@
 #include <gtest/gtest.h>
-#include "unique_pointer_wrapper.h"
+#include "ddk_unique_pointer_wrapper.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 using namespace testing;
 using testing::Types;
 
-class EwasUniquePtrtTest : public Test
+class DDKUniquePtrtTest : public Test
 {
 };
 
-TEST(EwasUniquePtrTest,defaultConstruction)
+TEST(DDKUniquePtrTest,defaultConstruction)
 {
 	{
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo;
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo;
 
 		EXPECT_EQ(foo.empty(),true);
 	}
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,construction1)
+TEST(DDKUniquePtrTest,construction1)
 {
 	{
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -33,12 +33,12 @@ TEST(EwasUniquePtrTest,construction1)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,construction2)
+TEST(DDKUniquePtrTest,construction2)
 {
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::as_unique_reference(newNestedValue,objFactory);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -46,14 +46,14 @@ TEST(EwasUniquePtrTest,construction2)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,construction3)
+TEST(DDKUniquePtrTest,construction3)
 {
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		tagged_pointer<ewas::reference_counter<ewas::Policy::Unique>> taggedRefCounter(new ewas::reference_counter<ewas::Policy::Unique>(), ewas::ReferenceAllocationType::Dynamic);
+		tagged_pointer<ddk::reference_counter<ddk::Policy::Unique>> taggedRefCounter(new ddk::reference_counter<ddk::Policy::Unique>(), ddk::ReferenceAllocationType::Dynamic);
 
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::as_unique_reference(newNestedValue,taggedRefCounter,objFactory);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,taggedRefCounter,objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -61,15 +61,15 @@ TEST(EwasUniquePtrTest,construction3)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,moveConstruction)
+TEST(DDKUniquePtrTest,moveConstruction)
 {
 	{
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo1.empty(),false);
 		EXPECT_EQ(foo1->getValue(),0xFF);
 
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo2 = std::move(foo1);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo2 = std::move(foo1);
 
 		EXPECT_EQ(foo1.empty(),true);
 		EXPECT_EQ(foo2.empty(),false);
@@ -78,15 +78,15 @@ TEST(EwasUniquePtrTest,moveConstruction)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,moveAssignment)
+TEST(DDKUniquePtrTest,moveAssignment)
 {
 	{
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo1.empty(),false);
 		EXPECT_EQ(foo1->getValue(),0xFF);
 
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo2;
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo2;
 
 		EXPECT_EQ(foo2.empty(),true);
 
@@ -99,10 +99,10 @@ TEST(EwasUniquePtrTest,moveAssignment)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,baseAccess)
+TEST(DDKUniquePtrTest,baseAccess)
 {
 	{
-		ewas::unique_pointer_wrapper<DefaultType> foo = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<DefaultType> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -110,10 +110,10 @@ TEST(EwasUniquePtrTest,baseAccess)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,get)
+TEST(DDKUniquePtrTest,get)
 {
 	{
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(*foo,0xFF);
@@ -121,9 +121,9 @@ TEST(EwasUniquePtrTest,get)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,deletion)
+TEST(DDKUniquePtrTest,deletion)
 {
-	ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+	ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(*foo,0xFF);
@@ -133,15 +133,15 @@ TEST(EwasUniquePtrTest,deletion)
 	EXPECT_EQ(foo.empty(),true);
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,staticCast)
+TEST(DDKUniquePtrTest,staticCast)
 {
 	{
-		ewas::unique_pointer_wrapper<DefaultType> foo = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<DefaultType> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
 
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> _foo = ewas::static_unique_cast<ConstructionDeletionBalancer>(std::move(foo));
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> _foo = ddk::static_unique_cast<ConstructionDeletionBalancer>(std::move(foo));
 
 		EXPECT_EQ(foo.empty(),true);
 		EXPECT_EQ(_foo.empty(),false);
@@ -150,15 +150,15 @@ TEST(EwasUniquePtrTest,staticCast)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasUniquePtrTest,dynamicCast)
+TEST(DDKUniquePtrTest,dynamicCast)
 {
 	{
-		ewas::unique_pointer_wrapper<DefaultType> foo = ewas::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::unique_pointer_wrapper<DefaultType> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
 
-		ewas::unique_pointer_wrapper<ConstructionDeletionBalancer> _foo = ewas::dynamic_unique_cast<ConstructionDeletionBalancer>(std::move(foo));
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> _foo = ddk::dynamic_unique_cast<ConstructionDeletionBalancer>(std::move(foo));
 
 		EXPECT_EQ(_foo.empty(),false);
 		EXPECT_EQ(foo.empty(),true);

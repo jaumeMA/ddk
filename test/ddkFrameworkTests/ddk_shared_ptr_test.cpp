@@ -1,43 +1,43 @@
 #include <gtest/gtest.h>
-#include "shared_pointer_wrapper.h"
+#include "ddk_shared_pointer_wrapper.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 using namespace testing;
 using testing::Types;
 
-class EwasSharedPtrtTest : public Test
+class DDKSharedPtrtTest : public Test
 {
 };
 
-TEST(EwasSharedPtrtTest,defaultConstruction)
+TEST(DDKSharedPtrtTest,defaultConstruction)
 {
 	{
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo;
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo;
 
 		EXPECT_EQ(foo.empty(),true);
 	}
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,construction1)
+TEST(DDKSharedPtrtTest,construction1)
 {
 	{
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(*foo,0xFF);
 	}
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,construction2)
+TEST(DDKSharedPtrtTest,construction2)
 {
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::as_shared_reference(newNestedValue,objFactory);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_shared_reference(newNestedValue,objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -45,14 +45,14 @@ TEST(EwasSharedPtrtTest,construction2)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,construction3)
+TEST(DDKSharedPtrtTest,construction3)
 {
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		tagged_pointer<ewas::shared_reference_counter> taggedRefCounter(new ewas::shared_reference_counter(), ewas::ReferenceAllocationType::Dynamic);
+		tagged_pointer<ddk::shared_reference_counter> taggedRefCounter(new ddk::shared_reference_counter(), ddk::ReferenceAllocationType::Dynamic);
 
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ewas::as_shared_reference(newNestedValue,taggedRefCounter,objFactory);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_shared_reference(newNestedValue,taggedRefCounter,objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -60,15 +60,15 @@ TEST(EwasSharedPtrtTest,construction3)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,moveConstruction)
+TEST(DDKSharedPtrtTest,moveConstruction)
 {
 	{
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo1.empty(),false);
 		EXPECT_EQ(foo1->getValue(),0xFF);
 
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo2 = std::move(foo1);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo2 = std::move(foo1);
 
 		EXPECT_EQ(foo1.empty(),true);
 		EXPECT_EQ(foo2.empty(),false);
@@ -77,15 +77,15 @@ TEST(EwasSharedPtrtTest,moveConstruction)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,moveAssignment)
+TEST(DDKSharedPtrtTest,moveAssignment)
 {
 	{
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo1.empty(),false);
 		EXPECT_EQ(foo1->getValue(),0xFF);
 
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo2;
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo2;
 
 		EXPECT_EQ(foo2.empty(),true);
 
@@ -98,10 +98,10 @@ TEST(EwasSharedPtrtTest,moveAssignment)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,baseAccess)
+TEST(DDKSharedPtrtTest,baseAccess)
 {
 	{
-		ewas::shared_pointer_wrapper<DefaultType> foo = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::shared_pointer_wrapper<DefaultType> foo = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -109,53 +109,53 @@ TEST(EwasSharedPtrtTest,baseAccess)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,assignment)
+TEST(DDKSharedPtrtTest,assignment)
 {
 	{
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> foo;
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo;
 
-		foo = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		foo = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(*foo,0xFF);
 	}
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,assignmentBetweenShareds)
+TEST(DDKSharedPtrtTest,assignmentBetweenShareds)
 {
-	ewas::shared_reference_counter refCounter;
+	ddk::shared_reference_counter refCounter;
 
 	{
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared;
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared;
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
 
-		fooShared = ewas::as_shared_reference(newNestedValue,tagged_pointer<ewas::shared_reference_counter>(&refCounter,ewas::ReferenceAllocationType::Embedded));
+		fooShared = ddk::as_shared_reference(newNestedValue,tagged_pointer<ddk::shared_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded));
 
 		EXPECT_EQ(refCounter.getNumSharedReferences(),1);
 
 		{
-			ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared1 = fooShared;
+			ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared1 = fooShared;
 
 			EXPECT_EQ(refCounter.getNumSharedReferences(),2);
 
 			{
-				ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared2 = fooShared;
+				ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared2 = fooShared;
 
 				EXPECT_EQ(refCounter.getNumSharedReferences(),3);
 
 				{
-					ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared3 = fooShared;
+					ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared3 = fooShared;
 
 					EXPECT_EQ(refCounter.getNumSharedReferences(),4);
 
 					{
-						ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared4 = fooShared;
+						ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared4 = fooShared;
 
 						EXPECT_EQ(refCounter.getNumSharedReferences(),5);
 
 						{
-							ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared5 = fooShared;
+							ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> fooShared5 = fooShared;
 
 							EXPECT_EQ(refCounter.getNumSharedReferences(),6);
 						}
@@ -179,15 +179,15 @@ TEST(EwasSharedPtrtTest,assignmentBetweenShareds)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,staticCast)
+TEST(DDKSharedPtrtTest,staticCast)
 {
 	{
-		ewas::shared_pointer_wrapper<DefaultType> foo = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::shared_pointer_wrapper<DefaultType> foo = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
 
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> _foo = ewas::static_shared_cast<ConstructionDeletionBalancer>(foo);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> _foo = ddk::static_shared_cast<ConstructionDeletionBalancer>(foo);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(_foo.empty(),false);
@@ -196,15 +196,15 @@ TEST(EwasSharedPtrtTest,staticCast)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
-TEST(EwasSharedPtrtTest,dynamicCast)
+TEST(DDKSharedPtrtTest,dynamicCast)
 {
 	{
-		ewas::shared_pointer_wrapper<DefaultType> foo = ewas::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		ddk::shared_pointer_wrapper<DefaultType> foo = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
 
-		ewas::shared_pointer_wrapper<ConstructionDeletionBalancer> _foo = ewas::dynamic_shared_cast<ConstructionDeletionBalancer>(foo);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> _foo = ddk::dynamic_shared_cast<ConstructionDeletionBalancer>(foo);
 
 		EXPECT_EQ(_foo.empty(),false);
 		EXPECT_EQ(foo.empty(),false);

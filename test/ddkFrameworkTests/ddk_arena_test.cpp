@@ -1,24 +1,24 @@
 #include <gtest/gtest.h>
-#include "ewas_arena.h"
+#include "ddk_arena.h"
 #include <utility>
 
 using namespace testing;
 
-class EwasArenaTest : public TestWithParam<std::pair<size_t,size_t>>
+class DDKArenaTest : public TestWithParam<std::pair<size_t,size_t>>
 {
 };
 
-TEST_P(EwasArenaTest, defaultConstruction)
+TEST_P(DDKArenaTest, defaultConstruction)
 {
-	ewas::arena<4096,4096> emptyArena;
+	ddk::arena<4096,4096> emptyArena;
 
 	EXPECT_EQ(emptyArena.empty(), true);
 
 	emptyArena.destroy<int>();
 }
-TEST_P(EwasArenaTest, arenaConstruction)
+TEST_P(DDKArenaTest, arenaConstruction)
 {
-	ewas::arena<4096,4096> playGround;
+	ddk::arena<4096,4096> playGround;
 
 	playGround.construct<int>(10);
 
@@ -26,9 +26,9 @@ TEST_P(EwasArenaTest, arenaConstruction)
 
 	playGround.destroy<int>();
 }
-TEST_P(EwasArenaTest, arenaAssignment)
+TEST_P(DDKArenaTest, arenaAssignment)
 {
-	ewas::arena<4096,4096> playGround;
+	ddk::arena<4096,4096> playGround;
 
 	playGround.construct<int>(10);
 
@@ -40,9 +40,9 @@ TEST_P(EwasArenaTest, arenaAssignment)
 
 	playGround.destroy<int>();
 }
-TEST_P(EwasArenaTest, arenaGet)
+TEST_P(DDKArenaTest, arenaGet)
 {
-	ewas::arena<4096,4096> playGround;
+	ddk::arena<4096,4096> playGround;
 
 	playGround.construct<int>(10);
 
@@ -56,9 +56,9 @@ TEST_P(EwasArenaTest, arenaGet)
 
 	playGround.destroy<int>();
 }
-TEST_P(EwasArenaTest, arenaGetPtr)
+TEST_P(DDKArenaTest, arenaGetPtr)
 {
-	ewas::arena<4096,4096> playGround;
+	ddk::arena<4096,4096> playGround;
 
 	playGround.construct<int>(10);
 
@@ -70,9 +70,9 @@ TEST_P(EwasArenaTest, arenaGetPtr)
 
 	playGround.destroy<int>();
 }
-TEST_P(EwasArenaTest, arenaDestruction)
+TEST_P(DDKArenaTest, arenaDestruction)
 {
-	ewas::arena<4096,4096> playGround;
+	ddk::arena<4096,4096> playGround;
 
 	playGround.construct<int>(10);
 
@@ -83,4 +83,4 @@ TEST_P(EwasArenaTest, arenaDestruction)
 	EXPECT_EQ(playGround.empty(), true);
 }
 
-INSTANTIATE_TEST_SUITE_P(EwasArenaTest, EwasArenaTest, Values(std::make_pair(sizeof(int),alignof(int))));
+INSTANTIATE_TEST_SUITE_P(DDKArenaTest, DDKArenaTest, Values(std::make_pair(sizeof(int),alignof(int))));

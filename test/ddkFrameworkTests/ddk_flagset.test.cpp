@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include "ewas_flagset.h"
-#include "ewas_scoped_enum.h"
+#include "ddk_flagset.h"
+#include "ddk_scoped_enum.h"
 
 using namespace testing;
 using testing::Types;
 
-class EwasFlagSetTest : public Test
+class DDKFlagSetTest : public Test
 {
 public:
 	SCOPED_ENUM_DECL(Type,
@@ -16,262 +16,262 @@ public:
 					);
 };
 
-TEST(EwasFlagSetTest,defaultConstruction)
+TEST(DDKFlagSetTest,defaultConstruction)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet;
 
 	EXPECT_EQ(flagSet.empty(),true);
 }
-TEST(EwasFlagSetTest,construction)
+TEST(DDKFlagSetTest,construction)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet(EwasFlagSetTest::Type::A);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet(DDKFlagSetTest::Type::A);
 
 	EXPECT_EQ(flagSet.empty(),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,assignment)
+TEST(DDKFlagSetTest,assignment)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet;
 
 	EXPECT_EQ(flagSet.empty(),true);
 
-	flagSet.set(EwasFlagSetTest::Type::A);
+	flagSet.set(DDKFlagSetTest::Type::A);
 
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,multipleConstruction)
+TEST(DDKFlagSetTest,multipleConstruction)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet.empty(),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),true);
 }
-TEST(EwasFlagSetTest,multipleassignment)
+TEST(DDKFlagSetTest,multipleassignment)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet;
 
 	EXPECT_EQ(flagSet.empty(),true);
 
-	flagSet = EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::D;
+	flagSet = DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::D;
 
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),true);
 }
-TEST(EwasFlagSetTest,multipleconsecutiveassignment)
+TEST(DDKFlagSetTest,multipleconsecutiveassignment)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet;
 
 	EXPECT_EQ(flagSet.empty(),true);
 
-	flagSet.set(EwasFlagSetTest::Type::A);
-	flagSet.set(EwasFlagSetTest::Type::B);
-	flagSet.set(EwasFlagSetTest::Type::D);
+	flagSet.set(DDKFlagSetTest::Type::A);
+	flagSet.set(DDKFlagSetTest::Type::B);
+	flagSet.set(DDKFlagSetTest::Type::D);
 
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),true);
 }
-TEST(EwasFlagSetTest,multipleConstructionSomeReset)
+TEST(DDKFlagSetTest,multipleConstructionSomeReset)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet.empty(),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),true);
 
-	flagSet.reset(EwasFlagSetTest::Type::B);
+	flagSet.reset(DDKFlagSetTest::Type::B);
 
 	EXPECT_EQ(flagSet.empty(),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),true);
 }
-TEST(EwasFlagSetTest,multipleConstructionReset)
+TEST(DDKFlagSetTest,multipleConstructionReset)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet.empty(),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),true);
 
 	flagSet.reset();
 
 	EXPECT_EQ(flagSet.empty(),true);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,orOperator)
+TEST(DDKFlagSetTest,orOperator)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet1(EwasFlagSetTest::Type::A);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet1(DDKFlagSetTest::Type::A);
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet2(EwasFlagSetTest::Type::C);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet2(DDKFlagSetTest::Type::C);
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet3 = flagSet1 | flagSet2;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet3 = flagSet1 | flagSet2;
 
 	EXPECT_EQ(flagSet3.empty(),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,orOperatorAssignment)
+TEST(DDKFlagSetTest,orOperatorAssignment)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet1(EwasFlagSetTest::Type::A);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet1(DDKFlagSetTest::Type::A);
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet2(EwasFlagSetTest::Type::C);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet2(DDKFlagSetTest::Type::C);
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),false);
 
 	flagSet1 |= flagSet2;
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,andOperator)
+TEST(DDKFlagSetTest,andOperator)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet1(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet1(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C);
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet2(EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet2(DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),true);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet3 = flagSet1 & flagSet2;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet3 = flagSet1 & flagSet2;
 
 	EXPECT_EQ(flagSet3.empty(),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,andOperatorAssignment)
+TEST(DDKFlagSetTest,andOperatorAssignment)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet1(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet1(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C);
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet2(EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet2(DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),true);
 
 	flagSet2 &= flagSet1;
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),false);
 }
-TEST(EwasFlagSetTest,exclOperator)
+TEST(DDKFlagSetTest,exclOperator)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet1(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet1(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C);
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet2(EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet2(DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),true);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet3 = flagSet1 ^ flagSet2;
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet3 = flagSet1 ^ flagSet2;
 
 	EXPECT_EQ(flagSet3.empty(),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet3.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet3.test(DDKFlagSetTest::Type::D),true);
 }
-TEST(EwasFlagSetTest,exclOperatorAssignment)
+TEST(DDKFlagSetTest,exclOperatorAssignment)
 {
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet1(EwasFlagSetTest::Type::A | EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet1(DDKFlagSetTest::Type::A | DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C);
 
 	EXPECT_EQ(flagSet1.empty(),false);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet1.test(EwasFlagSetTest::Type::D),false);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet1.test(DDKFlagSetTest::Type::D),false);
 
-	ewas::flag_set<EwasFlagSetTest::Type> flagSet2(EwasFlagSetTest::Type::B | EwasFlagSetTest::Type::C | EwasFlagSetTest::Type::D);
+	ddk::flag_set<DDKFlagSetTest::Type> flagSet2(DDKFlagSetTest::Type::B | DDKFlagSetTest::Type::C | DDKFlagSetTest::Type::D);
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),true);
 
 	flagSet2 ^= flagSet1;
 
 	EXPECT_EQ(flagSet2.empty(),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::A),true);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::B),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::C),false);
-	EXPECT_EQ(flagSet2.test(EwasFlagSetTest::Type::D),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::A),true);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::B),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::C),false);
+	EXPECT_EQ(flagSet2.test(DDKFlagSetTest::Type::D),true);
 }

@@ -2,7 +2,7 @@
 
 #include "ddk_atomics.h"
 #include "ddk_arena.h"
-#include "tagged_pointer.h"
+#include "ddk_tagged_pointer.h"
 #include <type_traits>
 #include <cstring>
 

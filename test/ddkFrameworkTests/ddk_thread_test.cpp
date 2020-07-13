@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include "ewas_thread.h"
+#include "ddk_thread.h"
 #include "test_utils.h"
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 
 using namespace testing;
 using testing::Types;
 
-class EwasThreadTest : public Test
+class DDKThreadTest : public Test
 {
 };
 
@@ -24,7 +24,7 @@ public:
 		{
 			printf(".");
 
-			ewas::sleep(100);
+			ddk::sleep(100);
 		}
 
 		printf("\n");
@@ -49,18 +49,18 @@ private:
 	bool m_running = false;
 };
 
-TEST(EwasThreadTest,defaultConstruction)
+TEST(DDKThreadTest,defaultConstruction)
 {
-	ewas::thread tmp;
+	ddk::thread tmp;
 }
-TEST(EwasThreadTest,threadRun)
+TEST(DDKThreadTest,threadRun)
 {
 	ThreadCallee callee;
-	ewas::thread tmp;
+	ddk::thread tmp;
 
 	tmp.start(std::bind(&ThreadCallee::run,&callee));
 
-	ewas::sleep(1000);
+	ddk::sleep(1000);
 
 	EXPECT_EQ(callee.is_running(),true);
 
@@ -68,14 +68,14 @@ TEST(EwasThreadTest,threadRun)
 
 	tmp.stop();
 }
-TEST(EwasThreadTest,threadReRun)
+TEST(DDKThreadTest,threadReRun)
 {
 	ThreadCallee callee;
-	ewas::thread tmp;
+	ddk::thread tmp;
 
 	tmp.start(std::bind(&ThreadCallee::run,&callee));
 
-	ewas::sleep(1000);
+	ddk::sleep(1000);
 
 	EXPECT_EQ(callee.is_running(),true);
 
@@ -89,7 +89,7 @@ TEST(EwasThreadTest,threadReRun)
 
 	tmp.start(std::bind(&ThreadCallee::run,&callee));
 
-	ewas::sleep(1000);
+	ddk::sleep(1000);
 
 	EXPECT_EQ(callee.is_running(),true);
 

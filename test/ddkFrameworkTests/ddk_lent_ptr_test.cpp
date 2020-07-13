@@ -1,154 +1,154 @@
 #include <gtest/gtest.h>
-#include "lent_pointer_wrapper.h"
-#include "unique_pointer_wrapper.h"
-#include "shared_pointer_wrapper.h"
+#include "ddk_lent_pointer_wrapper.h"
+#include "ddk_unique_pointer_wrapper.h"
+#include "ddk_shared_pointer_wrapper.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 using namespace testing;
 using testing::Types;
 
-class EwasUniquePtrtTest : public Test
+class DDKUniquePtrtTest : public Test
 {
 };
 
-TEST(EwasLentPtrTest,defaultConstruction)
+TEST(DDKLentPtrTest,defaultConstruction)
 {
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
 	EXPECT_EQ(foo==nullptr,true);
 }
-TEST(EwasLentPtrTest,uniquePtrLentConstruction)
+TEST(DDKLentPtrTest,uniquePtrLentConstruction)
 {
-	ewas::unique_pointer_wrapper<DefaultType> fooUnique = ewas::make_unique_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo = ewas::lend(fooUnique);
+	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooUnique);
 
 	EXPECT_EQ(*foo == 0xFF,true);
 }
-TEST(EwasLentPtrTest,sharedPtrLentConstruction)
+TEST(DDKLentPtrTest,sharedPtrLentConstruction)
 {
-	ewas::shared_pointer_wrapper<DefaultType> fooShared = ewas::make_shared_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo = ewas::lend(fooShared);
+	ddk::shared_pointer_wrapper<DefaultType> fooShared = ddk::make_shared_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooShared);
 
 	EXPECT_EQ(*foo == 0xFF,true);
 }
-TEST(EwasLentPtrTest,uniquePtrLentScope)
+TEST(DDKLentPtrTest,uniquePtrLentScope)
 {
-	ewas::unique_reference_counter refCounter;
+	ddk::unique_reference_counter refCounter;
 
 	{
-		ewas::unique_pointer_wrapper<DefaultType> fooUnique;
+		ddk::unique_pointer_wrapper<DefaultType> fooUnique;
 
 		{
 			TestDynamicFactory<DefaultType> objFactory; 
 			DefaultType* newNestedValue = objFactory.Allocate(0xFF);
 
-			fooUnique = ewas::as_unique_reference(newNestedValue,tagged_pointer<ewas::unique_reference_counter>(&refCounter,ewas::ReferenceAllocationType::Embedded));
-			ewas::lent_pointer_wrapper<DefaultType> foo1 = ewas::lend(fooUnique);
+			fooUnique = ddk::as_unique_reference(newNestedValue,tagged_pointer<ddk::unique_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded));
+			ddk::lent_pointer_wrapper<DefaultType> foo1 = ddk::lend(fooUnique);
 
 			EXPECT_EQ(refCounter.hasStrongReferences(),true);
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 			EXPECT_EQ(refCounter.getNumWeakReferences(),1);
 #endif
 			{
-				ewas::lent_pointer_wrapper<DefaultType> foo2 = ewas::lend(fooUnique);
+				ddk::lent_pointer_wrapper<DefaultType> foo2 = ddk::lend(fooUnique);
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 				EXPECT_EQ(refCounter.getNumWeakReferences(),2);
 #endif
 				{
-					ewas::lent_pointer_wrapper<DefaultType> foo3 = ewas::lend(fooUnique);
+					ddk::lent_pointer_wrapper<DefaultType> foo3 = ddk::lend(fooUnique);
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 					EXPECT_EQ(refCounter.getNumWeakReferences(),3);
 #endif
 
 					{
-						ewas::lent_pointer_wrapper<DefaultType> foo4 = ewas::lend(fooUnique);
+						ddk::lent_pointer_wrapper<DefaultType> foo4 = ddk::lend(fooUnique);
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 						EXPECT_EQ(refCounter.getNumWeakReferences(),4);
 #endif
 
 						{
-							ewas::lent_pointer_wrapper<DefaultType> foo5 = ewas::lend(fooUnique);
+							ddk::lent_pointer_wrapper<DefaultType> foo5 = ddk::lend(fooUnique);
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 							EXPECT_EQ(refCounter.getNumWeakReferences(),5);
 #endif
 						}
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 						EXPECT_EQ(refCounter.getNumWeakReferences(),4);
 #endif
 					}
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 					EXPECT_EQ(refCounter.getNumWeakReferences(),3);
 #endif
 				}
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 				EXPECT_EQ(refCounter.getNumWeakReferences(),2);
 #endif
 			}
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 			EXPECT_EQ(refCounter.getNumWeakReferences(),1);
 #endif
 		}
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 		EXPECT_EQ(refCounter.getNumWeakReferences(),0);
 #endif
 	}
 
 	EXPECT_EQ(refCounter.hasStrongReferences(),false);
 }
-TEST(EwasLentPtrTest,uniquePtrLentAssignment)
+TEST(DDKLentPtrTest,uniquePtrLentAssignment)
 {
-	ewas::unique_pointer_wrapper<DefaultType> fooUnique = ewas::make_unique_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
-	foo = ewas::lend(fooUnique);
+	foo = ddk::lend(fooUnique);
 
 	EXPECT_EQ(*foo,0xFF);
 }
-TEST(EwasLentPtrTest,sharedPtrLentAssignment)
+TEST(DDKLentPtrTest,sharedPtrLentAssignment)
 {
-	ewas::shared_pointer_wrapper<DefaultType> fooShared = ewas::make_shared_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::shared_pointer_wrapper<DefaultType> fooShared = ddk::make_shared_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
-	foo = ewas::lend(fooShared);
+	foo = ddk::lend(fooShared);
 
 	EXPECT_EQ(*foo,0xFF);
 }
-TEST(EwasLentPtrTest,pointerAccess)
+TEST(DDKLentPtrTest,pointerAccess)
 {
-	ewas::unique_pointer_wrapper<DefaultType> fooUnique = ewas::make_unique_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
-	foo = ewas::lend(fooUnique);
+	foo = ddk::lend(fooUnique);
 
 	EXPECT_EQ(foo->getValue(),0xFF);
 }
-TEST(EwasLentPtrTest,get)
+TEST(DDKLentPtrTest,get)
 {
-	ewas::unique_pointer_wrapper<DefaultType> fooUnique = ewas::make_unique_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
-	foo = ewas::lend(fooUnique);
+	foo = ddk::lend(fooUnique);
 
-	EXPECT_EQ(ewas::get_raw_ptr(foo),fooUnique.get());
+	EXPECT_EQ(ddk::get_raw_ptr(foo),fooUnique.get());
 }
-TEST(EwasLentPtrTest,clear)
+TEST(DDKLentPtrTest,clear)
 {
-	ewas::unique_pointer_wrapper<DefaultType> fooUnique = ewas::make_unique_reference<DefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
-	foo = ewas::lend(fooUnique);
+	foo = ddk::lend(fooUnique);
 
 	EXPECT_EQ(*foo,0xFF);
 
@@ -156,37 +156,37 @@ TEST(EwasLentPtrTest,clear)
 
 	EXPECT_EQ(foo,nullptr);
 }
-TEST(EwasLentPtrTest,derivedConstruction)
+TEST(DDKLentPtrTest,derivedConstruction)
 {
-	ewas::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ewas::make_unique_reference<DerivedDefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo = ewas::lend(fooUnique);
+	ddk::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ddk::make_unique_reference<DerivedDefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooUnique);
 
 	EXPECT_EQ(*foo,0xFF);
 }
-TEST(EwasLentPtrTest,derivedAssignment)
+TEST(DDKLentPtrTest,derivedAssignment)
 {
-	ewas::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ewas::make_unique_reference<DerivedDefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo;
+	ddk::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ddk::make_unique_reference<DerivedDefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo;
 
-	foo = ewas::lend(fooUnique);
+	foo = ddk::lend(fooUnique);
 
 	EXPECT_EQ(*foo,0xFF);
 }
-TEST(EwasLentPtrTest,dynamicCast)
+TEST(DDKLentPtrTest,dynamicCast)
 {
-	ewas::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ewas::make_unique_reference<DerivedDefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo = ewas::lend(fooUnique);
+	ddk::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ddk::make_unique_reference<DerivedDefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooUnique);
 
-	ewas::lent_pointer_wrapper<DerivedDefaultType> fooDerived = ewas::dynamic_lent_cast<DerivedDefaultType>(foo);
+	ddk::lent_pointer_wrapper<DerivedDefaultType> fooDerived = ddk::dynamic_lent_cast<DerivedDefaultType>(foo);
 
 	EXPECT_EQ(*fooDerived,0xFF);
 }
-TEST(EwasLentPtrTest,staticCast)
+TEST(DDKLentPtrTest,staticCast)
 {
-	ewas::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ewas::make_unique_reference<DerivedDefaultType>(0xFF);
-	ewas::lent_pointer_wrapper<DefaultType> foo = ewas::lend(fooUnique);
+	ddk::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ddk::make_unique_reference<DerivedDefaultType>(0xFF);
+	ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooUnique);
 
-	ewas::lent_pointer_wrapper<DerivedDefaultType> fooDerived = ewas::static_lent_cast<DerivedDefaultType>(foo);
+	ddk::lent_pointer_wrapper<DerivedDefaultType> fooDerived = ddk::static_lent_cast<DerivedDefaultType>(foo);
 
 	EXPECT_EQ(*fooDerived,0xFF);
 }

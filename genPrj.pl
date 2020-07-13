@@ -65,6 +65,12 @@ elsif($project eq "iOS")
 	$Binaries='ddkFramework';
 	$SolutionName='ddkIOS';
 }
+elsif($project eq "Test")
+{
+	$Mode='ALL_Windows';
+	$Binaries='ddkFrameworkTests';
+	$SolutionName='Test';
+}
 else
 {
 	showHelp();
