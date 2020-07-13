@@ -42,19 +42,15 @@ consolidate_frame PROC FRAME
 .setframe rbp,00h
 .endprolog
 
-	push rdi
-
-	sub rsp, 028h
+	sub rsp, 020h
 
 	call r8
 
-	add rsp, 028h
+	add rsp, 020h
 
-	mov rsp, rbp
+	mov rsp, rsi
 
 	jmp rdi
-
-	pop rdi
 
 	pop rbp
 

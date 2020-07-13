@@ -29,25 +29,29 @@ void light_func()
 	{
 		if(s_counter < 20)
 		{
-			printf("counter %zd at %zd\n",s_counter++,ddk::get_current_fiber_id().getValue());
 			ddk::yield();
 		}
 		else
 		{
-			printf("leaving at %zd\n",ddk::get_current_fiber_id().getValue());
 			ddk::suspend();
 		}
+
+		s_counter++;
 	}
 }
 
-void recursive_func(int i)
+void _recursive_func(int i)
 {
 	char _[256] = { 0 };
 
 	if(i > 0)
 	{
-		recursive_func(i - 1);
+		_recursive_func(i - 1);
 	}
+}
+void recursive_func()
+{
+	_recursive_func(100);
 }
 
 void heavy_func()
@@ -64,14 +68,14 @@ void heavy_func()
 	{
 		if(s_counter < 20)
 		{
-			printf("counter %zd at %zd\n",s_counter++,ddk::get_current_fiber_id().getValue());
 			ddk::yield();
 		}
 		else
 		{
-			printf("leaving at %zd\n",ddk::get_current_fiber_id().getValue());
 			ddk::suspend();
 		}
+
+		s_counter++;
 	}
 }
 
@@ -88,20 +92,20 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 		provaFuture.wait();
 	}
 }
-//TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
-//{
-//	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
-//	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
-//
-//	if(acquireRes.hasError() == false)
-//	{
-//		ddk::promise<void> prom;
-//		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
-//		ddk::future<void> provaFuture = ddk::async(light_func) -> attach(std::move(fiberSheaf)) -> store(prom);
-//
-//		provaFuture.wait();
-//	}
-//}
+TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
+{
+	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
+	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+
+	if(acquireRes.hasError() == false)
+	{
+		ddk::promise<void> prom;
+		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
+		ddk::future<void> provaFuture = ddk::async(light_func) -> attach(std::move(fiberSheaf)) -> store(prom);
+
+		provaFuture.wait();
+	}
+}
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 {
 	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
@@ -113,18 +117,24 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 		ddk::future<void> provaFuture = ddk::async(heavy_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();
+
+		ddk::sleep(1000);
+	}
+
+	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
+}
+TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
+{
+	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
+	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+
+	if(acquireRes.hasError() == false)
+	{
+		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
+		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf));
+
+		provaFuture.wait();
+
+		ddk::sleep(1000);
 	}
 }
-//TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
-//{
-//	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
-//	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
-//
-//	if(acquireRes.hasError() == false)
-//	{
-//		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
-//		ddk::future<void> provaFuture = ddk::async(std::function<void()>(std::bind(recursive_func,100))) -> attach(std::move(fiberSheaf));
-//
-//		provaFuture.wait();
-//	}
-//}

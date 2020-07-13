@@ -98,9 +98,6 @@ void make_context (ucontext_t* i_context, void (*i_func) (void), Args* ... i_arg
 	i_context->uc_mcontext.Rip = reinterpret_cast<uint64_t>(i_func);
 	i_context->uc_mcontext.Rsp = reinterpret_cast<uint64_t>(stackPointer - 1);
 	i_context->uc_mcontext.Rbx = reinterpret_cast<uint64_t>(stackPointerEnd);
-	i_context->uc_mcontext.Rbp = i_context->uc_mcontext.Rsp;
-	i_context->uc_mcontext.Rdi = i_context->uc_mcontext.Rip;
-
 
 	detail::dump_args(i_context,stackPointer,0,reinterpret_cast<uintptr_t>(i_args) ...);
 
