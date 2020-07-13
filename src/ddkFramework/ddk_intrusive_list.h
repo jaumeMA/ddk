@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_intrusive_node.h"
-#include "ewas_list_iterator.h"
+#include "ddk_intrusive_node.h"
+#include "ddk_list_iterator.h"
 
 #define DETECT_CYCLES
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>
@@ -42,4 +42,4 @@ private:
 
 }
 
-#include "ewas_intrusive_list.inl"
+#include "ddk_intrusive_list.inl"

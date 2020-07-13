@@ -2,9 +2,9 @@
 
 #include <tuple>
 #include "reference_wrapper.h"
-#include "ewas_async_defs.h"
+#include "ddk_async_defs.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

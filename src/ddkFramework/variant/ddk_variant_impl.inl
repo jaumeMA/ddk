@@ -13,7 +13,7 @@
 #define CALL_INNER_VISITOR(_visitor,_variant) \
     _variant_visitor_t::template inner_invoker(_range_seq_t{},_visitor,_variant); \
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

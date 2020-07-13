@@ -1,7 +1,7 @@
 #pragma once
 
 #include <pthread.h>
-namespace ewas
+namespace ddk
 {
 
 #if defined(WIN32)

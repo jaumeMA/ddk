@@ -5,9 +5,9 @@
 #include <vector>
 #include <utility>
 #include <sstream>
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

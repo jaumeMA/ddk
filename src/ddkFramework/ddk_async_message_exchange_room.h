@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_intrusive_list.h"
+#include "ddk_intrusive_list.h"
 #include "lent_reference_wrapper.h"
-#include "ewas_signal_functor.h"
-#include "ewas_async_message_queue.h"
+#include "ddk_signal_functor.h"
+#include "ddk_async_message_queue.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

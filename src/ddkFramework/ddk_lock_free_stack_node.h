@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_atomics.h"
-#include "ewas_arena.h"
+#include "ddk_atomics.h"
+#include "ddk_arena.h"
 #include "tagged_pointer.h"
 #include <type_traits>
 #include <cstring>
 
-namespace ewas
+namespace ddk
 {
 
 struct divider_node_t{};

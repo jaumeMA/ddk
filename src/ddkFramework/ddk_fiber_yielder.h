@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_fiber_scheduler_interface.h"
-#include "ewas_thread_yielder.h"
+#include "ddk_fiber_scheduler_interface.h"
+#include "ddk_thread_yielder.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

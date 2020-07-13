@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_void.h"
-#include "ewas_crash.h"
+#include "ddk_void.h"
+#include "ddk_crash.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>

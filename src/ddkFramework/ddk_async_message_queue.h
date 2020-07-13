@@ -1,15 +1,15 @@
 #pragma once
 
-#include "ewas_async_message.h"
+#include "ddk_async_message.h"
 #include "lend_from_this.h"
-#include "ewas_lock_free_stack.h"
-#include "ewas_linked_list.h"
-#include "ewas_optional.h"
-#include "ewas_thread_executor_interface.h"
-#include "ewas_async_defs.h"
+#include "ddk_lock_free_stack.h"
+#include "ddk_linked_list.h"
+#include "ddk_optional.h"
+#include "ddk_thread_executor_interface.h"
+#include "ddk_async_defs.h"
 #include <pthread.h>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename MessageType>

@@ -1,5 +1,5 @@
-#include "ewas_stack_allocator.h"
-#include "ewas_dynamic_stack_allocator.h"
+#include "ddk_stack_allocator.h"
+#include "ddk_dynamic_stack_allocator.h"
 #include "reference_wrapper.h"
 
 #if defined(WIN32)
@@ -7,7 +7,7 @@
 #define CALL_LAST 0
 #define CALL_FIRST 1
 
-namespace ewas
+namespace ddk
 {
 
 LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
@@ -53,7 +53,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 
 #include <signal.h>
 
-namespace ewas
+namespace ddk
 {
 
 void segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context);
@@ -100,7 +100,7 @@ void ewas::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 bool initialize_thread_stack()

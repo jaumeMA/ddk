@@ -7,9 +7,9 @@
 #include "shared_reference_wrapper.h"
 #include "lent_pointer_wrapper.h"
 #include "lent_reference_wrapper.h"
-#include "ewas_lendable.h"
+#include "ddk_lendable.h"
 
-namespace ewas
+namespace ddk
 {
 
 #ifdef EWAS_DEBUG

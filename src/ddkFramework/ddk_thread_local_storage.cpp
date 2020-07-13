@@ -1,6 +1,6 @@
-#include "ewas_thread_local_storage.h"
+#include "ddk_thread_local_storage.h"
 
-namespace ewas
+namespace ddk
 {
 
 thread_local_storage::thread_local_storage(thread_local_storage&& other)

@@ -1,8 +1,8 @@
 
-#include "ewas_thread_impl.h"
-#include "ewas_ucontext.h"
+#include "ddk_thread_impl.h"
+#include "ddk_ucontext.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ewas_fiber_scheduler.h"
-#include "ewas_fiber.h"
+#include "ddk_fiber_scheduler.h"
+#include "ddk_fiber.h"
 #include "reference_wrapper_deleter.h"
-#include "ewas_fiber_sheaf.h"
+#include "ddk_fiber_sheaf.h"
 #include <pthread.h>
-#include "ewas_stack_allocator_interface.h"
+#include "ddk_stack_allocator_interface.h"
 
-namespace ewas
+namespace ddk
 {
 
 class fiber_pool : protected IReferenceWrapperDeleter
@@ -53,4 +53,4 @@ private:
 
 }
 
-#include "ewas_fiber_pool.inl"
+#include "ddk_fiber_pool.inl"

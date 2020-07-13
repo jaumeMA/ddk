@@ -1,6 +1,6 @@
 #include "any_value.h"
 
-namespace ewas
+namespace ddk
 {
 
 any_value::any_value()

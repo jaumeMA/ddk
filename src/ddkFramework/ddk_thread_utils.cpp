@@ -7,7 +7,7 @@
 #include <thread>
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 thread_id_t get_current_thread_id()

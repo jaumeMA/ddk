@@ -1,8 +1,8 @@
 #pragma once
 
 #include "WASLogger.h"
-#include "ewas_crash.h"
-#include "ewas_flagset.h"
+#include "ddk_crash.h"
+#include "ddk_flagset.h"
 
 #if defined(WIN32)
 
@@ -13,7 +13,7 @@
 
     #ifdef EWAS_DEBUG
 
-        #include "ewas_assert.h"
+        #include "ddk_assert.h"
 
         #define EWAS_ASSERT(__cond,__msg) \
             { \
@@ -65,7 +65,7 @@
     #ifdef EWAS_DEBUG
 
         #include <signal.h>
-        #include "ewas_assert.h"
+        #include "ddk_assert.h"
 
         #define EWAS_ASSERT(__cond,__msg) \
             if((__cond) == false) \

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <map>
-#include "ewas_default_values.h"
+#include "ddk_default_values.h"
 #include "DynamicVisitor.h"
-#include "ewas_rtti.h"
-#include "ewas_defs.h"
-#include "ewas_hash.h"
-#include "ewas_macros.h"
+#include "ddk_rtti.h"
+#include "ddk_defs.h"
+#include "ddk_hash.h"
+#include "ddk_macros.h"
 
 #define DECLARE_TYPE_VISITABLE(_Type_Name,_Traits) \
 PUBLISH_TYPE_INFO(_Type_Name) \
@@ -35,7 +35,7 @@ ewas::visitable_type_info get_visitable_type_info() const override \
 	return ewas::visitable_type_info(std::make_pair(ewas::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ewas::visitable_type<_Traits>::s_type_info())); \
 }
 
-namespace ewas
+namespace ddk
 {
 
 template<typename InterfaceType, typename VisitorType>

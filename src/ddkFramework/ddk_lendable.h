@@ -4,7 +4,7 @@
 #include "reference_counter.h"
 #include <type_traits>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

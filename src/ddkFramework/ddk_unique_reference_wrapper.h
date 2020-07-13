@@ -2,7 +2,7 @@
 
 #include "unique_pointer_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

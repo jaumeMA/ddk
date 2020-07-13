@@ -1,6 +1,6 @@
-#include "ewas_formatter.h"
+#include "ddk_formatter.h"
 
-namespace ewas
+namespace ddk
 {
 
 bool formatter<bool>::format(const std::string& i_str)

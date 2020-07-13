@@ -1,10 +1,10 @@
 #pragma once
 
 #include "embedded_type.h"
-#include "ewas_template_helper.h"
-#include "ewas_arena.h"
+#include "ddk_template_helper.h"
+#include "ddk_arena.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

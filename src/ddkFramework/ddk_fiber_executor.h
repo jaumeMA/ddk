@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ewas_fiber.h"
-#include "ewas_thread_executor_interface.h"
+#include "ddk_fiber.h"
+#include "ddk_thread_executor_interface.h"
 #include <pthread.h>
 
-namespace ewas
+namespace ddk
 {
 
 class fiber_polling_executor : public thread_executor_interface

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "type_id.h"
-#include "ewas_scoped_enum.h"
+#include "ddk_scoped_enum.h"
 
-namespace ewas
+namespace ddk
 {
 
 struct fiber_impl_t;

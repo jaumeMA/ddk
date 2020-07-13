@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ewas_future.h"
-#include "ewas_async_shared_state.h"
-#include "ewas_async_executor_interface.h"
+#include "ddk_future.h"
+#include "ddk_async_shared_state.h"
+#include "ddk_async_executor_interface.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>
@@ -42,4 +42,4 @@ class promise<void> : public promise<detail::void_t>
 
 }
 
-#include "ewas_promise.inl"
+#include "ddk_promise.inl"

@@ -1,8 +1,8 @@
-#include "ewas_fiber_executor.h"
+#include "ddk_fiber_executor.h"
 #include <ctime>
 #include "thread_utils.h"
 
-namespace ewas
+namespace ddk
 {
 
 fiber_polling_executor::fiber_polling_executor(ewas::fiber i_fiber, unsigned long i_sleepInMs)

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ewas_signal_functor.h"
-#include "ewas_connection_base.h"
+#include "ddk_signal_functor.h"
+#include "ddk_connection_base.h"
 #include <cassert>
 
-namespace ewas
+namespace ddk
 {
 
 class connection

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ewas_static_visitor.h"
-#include "ewas_macros.h"
-#include "ewas_crash.h"
+#include "ddk_static_visitor.h"
+#include "ddk_macros.h"
+#include "ddk_crash.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

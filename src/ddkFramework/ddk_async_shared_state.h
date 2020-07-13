@@ -1,11 +1,11 @@
 #pragma once
 
 #include <pthread.h>
-#include "ewas_arena.h"
+#include "ddk_arena.h"
 #include "shared_reference_wrapper.h"
 #include "lent_reference_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -55,4 +55,4 @@ using private_async_state_const_lent_ptr = lent_pointer_wrapper<const private_as
 }
 }
 
-#include "ewas_async_shared_state.inl"
+#include "ddk_async_shared_state.inl"

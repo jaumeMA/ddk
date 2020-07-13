@@ -1,6 +1,6 @@
-#include "ewas_fiber_yielder.h"
+#include "ddk_fiber_yielder.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

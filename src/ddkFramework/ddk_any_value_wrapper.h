@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_macros.h"
-#include "ewas_template_helper.h"
+#include "ddk_macros.h"
+#include "ddk_template_helper.h"
 
-namespace ewas
+namespace ddk
 {
 
 struct value_wrapper_interface

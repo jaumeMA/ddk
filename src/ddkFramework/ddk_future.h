@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_arena.h"
-#include "ewas_async_shared_state.h"
-#include "ewas_async_executor_interface.h"
-#include "ewas_variant.h"
+#include "ddk_arena.h"
+#include "ddk_async_shared_state.h"
+#include "ddk_async_executor_interface.h"
+#include "ddk_variant.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>
@@ -50,4 +50,4 @@ private:
 
 }
 
-#include "ewas_future.inl"
+#include "ddk_future.inl"

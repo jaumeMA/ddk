@@ -2,11 +2,11 @@
 
 #include <iterator>
 #include <tuple>
-#include "ewas_template_helper.h"
+#include "ddk_template_helper.h"
 
 //bidirectional multi iterators
 
-namespace ewas
+namespace ddk
 {
 
 template<typename ... Iterators>

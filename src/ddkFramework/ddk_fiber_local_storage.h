@@ -1,10 +1,10 @@
 #pragma once
 
 #include <unordered_map>
-#include "ewas_fiber_defs.h"
-#include "ewas_thread_local_storage.h"
+#include "ddk_fiber_defs.h"
+#include "ddk_thread_local_storage.h"
 
-namespace ewas
+namespace ddk
 {
 
 class fiber_local_storage
@@ -26,4 +26,4 @@ private:
 
 }
 
-#include "ewas_fiber_local_storage.inl"
+#include "ddk_fiber_local_storage.inl"

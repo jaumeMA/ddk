@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_thread.h"
+#include "ddk_thread.h"
 #include <vector>
 
-namespace ewas
+namespace ddk
 {
 
 class thread_sheaf

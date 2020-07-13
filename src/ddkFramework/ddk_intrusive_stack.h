@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_intrusive_node.h"
+#include "ddk_intrusive_node.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

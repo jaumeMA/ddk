@@ -1,5 +1,5 @@
-#include "ewas_dynamic_stack_allocator.h"
-#include "ewas_macros.h"
+#include "ddk_dynamic_stack_allocator.h"
+#include "ddk_macros.h"
 
 #if defined(WIN32)
 
@@ -11,7 +11,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

@@ -4,7 +4,7 @@
 #include <cstddef>
 #include "embedded_type.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<size_t ArenaSize, size_t ArenaAlignment>
@@ -50,4 +50,4 @@ using typed_arena = arena<sizeof(embedded_type<T>),alignof(embedded_type<T>)>;
 
 }
 
-#include "ewas_arena.inl"
+#include "ddk_arena.inl"

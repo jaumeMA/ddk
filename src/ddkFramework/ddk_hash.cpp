@@ -1,6 +1,6 @@
-#include "ewas_hash.h"
+#include "ddk_hash.h"
 
-namespace ewas
+namespace ddk
 {
 
 size_t hash(const std::string& i_value)

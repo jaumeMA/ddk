@@ -1,14 +1,14 @@
 #pragma once
 
-#include "ewas_linked_list_node.h"
+#include "ddk_linked_list_node.h"
 #include "lent_reference_wrapper.h"
 #include "unique_reference_wrapper.h"
-#include "ewas_list_iterator.h"
-#include "ewas_system_allocator.h"
-#include "ewas_optional.h"
+#include "ddk_list_iterator.h"
+#include "ddk_system_allocator.h"
+#include "ddk_optional.h"
 #include "reference_wrapper_deleter.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename Allocator = typed_system_allocator<T>>
@@ -50,4 +50,4 @@ private:
 
 }
 
-#include "ewas_linked_list.inl"
+#include "ddk_linked_list.inl"

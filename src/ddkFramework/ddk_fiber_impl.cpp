@@ -1,8 +1,8 @@
-#include "ewas_fiber_impl.h"
-#include "ewas_fiber_utils.h"
-#include "ewas_fiber_scheduler_interface.h"
-#include "ewas_thread_impl.h"
-#include "ewas_dynamic_stack_allocator.h"
+#include "ddk_fiber_impl.h"
+#include "ddk_fiber_utils.h"
+#include "ddk_fiber_scheduler_interface.h"
+#include "ddk_thread_impl.h"
+#include "ddk_dynamic_stack_allocator.h"
 
 extern "C"
 {
@@ -18,7 +18,7 @@ void switch_stack(void* i_initStack, void* i_endStack)
 	set_curr_thread_stack_limit(i_endStack);
 }
 
-namespace ewas
+namespace ddk
 {
 
 namespace detail

@@ -6,11 +6,11 @@
 #include "lent_reference_wrapper.h"
 #include <pthread.h>
 #include "thread_utils.h"
-#include "ewas_thread_yielder.h"
-#include "ewas_fiber_yielder.h"
-#include "ewas_thread_local.h"
+#include "ddk_thread_yielder.h"
+#include "ddk_fiber_yielder.h"
+#include "ddk_thread_local.h"
 
-namespace ewas
+namespace ddk
 {
 
 namespace detail

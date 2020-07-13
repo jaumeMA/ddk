@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ewas_signal.h"
+#include "ddk_signal.h"
 #include "IAccessCriticalCallContext.h"
 #include "CriticalSection.h"
 

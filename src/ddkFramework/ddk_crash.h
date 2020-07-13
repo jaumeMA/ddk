@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>

@@ -1,6 +1,6 @@
-#include "ewas_sync_executor_impl.h"
+#include "ddk_sync_executor_impl.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

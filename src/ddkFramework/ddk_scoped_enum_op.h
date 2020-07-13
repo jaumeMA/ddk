@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_flagset.h"
+#include "ddk_flagset.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

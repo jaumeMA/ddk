@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

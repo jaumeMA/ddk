@@ -1,9 +1,9 @@
 #pragma once
 
 #include "type_id.h"
-#include "ewas_rtti_defs.h"
+#include "ddk_rtti_defs.h"
 
-namespace ewas
+namespace ddk
 {
 
 struct visitable_type_t;

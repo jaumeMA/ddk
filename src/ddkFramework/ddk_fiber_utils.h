@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_fiber_defs.h"
+#include "ddk_fiber_defs.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -27,4 +27,4 @@ void yield(T&& i_value);
 
 }
 
-#include "ewas_fiber_utils.inl"
+#include "ddk_fiber_utils.inl"

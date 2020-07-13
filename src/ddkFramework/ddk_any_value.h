@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_macros.h"
-#include "any_value_wrapper.h"
-#include "type_id.h"
-#include "tagged_pointer.h"
-#include "ewas_crash.h"
+#include "ddk_macros.h"
+#include "ddk_any_value_wrapper.h"
+#include "ddk_type_id.h"
+#include "ddk_tagged_pointer.h"
+#include "ddk_crash.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

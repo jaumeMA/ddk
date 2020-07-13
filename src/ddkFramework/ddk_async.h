@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_sync_executor.h"
-#include "ewas_void.h"
+#include "ddk_sync_executor.h"
+#include "ddk_void.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Return>
@@ -34,4 +34,4 @@ async_shared_ref<void> async(void(*i_funcPtr)(Types...), Args&& ... i_args);
 
 }
 
-#include "ewas_async.inl"
+#include "ddk_async.inl"

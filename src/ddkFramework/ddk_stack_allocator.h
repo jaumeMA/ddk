@@ -2,11 +2,11 @@
 
 #include <cstddef>
 #include <utility>
-#include "ewas_thread_local.h"
+#include "ddk_thread_local.h"
 #include <unordered_map>
-#include "ewas_macros.h"
-#include "ewas_stack_allocator_interface.h"
-#include "ewas_fiber_defs.h"
+#include "ddk_macros.h"
+#include "ddk_stack_allocator_interface.h"
+#include "ddk_fiber_defs.h"
 
 #if defined(WIN32)
 
@@ -20,7 +20,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 class stack_allocator

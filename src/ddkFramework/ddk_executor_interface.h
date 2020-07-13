@@ -4,9 +4,9 @@
 #include "unique_reference_wrapper.h"
 #include "lent_reference_wrapper.h"
 #include "reference_wrapper.h"
-#include "ewas_result.h"
+#include "ddk_result.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

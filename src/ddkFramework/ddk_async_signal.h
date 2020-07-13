@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_async_message_loop.h"
-#include "ewas_async_message_queue.h"
-#include "ewas_async_message.h"
+#include "ddk_async_message_loop.h"
+#include "ddk_async_message_queue.h"
+#include "ddk_async_message.h"
 #include "reference_wrapper.h"
-#include "ewas_intrusive_node.h"
-#include "ewas_thread_executor.h"
-#include "ewas_signal_connector.h"
+#include "ddk_intrusive_node.h"
+#include "ddk_thread_executor.h"
+#include "ddk_signal_connector.h"
 
 #ifdef _WIN32
 
@@ -16,7 +16,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 const unsigned int k_defaultProcessTimeInMs = 10 * 1000;

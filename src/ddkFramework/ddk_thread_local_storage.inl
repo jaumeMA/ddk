@@ -1,7 +1,7 @@
 
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename ... Args>

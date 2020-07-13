@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_fiber_local_storage.h"
+#include "ddk_fiber_local_storage.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename Tag>
@@ -26,4 +26,4 @@ private:
 
 }
 
-#include "ewas_fiber_local.inl"
+#include "ddk_fiber_local.inl"

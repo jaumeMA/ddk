@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace ewas
+namespace ddk
 {
 
 //internal type

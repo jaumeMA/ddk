@@ -1,9 +1,9 @@
 #pragma once
 
 #include "type_id.h"
-#include "ewas_scoped_enum.h"
+#include "ddk_scoped_enum.h"
 
-namespace ewas
+namespace ddk
 {
 
 struct sender_id_t;

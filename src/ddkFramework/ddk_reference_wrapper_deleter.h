@@ -13,7 +13,7 @@
 		return i_ptr; \
 	}
 
-namespace ewas
+namespace ddk
 {
 
 class IReferenceWrapperDeleter

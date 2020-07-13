@@ -1,7 +1,7 @@
-#include "ewas_rtti_defs.h"
-#include "ewas_hash.h"
+#include "ddk_rtti_defs.h"
+#include "ddk_hash.h"
 
-namespace ewas
+namespace ddk
 {
 
 TypeInfo::TypeInfo()

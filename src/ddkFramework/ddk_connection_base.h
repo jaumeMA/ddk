@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-namespace ewas
+namespace ddk
 {
 
 class connection;

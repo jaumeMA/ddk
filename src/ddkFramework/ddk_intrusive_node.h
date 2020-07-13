@@ -2,9 +2,9 @@
 
 #include "lend_from_this.h"
 #include "reference_wrapper.h"
-#include "ewas_arena.h"
+#include "ddk_arena.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

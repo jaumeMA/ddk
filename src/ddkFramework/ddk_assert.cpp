@@ -1,4 +1,4 @@
-#include "ewas_assert.h"
+#include "ddk_assert.h"
 
 #if defined(EWAS_DEBUG)
 #if defined(WIN32)
@@ -12,7 +12,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

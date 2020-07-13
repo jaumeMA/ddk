@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_awaitable.h"
-#include "ewas_template_helper.h"
+#include "ddk_awaitable.h"
+#include "ddk_template_helper.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Return, typename ... Types, typename ... Args, typename Result = awaited_result<Return>>
@@ -19,4 +19,4 @@ awaitable<Return,Result> await(Return(*i_funcPtr)(Types...), Args&& ... i_args);
 
 }
 
-#include "ewas_await.inl"
+#include "ddk_await.inl"

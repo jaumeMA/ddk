@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

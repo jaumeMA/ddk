@@ -5,7 +5,7 @@
 #include <string>
 #include "type_id.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

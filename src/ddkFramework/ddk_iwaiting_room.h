@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ewas_macros.h"
-#include "ewas_atomics.h"
+#include "ddk_macros.h"
+#include "ddk_atomics.h"
 #include "CriticalSection.h"
 #include <vector>
 #include <pthread.h>

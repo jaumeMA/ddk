@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_sync_executor.h"
-#include "ewas_none.h"
+#include "ddk_sync_executor.h"
+#include "ddk_none.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>
@@ -83,4 +83,4 @@ private:
 
 }
 
-#include "ewas_awaitable.inl"
+#include "ddk_awaitable.inl"

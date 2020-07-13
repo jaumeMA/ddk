@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ewas_rtti_defs.h"
-#include "ewas_default_values.h"
+#include "ddk_rtti_defs.h"
+#include "ddk_default_values.h"
 
 #define PUBLISH_TYPE_INFO(_TYPE_NAME) \
 template<typename T> \
@@ -26,7 +26,7 @@ static ewas::TypeInfo __get_static_rtti_type_info() \
 PUBLISH_TYPE_INFO(_TYPE_NAME) \
 typedef ewas::detail::rtti_tag_t rtti_tag_base;
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

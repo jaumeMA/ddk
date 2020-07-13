@@ -1,7 +1,7 @@
 
-#include "ewas_sync_executor.h"
+#include "ddk_sync_executor.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
-#include "ewas_template_helper.h"
-#include "ewas_arena.h"
+#include "ddk_template_helper.h"
+#include "ddk_arena.h"
 
 #ifdef _WIN32
 
@@ -16,7 +16,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

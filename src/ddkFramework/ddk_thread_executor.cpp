@@ -1,8 +1,8 @@
-#include "ewas_thread_executor.h"
+#include "ddk_thread_executor.h"
 #include <ctime>
 #include <cmath>
 
-namespace ewas
+namespace ddk
 {
 
 thread_polling_executor::thread_polling_executor(unsigned long i_sleepInMs)

@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace ewas
+namespace ddk
 {
 
 class system_allocator

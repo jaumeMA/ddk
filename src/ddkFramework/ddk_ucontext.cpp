@@ -1,9 +1,9 @@
-#include "ewas_ucontext.h"
+#include "ddk_ucontext.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <utility>
 
-namespace ewas
+namespace ddk
 {
 
 #if defined(WIN32)

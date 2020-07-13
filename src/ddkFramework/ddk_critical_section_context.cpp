@@ -1,5 +1,5 @@
 #include "critical_section_context.h"
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 #include <utility>
 
 critical_section_context::critical_section_context(const detail::context_acquired_t& i_acq)

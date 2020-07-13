@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_optional.h"
+#include "ddk_optional.h"
 #include "TransformedIteratorBase.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>
@@ -79,7 +79,7 @@ protected:
 
 #include "TransformedIterator.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Return>

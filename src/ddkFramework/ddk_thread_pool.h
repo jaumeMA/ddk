@@ -1,15 +1,15 @@
 #pragma once
 
-#include "ewas_thread_impl.h"
-#include "ewas_thread.h"
+#include "ddk_thread_impl.h"
+#include "ddk_thread.h"
 #include <functional>
 #include <vector>
-#include "ewas_optional.h"
+#include "ddk_optional.h"
 #include "reference_wrapper_deleter.h"
-#include "ewas_thread_sheaf.h"
-#include "ewas_result.h"
+#include "ddk_thread_sheaf.h"
+#include "ddk_result.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

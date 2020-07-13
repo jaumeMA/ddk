@@ -1,7 +1,7 @@
-#include "ewas_system_allocator.h"
+#include "ddk_system_allocator.h"
 #include <cstdlib>
 
-namespace ewas
+namespace ddk
 {
 
 void* system_allocator::allocate(size_t numUnits, size_t unitSize) const

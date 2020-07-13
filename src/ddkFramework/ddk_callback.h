@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_signal_functor.h"
-#include "ewas_connection.h"
-#include "ewas_macros.h"
-#include "ewas_linked_list.h"
-#include "ewas_signal_connector.h"
+#include "ddk_signal_functor.h"
+#include "ddk_connection.h"
+#include "ddk_macros.h"
+#include "ddk_linked_list.h"
+#include "ddk_signal_connector.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>

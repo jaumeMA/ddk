@@ -1,6 +1,6 @@
-#include "ewas_fiber_sheaf.h"
+#include "ddk_fiber_sheaf.h"
 
-namespace ewas
+namespace ddk
 {
 
 fiber_sheaf::fiber_sheaf(fiber_sheaf&& other)

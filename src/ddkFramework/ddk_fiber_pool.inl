@@ -1,8 +1,8 @@
 
-#include "ewas_pool_stack_allocator.h"
-#include "ewas_dynamic_stack_allocator.h"
+#include "ddk_pool_stack_allocator.h"
+#include "ddk_dynamic_stack_allocator.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Comparator>

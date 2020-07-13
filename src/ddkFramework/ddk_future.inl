@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

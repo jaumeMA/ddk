@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_thread_local_storage.h"
+#include "ddk_thread_local_storage.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename Tag>
@@ -29,4 +29,4 @@ private:
 
 }
 
-#include "ewas_thread_local.inl"
+#include "ddk_thread_local.inl"

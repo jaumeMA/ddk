@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sstream>
-#include "ewas_formatter.h"
+#include "ddk_formatter.h"
 
 template<typename UnderlyingType, typename T>
 struct Id
@@ -102,7 +102,7 @@ struct hash<Id<UnderlyingType,T>>
 
 }
 
-namespace ewas
+namespace ddk
 {
 
 template<typename UnderlyingType, typename T>

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_stack_allocator_interface.h"
-#include "ewas_arena.h"
+#include "ddk_stack_allocator_interface.h"
+#include "ddk_arena.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -34,4 +34,4 @@ stack_alloc_shared_ref make_static_stack_allocator();
 
 }
 
-#include "ewas_static_stack_allocator.inl"
+#include "ddk_static_stack_allocator.inl"

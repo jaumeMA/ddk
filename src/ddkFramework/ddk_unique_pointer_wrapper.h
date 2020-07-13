@@ -8,7 +8,7 @@
 #include "tagged_pointer.h"
 #include "reference_tag.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>

@@ -1,7 +1,7 @@
 
 #include <thread>
 #include "reference_wrapper.h"
-#include "ewas_thread_impl.h"
+#include "ddk_thread_impl.h"
 
 extern "C"
 {
@@ -10,7 +10,7 @@ void consolidate_frame();
 
 }
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

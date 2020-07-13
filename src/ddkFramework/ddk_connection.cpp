@@ -1,6 +1,6 @@
-#include "ewas_connection.h"
+#include "ddk_connection.h"
 
-namespace ewas
+namespace ddk
 {
 
 connection::connection()

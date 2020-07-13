@@ -1,7 +1,7 @@
 
-#include "ewas_fiber_impl.h"
+#include "ddk_fiber_impl.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Allocator, typename ... Args>

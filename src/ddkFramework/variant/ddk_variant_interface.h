@@ -1,9 +1,9 @@
 #pragma once
 
 #include "variant_impl.h"
-#include "ewas_template_helper.h"
+#include "ddk_template_helper.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -86,4 +86,4 @@ public:
 }
 }
 
-#include "ewas_variant_interface.inl"
+#include "ddk_variant_interface.inl"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_stack_allocator_interface.h"
+#include "ddk_stack_allocator_interface.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

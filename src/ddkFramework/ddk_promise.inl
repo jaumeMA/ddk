@@ -2,7 +2,7 @@
 
 #include "reference_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

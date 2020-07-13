@@ -1,10 +1,10 @@
-#include "ewas_fiber_pool.h"
+#include "ddk_fiber_pool.h"
 #include "reference_wrapper.h"
-#include "ewas_fiber_scheduler.h"
-#include "ewas_dynamic_stack_allocator.h"
-#include "ewas_pool_stack_allocator.h"
+#include "ddk_fiber_scheduler.h"
+#include "ddk_dynamic_stack_allocator.h"
+#include "ddk_pool_stack_allocator.h"
 
-namespace ewas
+namespace ddk
 {
 
 fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, size_t i_maxNumPagesPerFiber)

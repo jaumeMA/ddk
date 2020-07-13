@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_system_allocator.h"
+#include "ddk_system_allocator.h"
 
-namespace ewas
+namespace ddk
 {
 
 class thread_local_storage
@@ -28,4 +28,4 @@ private:
 
 }
 
-#include "ewas_thread_local_storage.inl"
+#include "ddk_thread_local_storage.inl"

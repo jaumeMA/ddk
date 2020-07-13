@@ -1,10 +1,10 @@
 #pragma once
 
 #include "lent_reference_wrapper.h"
-#include "ewas_fiber_impl.h"
-#include "ewas_fiber_defs.h"
+#include "ddk_fiber_impl.h"
+#include "ddk_fiber_defs.h"
 
-namespace ewas
+namespace ddk
 {
 
 class fiber
@@ -36,4 +36,4 @@ fiber make_fiber(Args&& ... i_args);
 
 }
 
-#include "ewas_fiber.inl"
+#include "ddk_fiber.inl"

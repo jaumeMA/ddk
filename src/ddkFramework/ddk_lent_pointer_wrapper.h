@@ -3,7 +3,7 @@
 #include "reference_counter.h"
 #include "tagged_pointer.h"
 
-namespace ewas
+namespace ddk
 {
 
 #ifdef EWAS_DEBUG

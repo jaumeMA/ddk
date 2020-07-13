@@ -1,9 +1,9 @@
 #pragma once
 
 #include <tuple>
-#include "ewas_variant.h"
+#include "ddk_variant.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename ... Types>

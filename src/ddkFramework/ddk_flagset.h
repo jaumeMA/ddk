@@ -1,10 +1,10 @@
 #pragma once
 
 #include <type_traits>
-#include "ewas_template_helper.h"
-#include "ewas_scoped_enum_tag.h"
+#include "ddk_template_helper.h"
+#include "ddk_scoped_enum_tag.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Enum, typename UnderlyingType = int>

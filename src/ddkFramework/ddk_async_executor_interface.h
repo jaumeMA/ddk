@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_executor_interface.h"
+#include "ddk_executor_interface.h"
 #include "shared_reference_wrapper.h"
-#include "ewas_thread.h"
-#include "ewas_fiber.h"
+#include "ddk_thread.h"
+#include "ddk_fiber.h"
 #include "embedded_type.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Return>

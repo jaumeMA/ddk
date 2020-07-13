@@ -1,8 +1,8 @@
-#include "ewas_thread.h"
+#include "ddk_thread.h"
 #include "thread_utils.h"
 #include "reference_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 
 const detail::this_thread_t this_thread = detail::this_thread_t();

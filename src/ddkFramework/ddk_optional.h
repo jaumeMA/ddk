@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_arena.h"
-#include "ewas_none.h"
+#include "ddk_arena.h"
+#include "ddk_none.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>
@@ -66,4 +66,4 @@ private:
 
 }
 
-#include "ewas_optional.inl"
+#include "ddk_optional.inl"

@@ -4,7 +4,7 @@
 #include <iterator>
 #include <cstddef>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Traits>

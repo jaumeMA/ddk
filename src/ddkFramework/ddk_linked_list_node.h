@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_macros.h"
-#include "ewas_arena.h"
+#include "ddk_macros.h"
+#include "ddk_arena.h"
 #include "shared_pointer_wrapper.h"
 #include "lent_pointer_wrapper.h"
 #include "reference_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename,typename>

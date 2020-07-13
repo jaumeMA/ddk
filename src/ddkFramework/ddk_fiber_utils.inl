@@ -1,8 +1,8 @@
 
-#include "ewas_thread_yielder.h"
-#include "ewas_thread_impl.h"
+#include "ddk_thread_yielder.h"
+#include "ddk_thread_impl.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

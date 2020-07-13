@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_executor_interface.h"
+#include "ddk_executor_interface.h"
 
-namespace ewas
+namespace ddk
 {
 
 class thread_executor_interface : public executor_interface<void()>

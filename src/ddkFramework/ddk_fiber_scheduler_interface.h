@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ewas_fiber_defs.h"
-#include "ewas_thread_yielder.h"
+#include "ddk_fiber_defs.h"
+#include "ddk_thread_yielder.h"
 #include "shared_reference_wrapper.h"
 #include "lent_reference_wrapper.h"
 #include <exception>
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

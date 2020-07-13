@@ -1,5 +1,5 @@
-#include "ewas_pool_stack_allocator.h"
-#include "ewas_macros.h"
+#include "ddk_pool_stack_allocator.h"
+#include "ddk_macros.h"
 #include <algorithm>
 #include <cmath>
 
@@ -13,7 +13,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

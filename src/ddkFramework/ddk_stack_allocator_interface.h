@@ -9,7 +9,7 @@ extern "C"
 	void set_curr_thread_stack_limit(void*);
 }
 
-namespace ewas
+namespace ddk
 {
 
 class stack_allocator_interface

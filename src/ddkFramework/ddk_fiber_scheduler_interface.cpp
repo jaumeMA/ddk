@@ -1,6 +1,6 @@
-#include "ewas_fiber_scheduler_interface.h"
+#include "ddk_fiber_scheduler_interface.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

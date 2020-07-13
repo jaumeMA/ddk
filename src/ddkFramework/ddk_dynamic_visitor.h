@@ -2,7 +2,7 @@
 
 #include "any_value.h"
 
-namespace ewas
+namespace ddk
 {
 
 struct visitor_empty_value_t

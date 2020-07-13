@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 #include "type_id.h"
 #include "any_value.h"
 

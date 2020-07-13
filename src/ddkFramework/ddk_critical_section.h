@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 #include <cstdlib>
 #include <type_traits>
 #include "critical_section_context.h"
 #include "CriticalSectionDefs.h"
 #include "IAccessCriticalCallContext.h"
-#include "ewas_intrusive_node.h"
-#include "ewas_lendable.h"
+#include "ddk_intrusive_node.h"
+#include "ddk_lendable.h"
 #include "reference_wrapper.h"
 
 struct empty_critical_section_t
@@ -199,7 +199,7 @@ private:
 
 const empty_critical_section_t empty_critical_section = empty_critical_section_t();
 
-namespace ewas
+namespace ddk
 {
 namespace mpl
 {

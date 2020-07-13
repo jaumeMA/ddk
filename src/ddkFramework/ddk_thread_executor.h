@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 #include <pthread.h>
 #include <functional>
-#include "ewas_thread.h"
+#include "ddk_thread.h"
 #include "thread_utils.h"
-#include "ewas_thread_executor_interface.h"
+#include "ddk_thread_executor_interface.h"
 
-namespace ewas
+namespace ddk
 {
 
 class thread_polling_executor : public thread_executor_interface

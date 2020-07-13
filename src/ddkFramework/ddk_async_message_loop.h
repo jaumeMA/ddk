@@ -1,15 +1,15 @@
 #pragma once
 
 #include <list>
-#include "ewas_signal_functor.h"
-#include "ewas_linked_list.h"
-#include "ewas_intrusive_node.h"
-#include "ewas_async_defs.h"
-#include "ewas_async_message_queue.h"
-#include "ewas_async_message_exchange_room.h"
+#include "ddk_signal_functor.h"
+#include "ddk_linked_list.h"
+#include "ddk_intrusive_node.h"
+#include "ddk_async_defs.h"
+#include "ddk_async_message_queue.h"
+#include "ddk_async_message_exchange_room.h"
 #include "reference_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename BuiltInMessageType>

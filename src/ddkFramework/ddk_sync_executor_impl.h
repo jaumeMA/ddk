@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_executor_interface.h"
-#include "ewas_thread_sheaf.h"
-#include "ewas_fiber_sheaf.h"
-#include "ewas_fiber_yielder.h"
+#include "ddk_executor_interface.h"
+#include "ddk_thread_sheaf.h"
+#include "ddk_fiber_sheaf.h"
+#include "ddk_fiber_yielder.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -110,4 +110,4 @@ private:
 }
 }
 
-#include "ewas_sync_executor_impl.inl"
+#include "ddk_sync_executor_impl.inl"

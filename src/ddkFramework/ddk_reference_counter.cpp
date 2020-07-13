@@ -16,7 +16,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 #ifdef EWAS_DEBUG

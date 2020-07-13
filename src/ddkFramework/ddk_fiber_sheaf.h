@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_fiber.h"
+#include "ddk_fiber.h"
 
-namespace ewas
+namespace ddk
 {
 
 class fiber_pool;

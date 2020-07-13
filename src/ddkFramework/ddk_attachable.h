@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ewas_thread.h"
+#include "ddk_thread.h"
 #include "reference_wrapper.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Thread>

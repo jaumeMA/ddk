@@ -1,9 +1,9 @@
-#include "ewas_connection_base.h"
+#include "ddk_connection_base.h"
 #include <cassert>
-#include "ewas_macros.h"
-#include "ewas_signal.h"
+#include "ddk_macros.h"
+#include "ddk_signal.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

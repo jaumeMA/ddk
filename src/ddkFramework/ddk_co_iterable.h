@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_awaitable.h"
+#include "ddk_awaitable.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>
@@ -41,4 +41,4 @@ co_iterable<Iterable> co_reverse_iterate(Iterable& i_iterable);
 
 }
 
-#include "ewas_co_iterable.inl"
+#include "ddk_co_iterable.inl"

@@ -1,14 +1,14 @@
 #pragma once
 
 #include <functional>
-#include "ewas_connection_base.h"
+#include "ddk_connection_base.h"
 #include <stdio.h>
 #include <tuple>
 #include <utility>
-#include "ewas_template_helper.h"
-#include "ewas_signal_connector.h"
+#include "ddk_template_helper.h"
+#include "ddk_signal_connector.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>

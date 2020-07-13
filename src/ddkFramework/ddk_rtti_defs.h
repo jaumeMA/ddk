@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

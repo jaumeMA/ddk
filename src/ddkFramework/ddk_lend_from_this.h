@@ -2,11 +2,11 @@
 
 #include "reference_counter.h"
 #include "lent_reference_wrapper.h"
-#include "ewas_macros.h"
+#include "ddk_macros.h"
 #include "reference_tag.h"
 #include <type_traits>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename TT>

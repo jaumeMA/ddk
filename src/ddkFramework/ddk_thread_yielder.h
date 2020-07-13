@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_arena.h"
+#include "ddk_arena.h"
 #include "lent_reference_wrapper.h"
 #include "lend_from_this.h"
 #include "embedded_type.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -56,4 +56,4 @@ typedef lent_pointer_wrapper<const yielder> yielder_const_lent_ptr;
 }
 }
 
-#include "ewas_thread_yielder.inl"
+#include "ddk_thread_yielder.inl"

@@ -2,7 +2,7 @@
 
 #include <array>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename Enum, std::size_t Size = Enum::Count>

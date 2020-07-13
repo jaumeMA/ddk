@@ -1,7 +1,7 @@
-#include "ewas_fiber_local_storage.h"
-#include "ewas_macros.h"
+#include "ddk_fiber_local_storage.h"
+#include "ddk_macros.h"
 
-namespace ewas
+namespace ddk
 {
 
 bool fiber_local_storage::empty(const fiber_id& i_id) const

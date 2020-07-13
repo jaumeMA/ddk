@@ -1,7 +1,7 @@
 
 #include "embedded_type.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

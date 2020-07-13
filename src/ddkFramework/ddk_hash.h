@@ -3,7 +3,7 @@
 #include <string>
 #include "type_id.h"
 
-namespace ewas
+namespace ddk
 {
 
 size_t hash(const std::string& i_value);

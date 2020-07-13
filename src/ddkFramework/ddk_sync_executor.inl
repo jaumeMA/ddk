@@ -1,5 +1,5 @@
 
-namespace ewas
+namespace ddk
 {
 
 template<typename RReturn, typename ... Types, typename ... Args>

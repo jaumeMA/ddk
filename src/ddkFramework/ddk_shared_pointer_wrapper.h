@@ -9,7 +9,7 @@
 
 #define ENSURE_SCOPE_LIFETIME(_PTR) const auto ___##_PTR = _PTR;
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T>

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_variant.h"
-#include "ewas_optional.h"
-#include "ewas_macros.h"
-#include "ewas_formatter.h"
+#include "ddk_variant.h"
+#include "ddk_optional.h"
+#include "ddk_macros.h"
+#include "ddk_formatter.h"
 
-namespace ewas
+namespace ddk
 {
 
 struct result_success_t{};

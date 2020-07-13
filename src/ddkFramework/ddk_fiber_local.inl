@@ -1,7 +1,7 @@
 
-#include "ewas_fiber_utils.h"
+#include "ddk_fiber_utils.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename Tag>

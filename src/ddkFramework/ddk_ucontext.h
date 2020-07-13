@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "ewas_template_helper.h"
+#include "ddk_template_helper.h"
 
 #if defined(WIN32)
 
@@ -24,7 +24,7 @@ typedef struct __ucontext {
     __sigset_t			uc_sigmask;
 } ucontext_t;
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -75,7 +75,7 @@ ucontext_t* get_return_context();
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 int get_context(ucontext_t* i_context);

@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T1, typename T2>

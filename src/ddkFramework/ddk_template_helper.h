@@ -2,7 +2,7 @@
 
 #include <type_traits>
 #include <cstring>
-#include "ewas_void.h"
+#include "ddk_void.h"
 #include <functional>
 
 #define ASSERT_CONTAINS_SYMBOL(_CLASS,_SYMBOL,_MSG) \
@@ -18,7 +18,7 @@ public: \
 }; \
 static_assert(contains_symbol_##_CLASS##_##_SYMBOL::value, _MSG);
 
-namespace ewas
+namespace ddk
 {
 namespace mpl
 {

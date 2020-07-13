@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ewas_scoped_enum.h"
+#include "ddk_scoped_enum.h"
 #include "type_id.h"
 
 struct critical_access_identifier_t;

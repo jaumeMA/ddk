@@ -4,7 +4,7 @@
 #include "DynamicVisitor.h"
 #include "visitable_type.h"
 #include "visitable_type_defs.h"
-#include "ewas_rtti.h"
+#include "ddk_rtti.h"
 
 #define DECLARE_TYPE_VISITABLE_BASE(_Type_Name) \
 PUBLISH_TYPE_INFO(_Type_Name) \
@@ -100,7 +100,7 @@ friend inline ewas::any_value __visit(const ewas::TypeInfo& i_typeInfo, Visitor&
     } \
 }
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Visitor>

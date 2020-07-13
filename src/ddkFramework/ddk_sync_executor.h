@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ewas_async_executor_interface.h"
-#include "ewas_promise.h"
-#include "ewas_sync_executor_impl.h"
+#include "ddk_async_executor_interface.h"
+#include "ddk_promise.h"
+#include "ddk_sync_executor_impl.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Return>
@@ -70,4 +70,4 @@ public:
 
 }
 
-#include "ewas_sync_executor.inl"
+#include "ddk_sync_executor.inl"

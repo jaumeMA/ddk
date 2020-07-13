@@ -8,7 +8,7 @@
 #pragma comment(lib, "dbghelp")
 #endif // defined
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

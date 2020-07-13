@@ -1,6 +1,6 @@
-#include "ewas_fiber.h"
+#include "ddk_fiber.h"
 
-namespace ewas
+namespace ddk
 {
 
 const detail::this_fiber_t this_fiber = detail::this_fiber_t();

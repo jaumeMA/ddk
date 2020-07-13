@@ -1,6 +1,6 @@
-#include "ewas_thread_sheaf.h"
+#include "ddk_thread_sheaf.h"
 
-namespace ewas
+namespace ddk
 {
 
 thread_sheaf::thread_sheaf(thread_sheaf&& other)

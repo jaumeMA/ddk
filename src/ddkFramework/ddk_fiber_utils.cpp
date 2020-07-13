@@ -1,8 +1,8 @@
-#include "ewas_fiber_utils.h"
+#include "ddk_fiber_utils.h"
 #include "thread_utils.h"
-#include "ewas_thread_impl.h"
+#include "ddk_thread_impl.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <tuple>
-#include "ewas_tuple_iterator.h"
+#include "ddk_tuple_iterator.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CriticalSectionDefs.h"
-#include "ewas_none.h"
+#include "ddk_none.h"
 
 struct critical_section_context
 {

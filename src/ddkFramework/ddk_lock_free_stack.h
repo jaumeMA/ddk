@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ewas_lock_free_stack_node.h"
-#include "ewas_optional.h"
-#include "ewas_system_allocator.h"
+#include "ddk_lock_free_stack_node.h"
+#include "ddk_optional.h"
+#include "ddk_system_allocator.h"
 #include <thread>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename T, typename Allocator = typed_system_allocator<lock_free_stack_node<T>>>

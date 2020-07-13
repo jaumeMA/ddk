@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_atomics.h"
-#include "ewas_macros.h"
-#include "ewas_scoped_enum.h"
+#include "ddk_atomics.h"
+#include "ddk_macros.h"
+#include "ddk_scoped_enum.h"
 #include <map>
 #include <vector>
 
@@ -12,7 +12,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 
 SCOPED_ENUM_DECL(Policy,

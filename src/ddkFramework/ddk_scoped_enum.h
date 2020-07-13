@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ewas_scoped_enum_op.h"
-#include "ewas_scoped_enum_tag.h"
+#include "ddk_scoped_enum_op.h"
+#include "ddk_scoped_enum_tag.h"
 #include <string>
 
 template<typename T>

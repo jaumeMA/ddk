@@ -3,7 +3,7 @@
 #include <tuple>
 #include <utility>
 
-namespace ewas
+namespace ddk
 {
 
 template<typename Tuple>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ewas_connection_base.h"
+#include "ddk_connection_base.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

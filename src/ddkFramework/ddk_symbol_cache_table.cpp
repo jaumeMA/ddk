@@ -7,7 +7,7 @@
 
 #endif
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

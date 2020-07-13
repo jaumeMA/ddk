@@ -5,9 +5,9 @@
 #include "TMPUtils.h"
 #include <tuple>
 #include "reference_counter.h"
-#include "ewas_template_helper.h"
+#include "ddk_template_helper.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "ewas_fiber_defs.h"
+#include "ddk_fiber_defs.h"
 #include "unique_reference_wrapper.h"
 #include "lent_reference_wrapper.h"
-#include "ewas_ucontext.h"
-#include "ewas_fiber_local.h"
-#include "ewas_stack_allocator.h"
-#include "ewas_thread_yielder.h"
-#include "ewas_fiber_scheduler_interface.h"
+#include "ddk_ucontext.h"
+#include "ddk_fiber_local.h"
+#include "ddk_stack_allocator.h"
+#include "ddk_thread_yielder.h"
+#include "ddk_fiber_scheduler_interface.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -69,4 +69,4 @@ typedef lent_pointer_wrapper<const fiber_impl> fiber_impl_const_lent_ptr;
 
 }
 
-#include "ewas_fiber_impl.inl"
+#include "ddk_fiber_impl.inl"

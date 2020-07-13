@@ -2,9 +2,9 @@
 
 #include "thread_utils.h"
 #include "CriticalCallContext.h"
-#include "ewas_intrusive_stack.h"
-#include "ewas_intrusive_node.h"
-#include "ewas_thread_local.h"
+#include "ddk_intrusive_stack.h"
+#include "ddk_intrusive_node.h"
+#include "ddk_thread_local.h"
 
 template<typename Traits>
 class IAccessCriticalCallContext : protected Traits::provider_interface

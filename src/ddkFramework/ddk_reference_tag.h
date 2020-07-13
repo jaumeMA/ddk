@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ewas
+namespace ddk
 {
 
 struct lendable_tag

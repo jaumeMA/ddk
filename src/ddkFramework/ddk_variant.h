@@ -2,7 +2,7 @@
 
 #include "variant/ewas_variant_interface.h"
 
-namespace ewas
+namespace ddk
 {
 
 template<typename ... Types>
@@ -43,4 +43,4 @@ public:
 
 }
 
-#include "ewas_variant.inl"
+#include "ddk_variant.inl"

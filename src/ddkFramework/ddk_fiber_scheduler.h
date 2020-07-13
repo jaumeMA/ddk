@@ -3,17 +3,17 @@
 #include <pthread.h>
 #include <functional>
 #include "thread_utils.h"
-#include "ewas_executor_interface.h"
+#include "ddk_executor_interface.h"
 #include <map>
 #include <queue>
-#include "ewas_fiber_scheduler_interface.h"
-#include "ewas_fiber_impl.h"
-#include "ewas_fiber.h"
-#include "ewas_fiber_yielder.h"
-#include "ewas_thread.h"
+#include "ddk_fiber_scheduler_interface.h"
+#include "ddk_fiber_impl.h"
+#include "ddk_fiber.h"
+#include "ddk_fiber_yielder.h"
+#include "ddk_thread.h"
 #include "lend_from_this.h"
 
-namespace ewas
+namespace ddk
 {
 namespace detail
 {
@@ -124,4 +124,4 @@ using fiber_scheduler_const_lent_ptr = lent_pointer_wrapper<const fiber_schedule
 
 }
 
-#include "ewas_fiber_scheduler.inl"
+#include "ddk_fiber_scheduler.inl"
