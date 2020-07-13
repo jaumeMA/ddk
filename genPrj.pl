@@ -50,20 +50,20 @@ GetOptions ('project=s' => \$project, 'platform=s' => \$platform, 'Mode=s' => \$
 if($project eq "Windows")
 {
 	$Mode='ALL_Windows';
-	$Binaries='EwasFramework';
-	$SolutionName='eWasWindows';
+	$Binaries='ddkFramework';
+	$SolutionName='ddkWindows';
 }
 elsif($project eq "Linux")
 {
 	$Mode='ALL_Linux';
-	$Binaries='EwasFramework';
-	$SolutionName='eWasLinux';
+	$Binaries='ddkFramework';
+	$SolutionName='ddkLinux';
 }
 elsif($project eq "iOS")
 {
 	$Mode='ALL_iOS';
-	$Binaries='EwasFramework';
-	$SolutionName='eWasIOS';
+	$Binaries='ddkFramework';
+	$SolutionName='ddkIOS';
 }
 else
 {
