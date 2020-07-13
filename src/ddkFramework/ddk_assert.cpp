@@ -1,6 +1,6 @@
 #include "ddk_assert.h"
 
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 #if defined(WIN32)
     #include <windows.h>
 #elif defined(__LINUX__)
@@ -19,7 +19,7 @@ namespace detail
 
 void signal_handler(int signal)
 {
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 #if defined(WIN32)
     if (signal == SIGABRT)
 	{
@@ -84,7 +84,7 @@ std::string Assert::getMessage()
 }
 Assert::Response Assert::raise() const
 {
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 #if defined(WIN32)
 	switch (MessageBox(NULL, m_output.c_str(), "Assert", MB_ICONWARNING | MB_RETRYCANCEL | MB_SYSTEMMODAL | MB_DEFBUTTON2))
 	{

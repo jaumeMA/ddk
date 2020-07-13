@@ -1,11 +1,11 @@
 #pragma once
 
-#include "reference_counter.h"
-#include "reference_wrapper_deleter.h"
+#include "ddk_reference_counter.h"
+#include "ddk_reference_wrapper_deleter.h"
 #include <type_traits>
 #include <utility>
-#include "tagged_pointer.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_tagged_pointer.h"
+#include "ddk_lent_reference_wrapper.h"
 
 #define ENSURE_SCOPE_LIFETIME(_PTR) const auto ___##_PTR = _PTR;
 
@@ -305,7 +305,7 @@ private:
 	{
 		if(i_currNumRefs == 0)
 		{
-			EWAS_ASSERT(m_refCounter->hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
+			DDK_ASSERT(m_refCounter->hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
 
 			const short tagCategory = m_refCounter.get_tag();
 			shared_reference_counter* refCounter = m_refCounter.extract_pointer();

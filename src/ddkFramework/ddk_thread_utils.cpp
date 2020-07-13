@@ -1,4 +1,4 @@
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 
 #ifdef WIN32
 #include <windows.h>

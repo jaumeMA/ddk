@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lent_pointer_wrapper.h"
+#include "ddk_lent_pointer_wrapper.h"
 
 namespace ddk
 {
@@ -12,7 +12,7 @@ class shared_reference_wrapper;
 template<typename>
 class lendable;
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 template<typename T>
 class lent_reference_wrapper : public lent_pointer_wrapper<T>
@@ -33,7 +33,7 @@ class lent_reference_wrapper : public lent_pointer_wrapper<T>
 	lent_reference_wrapper(T* i_data, const tagged_pointer<lent_reference_counter>& i_refCounter)
 	: lent_pointer_wrapper<T>(i_data,i_refCounter)
 	{
-		EWAS_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
+		DDK_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
 	}
 
     using lent_pointer_wrapper<T>::operator bool;

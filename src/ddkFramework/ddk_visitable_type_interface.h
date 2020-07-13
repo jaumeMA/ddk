@@ -10,45 +10,45 @@
 PUBLISH_TYPE_INFO(_Type_Name) \
 typedef _Type_Name type_interface; \
 typedef void visitable_type_base_tag; \
-virtual ewas::visitable_type_info get_visitable_type_info() const = 0; \
+virtual ddk::visitable_type_info get_visitable_type_info() const = 0; \
 template<typename Visitor> \
 friend inline bool __may_visit(const type_interface& i_value, const Visitor*) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    return i_value.get_visitable_type_info()->first == ewas::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
+    return i_value.get_visitable_type_info()->first == ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
 } \
 template<typename Visitor> \
-friend inline ewas::any_value __visit(const type_interface& i_value, const Visitor& i_visitor) \
+friend inline ddk::any_value __visit(const type_interface& i_value, const Visitor& i_visitor) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    const ewas::TypeInfo typeInfo = i_value.get_visitable_type_info()->second; \
+    const ddk::TypeInfo typeInfo = i_value.get_visitable_type_info()->second; \
     const visitor_interface* typedVisitor = &i_visitor; \
     \
-    if (typename ewas::agnostic_visitable_type<type_interface,visitor_interface>::const_visitor_func funcPtr = ewas::agnostic_visitable_type<type_interface,visitor_interface>::s_const_visitor_funcs()[typeInfo.get_name_hash()]) \
+    if (typename ddk::agnostic_visitable_type<type_interface,visitor_interface>::const_visitor_func funcPtr = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_const_visitor_funcs()[typeInfo.get_name_hash()]) \
     { \
         return (*funcPtr)(&i_value, *typedVisitor); \
     } \
     else \
     { \
-        EWAS_FAIL("Using non proper visitor"); \
+        DDK_FAIL("Using non proper visitor"); \
     \
         return false; \
     } \
 } \
 template<typename Visitor> \
-friend inline ewas::any_value __visit(const type_interface& i_value, Visitor& i_visitor) \
+friend inline ddk::any_value __visit(const type_interface& i_value, Visitor& i_visitor) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    const ewas::TypeInfo typeInfo = i_value.get_visitable_type_info()->second; \
+    const ddk::TypeInfo typeInfo = i_value.get_visitable_type_info()->second; \
     visitor_interface* typedVisitor = &i_visitor; \
     \
-    if (typename ewas::agnostic_visitable_type<type_interface,visitor_interface>::visitor_func funcPtr = ewas::agnostic_visitable_type<type_interface,visitor_interface>::s_visitor_funcs()[typeInfo.get_name_hash()]) \
+    if (typename ddk::agnostic_visitable_type<type_interface,visitor_interface>::visitor_func funcPtr = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_visitor_funcs()[typeInfo.get_name_hash()]) \
     { \
         return (*funcPtr)(&i_value, *typedVisitor); \
     } \
     else \
     { \
-        EWAS_FAIL("Using non proper visitor"); \
+        DDK_FAIL("Using non proper visitor"); \
     \
         return false; \
     } \
@@ -60,41 +60,41 @@ typedef _Type_Interface type_interface; \
 typedef _Type_Name visitor_interface; \
 friend visitor_interface __get_visitor_type(const visitor_interface&); \
 template<typename Visitor> \
-friend inline bool __may_visit(const ewas::TypeInfo& i_info, const Visitor*, const visitor_interface* = NULL) \
+friend inline bool __may_visit(const ddk::TypeInfo& i_info, const Visitor*, const visitor_interface* = NULL) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    return i_info == ewas::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
+    return i_info == ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
 } \
 template<typename Visitor> \
-friend inline ewas::any_value __visit(const ewas::TypeInfo& i_typeInfo, const Visitor& i_visitor, const visitor_interface* = NULL) \
+friend inline ddk::any_value __visit(const ddk::TypeInfo& i_typeInfo, const Visitor& i_visitor, const visitor_interface* = NULL) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
     const visitor_interface* typedVisitor = &i_visitor; \
     \
-    if (typename ewas::agnostic_static_visitable_type<type_interface,visitor_interface>::const_visitor_func funcPtr = ewas::agnostic_static_visitable_type<type_interface,visitor_interface>::s_const_static_visitor_funcs()[i_typeInfo.get_name_hash()]) \
+    if (typename ddk::agnostic_static_visitable_type<type_interface,visitor_interface>::const_visitor_func funcPtr = ddk::agnostic_static_visitable_type<type_interface,visitor_interface>::s_const_static_visitor_funcs()[i_typeInfo.get_name_hash()]) \
     { \
         return (*funcPtr)(*typedVisitor); \
     } \
     else \
     { \
-        EWAS_FAIL("Using non proper visitor"); \
+        DDK_FAIL("Using non proper visitor"); \
     \
         return false; \
     } \
 } \
 template<typename Visitor> \
-friend inline ewas::any_value __visit(const ewas::TypeInfo& i_typeInfo, Visitor& i_visitor, const visitor_interface* = NULL) \
+friend inline ddk::any_value __visit(const ddk::TypeInfo& i_typeInfo, Visitor& i_visitor, const visitor_interface* = NULL) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
     visitor_interface* typedVisitor = &i_visitor; \
     \
-    if (typename ewas::agnostic_static_visitable_type<type_interface,visitor_interface>::visitor_func funcPtr = ewas::agnostic_static_visitable_type<type_interface,visitor_interface>::s_static_visitor_funcs()[i_typeInfo.get_name_hash()]) \
+    if (typename ddk::agnostic_static_visitable_type<type_interface,visitor_interface>::visitor_func funcPtr = ddk::agnostic_static_visitable_type<type_interface,visitor_interface>::s_static_visitor_funcs()[i_typeInfo.get_name_hash()]) \
     { \
         return (*funcPtr)(*typedVisitor); \
     } \
     else \
     { \
-        EWAS_FAIL("Using non proper visitor"); \
+        DDK_FAIL("Using non proper visitor"); \
     \
         return false; \
     } \

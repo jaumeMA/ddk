@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lend_from_this.h"
-#include "reference_wrapper.h"
+#include "ddk_lend_from_this.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_arena.h"
 
 namespace ddk
@@ -126,7 +126,7 @@ public:
 		}
 		else
 		{
-			EWAS_FAIL("Auto pointing!");
+			DDK_FAIL("Auto pointing!");
 		}
 	}
 	inline void set_next_node(const intrusive_node_ptr& i_node)
@@ -138,12 +138,12 @@ public:
 		}
 		else
 		{
-			EWAS_FAIL("Auto pointing!");
+			DDK_FAIL("Auto pointing!");
 		}
 	}
 	static intrusive_node_ptr collapse(intrusive_node_ptr i_node)
 	{
-		//EWAS_ASSERT(get_raw_ptr(i_prevNode->m_nextNode) == this, "Breaking linked list");
+		//DDK_ASSERT(get_raw_ptr(i_prevNode->m_nextNode) == this, "Breaking linked list");
 		intrusive_node_ptr res = i_node->m_nextNode;
 		intrusive_node_ptr prevNode = i_node->m_prevNode;
 		intrusive_node_ptr nextNode = i_node->m_nextNode;

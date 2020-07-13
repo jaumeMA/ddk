@@ -25,7 +25,7 @@ thread thread_sheaf::extract()
 	}
 	else
 	{
-		EWAS_FAIL("Trying to pop empty thread sheaf");
+		DDK_FAIL("Trying to pop empty thread sheaf");
 
 		return crash_on_return<thread&&>::value();
 	}

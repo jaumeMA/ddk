@@ -1,6 +1,6 @@
-#include "IWaitingRoom.h"
+#include "ddk_iwaiting_room.h"
 #include <algorithm>
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 
 #ifdef WIN32
 
@@ -8,25 +8,25 @@
 
 #endif
 
-#if EWAS_DEBUG
+#if DDK_DEBUG
 
 #define PUSH_THREAD_ID \
 	{ \
-		const ewas::thread_id_t __currThreadId = ewas::get_current_thread_id(); \
+		const ddk::thread_id_t __currThreadId = ddk::get_current_thread_id(); \
 		const SharedState& thisSharedState = this->getSharedState(); \
 		pthread_mutex_lock(&thisSharedState.m_localDataMutex); \
-		std::vector<ewas::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ewas::thread_id_t i_threadId){ return ewas::thread_id_equal(i_threadId,__currThreadId); }); \
-		EWAS_ASSERT(itThreadId == thisSharedState.m_mutexOwnerThreadId.end(), "It is forbidden reentrancy of the same thread against the same exclusion area"); \
+		std::vector<ddk::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ddk::thread_id_t i_threadId){ return ddk::thread_id_equal(i_threadId,__currThreadId); }); \
+		DDK_ASSERT(itThreadId == thisSharedState.m_mutexOwnerThreadId.end(), "It is forbidden reentrancy of the same thread against the same exclusion area"); \
 		thisSharedState.m_mutexOwnerThreadId.push_back(__currThreadId); \
 		pthread_mutex_unlock(&thisSharedState.m_localDataMutex); \
 	}
 #define POP_THREAD_ID \
 	{ \
-		const ewas::thread_id_t __currThreadId = ewas::get_current_thread_id(); \
+		const ddk::thread_id_t __currThreadId = ddk::get_current_thread_id(); \
 		const SharedState& thisSharedState = this->getSharedState(); \
 		pthread_mutex_lock(&thisSharedState.m_localDataMutex); \
-		std::vector<ewas::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ewas::thread_id_t i_threadId){ return ewas::thread_id_equal(i_threadId,__currThreadId); }); \
-		EWAS_ASSERT(itThreadId != thisSharedState.m_mutexOwnerThreadId.end(), "Unexistent thread id!"); \
+		std::vector<ddk::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ddk::thread_id_t i_threadId){ return ddk::thread_id_equal(i_threadId,__currThreadId); }); \
+		DDK_ASSERT(itThreadId != thisSharedState.m_mutexOwnerThreadId.end(), "Unexistent thread id!"); \
 		if (itThreadId != thisSharedState.m_mutexOwnerThreadId.end()) \
 		{ \
 			thisSharedState.m_mutexOwnerThreadId.erase(itThreadId); \
@@ -53,31 +53,34 @@
 
 #endif
 
-IWaitingRoom::SharedState::SharedState()
+namespace ddk
+{
+
+iwaiting_room::SharedState::SharedState()
 : m_currentState(None)
 , m_numWaitingWriters(0)
 {
 	pthread_mutex_init(&m_exclusiveMutex,NULL);
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	pthread_mutex_init(&m_localDataMutex,NULL);
 #endif
 }
-IWaitingRoom::SharedState::~SharedState()
+iwaiting_room::SharedState::~SharedState()
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	pthread_mutex_destroy(&m_localDataMutex);
 #endif
 
 	pthread_mutex_destroy(&m_exclusiveMutex);
 }
-void IWaitingRoom::enter(Reentrancy i_reentrancy)
+void iwaiting_room::enter(Reentrancy i_reentrancy)
 {
 	PUSH_THREAD_ID
 
 	_enter_area(i_reentrancy);
 }
-bool IWaitingRoom::tryToEnter(Reentrancy i_reentrancy)
+bool iwaiting_room::tryToEnter(Reentrancy i_reentrancy)
 {
 	if (_try_to_enter_area(i_reentrancy))
 	{
@@ -88,58 +91,58 @@ bool IWaitingRoom::tryToEnter(Reentrancy i_reentrancy)
 
 	return false;
 }
-void IWaitingRoom::leave()
+void iwaiting_room::leave()
 {
 	POP_THREAD_ID
 
 	_leave_area();
 }
-bool IWaitingRoom::SharedState::hasWaitingWriters() const
+bool iwaiting_room::SharedState::hasWaitingWriters() const
 {
 	return m_numWaitingWriters.get() > 0;
 }
-size_t IWaitingRoom::SharedState::getNumWaitingWriters() const
+size_t iwaiting_room::SharedState::getNumWaitingWriters() const
 {
 	return m_numWaitingWriters.get();
 }
-void IWaitingRoom::SharedState::acquire_lock(Access i_access)
+void iwaiting_room::SharedState::acquire_lock(Access i_access)
 {
 	if(i_access == Writer)
 	{
-		ewas::atomic_post_increment(m_numWaitingWriters);
+		ddk::atomic_post_increment(m_numWaitingWriters);
 	}
 
 	pthread_mutex_lock(&m_exclusiveMutex);
 
 	if(i_access == Writer)
 	{
-		ewas::atomic_post_decrement(m_numWaitingWriters);
+		ddk::atomic_post_decrement(m_numWaitingWriters);
 	}
 }
-void IWaitingRoom::SharedState::release_lock(Access i_access)
+void iwaiting_room::SharedState::release_lock(Access i_access)
 {
 	pthread_mutex_unlock(&m_exclusiveMutex);
 }
-int IWaitingRoom::SharedState::try_acquire_lock(Access i_access)
+int iwaiting_room::SharedState::try_acquire_lock(Access i_access)
 {
 	return pthread_mutex_trylock(&m_exclusiveMutex);
 }
-IWaitingRoom::SharedState::Access IWaitingRoom::SharedState::getCurrentState() const
+iwaiting_room::SharedState::Access iwaiting_room::SharedState::getCurrentState() const
 {
 	return m_currentState;
 }
-void IWaitingRoom::SharedState::setCurrentState(Access i_state)
+void iwaiting_room::SharedState::setCurrentState(Access i_state)
 {
 	m_currentState = i_state;
 }
-int IWaitingRoom::SharedState::GetThreadId() const
+int iwaiting_room::SharedState::GetThreadId() const
 {
 	return CURR_THREAD_ID;
 }
 
 #ifdef THREAD_ACQUIRE_STACK_TRACE
 
-void IWaitingRoom::SharedState::addStackTrace(Access i_access)
+void iwaiting_room::SharedState::addStackTrace(Access i_access)
 {
 	const int currThread = GetCurrentThreadId();
 
@@ -173,7 +176,7 @@ void IWaitingRoom::SharedState::addStackTrace(Access i_access)
 	free(line);
 	free(symbol);
 }
-void IWaitingRoom::SharedState::removeStackTrace()
+void iwaiting_room::SharedState::removeStackTrace()
 {
 	const int currentThread = GetCurrentThreadId();
 
@@ -184,7 +187,7 @@ void IWaitingRoom::SharedState::removeStackTrace()
 		m_stackTraceMap.erase(itStackTrace);
 	}
 }
-size_t IWaitingRoom::SharedState::numStackTraces(Access i_access) const
+size_t iwaiting_room::SharedState::numStackTraces(Access i_access) const
 {
 	size_t res = 0;
 	const int currentThread = GetCurrentThreadId();
@@ -200,7 +203,7 @@ size_t IWaitingRoom::SharedState::numStackTraces(Access i_access) const
 
 	return res;
 }
-bool IWaitingRoom::SharedState::hasStackTraces(Access i_access) const
+bool iwaiting_room::SharedState::hasStackTraces(Access i_access) const
 {
 	const int currentThread = GetCurrentThreadId();
 
@@ -217,3 +220,5 @@ bool IWaitingRoom::SharedState::hasStackTraces(Access i_access) const
 }
 
 #endif
+
+}

@@ -12,4 +12,4 @@ struct none_t
 }
 }
 
-const ewas::detail::none_t none = ewas::detail::none_t();
+const ddk::detail::none_t none = ddk::detail::none_t();

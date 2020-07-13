@@ -2,10 +2,10 @@
 
 #include <functional>
 #include <thread>
-#include "unique_reference_wrapper.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_unique_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 #include <pthread.h>
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 #include "ddk_thread_yielder.h"
 #include "ddk_fiber_yielder.h"
 #include "ddk_thread_local.h"

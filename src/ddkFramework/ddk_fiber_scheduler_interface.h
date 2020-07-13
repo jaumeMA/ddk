@@ -2,8 +2,8 @@
 
 #include "ddk_fiber_defs.h"
 #include "ddk_thread_yielder.h"
-#include "shared_reference_wrapper.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_shared_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 #include <exception>
 
 namespace ddk

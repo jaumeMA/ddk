@@ -1,10 +1,13 @@
-#include "ReaderWaitingRoom.h"
+#include "ddk_reader_waiting_room.h"
 #include "WASLogger.h"
 #include <system_error>
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 #include <thread>
 
-ReaderWaitingRoom::ReaderWaitingRoom(SharedState& i_sharedState)
+namespace ddk
+{
+
+reader_waiting_room::reader_waiting_room(iwaiting_room::SharedState& i_sharedState)
 : m_numParticipants(0)
 , m_blockedReader(false)
 , m_numWaitingReaders(0)
@@ -13,14 +16,13 @@ ReaderWaitingRoom::ReaderWaitingRoom(SharedState& i_sharedState)
 	pthread_mutex_init(&m_stateRoomMutex, NULL);
 	pthread_cond_init(&m_condVariable, NULL);
 }
-ReaderWaitingRoom::~ReaderWaitingRoom()
+reader_waiting_room::~reader_waiting_room()
 {
 	pthread_cond_destroy(&m_condVariable);
 	pthread_mutex_destroy(&m_stateRoomMutex);
 }
-void ReaderWaitingRoom::_enter_area(Reentrancy i_reentrancy)
+void reader_waiting_room::_enter_area(Reentrancy i_reentrancy)
 {
-	//WAS_LOG_DEBUG("ReaderWaitingRoom::enter() ...");
 	pthread_mutex_lock(&m_stateRoomMutex);
 
 #ifdef THREAD_ACQUIRE_STACK_TRACE
@@ -80,11 +82,9 @@ void ReaderWaitingRoom::_enter_area(Reentrancy i_reentrancy)
 	m_sharedState.setCurrentState(Reader);
 
 	pthread_mutex_unlock(&m_stateRoomMutex);
-	//WAS_LOG_DEBUG("ReaderWaitingRoom::enter() ... success");
 }
-bool ReaderWaitingRoom::_try_to_enter_area(Reentrancy i_reentrancy)
+bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 {
-	//WAS_LOG_DEBUG("ReaderWaitingRoom::tryToEnter() ...");
 	pthread_mutex_lock(&m_stateRoomMutex);
 
 	bool res = false;
@@ -110,15 +110,13 @@ bool ReaderWaitingRoom::_try_to_enter_area(Reentrancy i_reentrancy)
 
 	pthread_mutex_unlock(&m_stateRoomMutex);
 
-	//WAS_LOG_DEBUG("ReaderWaitingRoom::tryToEnter() ... result = " << res);
 	return res;
 }
-void ReaderWaitingRoom::_leave_area()
+void reader_waiting_room::_leave_area()
 {
-	//WAS_LOG_DEBUG("ReaderWaitingRoom::leave() ...");
 	pthread_mutex_lock(&m_stateRoomMutex);
 
-	EWAS_ASSERT(m_numParticipants > 0, "Trying to leave non occupied reader waiting room");
+	DDK_ASSERT(m_numParticipants > 0, "Trying to leave non occupied reader waiting room");
 
 	m_numParticipants--;
 
@@ -137,9 +135,10 @@ void ReaderWaitingRoom::_leave_area()
 #endif
 
 	pthread_mutex_unlock(&m_stateRoomMutex);
-	//WAS_LOG_DEBUG("ReaderWaitingRoom::leave() ... success");
 }
-const IWaitingRoom::SharedState& ReaderWaitingRoom::getSharedState() const
+const iwaiting_room::SharedState& reader_waiting_room::getSharedState() const
 {
 	return m_sharedState;
+}
+
 }

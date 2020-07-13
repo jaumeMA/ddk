@@ -1,11 +1,14 @@
 #pragma once
 
 #include "ddk_scoped_enum.h"
-#include "type_id.h"
+#include "ddk_type_id.h"
+
+namespace ddk
+{
 
 struct critical_access_identifier_t;
-typedef Id<size_t,critical_access_identifier_t> CriticalAccessIdentifier;
-const CriticalAccessIdentifier k_invalidCriticalAccessIdentifier = CriticalAccessIdentifier(0);
+typedef Id<size_t,critical_access_identifier_t> critical_section_identifier;
+const critical_section_identifier k_invalidCriticalAccessIdentifier = critical_section_identifier(0);
 
 SCOPED_ENUM_DECL(Reentrancy,
 		REENTRANT,
@@ -24,4 +27,5 @@ struct context_acquired_t
 	bool m_acquired;
 };
 
+}
 }

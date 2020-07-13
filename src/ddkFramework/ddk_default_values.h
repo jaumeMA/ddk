@@ -1,9 +1,8 @@
 #pragma once
 
 #include <time.h>
-#include "WASTypes.h"
 #include <string>
-#include "type_id.h"
+#include "ddk_type_id.h"
 
 namespace ddk
 {
@@ -42,13 +41,13 @@ struct default_value<time_t>
 	}
 };
 template<>
-struct default_value<was_uint32>
+struct default_value<short>
 {
-	static inline was_uint32 initial_value()
+	static inline short initial_value()
 	{
 		return 0;
 	}
-	static inline was_uint32 invalid_value()
+	static inline short invalid_value()
 	{
 		return -1;
 	}
@@ -61,18 +60,6 @@ struct default_value<size_t>
 		return 0;
 	}
 	static inline size_t invalid_value()
-	{
-		return -1;
-	}
-};
-template<>
-struct default_value<was_uint16>
-{
-	static inline was_uint16 initial_value()
-	{
-		return 0;
-	}
-	static inline was_uint16 invalid_value()
 	{
 		return -1;
 	}

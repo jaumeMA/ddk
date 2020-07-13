@@ -20,9 +20,9 @@ public:
 	{
 		return m_lhs.getValue() | m_rhs.getValue();
 	}
-	operator ewas::flag_set<Enum>() const
+	operator ddk::flag_set<Enum>() const
 	{
-		ewas::flag_set<Enum> res(m_lhs);
+		ddk::flag_set<Enum> res(m_lhs);
 
 		res = res | m_rhs;
 
@@ -47,9 +47,9 @@ public:
 	{
 		return m_lhs.getValue() & m_rhs.getValue();
 	}
-	operator ewas::flag_set<Enum>() const
+	operator ddk::flag_set<Enum>() const
 	{
-		ewas::flag_set<Enum> res(m_lhs);
+		ddk::flag_set<Enum> res(m_lhs);
 
 		res = res & m_rhs;
 	}

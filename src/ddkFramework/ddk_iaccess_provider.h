@@ -2,7 +2,7 @@
 
 #include "ddk_signal.h"
 #include "IAccessCriticalCallContext.h"
-#include "CriticalSection.h"
+#include "critical_section.h"
 
 class IAccessProvider
 {
@@ -14,7 +14,7 @@ public:
 		NONE
 	};
 
-	ewas::signal<void()> sig_onNewDataReceived;
+	ddk::signal<void()> sig_onNewDataReceived;
 };
 
 template<typename Traits, IAccessProvider::Access>
@@ -89,7 +89,7 @@ public:
 	{
 		critical_context readerContext = i_accesInterface.enterReader(i_reentrancy);
 
-		const CriticalAccessIdentifier _id(reinterpret_cast<size_t>(&i_accesInterface));
+		const critical_section_identifier _id(reinterpret_cast<size_t>(&i_accesInterface));
 
 		return critical_section(static_cast<access_call_context_reference>(i_accesInterface),_id,std::move(readerContext));
 	}
@@ -97,7 +97,7 @@ public:
 	{
 		if(critical_context readerContext = i_accesInterface.tryToEnterReader(i_reentrancy))
 		{
-			const CriticalAccessIdentifier _id(reinterpret_cast<size_t>(&i_accesInterface));
+			const critical_section_identifier _id(reinterpret_cast<size_t>(&i_accesInterface));
 
 			return critical_section(static_cast<access_call_context_reference>(i_accesInterface),_id,std::move(readerContext));
 		}
@@ -108,7 +108,7 @@ public:
 	}
 	static void leave(const IAccessInterface<Traits>& i_accesInterface, critical_section i_criticalSection)
 	{
-		EWAS_ASSERT_OR_LOG(i_criticalSection.get_id() == reinterpret_cast<size_t>(&i_accesInterface), "Leaving critical section from wrong access provider");
+		DDK_ASSERT_OR_LOG(i_criticalSection.get_id() == reinterpret_cast<size_t>(&i_accesInterface), "Leaving critical section from wrong access provider");
 
 		i_accesInterface.leaveReader(i_criticalSection.extract_context());
 	}
@@ -117,7 +117,7 @@ public:
 template<typename Traits>
 struct AccessCriticalSection<Traits,IAccessProvider::WRITING>
 {
-	typedef CriticalSection<Traits> critical_section;
+	typedef critical_section<Traits> critical_section;
 	typedef typename Traits::provider_interface provider_interface;
 	typedef typename Traits::critical_context critical_context;
 	typedef IAccessCriticalCallContext<Traits> access_call_context;
@@ -127,7 +127,7 @@ struct AccessCriticalSection<Traits,IAccessProvider::WRITING>
 	{
 		critical_context writerContext = i_accesInterface.enterWriter(i_reentrancy);
 
-		const CriticalAccessIdentifier _id(reinterpret_cast<size_t>(&i_accesInterface));
+		const critical_section_identifier _id(reinterpret_cast<size_t>(&i_accesInterface));
 
 		return critical_section(static_cast<access_call_context_reference>(i_accesInterface),_id,std::move(writerContext));
 	}
@@ -135,7 +135,7 @@ struct AccessCriticalSection<Traits,IAccessProvider::WRITING>
 	{
 		if(critical_context writerContext = i_accesInterface.tryToEnterWriter(i_reentrancy))
 		{
-			const CriticalAccessIdentifier _id(reinterpret_cast<size_t>(&i_accesInterface));
+			const critical_section_identifier _id(reinterpret_cast<size_t>(&i_accesInterface));
 
 			return critical_section(static_cast<access_call_context_reference>(i_accesInterface),_id,std::move(writerContext));
 		}
@@ -146,7 +146,7 @@ struct AccessCriticalSection<Traits,IAccessProvider::WRITING>
 	}
 	static void leave(IAccessInterface<Traits>& i_accesInterface, critical_section i_criticalSection)
 	{
-		EWAS_ASSERT_OR_LOG(i_criticalSection.get_id() == reinterpret_cast<size_t>(&i_accesInterface), "Leaving critical section from wrong access provider");
+		DDK_ASSERT_OR_LOG(i_criticalSection.get_id() == reinterpret_cast<size_t>(&i_accesInterface), "Leaving critical section from wrong access provider");
 
 		i_accesInterface.leaveWriter(i_criticalSection.extract_context());
 	}

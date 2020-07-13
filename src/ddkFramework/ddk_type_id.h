@@ -3,6 +3,9 @@
 #include <sstream>
 #include "ddk_formatter.h"
 
+namespace ddk
+{
+
 template<typename UnderlyingType, typename T>
 struct Id
 {
@@ -88,13 +91,15 @@ private:
 	std::string m_name;
 };
 
+}
+
 namespace std
 {
 
 template<typename UnderlyingType, typename T>
-struct hash<Id<UnderlyingType,T>>
+struct hash<ddk::Id<UnderlyingType,T>>
 {
-    std::size_t operator()(const Id<UnderlyingType,T> s) const noexcept
+    std::size_t operator()(const ddk::Id<UnderlyingType,T> s) const noexcept
     {
         return std::hash<UnderlyingType>{}(s.getValue());
     }

@@ -2,7 +2,7 @@
 
 #include "ddk_fiber_scheduler.h"
 #include "ddk_fiber.h"
-#include "reference_wrapper_deleter.h"
+#include "ddk_reference_wrapper_deleter.h"
 #include "ddk_fiber_sheaf.h"
 #include <pthread.h>
 #include "ddk_stack_allocator_interface.h"

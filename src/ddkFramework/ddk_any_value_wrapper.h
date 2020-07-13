@@ -101,9 +101,9 @@ struct value_wrapper_cloner<false>
 	template<typename T>
 	static inline value_wrapper_interface* clone(const T& i_value, value_wrapper_interface* i_arena = NULL)
 	{
-		EWAS_FAIL("You shoul not reach this point");
+		DDK_FAIL("You shoul not reach this point");
 
-		return ewas::crash_on_return<value_wrapper_interface*>::value();
+		return ddk::crash_on_return<value_wrapper_interface*>::value();
 	}
 };
 

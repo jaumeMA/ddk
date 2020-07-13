@@ -59,7 +59,7 @@ const T& future<T>::get_value() const
 	}
 	else
 	{
-		EWAS_FAIL("Trying to acquire value from not ready future");
+		DDK_FAIL("Trying to acquire value from not ready future");
 
 		return crash_on_return<const T&>::value();
 	}
@@ -81,7 +81,7 @@ T future<T>::extract_value()
 	}
 	else
 	{
-		EWAS_FAIL("Trying to acquire value from not ready future");
+		DDK_FAIL("Trying to acquire value from not ready future");
 
 		return crash_on_return<T>::value();
 	}

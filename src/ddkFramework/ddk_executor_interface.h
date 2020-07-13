@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
-#include "unique_reference_wrapper.h"
-#include "lent_reference_wrapper.h"
-#include "reference_wrapper.h"
+#include "ddk_unique_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_result.h"
 
 namespace ddk
@@ -53,7 +53,7 @@ public:
 template<typename Executor, typename ... Args>
 unique_reference_wrapper<Executor> make_executor(Args&& ... i_args)
 {
-	return ewas::make_unique_reference<Executor>(std::forward<Args>(i_args) ...);
+	return ddk::make_unique_reference<Executor>(std::forward<Args>(i_args) ...);
 }
 
 template<typename Return, typename ... Args>

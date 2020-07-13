@@ -13,7 +13,7 @@
 #endif
 
 #include <functional>
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 #include "ddk_thread_impl.h"
 
 namespace ddk

@@ -40,7 +40,7 @@ typename await_executor<Return>::start_result await_executor<Return>::execute(co
 	}
 
 	//update current yielder
-	yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ewas::lend(m_yielder));
+	yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
 
 	yielder_context* i_context = m_callee.resume_from(m_caller);
 

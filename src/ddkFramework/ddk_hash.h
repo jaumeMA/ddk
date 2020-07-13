@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "type_id.h"
+#include "ddk_type_id.h"
 
 namespace ddk
 {

@@ -42,7 +42,7 @@ public:
 	tagged_pointer(T* i_data, short i_tag)
 	: m_data(i_data)
 	{
-		EWAS_ASSERT(i_tag <= tag_mask, "You shall provide a tag less than tag mask");
+		DDK_ASSERT(i_tag <= tag_mask, "You shall provide a tag less than tag mask");
 
 		m_data = as_pointer(as_number(i_data) | i_tag);
 	}
@@ -85,7 +85,7 @@ public:
 	}
 	inline void set_tag(short i_tag)
 	{
-		EWAS_ASSERT(i_tag <= tag_mask, "You shall provide a tag less than tag mask");
+		DDK_ASSERT(i_tag <= tag_mask, "You shall provide a tag less than tag mask");
 
 		m_data = as_pointer((as_number(m_data) & bitMask) | i_tag);
 	}

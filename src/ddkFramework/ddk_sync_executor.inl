@@ -39,7 +39,7 @@ async_executor<Return>::~async_executor()
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(thread i_thread)
 {
-	EWAS_ASSERT(i_thread.get_id() != ewas::get_current_thread_id(), "Trying to launch async over operation over calle thread");
+	DDK_ASSERT(i_thread.get_id() != ddk::get_current_thread_id(), "Trying to launch async over operation over calle thread");
 
 	m_executor = make_executor<detail::thread_executor<Return>>(std::move(i_thread));
 
@@ -55,7 +55,7 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(fiber i_fiber)
 {
-	EWAS_ASSERT(i_fiber.get_id() == ewas::get_current_fiber_id(), "Trying to launch async over operation over calle fiber");
+	DDK_ASSERT(i_fiber.get_id() == ddk::get_current_fiber_id(), "Trying to launch async over operation over calle fiber");
 
 	m_executor = make_executor<detail::fiber_executor<Return>>(std::move(i_fiber));
 
@@ -138,7 +138,7 @@ void async_executor<Return>::bind()
 {
 	nested_start_result execRes = m_executor->execute(std::bind(&async_executor<Return>::set_value,this,std::placeholders::_1),m_function);
 
-	EWAS_ASSERT(execRes.hasError() == false, "Error while binding async executor");
+	DDK_ASSERT(execRes.hasError() == false, "Error while binding async executor");
 }
 template<typename Return>
 typename async_executor<Return>::reference async_executor<Return>::get_value()

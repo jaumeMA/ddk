@@ -15,7 +15,7 @@ public:
 		NotRunning,
 		NotResumable
 	};
-	typedef ewas::result<void,ResumErrorCode> resume_result;
+	typedef ddk::result<void,ResumErrorCode> resume_result;
 
 	virtual resume_result resume() = 0;
 	virtual void signal() = 0;

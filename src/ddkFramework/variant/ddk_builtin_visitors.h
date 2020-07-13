@@ -163,9 +163,9 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
 	{
 		typedef typename embedded_type<retType>::ref_type ref_type;
 
-		EWAS_FAIL("You shouldnt reach this point!");
+		DDK_FAIL("You shouldnt reach this point!");
 
-		return ewas::crash_on_return<ref_type>::value();
+		return ddk::crash_on_return<ref_type>::value();
 	}
 };
 

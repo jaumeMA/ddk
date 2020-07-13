@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <functional>
 #include "ddk_thread.h"
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 #include "ddk_thread_executor_interface.h"
 
 namespace ddk
@@ -17,7 +17,7 @@ public:
 	typedef thread_executor_interface::resume_result resume_result;
 
 	thread_polling_executor(unsigned long i_sleepInMs = 0);
-	thread_polling_executor(ewas::thread i_thread, unsigned long i_sleepInMs = 0);
+	thread_polling_executor(ddk::thread i_thread, unsigned long i_sleepInMs = 0);
 	thread_polling_executor(const thread_polling_executor&) = delete;
 	thread_polling_executor(thread_polling_executor&&);
 	~thread_polling_executor();
@@ -38,7 +38,7 @@ private:
 	unsigned long m_sleepTimeInMS;
 	std::function<void()> m_executor;
 	bool m_stopped;
-	ewas::thread m_updateThread;
+	ddk::thread m_updateThread;
 };
 
 class thread_event_driven_executor : public thread_executor_interface
@@ -48,7 +48,7 @@ public:
 	typedef thread_executor_interface::resume_result resume_result;
 
 	thread_event_driven_executor(unsigned int i_sleepInMs = 0);
-	thread_event_driven_executor(ewas::thread i_thread, unsigned int i_sleepInMs = 0);
+	thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMs = 0);
 	thread_event_driven_executor(const thread_event_driven_executor&) = delete;
 	thread_event_driven_executor(thread_event_driven_executor&& other);
 	~thread_event_driven_executor();
@@ -69,7 +69,7 @@ private:
 	unsigned int m_sleepTimeInMS;
 	std::function<void()> m_executor;
 	bool m_stopped;
-	ewas::thread m_updateThread;
+	ddk::thread m_updateThread;
 	pthread_cond_t		m_condVar;
 	pthread_mutex_t	m_condVarMutex;
 };
@@ -81,7 +81,7 @@ public:
 	typedef thread_executor_interface::resume_result resume_result;
 
 	thread_fire_and_forget_executor();
-	thread_fire_and_forget_executor(ewas::thread i_thread);
+	thread_fire_and_forget_executor(ddk::thread i_thread);
 	thread_fire_and_forget_executor(const thread_fire_and_forget_executor&) = delete;
 	thread_fire_and_forget_executor(thread_fire_and_forget_executor&& other);
 	~thread_fire_and_forget_executor();
@@ -94,7 +94,7 @@ private:
 	void update();
 
 	mutable std::function<void()> m_executor;
-	ewas::thread m_updateThread;
+	ddk::thread m_updateThread;
 };
 
 }

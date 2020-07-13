@@ -1,11 +1,11 @@
 #include "ddk_fiber_executor.h"
 #include <ctime>
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 
 namespace ddk
 {
 
-fiber_polling_executor::fiber_polling_executor(ewas::fiber i_fiber, unsigned long i_sleepInMs)
+fiber_polling_executor::fiber_polling_executor(ddk::fiber i_fiber, unsigned long i_sleepInMs)
 : m_fiber(std::move(i_fiber))
 , m_sleepTimeInMS(i_sleepInMs)
 , m_executor(nullptr)
@@ -87,11 +87,11 @@ void fiber_polling_executor::update()
 	{
 		m_executor();
 
-		ewas::sleep(m_sleepTimeInMS);
+		ddk::sleep(m_sleepTimeInMS);
 	}
 }
 
-fiber_event_driven_executor::fiber_event_driven_executor(ewas::fiber i_fiber, unsigned int i_sleepInMs)
+fiber_event_driven_executor::fiber_event_driven_executor(ddk::fiber i_fiber, unsigned int i_sleepInMs)
 : m_fiber(std::move(i_fiber))
 , m_sleepTimeInMS(i_sleepInMs)
 , m_stopped(true)
@@ -204,7 +204,7 @@ void fiber_event_driven_executor::update()
 	pthread_mutex_unlock(&m_condVarMutex);
 }
 
-fiber_fire_and_forget_executor::fiber_fire_and_forget_executor(ewas::fiber i_fiber)
+fiber_fire_and_forget_executor::fiber_fire_and_forget_executor(ddk::fiber i_fiber)
 : m_fiber(std::move(i_fiber))
 {
 }

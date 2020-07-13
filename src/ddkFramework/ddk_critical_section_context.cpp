@@ -1,6 +1,9 @@
-#include "critical_section_context.h"
+#include "ddk_critical_section_context.h"
 #include "ddk_macros.h"
 #include <utility>
+
+namespace ddk
+{
 
 critical_section_context::critical_section_context(const detail::context_acquired_t& i_acq)
 : m_acquired(i_acq.m_acquired)
@@ -21,4 +24,6 @@ critical_section_context& critical_section_context::operator=(critical_section_c
 	other.m_acquired = false;
 
 	return *this;
+}
+
 }

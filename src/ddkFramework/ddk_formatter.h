@@ -152,7 +152,7 @@ static std::pair<First,Second> format(const std::string& i_str)
 		}
 		else
 		{
-			EWAS_FAIL("Expected separator not present");
+			DDK_FAIL("Expected separator not present");
 		}
 	}
 

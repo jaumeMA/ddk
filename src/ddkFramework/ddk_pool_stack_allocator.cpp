@@ -78,7 +78,7 @@ pool_stack_allocator::Buddy::~Buddy()
 {
 	if(m_freeBuddy)
 	{
-		EWAS_FAIL("Pending free buddy on destruction");
+		DDK_FAIL("Pending free buddy on destruction");
 
 		delete m_freeBuddy;
 
@@ -189,13 +189,13 @@ pool_stack_allocator::pool_stack_allocator(stack_alloc_const_shared_ref i_nested
 : m_nestedAllocator(i_nestedAllocator)
 , m_maxPages(0)
 {
-	m_maxPages = i_stackSize * std::pow(2,std::ceil(std::log2(i_numStacks)));
+	m_maxPages = i_stackSize * static_cast<size_t>(std::pow(2,std::ceil(std::log2(i_numStacks))));
 
 	m_allocAddr = m_nestedAllocator->reserve(m_maxPages);
 }
 pool_stack_allocator::~pool_stack_allocator()
 {
-	EWAS_ASSERT(m_buddyAllocator.empty(), "Pending allocations on destruction");
+	DDK_ASSERT(m_buddyAllocator.empty(), "Pending allocations on destruction");
 
 	m_nestedAllocator->release(m_allocAddr,m_maxPages);
 }
@@ -293,7 +293,7 @@ void pool_stack_allocator::release(void* i_ref, size_t i_size) const
 	}
 	else
 	{
-		EWAS_FAIL("Trying to remove unexistant stack allocation");
+		DDK_FAIL("Trying to remove unexistant stack allocation");
 	}
 }
 

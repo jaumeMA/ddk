@@ -18,7 +18,7 @@ T* fiber_local_storage::construct(const fiber_id& i_id, Args&& ... i_args)
 	}
 	else
 	{
-		EWAS_FAIL("Trying to construct already present address");
+		DDK_FAIL("Trying to construct already present address");
 
 		return itFiber->second.template get_address<T>();
 	}

@@ -32,7 +32,7 @@ public:
 		//do notihng
 	}
 };
-static const ewas::null_deleter s_nullDeleter = null_deleter();
+static const ddk::null_deleter s_nullDeleter = null_deleter();
 
 inline const void* allocator_address_reference_wrapper(const void* i_ptr, ...)
 {

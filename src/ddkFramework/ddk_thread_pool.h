@@ -5,7 +5,7 @@
 #include <functional>
 #include <vector>
 #include "ddk_optional.h"
-#include "reference_wrapper_deleter.h"
+#include "ddk_reference_wrapper_deleter.h"
 #include "ddk_thread_sheaf.h"
 #include "ddk_result.h"
 

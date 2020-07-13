@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_async_message.h"
-#include "lend_from_this.h"
+#include "ddk_lend_from_this.h"
 #include "ddk_lock_free_stack.h"
 #include "ddk_linked_list.h"
 #include "ddk_optional.h"
@@ -68,7 +68,7 @@ public:
 
 		typename linked_list<std::pair<sender_id,std::function<void(const message_type&)>>>::const_iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,std::function<void(const message_type&)>>& i_pair){ return i_pair.first == i_id; });
 
-		EWAS_ASSERT(itReceiver == m_receivers.end(), "Attempting to connect more than once to the same queue");
+		DDK_ASSERT(itReceiver == m_receivers.end(), "Attempting to connect more than once to the same queue");
 
 		if(itReceiver == m_receivers.end())
 		{
@@ -76,7 +76,7 @@ public:
 			{
 				thread_executor_interface::start_result startRes = m_executor->execute(nullptr,std::bind(&async_attachable_message_queue<MessageType>::dispatch_messages,this));
 
-				EWAS_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ewas::formatter<std::string>::format(startRes.getError()));
+				DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
 			}
 
 			m_receivers.push(std::make_pair(i_id,i_processor));
@@ -90,7 +90,7 @@ public:
 
 		typename linked_list<std::pair<sender_id,std::function<void(const message_type&)>>>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,std::function<void(const message_type&)>>& i_pair){ return i_pair.first == i_id; });
 
-		EWAS_ASSERT(itReceiver != m_receivers.end(), "Attempting to unconnect from not connected queue");
+		DDK_ASSERT(itReceiver != m_receivers.end(), "Attempting to unconnect from not connected queue");
 
 		if(itReceiver != m_receivers.end())
 		{
@@ -100,7 +100,7 @@ public:
 			{
 				thread_executor_interface::resume_result stopRes = m_executor->resume();
 
-				EWAS_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ewas::formatter<std::string>::format(stopRes.getError()));
+				DDK_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.getError()));
 			}
 		}
 

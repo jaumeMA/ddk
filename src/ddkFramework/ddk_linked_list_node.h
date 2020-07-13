@@ -2,9 +2,9 @@
 
 #include "ddk_macros.h"
 #include "ddk_arena.h"
-#include "shared_pointer_wrapper.h"
-#include "lent_pointer_wrapper.h"
-#include "reference_wrapper.h"
+#include "ddk_shared_pointer_wrapper.h"
+#include "ddk_lent_pointer_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -19,7 +19,7 @@ template<typename T>
 struct linked_list_node
 {
 	template<typename,typename>
-	friend struct ::ewas::linked_list;
+	friend struct ::ddk::linked_list;
 	typedef lent_reference_wrapper<detail::linked_list_node<T>> linked_node_ref;
 	typedef lent_reference_wrapper<const detail::linked_list_node<T>> linked_node_const_ref;
 	typedef lent_pointer_wrapper<detail::linked_list_node<T>> linked_node_ptr;
@@ -71,7 +71,7 @@ public:
 		}
 		else
 		{
-			EWAS_FAIL("Self references are not allowed");
+			DDK_FAIL("Self references are not allowed");
 		}
 
 		return m_prevNode;
@@ -85,7 +85,7 @@ public:
 		}
 		else
 		{
-			EWAS_FAIL("Self references are not allowed");
+			DDK_FAIL("Self references are not allowed");
 		}
 
 		return m_nextNode;

@@ -1,8 +1,8 @@
-#include "reference_counter.h"
+#include "ddk_reference_counter.h"
 
 #include <sstream>
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 #if defined(WIN32)
 
@@ -19,7 +19,7 @@
 namespace ddk
 {
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 //#define TRACK_STACK
 
@@ -28,7 +28,7 @@ detail::symbol_cache_table lent_reference_counter::m_symbolInfoCache = detail::s
 #endif
 
 lent_reference_counter::lent_reference_counter()
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	: m_numWeakReferences(0)
 #endif
 {
@@ -37,7 +37,7 @@ lent_reference_counter::lent_reference_counter()
 #endif
 }
 lent_reference_counter::lent_reference_counter(const lent_reference_counter& other)
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	: m_numWeakReferences(other.m_numWeakReferences)
 #endif
 {
@@ -46,11 +46,11 @@ lent_reference_counter::lent_reference_counter(const lent_reference_counter& oth
 #endif
 }
 lent_reference_counter::lent_reference_counter(lent_reference_counter&& other)
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	: m_numWeakReferences(0)
 #endif
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	m_numWeakReferences.set(other.m_numWeakReferences.get());
 	other.m_numWeakReferences.set(0);
 #ifdef TRACK_STACK
@@ -65,7 +65,7 @@ lent_reference_counter::~lent_reference_counter()
 	pthread_mutex_destroy(&m_refMutex);
 #endif
 }
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 size_t lent_reference_counter::incrementWeakReference()
 {
 	return atomic_post_increment(m_numWeakReferences);

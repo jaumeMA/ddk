@@ -3,7 +3,7 @@
 #include "ddk_async_message_loop.h"
 #include "ddk_async_message_queue.h"
 #include "ddk_async_message.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_intrusive_node.h"
 #include "ddk_thread_executor.h"
 #include "ddk_signal_connector.h"
@@ -50,7 +50,7 @@ public:
 
 		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args) mutable { (object->*hook)(std::forward<Args>(i_args)...); };
 
-		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ewas::lend(m_msgQueue));
+		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ddk::lend(m_msgQueue));
 	}
     template<typename T, typename baseT, typename MessageType, typename ... Args>
     detail::connection_base& connect(T *object, void (baseT::*hook)(Args...), lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue) const
@@ -68,7 +68,7 @@ public:
 
 		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args) mutable { (object->*hook)(std::forward<Args>(i_args)...); };
 
-		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ewas::lend(m_msgQueue));
+		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ddk::lend(m_msgQueue));
 	}
 	template<typename T, typename baseT, typename MessageType, typename ... Args>
 	detail::connection_base& connect(T *object, void (baseT::*hook)(Args...) const, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue) const
@@ -84,7 +84,7 @@ public:
 	{
 		const std::function<void(Types...)> call = [hook](Args&& ... i_args) mutable { (*hook)(std::forward<Args>(i_args)...); };
 
-		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ewas::lend(m_msgQueue));
+		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ddk::lend(m_msgQueue));
 	}
 	template<typename MessageType, typename ... Args>
     detail::connection_base& connect(void (*hook)(Types...), lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue) const
@@ -98,7 +98,7 @@ public:
 	{
 		const std::function<Return(Types...)> call(i_functor);
 
-		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ewas::lend(m_msgQueue));
+		return m_msgLoop.connect(m_callers.push(call,static_cast<const detail::signal_connector&>(*this)),ddk::lend(m_msgQueue));
 	}
 	template<typename Functor, typename MessageType>
 	detail::connection_base& connect(const Functor& i_functor, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue) const

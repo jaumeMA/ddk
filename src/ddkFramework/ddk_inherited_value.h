@@ -71,7 +71,7 @@ public:
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
 
-		static const size_t s_TypeHashCode = ewas::getTypeId<T>();
+		static const size_t s_TypeHashCode = ddk::getTypeId<T>();
 
 		m_currentAgnosticType = s_TypeHashCode;
 
@@ -93,7 +93,7 @@ public:
 	inline bool isOfType() const
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
-		static const size_t s_TypeHashCode = ewas::getTypeId<T>();
+		static const size_t s_TypeHashCode = ddk::getTypeId<T>();
 
 		return m_currentAgnosticType == s_TypeHashCode;
 	}
@@ -102,7 +102,7 @@ public:
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
 
-		static const size_t s_TypeHashCode = ewas::getTypeId<T>();
+		static const size_t s_TypeHashCode = ddk::getTypeId<T>();
 
 		if(m_currentAgnosticType == s_TypeHashCode)
 		{
@@ -124,8 +124,8 @@ public:
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
 
-		static const size_t s_TypeHashCode = ewas::getTypeId<T>();
-		static const size_t s_InterfaceHashCode = ewas::getTypeId<T>();
+		static const size_t s_TypeHashCode = ddk::getTypeId<T>();
+		static const size_t s_InterfaceHashCode = ddk::getTypeId<T>();
 
 		if(s_TypeHashCode == s_InterfaceHashCode || m_currentAgnosticType == s_TypeHashCode)
 		{
@@ -143,8 +143,8 @@ public:
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
 
-		static const size_t s_TypeHashCode = ewas::getTypeId<T>();
-		static const size_t s_InterfaceHashCode = ewas::getTypeId<T>();
+		static const size_t s_TypeHashCode = ddk::getTypeId<T>();
+		static const size_t s_InterfaceHashCode = ddk::getTypeId<T>();
 
 		if(s_TypeHashCode == s_InterfaceHashCode || m_currentAgnosticType == s_TypeHashCode)
 		{

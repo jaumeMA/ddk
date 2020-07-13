@@ -1,15 +1,18 @@
 #pragma once
 
-#include "ReaderWaitingRoom.h"
-#include "WriterWaitingRoom.h"
-#include "CriticalSection.h"
+#include "ddk_reader_waiting_room.h"
+#include "ddk_writer_waiting_room.h"
+#include "ddk_critical_section.h"
 #include <array>
 
-class ExclusionArea
+namespace ddk
+{
+
+class exclusion_area
 {
 public:
-	ExclusionArea();
-	~ExclusionArea();
+	exclusion_area();
+	~exclusion_area();
 
 	void enterReader(Reentrancy i_reentrancy);
 	bool tryToEnterReader(Reentrancy i_reentrancy);
@@ -17,10 +20,12 @@ public:
 	void enterWriter(Reentrancy i_reentrancy);
 	bool tryToEnterWriter(Reentrancy i_reentrancy);
 	void leaveWriter();
-	const IWaitingRoom::SharedState& getReaderState() const;
-	const IWaitingRoom::SharedState& getWriterState() const;
+	const iwaiting_room::SharedState& getReaderState() const;
+	const iwaiting_room::SharedState& getWriterState() const;
 
 private:
-	IWaitingRoom::SharedState m_sharedState;
-	std::array<IWaitingRoom*,2> m_waitingRoom;
+	iwaiting_room::SharedState m_sharedState;
+	std::array<iwaiting_room*,2> m_waitingRoom;
 };
+
+}

@@ -19,7 +19,17 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	
+
+		# Configure pthread (bundled library)
+	add_library(pthread SHARED IMPORTED)
+	set_target_properties(pthread PROPERTIES
+		INTERFACE_INCLUDE_DIRECTORIES "${EXTERNAL_DIR}/pthread/include"
+		IMPORTED_IMPLIB_RELEASE "${EXTERNAL_DIR}/pthread/lib/pthreadVC3.lib"
+		IMPORTED_IMPLIB_DEBUG "${EXTERNAL_DIR}/pthread/lib/pthreadVC3d.lib"
+		IMPORTED_LOCATION_RELEASE "${EXTERNAL_DIR}/pthread/bin/pthreadVC3.dll"
+		IMPORTED_LOCATION_DEBUG "${EXTERNAL_DIR}/pthread/bin/pthreadVC3d.dll"
+		MAP_IMPORTED_CONFIG_RELEASE_DEBUG Release)
+
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 endif()

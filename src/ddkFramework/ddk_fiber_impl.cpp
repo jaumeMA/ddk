@@ -27,7 +27,7 @@ namespace detail
 this_fiber_t::this_fiber_t()
 {
 	//recover cpu context
-	ewas::get_context(&m_context);
+	ddk::get_context(&m_context);
 
 	//recover stack shape
 	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
@@ -53,7 +53,7 @@ fiber_impl::fiber_impl()
 {
 	memset(&m_context,0,sizeof(ucontext_t));
 
-	ewas::get_context(&m_context);
+	ddk::get_context(&m_context);
 }
 fiber_impl::fiber_impl(stack_alloc_const_shared_ref i_allocImpl)
 : m_id(reinterpret_cast<size_t>(this))
@@ -62,7 +62,7 @@ fiber_impl::fiber_impl(stack_alloc_const_shared_ref i_allocImpl)
 {
 	memset(&m_context,0,sizeof(ucontext_t));
 
-	ewas::get_context(&m_context);
+	ddk::get_context(&m_context);
 }
 fiber_impl::~fiber_impl()
 {
@@ -79,7 +79,7 @@ void fiber_impl::start(const std::function<void()>& i_function)
 	}
 	else
 	{
-		EWAS_FAIL("Trying to start unbound fiber");
+		DDK_FAIL("Trying to start unbound fiber");
 	}
 }
 void fiber_impl::stop()
@@ -90,7 +90,7 @@ void fiber_impl::stop()
 	}
 	else
 	{
-		EWAS_FAIL("Trying to stop unbound fiber");
+		DDK_FAIL("Trying to stop unbound fiber");
 	}
 }
 yielder_context* fiber_impl::resume_from(this_fiber_t& other)
@@ -103,7 +103,7 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 
 		switch_stack(reinterpret_cast<char*>(m_context.uc_stack.ss_sp) + m_context.uc_stack.ss_size,stackLowAddr);
 
-		ewas::swap_context(other.get_context(),&m_context);
+		ddk::swap_context(other.get_context(),&m_context);
 
 		set_current_fiber_id(other.get_id());
 
@@ -127,7 +127,7 @@ void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 
 	m_alloc.detach();
 
-	ewas::swap_context(&m_context,other.get_context());
+	ddk::swap_context(&m_context,other.get_context());
 }
 fiber_id fiber_impl::get_id() const
 {

@@ -2,8 +2,8 @@
 
 #include <pthread.h>
 #include "ddk_arena.h"
-#include "shared_reference_wrapper.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_shared_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 
 namespace ddk
 {

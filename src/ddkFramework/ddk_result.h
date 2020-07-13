@@ -53,44 +53,44 @@ public:
 
 	result(const result_success_t&)
 	: m_nestedRes()
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(false)
 #endif
 	{
 	}
 	result(const Error& i_error)
 	: m_nestedRes(i_error)
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(false)
 #endif
 	{
 	}
 	result(result&& other)
 	: m_nestedRes(std::move(other.m_nestedRes))
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(other.m_checked)
 #endif
 	{
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 		other.m_checked = true;
 #endif
 	}
 	~result()
 	{
-#if defined(EWAS_DEBUG)
-		EWAS_ASSERT(m_checked==true, "Unchecked result on destroy!");
+#if defined(DDK_DEBUG)
+		DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
 #endif
 	}
 	bool hasError() const
 	{
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	m_checked = true;
 #endif
 		return m_nestedRes.empty() == false;
 	}
 	Error getError() const
 	{
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	m_checked = true;
 #endif
 		return *m_nestedRes;
@@ -102,7 +102,7 @@ public:
 
 private:
 	optional<Error> m_nestedRes;	
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	mutable bool m_checked;
 #endif
 };
@@ -147,51 +147,51 @@ public:
 
 	result(const Payload& i_payload)
 	: m_nestedRes(i_payload)
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(false)
 #endif
 	{
 	}
 	result(Payload&& i_payload)
 	: m_nestedRes(std::move(i_payload))
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(false)
 #endif
 	{
 	}
 	result(const Error& i_error)
 	: m_nestedRes(i_error)
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(false)
 #endif
 	{
 	}
 	result(result&& other)
 	: m_nestedRes(std::move(other.m_nestedRes))
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	, m_checked(other.m_checked)
 #endif
 	{
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 		other.m_checked = true;
 #endif
 	}
 	~result()
 	{
-#if defined(EWAS_DEBUG)
-		EWAS_ASSERT(m_checked==true, "Unchecked result on destroy!");
+#if defined(DDK_DEBUG)
+		DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
 #endif
 	}
 	bool hasError() const
 	{
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	m_checked = true;
 #endif
 		return m_nestedRes.template is<Error>();
 	}
 	Error getError() const
 	{
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	m_checked = true;
 #endif
 		return m_nestedRes.template get<Error>();
@@ -211,7 +211,7 @@ public:
 
 private:
 	variant<Payload,Error> m_nestedRes;	
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	mutable bool m_checked;
 #endif
 };

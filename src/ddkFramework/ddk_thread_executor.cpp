@@ -11,7 +11,7 @@ thread_polling_executor::thread_polling_executor(unsigned long i_sleepInMs)
 , m_stopped(true)
 {
 }
-thread_polling_executor::thread_polling_executor(ewas::thread i_thread, unsigned long i_sleepInMs)
+thread_polling_executor::thread_polling_executor(ddk::thread i_thread, unsigned long i_sleepInMs)
 : m_sleepTimeInMS(i_sleepInMs)
 , m_executor(nullptr)
 , m_stopped(true)
@@ -47,13 +47,13 @@ void thread_polling_executor::start_thread(const std::function<void()>& i_execut
 {
 	start_result startRes = execute(nullptr,i_executor);
 
-	EWAS_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ewas::formatter<std::string>::format(startRes.getError()));
+	DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
 }
 void thread_polling_executor::stop_thread()
 {
 	resume_result stopRes = resume();
 
-	EWAS_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ewas::formatter<std::string>::format(stopRes.getError()));
+	DDK_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.getError()));
 }
 void thread_polling_executor::signal_thread()
 {
@@ -105,7 +105,7 @@ void thread_polling_executor::update() const
 	{
 		m_executor();
 
-		ewas::sleep(m_sleepTimeInMS);
+		ddk::sleep(m_sleepTimeInMS);
 	}
 }
 
@@ -122,7 +122,7 @@ thread_event_driven_executor::thread_event_driven_executor(unsigned int i_sleepI
 	pthread_mutex_init(&m_condVarMutex, &mutexAttr);
 	pthread_cond_init(&m_condVar, NULL);
 }
-thread_event_driven_executor::thread_event_driven_executor(ewas::thread i_thread, unsigned int i_sleepInMS)
+thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMS)
 : m_sleepTimeInMS(i_sleepInMS)
 , m_executor(nullptr)
 , m_stopped(true)
@@ -176,13 +176,13 @@ void thread_event_driven_executor::start_thread(const std::function<void()>& i_e
 {
 	start_result startRes = execute(nullptr,i_executor);
 
-	EWAS_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ewas::formatter<std::string>::format(startRes.getError()));
+	DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
 }
 void thread_event_driven_executor::stop_thread()
 {
 	resume_result stopRes = resume();
 
-	EWAS_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ewas::formatter<std::string>::format(stopRes.getError()));
+	DDK_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.getError()));
 }
 void thread_event_driven_executor::signal_thread()
 {
@@ -269,7 +269,7 @@ thread_fire_and_forget_executor::thread_fire_and_forget_executor()
 : m_executor(nullptr)
 {
 }
-thread_fire_and_forget_executor::thread_fire_and_forget_executor(ewas::thread i_updateThread)
+thread_fire_and_forget_executor::thread_fire_and_forget_executor(ddk::thread i_updateThread)
 : m_executor(nullptr)
 , m_updateThread(std::move(i_updateThread))
 {

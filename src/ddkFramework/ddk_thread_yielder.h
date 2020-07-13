@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ddk_arena.h"
-#include "lent_reference_wrapper.h"
-#include "lend_from_this.h"
-#include "embedded_type.h"
+#include "ddk_lent_reference_wrapper.h"
+#include "ddk_lend_from_this.h"
+#include "ddk_embedded_type.h"
 
 namespace ddk
 {

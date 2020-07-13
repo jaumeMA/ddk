@@ -6,9 +6,9 @@
 #include <map>
 #include <vector>
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
-#include "symbol_cache_table.h"
+#include "ddk_symbol_cache_table.h"
 
 #endif
 
@@ -28,7 +28,7 @@ SCOPED_ENUM_DECL(ReferenceAllocationType,
 
 class lent_reference_counter
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	static const size_t k_maxNumberOfStacks = 8;
 	static const size_t k_maxNumOfChars = 64;
 	typedef void* stack_entry[k_maxNumberOfStacks];
@@ -42,7 +42,7 @@ public:
 	lent_reference_counter(const lent_reference_counter& other);
 	lent_reference_counter(lent_reference_counter&& other);
 	virtual ~lent_reference_counter();
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	size_t incrementWeakReference();
 	size_t decrementWeakReference();
 	size_t getNumWeakReferences() const;
@@ -55,7 +55,7 @@ public:
 #endif
 
 private:
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	static detail::symbol_cache_table m_symbolInfoCache;
 	stack_container m_stackTraces;
 	pthread_mutex_t m_refMutex;
@@ -135,7 +135,7 @@ public:
 	}
 	bool addStrongReference()
 	{
-		EWAS_ASSERT(m_hasStrongReferences == false, "Unique reference already incremented");
+		DDK_ASSERT(m_hasStrongReferences == false, "Unique reference already incremented");
 
 		m_hasStrongReferences = true;
 
@@ -143,7 +143,7 @@ public:
 	}
 	bool removeStrongReference()
 	{
-		EWAS_ASSERT(m_hasStrongReferences == true, "Unique reference already incremented");
+		DDK_ASSERT(m_hasStrongReferences == true, "Unique reference already incremented");
 
 		m_hasStrongReferences = false;
 

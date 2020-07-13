@@ -1,6 +1,6 @@
 #pragma once
 
-#include "unique_pointer_wrapper.h"
+#include "ddk_unique_pointer_wrapper.h"
 
 namespace ddk
 {
@@ -19,12 +19,12 @@ class unique_reference_wrapper : public unique_pointer_wrapper<T>
 	unique_reference_wrapper(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = NULL)
 	: unique_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter)
 	{
-		EWAS_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
+		DDK_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
 	}
 	unique_reference_wrapper(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = NULL)
 	: unique_pointer_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter)
 	{
-		EWAS_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
+		DDK_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
 	}
     using unique_pointer_wrapper<T>::operator bool;
     using unique_pointer_wrapper<T>::clear;

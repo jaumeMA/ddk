@@ -1,6 +1,6 @@
 
 #include <thread>
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_thread_impl.h"
 
 extern "C"
@@ -28,7 +28,7 @@ inline void launch_fiber(const std::function<Return()>* i_function, fiber_impl* 
 	}
 	catch(const detail::suspend_exception& i_excp)
 	{
-		EWAS_ASSERT(i_excp.get_id() == i_fiber->get_id(), "Suspending fiber from the wrong context");
+		DDK_ASSERT(i_excp.get_id() == i_fiber->get_id(), "Suspending fiber from the wrong context");
 	}
 
 	i_fiber->set_state(FiberExecutionState::Done);
@@ -46,11 +46,11 @@ void fiber_impl::start_from(this_fiber_t& other, const std::function<Return()>& 
 
         m_context.uc_link = other.get_context();
 
-		ewas::make_context(&m_context,&consolidate_frame,&i_function,this,&launch_fiber<Return>);
+		ddk::make_context(&m_context,&consolidate_frame,&i_function,this,&launch_fiber<Return>);
 	}
 	else
 	{
-		EWAS_FAIL("Could not allocate stack");
+		DDK_FAIL("Could not allocate stack");
 	}
 }
 

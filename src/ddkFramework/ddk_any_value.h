@@ -118,14 +118,14 @@ public:
 			{
 				MAKE_IT_CRASH
 
-				return ewas::crash_on_return<typename value_wrapper<T>::lreference>::value();
+				return ddk::crash_on_return<typename value_wrapper<T>::lreference>::value();
 			}
 		}
 		else
 		{
 			MAKE_IT_CRASH
 
-			return ewas::crash_on_return<typename value_wrapper<T>::lreference>::value();
+			return ddk::crash_on_return<typename value_wrapper<T>::lreference>::value();
 		}
 	}
 	template<typename T>
@@ -143,14 +143,14 @@ public:
 			{
 				MAKE_IT_CRASH
 
-				return ewas::crash_on_return<typename value_wrapper<T>::const_lreference>::value();
+				return ddk::crash_on_return<typename value_wrapper<T>::const_lreference>::value();
 			}
 		}
 		else
 		{
 			MAKE_IT_CRASH
 
-			return ewas::crash_on_return<typename value_wrapper<T>::const_lreference>::value();
+			return ddk::crash_on_return<typename value_wrapper<T>::const_lreference>::value();
 		}
 	}
 	template<typename T>
@@ -172,14 +172,14 @@ public:
 			{
 				MAKE_IT_CRASH
 
-				return ewas::crash_on_return<typename value_wrapper<T>::rreference>::value();
+				return ddk::crash_on_return<typename value_wrapper<T>::rreference>::value();
 			}
 		}
 		else
 		{
 			MAKE_IT_CRASH
 
-			return ewas::crash_on_return<typename value_wrapper<T>::rreference>::value();
+			return ddk::crash_on_return<typename value_wrapper<T>::rreference>::value();
 		}
 	}
 	operator bool() const;

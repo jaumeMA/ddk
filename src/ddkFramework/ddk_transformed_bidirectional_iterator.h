@@ -31,7 +31,7 @@ class PrivateIterator<Iterator,ReturnType,std::bidirectional_iterator_tag> : pub
 	typedef std::bidirectional_iterator_tag iterator_tag;
 	typedef typename Iterator::reference reference;
 	template<typename>
-	friend class ewas::TransformedBidirectionalIterator;
+	friend class ddk::TransformedBidirectionalIterator;
 
 protected:
 	PrivateIterator(Iterator i_iterator)
@@ -45,7 +45,7 @@ protected:
 		}
 		else
 		{
-			EWAS_FAIL("Comparing two different kind of iterators");
+			DDK_FAIL("Comparing two different kind of iterators");
 
 			return false;
 		}
@@ -163,7 +163,7 @@ public:
 		return m_iteratorInterface->getValue();
 	}
 	template<typename RReturn>
-	bool operator==(const ewas::TransformedBidirectionalIterator<RReturn>& other) const
+	bool operator==(const ddk::TransformedBidirectionalIterator<RReturn>& other) const
 	{
 		if(m_iteratorInterface && other.m_iteratorInterface)
 		{
@@ -175,7 +175,7 @@ public:
 		}
 	}
 	template<typename RReturn>
-	bool operator!=(const ewas::TransformedBidirectionalIterator<RReturn>& other) const
+	bool operator!=(const ddk::TransformedBidirectionalIterator<RReturn>& other) const
 	{
 		if(m_iteratorInterface && other.m_iteratorInterface)
 		{

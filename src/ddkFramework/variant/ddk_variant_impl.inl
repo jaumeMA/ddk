@@ -1,7 +1,7 @@
 #pragma once
 
-#include "visitor_invoker.h"
-#include "builtin_visitors.h"
+#include "ddk_visitor_invoker.h"
+#include "ddk_builtin_visitors.h"
 
 
 #define CREATE_INNER_VISITOR(_visitor,_types) \
@@ -354,7 +354,7 @@ template<typename ... Types>
 template<typename TType>
 typename embedded_type<TType>::cref_type variant_impl<Types...>::get() const
 {
-	EWAS_ASSERT(is<TType>(), "Accessing non current type!");
+	DDK_ASSERT(is<TType>(), "Accessing non current type!");
 
 	return m_storage.template get<TType>();
 }
@@ -362,7 +362,7 @@ template<typename ... Types>
 template<typename TType>
 typename embedded_type<TType>::ref_type variant_impl<Types...>::get()
 {
-	EWAS_ASSERT(is<TType>(), "Accessing non current type!");
+	DDK_ASSERT(is<TType>(), "Accessing non current type!");
 
 	return m_storage.template get<TType>();
 }
@@ -388,7 +388,7 @@ template<typename ... Types>
 template<size_t Pos>
 typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type variant_impl<Types...>::get() const
 {
-	EWAS_ASSERT(m_currentType == Pos, "Accessing non current type!");
+	DDK_ASSERT(m_currentType == Pos, "Accessing non current type!");
 
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 
@@ -399,7 +399,7 @@ template<typename ... Types>
 template<size_t Pos>
 typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type variant_impl<Types...>::get()
 {
-	EWAS_ASSERT(m_currentType == Pos, "Accessing non current type!");
+	DDK_ASSERT(m_currentType == Pos, "Accessing non current type!");
 
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 

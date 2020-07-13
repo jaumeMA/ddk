@@ -1,13 +1,16 @@
 #pragma once
 
-#include "IWaitingRoom.h"
+#include "ddk_iwaiting_room.h"
 #include <pthread.h>
 
-class WriterWaitingRoom : public IWaitingRoom
+namespace ddk
+{
+
+class writer_waiting_room : public iwaiting_room
 {
 public:
-	WriterWaitingRoom(SharedState& i_sharedState);
-	~WriterWaitingRoom();
+	writer_waiting_room(SharedState& i_sharedState);
+	~writer_waiting_room();
 
 private:
 	virtual void _enter_area(Reentrancy i_reentrancy) override;
@@ -19,3 +22,5 @@ private:
 	SharedState&		m_sharedState;
 	pthread_mutex_t		m_stateRoomMutex;
 };
+
+}

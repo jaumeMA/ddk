@@ -1,6 +1,6 @@
 #include "ddk_stack_allocator.h"
 #include "ddk_dynamic_stack_allocator.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 #if defined(WIN32)
 
@@ -14,7 +14,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
 	if(pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION)
 	{
-		if(std::pair<void*,void*>*& fiberArena = ewas::stack_allocator::get_curr_arena())
+		if(std::pair<void*,void*>*& fiberArena = ddk::stack_allocator::get_curr_arena())
 		{
 			//check that stack pointer is inside our scope
 			if(const stack_allocator_interface* currAllocImpl = stack_allocator::get_curr_alloc_impl())
@@ -62,12 +62,12 @@ void segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context);
 
 void segfault_sigaction_bridge(int i_code,siginfo_t* i_sigInfo,void* i_context)
 {
-    ewas::segfault_sigaction(i_code,i_sigInfo,i_context);
+    ddk::segfault_sigaction(i_code,i_sigInfo,i_context);
 }
-void ewas::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
+void ddk::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
 {
     int tmp = 0;
-    if(std::pair<void*,void*>*& fiberArena = ewas::stack_allocator::get_curr_arena())
+    if(std::pair<void*,void*>*& fiberArena = ddk::stack_allocator::get_curr_arena())
     {
 		if(const stack_allocator_interface* currAllocImpl = stack_allocator::get_curr_alloc_impl())
 		{
@@ -78,21 +78,21 @@ void ewas::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
 			}
 			else
 			{
-				EWAS_FAIL_OR_LOG("Segfault outside stack scope");
+				DDK_FAIL_OR_LOG("Segfault outside stack scope");
 
 				exit(0);
 			}
 		}
         else
         {
-            EWAS_FAIL_OR_LOG("Segfault outside stack scope");
+            DDK_FAIL_OR_LOG("Segfault outside stack scope");
 
             exit(0);
         }
     }
     else
     {
-        EWAS_FAIL_OR_LOG("Received seg fault with no associated arena");
+        DDK_FAIL_OR_LOG("Received seg fault with no associated arena");
 
         exit(0);
     }
@@ -178,7 +178,7 @@ std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
 }
 void* stack_allocator::attach(fiber_id i_id)
 {
-	EWAS_ASSERT(m_arena, "Attaching with no fiber map set");
+	DDK_ASSERT(m_arena, "Attaching with no fiber map set");
 
 	const stack_allocator_interface*& currAllocImpl = get_curr_alloc_impl();
 	currAllocImpl = m_stackAllocImpl.get();
@@ -196,7 +196,7 @@ void stack_allocator::detach()
 }
 void stack_allocator::deallocate(fiber_id i_id) const
 {
-	EWAS_ASSERT(m_arena, "Deallocating with no fiber map set");
+	DDK_ASSERT(m_arena, "Deallocating with no fiber map set");
 
 	std::pair<void*,void*>& fiberAlloc = (*m_arena)[i_id];
 

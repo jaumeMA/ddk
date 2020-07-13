@@ -48,7 +48,7 @@ public:
 		const short k_tag = tagged_pointer<lock_free_stack_node<T>>::get_tag(m_nextNode.get());
 
 		//JAUME: we use size_t atomic instead of pointer atomics since we are dealing with tagged pointers (not aligned) and documentation explicitly states that atomic operations over not aligned pointers is UB
-		return ewas::atomic_compare_exchange(m_nextNode.as_number(),tagged_pointer<lock_free_stack_node<T>>::tag_pointer_as_value(i_oldNode,k_tag),tagged_pointer<lock_free_stack_node<T>>::tag_pointer_as_value(i_newNode,k_tag));
+		return ddk::atomic_compare_exchange(m_nextNode.as_number(),tagged_pointer<lock_free_stack_node<T>>::tag_pointer_as_value(i_oldNode,k_tag),tagged_pointer<lock_free_stack_node<T>>::tag_pointer_as_value(i_newNode,k_tag));
 	}
 	const lock_free_stack_node<T>* get_next() const
 	{
@@ -86,7 +86,7 @@ public:
 
 private:
 	arena<sizeof(T), std::alignment_of<T>::value> m_arena;
-	ewas::atomic<lock_free_stack_node<T>*> m_nextNode;
+	ddk::atomic<lock_free_stack_node<T>*> m_nextNode;
 };
 
 }

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ddk_executor_interface.h"
-#include "shared_reference_wrapper.h"
+#include "ddk_shared_reference_wrapper.h"
 #include "ddk_thread.h"
 #include "ddk_fiber.h"
-#include "embedded_type.h"
+#include "ddk_embedded_type.h"
 
 namespace ddk
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shared_pointer_wrapper.h"
+#include "ddk_shared_pointer_wrapper.h"
 
 namespace ddk
 {
@@ -22,7 +22,7 @@ class shared_reference_wrapper : public shared_pointer_wrapper<T>
 	shared_reference_wrapper(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = NULL)
 	: shared_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter)
 	{
-		EWAS_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
+		DDK_ASSERT(i_data!=NULL, "Trying to construct non null reference from void pointer");
 	}
     using shared_pointer_wrapper<T>::operator bool;
 	using shared_pointer_wrapper<T>::empty;

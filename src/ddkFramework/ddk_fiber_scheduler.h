@@ -2,7 +2,7 @@
 
 #include <pthread.h>
 #include <functional>
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 #include "ddk_executor_interface.h"
 #include <map>
 #include <queue>
@@ -11,7 +11,7 @@
 #include "ddk_fiber.h"
 #include "ddk_fiber_yielder.h"
 #include "ddk_thread.h"
-#include "lend_from_this.h"
+#include "ddk_lend_from_this.h"
 
 namespace ddk
 {
@@ -96,7 +96,7 @@ private:
 	function_container m_functions;
 	fiber_container m_fibers;
 	running_fiber_container m_runningFibers;
-	ewas::thread m_fiberThread;
+	ddk::thread m_fiberThread;
 	detail::this_fiber_t m_caller;
 	detail::running_fiber m_callee;
 	detail::fiber_yielder m_yielder;

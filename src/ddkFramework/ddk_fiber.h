@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lent_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 #include "ddk_fiber_impl.h"
 #include "ddk_fiber_defs.h"
 

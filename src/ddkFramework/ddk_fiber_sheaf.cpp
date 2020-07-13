@@ -41,9 +41,9 @@ fiber fiber_sheaf::extract()
 	}
 	else
 	{
-		EWAS_FAIL("Trying to pop fiber from empty sheaf");
+		DDK_FAIL("Trying to pop fiber from empty sheaf");
 
-		return ewas::crash_on_return<fiber&&>::value();
+		return ddk::crash_on_return<fiber&&>::value();
 	}
 }
 bool fiber_sheaf::empty() const

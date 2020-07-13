@@ -7,7 +7,7 @@
 #include "ddk_async_defs.h"
 #include "ddk_async_message_queue.h"
 #include "ddk_async_message_exchange_room.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -63,7 +63,7 @@ public:
 			}
 		}
 
-		EWAS_FAIL("Trying to remove caller with no receiver associated");
+		DDK_FAIL("Trying to remove caller with no receiver associated");
 	}
 	void clear(receiver_id i_id)
 	{

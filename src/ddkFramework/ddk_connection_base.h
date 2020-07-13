@@ -14,7 +14,7 @@ class signal_connector;
 
 class connection_base
 {
-    friend class ::ewas::connection;
+    friend class ::ddk::connection;
 
 public:
     connection_base(const signal_connector& i_connector);

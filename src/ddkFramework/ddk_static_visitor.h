@@ -20,14 +20,14 @@ public:
 	{
 		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
 
-		return ewas::crash_on_return<Return>::value();
+		return ddk::crash_on_return<Return>::value();
 	}
 	template<typename T>
 	Return visit(T&&) const
 	{
 		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
 
-		return ewas::crash_on_return<Return>::value();
+		return ddk::crash_on_return<Return>::value();
 	}
 
 };
@@ -43,14 +43,14 @@ public:
 	{
 		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
 
-		return ewas::crash_on_return<return_type>::value();
+		return ddk::crash_on_return<return_type>::value();
 	}
 	template<typename T>
 	return_type visit(T&&) const
 	{
 		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
 
-		return ewas::crash_on_return<return_type>::value();
+		return ddk::crash_on_return<return_type>::value();
 	}
 
 };

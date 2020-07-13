@@ -1,12 +1,12 @@
 #pragma once
 
-#include "reference_counter.h"
-#include "reference_wrapper_deleter.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_reference_counter.h"
+#include "ddk_reference_wrapper_deleter.h"
+#include "ddk_lent_reference_wrapper.h"
 #include <type_traits>
 #include <utility>
-#include "tagged_pointer.h"
-#include "reference_tag.h"
+#include "ddk_tagged_pointer.h"
+#include "ddk_reference_tag.h"
 
 namespace ddk
 {
@@ -237,7 +237,7 @@ private:
 	{
 		if(i_hasRefs == false)
 		{
-            EWAS_ASSERT(m_refCounter->hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
+            DDK_ASSERT(m_refCounter->hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
 
 			const short tagCategory = m_refCounter.get_tag();
 			unique_reference_counter* refCounter = m_refCounter.extract_pointer();

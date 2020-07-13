@@ -1,10 +1,9 @@
 #pragma once
 
-#include "CriticalSection.h"
-#include "IAccessProvider.h"
-#include "TMPUtils.h"
+#include "ddk_critical_section.h"
+#include "ddk_iaccess_provider.h"
 #include <tuple>
-#include "reference_counter.h"
+#include "ddk_reference_counter.h"
 #include "ddk_template_helper.h"
 
 namespace ddk
@@ -71,12 +70,12 @@ public:
 	}
 	typename detail::resolve_critical_access_type<ACCESS,T>::type& operator[](size_t i_index)
 	{
-		EWAS_ASSERT(i_index < m_criticalSections.size(), "Index out of bounds");
+		DDK_ASSERT(i_index < m_criticalSections.size(), "Index out of bounds");
 		return m_criticalSections[i_index];
 	}
 	const typename detail::resolve_critical_access_type<ACCESS,T>::type& operator[](size_t i_index) const
 	{
-		EWAS_ASSERT(i_index < m_criticalSections.size(), "Index out of bounds");
+		DDK_ASSERT(i_index < m_criticalSections.size(), "Index out of bounds");
 		return m_criticalSections[i_index];
 	}
 	size_t size() const
@@ -184,7 +183,7 @@ public:
 	template<IAccessProvider::Access ACCESS>
 	void leaveCriticalSection(typename detail::resolve_critical_access_type<ACCESS,AccessProviderCollectorDyn<T>>::type i_criticalSection) const
 	{
-		EWAS_ASSERT(i_criticalSection.size() == m_accesProviders.size(), "Unconsistent num of critical sections");
+		DDK_ASSERT(i_criticalSection.size() == m_accesProviders.size(), "Unconsistent num of critical sections");
 
 		const size_t numCriticalSections = i_criticalSection.size();
 		for (int acquiredProviderIndex=numCriticalSections-1;acquiredProviderIndex>=0;--acquiredProviderIndex)
@@ -210,7 +209,7 @@ class CriticalSectionCollector
 
 public:
 	CriticalSectionCollector()
-	: m_criticalSections(ewas::mpl::construct_type<typename detail::resolve_critical_access_type<ACCESS,Types>::type>::with(empty_critical_section) ...)
+	: m_criticalSections(ddk::mpl::construct_type<typename detail::resolve_critical_access_type<ACCESS,Types>::type>::with(empty_critical_section) ...)
 	{
 	}
 	template<typename ... Args>

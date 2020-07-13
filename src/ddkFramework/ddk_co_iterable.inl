@@ -81,13 +81,13 @@ typename Iterable::reference forward_iterator_awaitable(Iterable& i_iterable)
 
 	suspend();
 
-	return ewas::crash_on_return<typename Iterable::reference>::value();
+	return ddk::crash_on_return<typename Iterable::reference>::value();
 }
 template<typename Iterable>
 typename Iterable::reference backward_iterator_awaitable(Iterable& i_iterable)
 {
-	//JAUME: current gcc does not support std::rebgin/rend. Pending to add ewas::begin/end/rbegin/rend wich fulfills this lack of api
-	static_assert(sizeof(Iterable)==0,"add ewas::rbegin, ewas::rend");
+	//JAUME: current gcc does not support std::rebgin/rend. Pending to add ddk::begin/end/rbegin/rend wich fulfills this lack of api
+	static_assert(sizeof(Iterable)==0,"add ddk::rbegin, ddk::rend");
 	auto&& itNext = std::begin(i_iterable);
 
 	while(itNext != std::end(i_iterable))
@@ -99,7 +99,7 @@ typename Iterable::reference backward_iterator_awaitable(Iterable& i_iterable)
 
 	suspend();
 
-	return ewas::crash_on_return<typename Iterable::reference>::value();
+	return ddk::crash_on_return<typename Iterable::reference>::value();
 }
 
 template<typename Iterable>

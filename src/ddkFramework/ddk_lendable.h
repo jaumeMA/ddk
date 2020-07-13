@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lent_reference_wrapper.h"
-#include "reference_counter.h"
+#include "ddk_lent_reference_wrapper.h"
+#include "ddk_reference_counter.h"
 #include <type_traits>
 
 namespace ddk
@@ -24,7 +24,7 @@ class lendable
 public:
 	lendable()
 	{
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 		m_counter.addStrongReference();
 #endif
 	}
@@ -32,30 +32,30 @@ public:
 	lendable(Args&& ... i_args)
 	: m_value(T(std::forward<Args>(i_args) ...))
 	{
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 		m_counter.addStrongReference();
 #endif
 	}
 	lendable(const lendable& other)
 	: m_value(other.m_value)
 	{
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 		m_counter.addStrongReference();
 #endif
 	}
 	lendable(lendable&& other)
 	: m_value(std::move(other.m_value))
 	{
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 		m_counter.addStrongReference();
 #endif
 	}
 	~lendable()
 	{
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 		m_counter.removeStrongReference();
 
-		EWAS_ASSERT(m_counter.hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
+		DDK_ASSERT(m_counter.hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
 #endif
 	}
 	lendable& operator=(const lendable& other)
@@ -88,7 +88,7 @@ public:
 	}
 
 private:
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	inline lent_reference_wrapper<value_type> ref_from_this()
 	{
 		return lent_reference_wrapper<value_type>(&m_value,&m_counter);
@@ -109,7 +109,7 @@ private:
 #endif
 
 	T m_value;
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	mutable unique_reference_counter m_counter;
 #endif
 };

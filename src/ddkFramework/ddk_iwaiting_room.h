@@ -2,7 +2,7 @@
 
 #include "ddk_macros.h"
 #include "ddk_atomics.h"
-#include "CriticalSection.h"
+#include "ddk_critical_section.h"
 #include <vector>
 #include <pthread.h>
 
@@ -15,7 +15,10 @@
 
 #endif
 
-class IWaitingRoom
+namespace ddk
+{
+
+class iwaiting_room
 {
 public:
 	enum Access
@@ -27,9 +30,9 @@ public:
 
 	struct SharedState
 	{
-		friend class IWaitingRoom;
+		friend class iwaiting_room;
 	public:
-		typedef IWaitingRoom::Access Access;
+		typedef iwaiting_room::Access Access;
 
 		SharedState();
 		~SharedState();
@@ -49,8 +52,8 @@ public:
 		bool hasStackTraces(Access i_access) const;
 #endif
 
-#ifdef EWAS_DEBUG
-		mutable std::vector<ewas::thread_id_t> m_mutexOwnerThreadId;
+#ifdef DDK_DEBUG
+		mutable std::vector<ddk::thread_id_t> m_mutexOwnerThreadId;
 		mutable pthread_mutex_t m_localDataMutex;
 #endif
 
@@ -59,13 +62,13 @@ public:
 
 		pthread_mutex_t m_exclusiveMutex;
 		Access m_currentState;
-		ewas::atomic_size_t m_numWaitingWriters;
+		ddk::atomic_size_t m_numWaitingWriters;
 #ifdef THREAD_ACQUIRE_STACK_TRACE
 		std::map<int,std::pair<Access,std::vector<std::string>>> m_stackTraceMap;
 #endif
 	};
 
-	virtual ~IWaitingRoom(){};
+	virtual ~iwaiting_room(){};
 	void enter(Reentrancy i_reentrancy);
 	bool tryToEnter(Reentrancy i_reentrancy);
 	void leave();
@@ -76,3 +79,5 @@ private:
 	virtual bool _try_to_enter_area(Reentrancy i_reentrancy) = 0;
 	virtual void _leave_area() = 0;
 };
+
+}

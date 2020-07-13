@@ -1,12 +1,12 @@
 #pragma once
 
 #include "ddk_linked_list_node.h"
-#include "lent_reference_wrapper.h"
-#include "unique_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
+#include "ddk_unique_reference_wrapper.h"
 #include "ddk_list_iterator.h"
 #include "ddk_system_allocator.h"
 #include "ddk_optional.h"
-#include "reference_wrapper_deleter.h"
+#include "ddk_reference_wrapper_deleter.h"
 
 namespace ddk
 {

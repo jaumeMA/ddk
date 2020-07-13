@@ -1,7 +1,10 @@
 #pragma once
 
-#include "CriticalSectionDefs.h"
+#include "ddk_critical_section_defs.h"
 #include "ddk_none.h"
+
+namespace ddk
+{
 
 struct critical_section_context
 {
@@ -20,3 +23,5 @@ private:
 
 const detail::context_acquired_t context_acquired = detail::context_acquired_t(true);
 const detail::context_acquired_t context_unacquired = detail::context_acquired_t(false);
+
+}

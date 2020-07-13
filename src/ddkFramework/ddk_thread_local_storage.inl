@@ -7,7 +7,7 @@ namespace ddk
 template<typename T, typename ... Args>
 T* thread_local_storage::construct(Args&& ... i_args)
 {
-	EWAS_ASSERT(m_address==nullptr, "Constructing already constructed address");
+	DDK_ASSERT(m_address==nullptr, "Constructing already constructed address");
 
 	if((m_address = m_alloc.allocate(1,sizeof(T))))
 	{
@@ -17,7 +17,7 @@ T* thread_local_storage::construct(Args&& ... i_args)
 	}
 	else
 	{
-		EWAS_FAIL("Could not allocate address");
+		DDK_FAIL("Could not allocate address");
 
 		return nullptr;
 	}
@@ -25,7 +25,7 @@ T* thread_local_storage::construct(Args&& ... i_args)
 template<typename T>
 void thread_local_storage::destroy()
 {
-	EWAS_ASSERT(m_address!=nullptr, "Destroying null address");
+	DDK_ASSERT(m_address!=nullptr, "Destroying null address");
 
 	if(T* typedAddress = reinterpret_cast<T*>(m_address))
 	{

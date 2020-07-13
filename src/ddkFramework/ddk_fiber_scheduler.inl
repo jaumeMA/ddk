@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_ucontext.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_thread_impl.h"
 
 namespace ddk
@@ -17,7 +17,7 @@ fiber_scheduler<Comparator>::fiber_scheduler()
 template<typename Comparator>
 fiber_scheduler<Comparator>::~fiber_scheduler()
 {
-	EWAS_ASSERT(m_fibers.empty(), "Destroying fiber scheduler with pending fibers");
+	DDK_ASSERT(m_fibers.empty(), "Destroying fiber scheduler with pending fibers");
 
 	stop();
 
@@ -111,7 +111,7 @@ size_t fiber_scheduler<Comparator>::size() const
 template<typename Comparator>
 void fiber_scheduler<Comparator>::start()
 {
-	m_fiberThread.start(std::bind(&fiber_scheduler<Comparator>::run,this),ewas::lend(m_yielder));
+	m_fiberThread.start(std::bind(&fiber_scheduler<Comparator>::run,this),ddk::lend(m_yielder));
 }
 template<typename Comparator>
 void fiber_scheduler<Comparator>::stop()
@@ -153,7 +153,7 @@ bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const std::function<vo
 	}
 	else
 	{
-		EWAS_FAIL("Trying to activate not registered fiber");
+		DDK_FAIL("Trying to activate not registered fiber");
 
 		pthread_mutex_unlock(&m_fiberMutex);
 
@@ -176,7 +176,7 @@ bool fiber_scheduler<Comparator>::deactivate(fiber_id i_id)
 	}
 	else
 	{
-		EWAS_FAIL("Trying to deactivate not registered function");
+		DDK_FAIL("Trying to deactivate not registered function");
 
 		pthread_mutex_unlock(&m_fiberMutex);
 
@@ -196,7 +196,7 @@ void fiber_scheduler<Comparator>::unregister(fiber_id i_id)
 	}
 	else
 	{
-		EWAS_FAIL("Trying to unregister not present fiber");
+		DDK_FAIL("Trying to unregister not present fiber");
 	}
 
 	pthread_mutex_unlock(&m_fiberMutex);
@@ -205,7 +205,7 @@ template<typename Comparator>
 void fiber_scheduler<Comparator>::run()
 {
 	//update current yielder
-	detail::yielder_lent_ptr prevYielder = detail::thread_impl_interface::set_yielder(ewas::lend(m_yielder));
+	detail::yielder_lent_ptr prevYielder = detail::thread_impl_interface::set_yielder(ddk::lend(m_yielder));
 
 	while(m_stop == false)
 	{

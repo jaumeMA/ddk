@@ -14,28 +14,28 @@ void* static_stack_allocator<Size>::reserve(size_t) const
 template<size_t Size>
 void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
 {
-	EWAS_ASSERT(m_underUse == false, "Trying to allocate in already used arena");
+	DDK_ASSERT(m_underUse == false, "Trying to allocate in already used arena");
 
 	return reinterpret_cast<char*>(i_ref) + (Size - i_size) * s_pageSize;
 }
 template<size_t Size>
 bool static_stack_allocator<Size>::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const
 {
-	EWAS_FAIL("Static stack allocator do not offer reallocate facility");
+	DDK_FAIL("Static stack allocator do not offer reallocate facility");
 
 	return false;
 }
 template<size_t Size>
 void static_stack_allocator<Size>::deallocate(void*,size_t) const
 {
-	EWAS_ASSERT(m_underUse, "Trying to deallocate in non used arena");
+	DDK_ASSERT(m_underUse, "Trying to deallocate in non used arena");
 
 	m_underUse = false;
 }
 template<size_t Size>
 void static_stack_allocator<Size>::release(void*,size_t) const
 {
-	EWAS_ASSERT(m_underUse == false, "Trying to release in non used arena");
+	DDK_ASSERT(m_underUse == false, "Trying to release in non used arena");
 }
 
 }

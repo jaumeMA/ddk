@@ -1,5 +1,5 @@
 #include "ddk_fiber_utils.h"
-#include "thread_utils.h"
+#include "ddk_thread_utils.h"
 #include "ddk_thread_impl.h"
 
 namespace ddk
@@ -38,16 +38,16 @@ fiber_id get_thread_fiber_id()
 }
 void suspend()
 {
-	if(ewas::detail::yielder_lent_ptr currYielder = ewas::detail::thread_impl_interface::get_yielder())
+	if(ddk::detail::yielder_lent_ptr currYielder = ddk::detail::thread_impl_interface::get_yielder())
 	{
 		currYielder->suspend(nullptr);
 	}
 }
 void yield()
 {
-	if(ewas::detail::yielder_lent_ptr currYielder = ewas::detail::thread_impl_interface::get_yielder())
+	if(ddk::detail::yielder_lent_ptr currYielder = ddk::detail::thread_impl_interface::get_yielder())
 	{
-		ewas::detail::typed_yielder_context<detail::void_t> _yielder;
+		ddk::detail::typed_yielder_context<detail::void_t> _yielder;
 
 		_yielder.insert_value(_void);
 

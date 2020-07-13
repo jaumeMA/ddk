@@ -38,7 +38,7 @@ ucontext_t* get_return_context()
 }
 void return_function()
 {
-	ewas::set_context(get_return_context());
+	ddk::set_context(get_return_context());
 }
 
 }

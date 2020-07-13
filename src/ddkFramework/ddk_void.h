@@ -12,4 +12,4 @@ struct void_t
 }
 }
 
-const ewas::detail::void_t _void = ewas::detail::void_t();
+const ddk::detail::void_t _void = ddk::detail::void_t();

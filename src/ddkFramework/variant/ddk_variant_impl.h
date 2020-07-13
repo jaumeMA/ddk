@@ -1,6 +1,6 @@
 #pragma once
 
-#include "embedded_type.h"
+#include "ddk_embedded_type.h"
 #include "ddk_template_helper.h"
 #include "ddk_arena.h"
 
@@ -82,4 +82,4 @@ private:
 }
 }
 
-#include "variant_impl.inl"
+#include "ddk_variant_impl.inl"

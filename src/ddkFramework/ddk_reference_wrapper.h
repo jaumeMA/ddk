@@ -1,18 +1,18 @@
 #pragma once
 
-#include "shared_reference_wrapper.h"
-#include "unique_pointer_wrapper.h"
-#include "unique_reference_wrapper.h"
-#include "shared_pointer_wrapper.h"
-#include "shared_reference_wrapper.h"
-#include "lent_pointer_wrapper.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_shared_reference_wrapper.h"
+#include "ddk_unique_pointer_wrapper.h"
+#include "ddk_unique_reference_wrapper.h"
+#include "ddk_shared_pointer_wrapper.h"
+#include "ddk_shared_reference_wrapper.h"
+#include "ddk_lent_pointer_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 #include "ddk_lendable.h"
 
 namespace ddk
 {
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 template<typename T>
 inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
@@ -91,7 +91,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const IReferenceWrappe
 {
 	typedef typename unique_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
 
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
 
 	unique_reference_counter* refCounter = new unique_reference_counter();
 
@@ -105,7 +105,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr)
 {
 	typedef typename unique_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
 
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
 
 	unique_reference_counter* refCounter = new unique_reference_counter();
 
@@ -117,7 +117,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr)
 template<typename T>
 unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter)
 {
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
 
 	return __make_unique_reference(i_ptr, i_refCounter, nullptr);
 }
@@ -125,7 +125,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<u
 template<typename T>
 unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter& i_refDeleter)
 {
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
 
 	return __make_unique_reference(i_ptr, i_refCounter, &i_refDeleter);
 }
@@ -149,7 +149,7 @@ shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrapperDeleter& i_refDeleter)
 {
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
@@ -159,7 +159,7 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrappe
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr)
 {
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
@@ -169,7 +169,7 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr)
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter& i_refDeleter)
 {
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	return __make_shared_reference(i_ptr, i_refCounter,&i_refDeleter);
 }
@@ -177,7 +177,7 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<s
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<shared_reference_counter>& i_refCounter)
 {
-	EWAS_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
+	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	return __make_shared_reference(i_ptr, i_refCounter,nullptr);
 }
@@ -185,7 +185,7 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<s
 template<typename T>
 inline T* get_raw_ptr(lent_pointer_wrapper<T>& i_ref)
 {
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	return i_ref.get();
 #else
 	return i_ref;
@@ -194,7 +194,7 @@ inline T* get_raw_ptr(lent_pointer_wrapper<T>& i_ref)
 template<typename T>
 inline const T* get_raw_ptr(const lent_pointer_wrapper<T>& i_ref)
 {
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	return i_ref.get();
 #else
 	return i_ref;
@@ -203,7 +203,7 @@ inline const T* get_raw_ptr(const lent_pointer_wrapper<T>& i_ref)
 template<typename T>
 inline void clear_ptr(lent_pointer_wrapper<T>& i_ref)
 {
-#if defined(EWAS_DEBUG)
+#if defined(DDK_DEBUG)
 	i_ref.clear();
 #else
 	i_ref = nullptr;
@@ -240,7 +240,7 @@ unique_pointer_wrapper<TT> dynamic_unique_cast(unique_reference_wrapper<T>&& i_u
 	return res;
 }
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 template<typename TT, typename T>
 lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
@@ -291,7 +291,7 @@ unique_pointer_wrapper<TT> dynamic_unique_cast(unique_pointer_wrapper<T>&& i_uni
 template<typename TT, typename T>
 lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	if (TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_lentRef.m_data)))
 	{
 		return __make_lent_pointer(tData, i_lentRef.m_refCounter);
@@ -327,7 +327,7 @@ unique_reference_wrapper<TT> static_unique_cast(unique_reference_wrapper<T> i_un
 	return res;
 }
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 template<typename TT, typename T>
 lent_reference_wrapper<TT> static_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
@@ -362,7 +362,7 @@ lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentR
 {
 	static_assert(std::is_base_of<T, TT>::value || std::is_base_of<TT, T>::value, "Trying to cast unrelated classes");
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(static_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
 #else
 	return static_cast<TT*>(const_cast<T*>(i_lentRef));
@@ -389,7 +389,7 @@ unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wrapper<T>
 	return std::move(res);
 }
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 template<typename TT, typename T>
 lent_reference_wrapper<TT> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
@@ -402,7 +402,7 @@ lent_reference_wrapper<TT> reinterpret_lent_cast(const lent_reference_wrapper<T>
 template<typename TT, typename T>
 lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
 #else
 	return reinterpret_cast<TT*>(const_cast<T*>(i_lentRef));
@@ -442,14 +442,14 @@ shared_pointer_wrapper<T> const_shared_cast(const shared_pointer_wrapper<const T
 template<typename T>
 lent_pointer_wrapper<T> const_lent_cast(const lent_pointer_wrapper<const T>& i_lentPtr)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(const_cast<T*>(i_lentPtr.m_data), i_lentPtr.m_refCounter);
 #else
 	return const_cast<T*>(i_lentPtr);
 #endif
 }
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 template<typename T>
 lent_reference_wrapper<T> const_lent_cast(const lent_reference_wrapper<const T>& i_lentRef)
@@ -462,7 +462,7 @@ lent_reference_wrapper<T> const_lent_cast(const lent_reference_wrapper<const T>&
 template<typename T>
 lent_pointer_wrapper<T> lend(unique_pointer_wrapper<T>& i_uniquePtr)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(i_uniquePtr.m_data, i_uniquePtr.m_refCounter);
 #else
 	return i_uniquePtr.m_data;
@@ -471,7 +471,7 @@ lent_pointer_wrapper<T> lend(unique_pointer_wrapper<T>& i_uniquePtr)
 template<typename T>
 lent_pointer_wrapper<T> lend(const unique_pointer_wrapper<T>& i_uniquePtr)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(i_uniquePtr.m_data, i_uniquePtr.m_refCounter);
 #else
 	return i_uniquePtr.m_data;
@@ -481,7 +481,7 @@ lent_pointer_wrapper<T> lend(const unique_pointer_wrapper<T>& i_uniquePtr)
 template<typename T>
 lent_reference_wrapper<T> lend(unique_reference_wrapper<T>& i_uniqueRef)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_reference(i_uniqueRef.m_data, i_uniqueRef.m_refCounter);
 #else
 	return i_uniqueRef.m_data;
@@ -490,7 +490,7 @@ lent_reference_wrapper<T> lend(unique_reference_wrapper<T>& i_uniqueRef)
 template<typename T>
 lent_reference_wrapper<T> lend(const unique_reference_wrapper<T>& i_uniqueRef)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_reference(i_uniqueRef.m_data, i_uniqueRef.m_refCounter);
 #else
 	return i_uniqueRef.m_data;
@@ -500,7 +500,7 @@ lent_reference_wrapper<T> lend(const unique_reference_wrapper<T>& i_uniqueRef)
 template<typename T>
 lent_pointer_wrapper<T> lend(shared_pointer_wrapper<T>& i_sharedPtr)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(i_sharedPtr.m_data, i_sharedPtr.m_refCounter);
 #else
 	return i_sharedPtr.m_data;
@@ -509,7 +509,7 @@ lent_pointer_wrapper<T> lend(shared_pointer_wrapper<T>& i_sharedPtr)
 template<typename T>
 lent_pointer_wrapper<T> lend(const shared_pointer_wrapper<T>& i_sharedPtr)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_pointer(i_sharedPtr.m_data, i_sharedPtr.m_refCounter);
 #else
 	return i_sharedPtr.m_data;
@@ -519,7 +519,7 @@ lent_pointer_wrapper<T> lend(const shared_pointer_wrapper<T>& i_sharedPtr)
 template<typename T>
 lent_reference_wrapper<T> lend(shared_reference_wrapper<T>& i_sharedRef)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_reference(i_sharedRef.m_data, i_sharedRef.m_refCounter);
 #else
 	return i_sharedRef.m_data;
@@ -528,7 +528,7 @@ lent_reference_wrapper<T> lend(shared_reference_wrapper<T>& i_sharedRef)
 template<typename T>
 lent_reference_wrapper<T> lend(const shared_reference_wrapper<T>& i_sharedRef)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_reference(i_sharedRef.m_data, i_sharedRef.m_refCounter);
 #else
 	return i_sharedRef.m_data;
@@ -574,7 +574,7 @@ shared_reference_wrapper<T> promote_to_ref(const shared_pointer_wrapper<T>& i_sh
 template<typename T>
 lent_reference_wrapper<T> promote_to_ref(const lent_pointer_wrapper<T>& i_lentPtr)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return __make_lent_reference(i_lentPtr.m_data, i_lentPtr.m_refCounter);
 #else
 	return i_lentPtr;
@@ -582,85 +582,85 @@ lent_reference_wrapper<T> promote_to_ref(const lent_pointer_wrapper<T>& i_lentPt
 }
 
 template<typename T>
-bool operator==(const ewas::unique_pointer_wrapper<T>& i_lhs, const ewas::unique_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::unique_pointer_wrapper<T>& i_lhs, const ddk::unique_pointer_wrapper<T>& i_rhs)
 {
 	return i_lhs.get() == i_rhs.get();
 }
 template<typename T>
-bool operator==(const ewas::unique_pointer_wrapper<T>& i_lhs, const ewas::lent_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::unique_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() == i_rhs.get();
 #else
 	return i_lhs.get() == i_rhs;
 #endif
 }
 template<typename T>
-bool operator==(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::unique_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::unique_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() == i_rhs.get();
 #else
 	return i_lhs == i_rhs.get();
 #endif
 }
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 template<typename T>
-bool operator==(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::lent_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
 	return i_lhs.get() == i_rhs.get();
 }
 #endif
 
 template<typename T>
-bool operator!=(const ewas::unique_pointer_wrapper<T>& i_lhs, const ewas::unique_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::unique_pointer_wrapper<T>& i_lhs, const ddk::unique_pointer_wrapper<T>& i_rhs)
 {
 	return i_lhs.get() != i_rhs.get();
 }
 template<typename T>
-bool operator!=(const ewas::unique_pointer_wrapper<T>& i_lhs, const ewas::lent_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::unique_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() != i_rhs.get();
 #else
 	return i_lhs.get() != i_rhs;
 #endif
 }
 template<typename T>
-bool operator!=(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::unique_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::unique_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() != i_rhs.get();
 #else
 	return i_lhs != i_rhs.get();
 #endif
 }
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 template<typename T>
-bool operator!=(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::lent_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
 	return i_lhs.get() != i_rhs.get();
 }
 #endif
 
 template<typename T>
-bool operator==(const ewas::shared_pointer_wrapper<T>& i_lhs, const ewas::shared_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs)
 {
 	return i_lhs.get() == i_rhs.get();
 }
 template<typename T>
-bool operator==(const ewas::shared_pointer_wrapper<T>& i_lhs, const ewas::lent_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() == i_rhs.get();
 #else
 	return i_lhs.get() == i_rhs;
 #endif
 }
 template<typename T>
-bool operator==(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::shared_pointer_wrapper<T>& i_rhs)
+bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() == i_rhs.get();
 #else
 	return i_lhs == i_rhs.get();
@@ -668,23 +668,23 @@ bool operator==(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::shared_p
 }
 
 template<typename T>
-bool operator!=(const ewas::shared_pointer_wrapper<T>& i_lhs, const ewas::shared_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs)
 {
 	return i_lhs.get() != i_rhs.get();
 }
 template<typename T>
-bool operator!=(const ewas::shared_pointer_wrapper<T>& i_lhs, const ewas::lent_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() != i_rhs.get();
 #else
 	return i_lhs.get() == i_rhs;
 #endif
 }
 template<typename T>
-bool operator!=(const ewas::lent_pointer_wrapper<T>& i_lhs, const ewas::shared_pointer_wrapper<T>& i_rhs)
+bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs)
 {
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 	return i_lhs.get() != i_rhs.get();
 #else
 	return i_lhs != i_rhs.get();

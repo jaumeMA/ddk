@@ -1,8 +1,8 @@
 #pragma once
 
 #include <utility>
-#include "shared_reference_wrapper.h"
-#include "reference_wrapper.h"
+#include "ddk_shared_reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 extern "C"
 {
@@ -27,15 +27,15 @@ public:
 	static size_t s_pageSize;
 };
 
-typedef ewas::shared_reference_wrapper<stack_allocator_interface> stack_alloc_shared_ref;
-typedef ewas::shared_reference_wrapper<const stack_allocator_interface> stack_alloc_const_shared_ref;
-typedef ewas::shared_pointer_wrapper<stack_allocator_interface> stack_alloc_shared_ptr;
-typedef ewas::shared_pointer_wrapper<const stack_allocator_interface> stack_alloc_const_shared_ptr;
+typedef ddk::shared_reference_wrapper<stack_allocator_interface> stack_alloc_shared_ref;
+typedef ddk::shared_reference_wrapper<const stack_allocator_interface> stack_alloc_const_shared_ref;
+typedef ddk::shared_pointer_wrapper<stack_allocator_interface> stack_alloc_shared_ptr;
+typedef ddk::shared_pointer_wrapper<const stack_allocator_interface> stack_alloc_const_shared_ptr;
 
-typedef ewas::lent_reference_wrapper<stack_allocator_interface> stack_alloc_lent_ref;
-typedef ewas::lent_reference_wrapper<const stack_allocator_interface> stack_alloc_const_lent_ref;
-typedef ewas::lent_pointer_wrapper<stack_allocator_interface> stack_alloc_lent_ptr;
-typedef ewas::lent_pointer_wrapper<const stack_allocator_interface> stack_alloc_const_lent_ptr;
+typedef ddk::lent_reference_wrapper<stack_allocator_interface> stack_alloc_lent_ref;
+typedef ddk::lent_reference_wrapper<const stack_allocator_interface> stack_alloc_const_lent_ref;
+typedef ddk::lent_pointer_wrapper<stack_allocator_interface> stack_alloc_lent_ptr;
+typedef ddk::lent_pointer_wrapper<const stack_allocator_interface> stack_alloc_const_lent_ptr;
 
 template<typename Allocator, typename ... Args>
 stack_alloc_shared_ref make_stack_allocator(Args&& ... i_args)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_intrusive_list.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 #include "ddk_signal_functor.h"
 #include "ddk_async_message_queue.h"
 
@@ -43,7 +43,7 @@ public:
 	: async_message_exchange_room<BuiltInMessageType>(i_id)
 	, m_msgQueue(i_msgQueue)
 	{
-		m_callers.push(ewas::lend(i_caller));
+		m_callers.push(ddk::lend(i_caller));
 		m_msgQueue->start(i_id,std::bind(&async_message_exchange_typed_room<Callable,MessageType,BuiltInMessageType>::broadcast_msg,this,std::placeholders::_1));
 	}
 	~async_message_exchange_typed_room()
@@ -52,7 +52,7 @@ public:
 	}
 	void broadcast_msg(const MessageType& i_msg)
 	{
-		EWAS_ASSERT(get_id() == i_msg.get_id(), "Forwarding unrelated messages");
+		DDK_ASSERT(get_id() == i_msg.get_id(), "Forwarding unrelated messages");
 
 		const typename MessageType::tuple_t& forwarded_args = i_msg.forward_message();
 
@@ -67,7 +67,7 @@ public:
 	}
 	void addCaller(detail::intrusive_node<signal_functor_t>& i_caller)
 	{
-		m_callers.push(ewas::lend(i_caller));
+		m_callers.push(ddk::lend(i_caller));
 	}
 	bool tryRemoveCaller(const detail::connection_base& i_caller)
 	{

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "reference_counter.h"
-#include "tagged_pointer.h"
+#include "ddk_reference_counter.h"
+#include "ddk_tagged_pointer.h"
 
 namespace ddk
 {
 
-#ifdef EWAS_DEBUG
+#ifdef DDK_DEBUG
 
 #define THIS_OBJECT (*this)
 

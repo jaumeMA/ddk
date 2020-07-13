@@ -13,7 +13,7 @@ arena<ArenaSize,ArenaAlignment>::arena()
 template<size_t ArenaSize, size_t ArenaAlignment>
 arena<ArenaSize,ArenaAlignment>::~arena()
 {
-	EWAS_ASSERT(m_empty, "Destroying arena with getting rid of its contents");
+	DDK_ASSERT(m_empty, "Destroying arena with getting rid of its contents");
 }
 template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T, typename ... Args>
@@ -61,7 +61,7 @@ template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T>
 typename embedded_type<T>::cref_type arena<ArenaSize,ArenaAlignment>::get() const
 {
-	EWAS_ASSERT(m_empty == false, "Accessing empty arena");
+	DDK_ASSERT(m_empty == false, "Accessing empty arena");
 
 	const embedded_type<T>* nestedData = reinterpret_cast<const embedded_type<T>*>(&m_storage);
 
@@ -71,7 +71,7 @@ template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T>
 typename embedded_type<T>::ref_type arena<ArenaSize,ArenaAlignment>::get()
 {
-	EWAS_ASSERT(m_empty == false, "Accessing empty arena");
+	DDK_ASSERT(m_empty == false, "Accessing empty arena");
 
 	embedded_type<T>* nestedData = reinterpret_cast<embedded_type<T>*>(&m_storage);
 
@@ -81,7 +81,7 @@ template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T>
 embedded_type<T> arena<ArenaSize,ArenaAlignment>::extract()
 {
-	EWAS_ASSERT(m_empty == false, "Accessing empty arena");
+	DDK_ASSERT(m_empty == false, "Accessing empty arena");
 
 	embedded_type<T>* nestedData = reinterpret_cast<embedded_type<T>*>(&m_storage);
 

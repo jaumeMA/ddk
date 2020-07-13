@@ -10,7 +10,7 @@ namespace ddk
 class fiber_polling_executor : public thread_executor_interface
 {
 public:
-	fiber_polling_executor(ewas::fiber i_fiber, unsigned long i_sleepInMs = 0);
+	fiber_polling_executor(ddk::fiber i_fiber, unsigned long i_sleepInMs = 0);
 	fiber_polling_executor(const fiber_polling_executor&) = delete;
 	fiber_polling_executor(fiber_polling_executor&& other);
 	~fiber_polling_executor();
@@ -26,7 +26,7 @@ private:
 	virtual void signal() override;
 	void update();
 
-	ewas::fiber m_fiber;
+	ddk::fiber m_fiber;
 	unsigned long m_sleepTimeInMS;
 	std::function<void()> m_executor;
 	bool m_stopped;
@@ -35,7 +35,7 @@ private:
 class fiber_event_driven_executor : public thread_executor_interface
 {
 public:
-	fiber_event_driven_executor(ewas::fiber i_fiber, unsigned int i_sleepInMs = 0);
+	fiber_event_driven_executor(ddk::fiber i_fiber, unsigned int i_sleepInMs = 0);
 	fiber_event_driven_executor(const fiber_event_driven_executor&) = delete;
 	fiber_event_driven_executor(fiber_event_driven_executor&& other);
 	~fiber_event_driven_executor();
@@ -51,7 +51,7 @@ private:
 	virtual void signal() override;
 	void update();
 
-	ewas::fiber m_fiber;
+	ddk::fiber m_fiber;
 	unsigned int m_sleepTimeInMS;
 	bool m_stopped;
 	std::function<void()> m_executor;
@@ -62,7 +62,7 @@ private:
 class fiber_fire_and_forget_executor : public thread_executor_interface
 {
 public:
-	fiber_fire_and_forget_executor(ewas::fiber i_fiber);
+	fiber_fire_and_forget_executor(ddk::fiber i_fiber);
 	fiber_fire_and_forget_executor(const fiber_fire_and_forget_executor&) = delete;
 	fiber_fire_and_forget_executor(fiber_fire_and_forget_executor&& other);
 	~fiber_fire_and_forget_executor();
@@ -73,7 +73,7 @@ private:
 	resume_result resume() override;
 	void signal() override;
 
-	ewas::fiber m_fiber;
+	ddk::fiber m_fiber;
 };
 
 }

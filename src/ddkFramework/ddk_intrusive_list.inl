@@ -31,7 +31,7 @@ template<typename T>
 void intrusive_list<T>::push(const intrusive_node_ref& i_node)
 {
 #ifdef DETECT_CYCLES
-	EWAS_ASSERT(already_contains_node(i_node) == false, "Trying to insert already present node, about to produce a cycle");
+	DDK_ASSERT(already_contains_node(i_node) == false, "Trying to insert already present node, about to produce a cycle");
 #endif
 
 	if(m_firstNode == nullptr)

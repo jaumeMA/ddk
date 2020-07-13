@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ddk_fiber_defs.h"
-#include "unique_reference_wrapper.h"
-#include "lent_reference_wrapper.h"
+#include "ddk_unique_reference_wrapper.h"
+#include "ddk_lent_reference_wrapper.h"
 #include "ddk_ucontext.h"
 #include "ddk_fiber_local.h"
 #include "ddk_stack_allocator.h"

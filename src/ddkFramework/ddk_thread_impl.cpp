@@ -1,5 +1,5 @@
 #include "ddk_thread_impl.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_fiber_impl.h"
 
 namespace ddk
@@ -9,7 +9,7 @@ namespace detail
 
 threadlocal<yielder_lent_ptr,thread_impl_interface>& thread_impl_interface::get_yielder_local()
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface> s_yielder;
+	static threadlocal<yielder_lent_ptr,thread_impl_interface> s_yielder;
 
 	return s_yielder;
 }

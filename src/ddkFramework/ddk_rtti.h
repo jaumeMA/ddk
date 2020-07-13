@@ -5,26 +5,26 @@
 
 #define PUBLISH_TYPE_INFO(_TYPE_NAME) \
 template<typename T> \
-friend ewas::TypeInfo ewas::rtti(const T&); \
+friend ddk::TypeInfo ddk::rtti(const T&); \
 template<typename T> \
-friend ewas::TypeInfo ewas::rtti(); \
+friend ddk::TypeInfo ddk::rtti(); \
 template<typename> \
-friend struct ewas::detail::is_rtti_available; \
-typedef ewas::detail::rtti_tag_t rtti_tag; \
-virtual const ewas::TypeInfo& __get_rtti_type_info() const \
+friend struct ddk::detail::is_rtti_available; \
+typedef ddk::detail::rtti_tag_t rtti_tag; \
+virtual const ddk::TypeInfo& __get_rtti_type_info() const \
 { \
-	static const ewas::TypeInfo res(#_TYPE_NAME); \
+	static const ddk::TypeInfo res(#_TYPE_NAME); \
 	\
 	return res; \
 } \
-static ewas::TypeInfo __get_static_rtti_type_info() \
+static ddk::TypeInfo __get_static_rtti_type_info() \
 { \
 	return #_TYPE_NAME; \
 }
 
 #define PUBLISH_TYPE_INFO_BASE(_TYPE_NAME) \
 PUBLISH_TYPE_INFO(_TYPE_NAME) \
-typedef ewas::detail::rtti_tag_t rtti_tag_base;
+typedef ddk::detail::rtti_tag_t rtti_tag_base;
 
 namespace ddk
 {

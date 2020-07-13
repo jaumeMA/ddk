@@ -1,6 +1,6 @@
 #include "ddk_thread.h"
-#include "thread_utils.h"
-#include "reference_wrapper.h"
+#include "ddk_thread_utils.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {

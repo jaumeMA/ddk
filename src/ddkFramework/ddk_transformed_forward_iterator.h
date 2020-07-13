@@ -30,7 +30,7 @@ class PrivateIterator<Iterator,ReturnType,std::forward_iterator_tag> : public II
 	typedef std::forward_iterator_tag iterator_tag;
 	typedef typename Iterator::reference reference;
 	template<typename>
-	friend class ewas::TransformedForwardIterator;
+	friend class ddk::TransformedForwardIterator;
 
 protected:
 	PrivateIterator(Iterator i_iterator)
@@ -44,7 +44,7 @@ protected:
 		}
 		else
 		{
-			EWAS_FAIL("Comparing two different kind of iterators");
+			DDK_FAIL("Comparing two different kind of iterators");
 
 			return false;
 		}
@@ -157,7 +157,7 @@ public:
 		return m_iteratorInterface->getValue();
 	}
 	template<typename RReturn>
-	bool operator==(const ewas::TransformedForwardIterator<RReturn>& other) const
+	bool operator==(const ddk::TransformedForwardIterator<RReturn>& other) const
 	{
 		if(m_iteratorInterface && other.m_iteratorInterface)
 		{
@@ -169,7 +169,7 @@ public:
 		}
 	}
 	template<typename RReturn>
-	bool operator!=(const ewas::TransformedForwardIterator<RReturn>& other) const
+	bool operator!=(const ddk::TransformedForwardIterator<RReturn>& other) const
 	{
 		if(m_iteratorInterface && other.m_iteratorInterface)
 		{

@@ -1,7 +1,7 @@
 #include "ddk_thread_pool.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_fiber_impl.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -115,7 +115,7 @@ thread_pool::thread_pool(thread_pool&& other)
 }
 thread_pool::~thread_pool()
 {
-	EWAS_ASSERT(m_underUseThreads.empty(), "Trying to remove pool while threads under use");
+	DDK_ASSERT(m_underUseThreads.empty(), "Trying to remove pool while threads under use");
 
 	thread_container::iterator itThread = m_availableThreads.begin();
 	for(;itThread!=m_underUseThreads.end();++itThread)
@@ -199,7 +199,7 @@ void thread_pool::Deallocate(const void* i_object) const
 		}
 	}
 
-	EWAS_FAIL("Trying to remove non existent thread from pool");
+	DDK_FAIL("Trying to remove non existent thread from pool");
 }
 
 }

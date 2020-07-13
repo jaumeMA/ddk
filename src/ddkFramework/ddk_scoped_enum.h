@@ -27,38 +27,38 @@ struct ClassName \
 		__VA_ARGS__, \
 		Count \
 	}; \
-	friend ewas::flag_set<ClassName> operator|(const ewas::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend ddk::flag_set<ClassName> operator|(const ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
-		ewas::flag_set<ClassName> res(i_flags); \
+		ddk::flag_set<ClassName> res(i_flags); \
 		res |= ClassName(i_value); \
 		return res; \
 	} \
-	friend ewas::detail::scoped_enum_op_or<ClassName> operator|(__val__ i_lhs, __val__ i_rhs) \
+	friend ddk::detail::scoped_enum_op_or<ClassName> operator|(__val__ i_lhs, __val__ i_rhs) \
 	{ \
-		return ewas::detail::scoped_enum_op_or<ClassName>(i_lhs,i_rhs); \
+		return ddk::detail::scoped_enum_op_or<ClassName>(i_lhs,i_rhs); \
 	} \
-	friend ewas::detail::scoped_enum_op_and<ClassName> operator&(__val__ i_lhs, __val__ i_rhs) \
+	friend ddk::detail::scoped_enum_op_and<ClassName> operator&(__val__ i_lhs, __val__ i_rhs) \
 	{ \
-		return ewas::detail::scoped_enum_op_and<ClassName>(i_lhs,i_rhs); \
+		return ddk::detail::scoped_enum_op_and<ClassName>(i_lhs,i_rhs); \
 	} \
-	friend ewas::flag_set<ClassName>& operator|=(ewas::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend ddk::flag_set<ClassName>& operator|=(ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
 		i_flags |= ClassName(i_value); \
 		return i_flags; \
 	} \
-	friend ewas::flag_set<ClassName> operator&(const ewas::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend ddk::flag_set<ClassName> operator&(const ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
-		ewas::flag_set<ClassName> res(i_flags); \
+		ddk::flag_set<ClassName> res(i_flags); \
 		res &= ClassName(i_value); \
 		return res; \
 	} \
-	friend ewas::flag_set<ClassName>& operator&=(ewas::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend ddk::flag_set<ClassName>& operator&=(ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
 		i_flags &= ClassName(i_value); \
 		return i_flags; \
 	} \
 public: \
-	typedef ewas::detail::scoped_enum_tag scoped_enum_tag; \
+	typedef ddk::detail::scoped_enum_tag scoped_enum_tag; \
 	typedef __val__ underlying_type; \
 	\
 	explicit ClassName() \

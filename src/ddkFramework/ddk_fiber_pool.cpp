@@ -1,5 +1,5 @@
 #include "ddk_fiber_pool.h"
-#include "reference_wrapper.h"
+#include "ddk_reference_wrapper.h"
 #include "ddk_fiber_scheduler.h"
 #include "ddk_dynamic_stack_allocator.h"
 #include "ddk_pool_stack_allocator.h"
@@ -139,7 +139,7 @@ void fiber_pool::Deallocate(const void* i_object) const
 		}
 	}
 
-	EWAS_FAIL("Trying to remove non existent fiber from pool");
+	DDK_FAIL("Trying to remove non existent fiber from pool");
 }
 
 }

@@ -63,7 +63,7 @@ public:
 			}
 			else
 			{
-				EWAS_FAIL("Unconsistent situation");
+				DDK_FAIL("Unconsistent situation");
 			}
 		}
 

@@ -46,7 +46,7 @@ public:
 	}
 	void push(intrusive_node_ref i_node)
 	{
-		//EWAS_ASSERT(already_contains_node(i_node) == false, "Trying to insert already present node, about to produce a cycle");
+		//DDK_ASSERT(already_contains_node(i_node) == false, "Trying to insert already present node, about to produce a cycle");
 
 		if(m_firstNode == nullptr)
 		{
@@ -81,7 +81,7 @@ public:
 	}
 	const T& get_front_value() const
 	{
-		EWAS_ASSERT(m_firstNode != nullptr, "Accessing null stack");
+		DDK_ASSERT(m_firstNode != nullptr, "Accessing null stack");
 
 		if(m_firstNode)
 		{
@@ -94,7 +94,7 @@ public:
 	}
 	T& get_front_value()
 	{
-		EWAS_ASSERT(m_firstNode != nullptr, "Accessing null stack");
+		DDK_ASSERT(m_firstNode != nullptr, "Accessing null stack");
 
 		if(m_firstNode)
 		{
@@ -107,7 +107,7 @@ public:
 	}
 	const T& get_back_value() const
 	{
-		EWAS_ASSERT(m_lastNode != nullptr, "Accessing null stack");
+		DDK_ASSERT(m_lastNode != nullptr, "Accessing null stack");
 
 		if(m_lastNode)
 		{
@@ -120,7 +120,7 @@ public:
 	}
 	T& get_back_value()
 	{
-		EWAS_ASSERT(m_lastNode != nullptr, "Accessing null stack");
+		DDK_ASSERT(m_lastNode != nullptr, "Accessing null stack");
 
 		if(m_lastNode)
 		{

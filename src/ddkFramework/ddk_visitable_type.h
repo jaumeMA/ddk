@@ -10,29 +10,29 @@
 
 #define DECLARE_TYPE_VISITABLE(_Type_Name,_Traits) \
 PUBLISH_TYPE_INFO(_Type_Name) \
-typedef ewas::visitable_type<_Traits> _type_expansion; \
+typedef ddk::visitable_type<_Traits> _type_expansion; \
 static void __expand_type_visitable_type() \
 { \
-	static const bool __s_static_visitable_type_expansion = ewas::visitable_type<_Traits>::s_initialized; \
+	static const bool __s_static_visitable_type_expansion = ddk::visitable_type<_Traits>::s_initialized; \
     \
     UNUSED(__s_static_visitable_type_expansion); \
 } \
-ewas::visitable_type_info get_visitable_type_info() const override \
+ddk::visitable_type_info get_visitable_type_info() const override \
 { \
-	return ewas::visitable_type_info(std::make_pair(ewas::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ewas::visitable_type<_Traits>::s_type_info())); \
+	return ddk::visitable_type_info(std::make_pair(ddk::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ddk::visitable_type<_Traits>::s_type_info())); \
 }
 #define DECLARE_TYPE_STATICALLY_VISITABLE(_Type_Name,_Traits) \
 PUBLISH_TYPE_INFO(_Type_Name) \
-typedef ewas::static_visitable_type<_Traits> _type_expansion; \
+typedef ddk::static_visitable_type<_Traits> _type_expansion; \
 static void __expand_type_visitable_type() \
 { \
-	static const bool __s_static_visitable_type_expansion = ewas::static_visitable_type<_Traits>::s_initialized; \
+	static const bool __s_static_visitable_type_expansion = ddk::static_visitable_type<_Traits>::s_initialized; \
     \
     UNUSED(__s_static_visitable_type_expansion); \
 } \
-ewas::visitable_type_info get_visitable_type_info() const override \
+ddk::visitable_type_info get_visitable_type_info() const override \
 { \
-	return ewas::visitable_type_info(std::make_pair(ewas::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ewas::visitable_type<_Traits>::s_type_info())); \
+	return ddk::visitable_type_info(std::make_pair(ddk::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ddk::visitable_type<_Traits>::s_type_info())); \
 }
 
 namespace ddk
@@ -45,7 +45,7 @@ struct agnostic_visitable_type
 	typedef VisitorType visitor_interface;
 
 	static_assert(detail::is_rtti_available<type_interface>::value, "You shall provide a type for whom rtti has been published");
-	static_assert(std::is_base_of<ewas::dynamic_visitor, visitor_interface>::value, "Provided visitor shall inherit from dynamic visitor");
+	static_assert(std::is_base_of<ddk::dynamic_visitor, visitor_interface>::value, "Provided visitor shall inherit from dynamic visitor");
 
 	typedef any_value(*visitor_func)(const type_interface*, visitor_interface&);
 	typedef any_value(*const_visitor_func)(const type_interface*, const visitor_interface&);
@@ -66,7 +66,7 @@ struct agnostic_visitable_type
 		}
 		else
 		{
-			EWAS_FAIL("Visiting wrong type");
+			DDK_FAIL("Visiting wrong type");
 
 			return visitor_empty_value;
 		}
@@ -80,7 +80,7 @@ struct agnostic_visitable_type
 		}
 		else
 		{
-			EWAS_FAIL("Visiting wrong type");
+			DDK_FAIL("Visiting wrong type");
 
 			return visitor_empty_value;
 		}
@@ -97,9 +97,9 @@ struct agnostic_visitable_type
 
 		return res;
 	}
-	static const ewas::TypeInfo& s_categoryTypeInfo()
+	static const ddk::TypeInfo& s_categoryTypeInfo()
 	{
-		static const ewas::TypeInfo res = ewas::rtti<visitor_interface>();;
+		static const ddk::TypeInfo res = ddk::rtti<visitor_interface>();;
 
 		return res;
 	}
@@ -124,14 +124,14 @@ struct agnostic_static_visitable_type : agnostic_visitable_type<InterfaceType,Vi
 	template<typename T>
 	static any_value const_nested_static_visit(const visitor_interface& i_visitor)
 	{
-		T finalObject = ewas::default_value<T>::initial_value();
+		T finalObject = ddk::default_value<T>::initial_value();
 
 		return i_visitor.visit(finalObject);
 	}
 	template<typename T>
 	static any_value nested_static_visit(visitor_interface& i_visitor)
 	{
-		T finalObject = ewas::default_value<T>::initial_value();
+		T finalObject = ddk::default_value<T>::initial_value();
 
 		return i_visitor.visit(finalObject);
 	}
@@ -158,7 +158,7 @@ struct visitable_type : protected agnostic_visitable_type<typename Traits::type_
 	{
 		s_type_info();
 
-		agnostic_visitable_type<typename Traits::type_interface, typename Traits::visitor_interface>::template _initializeStaticData<final_type>(ewas::hash(s_type_info().get_name()));
+		agnostic_visitable_type<typename Traits::type_interface, typename Traits::visitor_interface>::template _initializeStaticData<final_type>(ddk::hash(s_type_info().get_name()));
 
 		return true;
 	}
@@ -184,7 +184,7 @@ struct static_visitable_type : protected agnostic_static_visitable_type<typename
 	{
 		s_type_info();
 
-		agnostic_static_visitable_type<typename Traits::type_interface, typename Traits::visitor_interface>::template _initializeStaticData<final_type>(ewas::hash(s_type_info().get_name()));
+		agnostic_static_visitable_type<typename Traits::type_interface, typename Traits::visitor_interface>::template _initializeStaticData<final_type>(ddk::hash(s_type_info().get_name()));
 
 		return true;
 	}

@@ -41,7 +41,7 @@ public:
 
 		const std::function<Return(Types...)> call = [object,hook](Args&& ... i_args) mutable -> Return { return (object->*hook)(std::forward<Args>(i_args)...); };
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -52,7 +52,7 @@ public:
 
 		const std::function<Return(Types...)> call = [object,hook](Args&& ... i_args) mutable -> Return { return (object->*hook)(std::forward<Args>(i_args)...); };
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -62,7 +62,7 @@ public:
 	{
 		std::function<Return(Types...)> call(i_functor);
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -72,7 +72,7 @@ public:
 	{
 		const std::function<Return(Types...)> call = [hook](Args&& ... i_args) mutable -> Return { return (*hook)(std::forward<Args>(i_args)...); };
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -83,7 +83,7 @@ public:
     template<typename ... Args>
 	Return execute(Args&& ... i_args) const
 	{
-		EWAS_ASSERT(m_recipient.empty() == false, "Trying to call null function");
+		DDK_ASSERT(m_recipient.empty() == false, "Trying to call null function");
 
         return (*m_recipient.begin()).execute(std::forward<Args>(i_args) ...);
 	}
@@ -135,7 +135,7 @@ public:
 
 		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args) { (object->*hook)(std::forward<Args>(i_args)...); };
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -146,7 +146,7 @@ public:
 
 		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args){ (object->*hook)(std::forward<Args>(i_args)...); };
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -156,7 +156,7 @@ public:
 	{
 		std::function<void(Types...)> call(i_functor);
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -166,7 +166,7 @@ public:
 	{
 		const std::function<void(Types...)> call = [hook](Args&& ... i_args) { (*hook)(std::forward<Args>(i_args)...); };
 
-		EWAS_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
+		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
 	}
@@ -177,7 +177,7 @@ public:
     template<typename ... Args>
 	void execute(Args&& ... i_args) const
 	{
-		EWAS_ASSERT(m_recipient.empty() == false, "Trying to call null function");
+		DDK_ASSERT(m_recipient.empty() == false, "Trying to call null function");
 
         (*m_recipient.begin()).execute(std::forward<Args>(i_args) ...);
 	}

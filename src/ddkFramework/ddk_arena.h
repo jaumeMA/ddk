@@ -2,7 +2,7 @@
 
 #include <type_traits>
 #include <cstddef>
-#include "embedded_type.h"
+#include "ddk_embedded_type.h"
 
 namespace ddk
 {

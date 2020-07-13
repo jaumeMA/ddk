@@ -1,4 +1,4 @@
-#include "symbol_cache_table.h"
+#include "ddk_symbol_cache_table.h"
 
 #ifdef WIN32
 

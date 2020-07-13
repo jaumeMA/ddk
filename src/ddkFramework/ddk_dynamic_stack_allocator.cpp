@@ -46,7 +46,7 @@ void* dynamic_stack_allocator::allocate(void* i_ref, size_t i_size) const
 
 	auto err = GetLastError();
 
-	EWAS_ASSERT(stackAddr, "wtf");
+	DDK_ASSERT(stackAddr, "wtf");
 
 	return reinterpret_cast<char*>(stackAddr);
 
@@ -104,7 +104,7 @@ void dynamic_stack_allocator::deallocate(void* i_address,size_t i_size) const
 
 #endif
 
-	EWAS_ASSERT(freeRes, "Error freeing virtual memory");
+	DDK_ASSERT(freeRes, "Error freeing virtual memory");
 }
 void dynamic_stack_allocator::release(void* i_address,size_t i_size) const
 {
@@ -120,7 +120,7 @@ void dynamic_stack_allocator::release(void* i_address,size_t i_size) const
 
 #endif
 
-	EWAS_ASSERT(freeRes, "Error freeing virtual memory");
+	DDK_ASSERT(freeRes, "Error freeing virtual memory");
 }
 
 }
