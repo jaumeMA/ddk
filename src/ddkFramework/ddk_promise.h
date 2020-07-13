@@ -18,7 +18,8 @@ public:
 	promise();
 	promise(const promise<T>&);
 	promise& operator=(const promise<T>& other);
-	detail::private_async_state_shared_ptr<T> operator=(async_base_shared_ptr<T> i_executor);
+	template<typename TT>
+	detail::private_async_state_shared_ptr<T> operator=(shared_reference_wrapper<TT> i_executor);
 	future<T> get_future() const;
 	void set_value(reference i_value);
 	bool is_attached() const;

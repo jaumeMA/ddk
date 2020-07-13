@@ -88,20 +88,20 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 		provaFuture.wait();
 	}
 }
-TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
-{
-	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
-	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
-
-	if(acquireRes.hasError() == false)
-	{
-		ddk::promise<void> prom;
-		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
-		ddk::future<void> provaFuture = ddk::async(light_func) -> attach(std::move(fiberSheaf)) -> store(prom);
-
-		provaFuture.wait();
-	}
-}
+//TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
+//{
+//	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
+//	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+//
+//	if(acquireRes.hasError() == false)
+//	{
+//		ddk::promise<void> prom;
+//		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
+//		ddk::future<void> provaFuture = ddk::async(light_func) -> attach(std::move(fiberSheaf)) -> store(prom);
+//
+//		provaFuture.wait();
+//	}
+//}
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 {
 	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
@@ -115,16 +115,16 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 		provaFuture.wait();
 	}
 }
-TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
-{
-	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
-	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
-
-	if(acquireRes.hasError() == false)
-	{
-		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
-		ddk::future<void> provaFuture = ddk::async(std::function<void()>(std::bind(recursive_func,100))) -> attach(std::move(fiberSheaf));
-
-		provaFuture.wait();
-	}
-}
+//TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
+//{
+//	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
+//	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+//
+//	if(acquireRes.hasError() == false)
+//	{
+//		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
+//		ddk::future<void> provaFuture = ddk::async(std::function<void()>(std::bind(recursive_func,100))) -> attach(std::move(fiberSheaf));
+//
+//		provaFuture.wait();
+//	}
+//}

@@ -25,8 +25,11 @@ promise<T>& promise<T>::operator=(const promise<T>& other)
 	return *this;
 }
 template<typename T>
-detail::private_async_state_shared_ptr<T> promise<T>::operator=(async_base_shared_ptr<T> i_executor)
+template<typename TT>
+detail::private_async_state_shared_ptr<T> promise<T>::operator=(shared_reference_wrapper<TT> i_executor)
 {
+	i_executor->bind();
+
 	m_asyncExecutor = i_executor;
 
 	return m_sharedState;
