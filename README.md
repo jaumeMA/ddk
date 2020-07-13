@@ -6,18 +6,30 @@ DDK library is just another set of functionalities broading from signal/slot pat
 Its main highlights are:
 
 1.- Smart Pointers such as: shared, unique and lent pointers (borrrow checker like). It comes as well with lendable structure types (wrapping or inheriting).
+
 2.- Variants and optionals: In case of variants it comes with static visitor pattern (no heterogeneous variants allowed by now)
+
 3.- Flagsets
+
 4.- Intrusive lists and stacks
+
 5.- Scoped enums (superseded by class enums)
+
 6.- Tagged pointers (already used by smart pointers)
+
 7.- Executors pattern. It does not contain process executors by now
+
 8.- Custom thread with thread pools as well
+
 9.- Critical section concept. It comes with multiple reader single writer pattern embedded (exclusion area class)
+
 10.- Transformed iterators (supereseded by views)
+
 11.- Dynamic visitors
-12.- std like async funcionatlity. In this case we allow to specify where to execute the callable object. It comes with futures and promises
-13.- Fibers and coroutines for windows and linux (iOS pending to be tested). It comes with co_iteration as well
+
+12.- Fibers and coroutines for windows and linux (iOS pending to be tested). It comes with co_iteration as well
+
+13.- std like async funcionatlity. In this case we allow to specify where to execute the callable object (in a thread/thread_pool/fiber/fiber_pool/deferred). It comes with futures and promises
 
 Installing CMake
 ----------------
