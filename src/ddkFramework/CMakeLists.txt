@@ -15,4 +15,4 @@ target_link_libraries(ddkFramework
 	${THIRD_PARTY_DEPENDENCIES})
 
 set_target_properties(ddkFramework PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(ddkFramework PROPERTIES FOLDER "4.Common/Utils")
+set_target_properties(ddkFramework PROPERTIES FOLDER "Framework")

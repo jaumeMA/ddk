@@ -14,4 +14,4 @@ set(PUBLIC_MODULE_HEADERS ${HEADERS} PARENT_SCOPE)
 target_link_libraries(ddkUtils
 	${LOCAL_MODULE_DEPENDENCIES})
 
-set_target_properties(ddkUtils PROPERTIES FOLDER "4.Common/Utils")
+set_target_properties(ddkUtils PROPERTIES FOLDER "Framework")
