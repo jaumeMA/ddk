@@ -29,7 +29,12 @@ Its main highlights are:
 
 12.- Fibers and coroutines for windows and linux (iOS pending to be tested). It comes with co_iteration as well
 
-13.- std like async funcionatlity. In this case we allow to specify where to execute the callable object (in a thread/thread_pool/fiber/fiber_pool/deferred). It comes with futures and promises
+13.- std like async funcionatlity. In this case we allow to specify where to execute the callable object (in a thread/thread_pool/fiber/fiber_pool/deferred). It comes with futures and promises.
+
+14.- Asynchronous signals with the ability to work with multiple message queues (acting as multiplexer)
+
+15.- Lock free structures (already used by asynchronous signals).
+
 
 Installing CMake
 ----------------
