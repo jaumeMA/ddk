@@ -83,7 +83,7 @@ int set_context(ucontext_t* i_context);
 int swap_context(ucontext_t* i_oldContext, ucontext_t* i_newContext);
 
 template<typename ... Args>
-void make_context (ucontext_t* i_context, void (*i_func) (void), Args* ... i_args)
+void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_func) (void), Args* ... i_args)
 {
 #if defined(WIN32)
 
@@ -94,14 +94,23 @@ void make_context (ucontext_t* i_context, void (*i_func) (void), Args* ... i_arg
 	uintptr_t* stackPointerEnd = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(i_context->uc_stack.ss_sp) & ~0xf);
 	//null return address
 	*stackPointer = 0;
+	--stackPointer;
+	//instruction pointer on resume
+	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext.Rip));
+	--stackPointer;
+	//stack pointer on resume
+	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext.Rsp));
+	--stackPointer;
 
 	i_context->uc_mcontext.Rip = reinterpret_cast<uint64_t>(i_func);
-	i_context->uc_mcontext.Rsp = reinterpret_cast<uint64_t>(stackPointer - 1);
+	i_context->uc_mcontext.Rsp = reinterpret_cast<uint64_t>(stackPointer);
 	i_context->uc_mcontext.Rbx = reinterpret_cast<uint64_t>(stackPointerEnd);
 
 	detail::dump_args(i_context,stackPointer,0,reinterpret_cast<uintptr_t>(i_args) ...);
 
 #else
+
+	i_context->uc_link = i_resumeContext;
 
 	makecontext(i_context,i_func,mpl::get_num_types<Args...>::value,i_args...);
 

@@ -94,8 +94,6 @@ int swap_context (ucontext_t* i_oldContext, ucontext_t* i_newContext)
 	detail::unwind_calling_context(i_oldContext);
 
 	i_oldContext->uc_mcontext.Rax = 0;
-	i_newContext->uc_mcontext.Rsi = i_oldContext->uc_mcontext.Rsp;
-	i_newContext->uc_mcontext.Rdi = i_oldContext->uc_mcontext.Rip;
 
 	return set_context(i_newContext);
 

@@ -180,14 +180,14 @@ TEST(DDKLockFreeStackTest,multipleProducerMultipleConsumer)
 		}
 	};
 
-	static const size_t threadPoolSize = 100;
+	static const size_t threadPoolSize = 5000;
 	std::array<ddk::thread,threadPoolSize> threadPool;
 
-	for(size_t index=0;index<50;++index)
+	for(size_t index=0;index<500;++index)
 	{
 		threadPool[index].start(producerFunc);
 	}
-	for(size_t index=50;index<threadPoolSize;++index)
+	for(size_t index=500;index<threadPoolSize;++index)
 	{
 		threadPool[index].start(consumerFunc);
 	}
@@ -196,14 +196,14 @@ TEST(DDKLockFreeStackTest,multipleProducerMultipleConsumer)
 
 	stop1 = true;
 
-	for(size_t index=0;index<50;++index)
+	for(size_t index=0;index<500;++index)
 	{
 		threadPool[index].stop();
 	}
 
 	stop2 = true;
 
-	for(size_t index=50;index<threadPoolSize;++index)
+	for(size_t index=500;index<threadPoolSize;++index)
 	{
 		threadPool[index].stop();
 	}

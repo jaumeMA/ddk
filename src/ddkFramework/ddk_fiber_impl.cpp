@@ -109,6 +109,8 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 
 		switch_stack(reinterpret_cast<char*>(other.get_context()->uc_stack.ss_sp) + other.get_context()->uc_stack.ss_size,other.get_context()->uc_stack.ss_sp);
 
+		m_alloc.detach();
+
 		if(m_state != FiberExecutionState::Done)
 		{
 			return reinterpret_cast<yielder_context*>(m_context.uc_link);

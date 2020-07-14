@@ -46,15 +46,22 @@ consolidate_frame PROC FRAME
 
 	call r8
 
-	add rsp, 020h
-
-	mov rsp, rsi
-
-	jmp rdi
+	add rsp, 028h
 
 	pop rbp
 
+	pop rsi
+
+	pop rdi
+
+	mov rsp, [rsi]
+
+	mov rsi, [rdi]
+
+	jmp rsi
+
 	ret
+
 consolidate_frame ENDP
 
 END

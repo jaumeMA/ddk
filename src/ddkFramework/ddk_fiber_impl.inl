@@ -44,9 +44,7 @@ void fiber_impl::start_from(this_fiber_t& other, const std::function<Return()>& 
 
 		m_context.uc_stack.ss_size = allocRes.first;
 
-        m_context.uc_link = other.get_context();
-
-		ddk::make_context(&m_context,&consolidate_frame,&i_function,this,&launch_fiber<Return>);
+		ddk::make_context(&m_context,other.get_context(),&consolidate_frame,&i_function,this,&launch_fiber<Return>);
 	}
 	else
 	{
