@@ -52,7 +52,7 @@ void dump_args(ucontext_t* i_context, uintptr_t* i_stackPointer, size_t i_index,
 			i_context->uc_mcontext.R9 = i_arg;
 			break;
 		default:
-			i_stackPointer[i_index + 1] = i_arg;
+			i_stackPointer[i_index] = i_arg;
 			break;
 	}
 
