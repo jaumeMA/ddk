@@ -265,8 +265,6 @@ struct atomic : mpl::which_type<(alignof(T)<=4),atomic32<T>,atomic64<T>>::type
 template<typename T>
 struct atomic<T*>
 {
-	static_assert(sizeof(T*) == 8, "You cannot operate atomically on types bigger than 64 bits");
-
 	template<typename TT>
 	friend bool atomic_compare_exchange(atomic<TT*>&, TT*, TT*);
 	template<typename TT>

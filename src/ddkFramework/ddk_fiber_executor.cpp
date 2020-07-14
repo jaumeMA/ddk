@@ -1,6 +1,7 @@
 #include "ddk_fiber_executor.h"
 #include <ctime>
 #include "ddk_thread_utils.h"
+#include <cmath>
 
 namespace ddk
 {
@@ -192,7 +193,7 @@ void fiber_event_driven_executor::update()
 
 		pthread_mutex_lock(&m_condVarMutex);
 
-		const double refreshPeriod = m_sleepTimeInMS - fmod((double)(clock()-start), (double) m_sleepTimeInMS);
+		const double refreshPeriod = m_sleepTimeInMS - std::fmod((double)(clock()-start), (double) m_sleepTimeInMS);
 		const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
 
 		if (m_stopped == false)

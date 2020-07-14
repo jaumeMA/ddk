@@ -12,8 +12,16 @@
 namespace ddk
 {
 
-#ifdef DDK_DEBUG
-
+template<typename T>
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
+{
+    return unique_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
+{
+    return unique_pointer_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
+}
 template<typename T>
 inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
 {
@@ -24,6 +32,19 @@ inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, tagged_poi
 {
   return unique_reference_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
 }
+template<typename T>
+inline shared_reference_wrapper<T> __make_shared_pointer(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
+{
+    return shared_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+inline shared_reference_wrapper<T> __make_shared_reference(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
+{
+    return shared_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+
+#ifdef DDK_DEBUG
+
 template<typename T>
 inline lent_reference_wrapper<T> __make_lent_reference(T* i_data, const tagged_pointer<lent_reference_counter>& i_refCounter)
 {
@@ -34,24 +55,9 @@ inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data, const tagged_point
 {
 	return lent_pointer_wrapper<T>(i_data, i_refCounter);
 }
-template<typename T>
-inline shared_reference_wrapper<T> __make_shared_reference(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-    return shared_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-}
 
 #else
 
-template<typename T>
-inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-  return unique_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-}
-template<typename T>
-inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-  return unique_reference_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
-}
 template<typename T>
 inline lent_reference_wrapper<T> __make_lent_reference(T* i_data)
 {
@@ -61,11 +67,6 @@ template<typename T>
 inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data)
 {
 	return lent_pointer_wrapper<T>(i_data);
-}
-template<typename T>
-inline shared_reference_wrapper<T> __make_shared_reference(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-    return shared_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
 }
 
 #endif

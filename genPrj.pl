@@ -53,7 +53,7 @@ if($project eq "Windows")
 	$Binaries='ddkFramework';
 	$SolutionName='ddkWindows';
 }
-elsif($project eq "Linux")
+elsif($project eq "ALL_Linux")
 {
 	$Mode='ALL_Linux';
 	$Binaries='ddkFramework';
@@ -67,12 +67,21 @@ elsif($project eq "iOS")
 }
 elsif($project eq "Test")
 {
+    if($platform eq "Windows")
+    {
 	$Mode='ALL_Windows';
-	$Binaries='ddkFrameworkTests';
-	$SolutionName='Test';
+    }
+    elsif($platform eq "Linux")
+    {
+	$Mode='ALL_Linux';
+    }
+    
+    $Binaries='ddkFrameworkTests';
+    $SolutionName='Test';
 }
 else
 {
+	print "$platform";
 	showHelp();
 	
 	exit -1;
@@ -99,6 +108,7 @@ elsif($platform eq "iOS")
 }
 else
 {
+	echo $platform
 	showHelp();
 	
 	exit -1;

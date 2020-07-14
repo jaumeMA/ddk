@@ -48,11 +48,11 @@
             { \
                 if((__cond) == false) \
                 { \
-                    WAS_LOG_ERROR(__msg); \
+                    DDK_LOG_ERROR(__msg); \
                 } \
             }
         #define DDK_FAIL_OR_LOG(__msg) \
-            WAS_LOG_ERROR(__msg);
+            DDK_LOG_ERROR(__msg);
 
     #endif
 
@@ -99,11 +99,11 @@
             { \
                 if((__cond) == false) \
                 { \
-                    WAS_LOG_ERROR(__msg); \
+                    DDK_LOG_ERROR(__msg); \
                 } \
             }
         #define DDK_FAIL_OR_LOG(__msg) \
-            WAS_LOG_ERROR(__msg);
+            DDK_LOG_ERROR(__msg);
 
     #endif
 
@@ -141,11 +141,11 @@
             { \
                 if((__cond) == false) \
                 { \
-                    WAS_LOG_ERROR(__msg); \
+                    DDK_LOG_ERROR(__msg); \
                 } \
             }
         #define DDK_FAIL_OR_LOG(__msg) \
-            WAS_LOG_ERROR(__msg);
+            DDK_LOG_ERROR(__msg);
 
     #endif
 

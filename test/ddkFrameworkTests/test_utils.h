@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddk_reference_wrapper_deleter.h"
+#include <utility>
+#include <stddef.h>
 
 template<typename T>
 class TestDynamicFactory : public ddk::IReferenceWrapperDeleter
@@ -96,7 +98,7 @@ public:
 class ConstructionDeletionBalancer : public DefaultType
 {
 public:
-	
+
 	ConstructionDeletionBalancer(int i_value);
 	ConstructionDeletionBalancer(const ConstructionDeletionBalancer& other);
 	ConstructionDeletionBalancer(ConstructionDeletionBalancer&& other);

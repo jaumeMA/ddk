@@ -50,15 +50,10 @@ class unique_pointer_wrapper
 	friend lent_reference_wrapper<TT> lend(const unique_reference_wrapper<TT>&);
 	template<typename TT>
 	friend unique_reference_wrapper<TT> promote_to_ref(unique_pointer_wrapper<TT>);
-
-	friend inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr)
-	{
-		return unique_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-	}
-	friend inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr)
-	{
-		return unique_pointer_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
-	}
+    template<typename TT>
+	friend inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+    template<typename TT>
+	friend inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 
 public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;
