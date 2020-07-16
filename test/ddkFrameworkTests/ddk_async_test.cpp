@@ -36,7 +36,7 @@ void light_func()
 			ddk::suspend();
 		}
 
-		s_counter++;
+        ++s_counter;
 	}
 }
 
@@ -46,8 +46,14 @@ void _recursive_func(int i)
 
 	if(i > 0)
 	{
+        ddk::yield();
+
 		_recursive_func(i - 1);
 	}
+    else
+    {
+        ddk::suspend();
+    }
 }
 void recursive_func()
 {
@@ -75,7 +81,7 @@ void heavy_func()
 			ddk::suspend();
 		}
 
-		s_counter++;
+		++s_counter;
 	}
 }
 
@@ -101,7 +107,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
 	{
 		ddk::promise<void> prom;
 		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
-		ddk::future<void> provaFuture = ddk::async(light_func) -> attach(std::move(fiberSheaf)) -> store(prom);
+		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf)) -> store(prom);
 
 		provaFuture.wait();
 	}
@@ -117,8 +123,6 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 		ddk::future<void> provaFuture = ddk::async(heavy_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();
-
-		ddk::sleep(1000);
 	}
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
@@ -134,7 +138,5 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();
-
-		ddk::sleep(1000);
 	}
 }

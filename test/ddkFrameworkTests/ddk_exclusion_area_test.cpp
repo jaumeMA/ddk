@@ -264,61 +264,57 @@ TEST(DDKExclusionAreaTest,singleReaderNonReentrantMultipleWritersNonReentrant)
 {
 	static const size_t raceDataSize = 1000;
 	std::vector<int> raceData;
-	bool stop = false;
+    bool stop = false;
 
 	raceData.reserve(raceDataSize);
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
-
-				const int randValue = std::rand();
-
-				raceData.push_back(randValue);
-
-				EXPECT_EQ(randValue,raceData.back());
-
-				exclArea.leaveWriter();
-
-				std::this_thread::yield();
-			}
-		}
+            ddk::sleep(1);
+        }
 	};
+    auto producerFunc = [&exclArea,&raceData]()
+    {
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+
+            const int randValue = std::rand();
+
+            raceData.push_back(randValue);
+
+            EXPECT_EQ(randValue,raceData.back());
+
+            exclArea.leaveWriter();
+
+            std::this_thread::yield();
+        }
+    };
+
 
 	static const size_t threadPoolSize = 100;
 	std::array<ddk::thread,threadPoolSize> threadPool;
 
-	threadPool[0].start(std::bind(raceFunc,true));
-
+	threadPool[0].start(consumerFunc);
 	for(size_t index=1;index<100;++index)
 	{
-		threadPool[index].start(std::bind(raceFunc,false));
+		threadPool[index].start(producerFunc);
 	}
-
 
 	for(size_t index=1;index<100;++index)
 	{
@@ -339,53 +335,50 @@ TEST(DDKExclusionAreaTest,singleReaderReentrantMultipleWritersNonReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
-
-				const int randValue = std::rand();
-
-				raceData.push_back(randValue);
-
-				EXPECT_EQ(randValue,raceData.back());
-
-				exclArea.leaveWriter();
-
-				std::this_thread::yield();
-			}
-		}
+            ddk::sleep(1);
+        }
 	};
+	auto producerFunc = [&exclArea,&raceData]()
+    {
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+
+            const int randValue = std::rand();
+
+            raceData.push_back(randValue);
+
+            EXPECT_EQ(randValue,raceData.back());
+
+            exclArea.leaveWriter();
+
+            std::this_thread::yield();
+        }
+    };
 
 	static const size_t threadPoolSize = 100;
 	std::array<ddk::thread,threadPoolSize> threadPool;
 
-	threadPool[0].start(std::bind(raceFunc,true));
+	threadPool[0].start(consumerFunc);
 
 	for(size_t index=1;index<100;++index)
 	{
-		threadPool[index].start(std::bind(raceFunc,false));
+		threadPool[index].start(producerFunc);
 	}
 
 	for(size_t index=1;index<100;++index)
@@ -407,53 +400,50 @@ TEST(DDKExclusionAreaTest,singleReaderReentrantMultipleWritersReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
-
-				const int randValue = std::rand();
-
-				raceData.push_back(randValue);
-
-				EXPECT_EQ(randValue,raceData.back());
-
-				exclArea.leaveWriter();
-
-				std::this_thread::yield();
-			}
-		}
+            ddk::sleep(1);
+        }
 	};
+	auto producerFunc = [&exclArea,&raceData]()
+    {
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
+
+            const int randValue = std::rand();
+
+            raceData.push_back(randValue);
+
+            EXPECT_EQ(randValue,raceData.back());
+
+            exclArea.leaveWriter();
+
+            std::this_thread::yield();
+        }
+    };
 
 	static const size_t threadPoolSize = 100;
 	std::array<ddk::thread,threadPoolSize> threadPool;
 
-	threadPool[0].start(std::bind(raceFunc,true));
+	threadPool[0].start(consumerFunc);
 
 	for(size_t index=1;index<100;++index)
 	{
-		threadPool[index].start(std::bind(raceFunc,false));
+		threadPool[index].start(producerFunc);
 	}
 
 	for(size_t index=1;index<100;++index)
@@ -475,44 +465,40 @@ TEST(DDKExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+            ddk::sleep(1);
+        }
+    };
+	auto producerFunc = [&exclArea,&raceData]()
+	{
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
-				const int randValue = std::rand();
+            const int randValue = std::rand();
 
-				raceData.push_back(randValue);
+            raceData.push_back(randValue);
 
-				EXPECT_EQ(randValue,raceData.back());
+            EXPECT_EQ(randValue,raceData.back());
 
-				exclArea.leaveWriter();
+            exclArea.leaveWriter();
 
-				std::this_thread::yield();
-			}
-		}
-
+            std::this_thread::yield();
+        }
 	};
 
 	static const size_t threadPoolSize = 100;
@@ -520,10 +506,10 @@ TEST(DDKExclusionAreaTest,multipleReaderNonReentrantSingleWriterNonReentrant)
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
-		threadPool[index].start(std::bind(raceFunc,true));
+		threadPool[index].start(consumerFunc);
 	}
 
-	raceFunc(false);
+	producerFunc();
 
 	stop = true;
 
@@ -542,43 +528,40 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+            ddk::sleep(1);
+        }
+	};
+	auto producerFunc = [&exclArea,&raceData]()
+	{
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
-				const int randValue = std::rand();
+            const int randValue = std::rand();
 
-				raceData.push_back(randValue);
+            raceData.push_back(randValue);
 
-				EXPECT_EQ(randValue,raceData.back());
+            EXPECT_EQ(randValue,raceData.back());
 
-				exclArea.leaveWriter();
+            exclArea.leaveWriter();
 
-				std::this_thread::yield();
-			}
-		}
+            std::this_thread::yield();
+        }
 	};
 
 	static const size_t threadPoolSize = 100;
@@ -586,10 +569,10 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantSingleWriterNonReentrant)
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
-		threadPool[index].start(std::bind(raceFunc,true));
+		threadPool[index].start(consumerFunc);
 	}
 
-	raceFunc(false);
+	producerFunc();
 
 	stop = true;
 
@@ -608,54 +591,51 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantSingleWriterReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
-
-				const int randValue = std::rand();
-
-				raceData.push_back(randValue);
-
-				EXPECT_EQ(randValue,raceData.back());
-
-				exclArea.leaveWriter();
-
-				std::this_thread::yield();
-			}
-		}
+            ddk::sleep(1);
+        }
 	};
+	auto producerFunc = [&exclArea,&raceData]()
+    {
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
+
+            const int randValue = std::rand();
+
+            raceData.push_back(randValue);
+
+            EXPECT_EQ(randValue,raceData.back());
+
+            exclArea.leaveWriter();
+
+            std::this_thread::yield();
+        }
+    };
 
 	static const size_t threadPoolSize = 100;
 	std::array<ddk::thread,threadPoolSize> threadPool;
 
 	for(size_t index=0;index<threadPoolSize;++index)
 	{
-		threadPool[index].start(std::bind(raceFunc,true));
+		threadPool[index].start(consumerFunc);
 	}
 
-	raceFunc(false);
+	producerFunc();
 
 	stop = true;
 
@@ -674,44 +654,41 @@ TEST(DDKExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
-
-				const int randValue = std::rand();
-
-				raceData.push_back(randValue);
-
-				EXPECT_EQ(randValue,raceData.back());
-
-				exclArea.leaveWriter();
-
-				std::this_thread::yield();
-			}
-		}
+            ddk::sleep(1);
+        }
 	};
+	auto producerFunc = [&exclArea,&raceData]()
+    {
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+
+            const int randValue = std::rand();
+
+            raceData.push_back(randValue);
+
+            EXPECT_EQ(randValue,raceData.back());
+
+            exclArea.leaveWriter();
+
+            std::this_thread::yield();
+        }
+    };
 
 	static const size_t threadPoolSize = 100;
 	std::array<ddk::thread,threadPoolSize> threadPool;
@@ -719,11 +696,11 @@ TEST(DDKExclusionAreaTest,multipleReaderNonReentrantMultipleWritersNonReentrant)
 	size_t threadIndex=0;
 	for(;threadIndex<30;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,true));
+		threadPool[threadIndex].start(consumerFunc);
 	}
 	for(;threadIndex<threadPoolSize;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,false));
+		threadPool[threadIndex].start(producerFunc);
 	}
 
 	for(size_t index=30;index<threadPoolSize;++index)
@@ -748,43 +725,40 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+            ddk::sleep(1);
+        }
+	};
+	auto producerFunc = [&exclArea,&raceData]()
+	{
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
-				const int randValue = std::rand();
+            const int randValue = std::rand();
 
-				raceData.push_back(randValue);
+            raceData.push_back(randValue);
 
-				EXPECT_EQ(randValue,raceData.back());
+            EXPECT_EQ(randValue,raceData.back());
 
-				exclArea.leaveWriter();
+            exclArea.leaveWriter();
 
-				std::this_thread::yield();
-			}
-		}
+            std::this_thread::yield();
+        }
 	};
 
 	static const size_t threadPoolSize = 100;
@@ -793,11 +767,11 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantMultipleWritersNonReentrant)
 	size_t threadIndex=0;
 	for(;threadIndex<30;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,true));
+		threadPool[threadIndex].start(consumerFunc);
 	}
 	for(;threadIndex<threadPoolSize;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,false));
+		threadPool[threadIndex].start(producerFunc);
 	}
 
 	for(size_t index=30;index<threadPoolSize;++index)
@@ -822,43 +796,40 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(size_t index=0;index<raceDataSize;++index)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
+            ddk::sleep(1);
+        }
+	};
+	auto producerFunc = [&exclArea,&raceData]()
+	{
+        for(size_t index=0;index<raceDataSize;++index)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::REENTRANT);
 
-				const int randValue = std::rand();
+            const int randValue = std::rand();
 
-				raceData.push_back(randValue);
+            raceData.push_back(randValue);
 
-				EXPECT_EQ(randValue,raceData.back());
+            EXPECT_EQ(randValue,raceData.back());
 
-				exclArea.leaveWriter();
+            exclArea.leaveWriter();
 
-				std::this_thread::yield();
-			}
-		}
+            std::this_thread::yield();
+        }
 	};
 
 	static const size_t threadPoolSize = 100;
@@ -867,11 +838,11 @@ TEST(DDKExclusionAreaTest,multipleReaderReentrantMultipleWritersReentrant)
 	size_t threadIndex=0;
 	for(;threadIndex<30;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,true));
+		threadPool[threadIndex].start(consumerFunc);
 	}
 	for(;threadIndex<threadPoolSize;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,false));
+		threadPool[threadIndex].start(producerFunc);
 	}
 
 	for(size_t index=30;index<threadPoolSize;++index)
@@ -900,43 +871,40 @@ TEST(DDKExclusionAreaTest,stressTest)
 
 	ddk::exclusion_area exclArea;
 
-	auto raceFunc = [&exclArea,&raceData,&raceIndex,&stop](bool i_reader)
+	auto consumerFunc = [&exclArea,&raceData,&raceIndex,&stop]()
 	{
-		if(i_reader)
-		{
-			while(stop == false)
-			{
-				exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
+        while(stop == false)
+        {
+            exclArea.enterReader(ddk::Reentrancy::NON_REENTRANT);
 
-				if(raceData.empty() == false)
-				{
-					const int value = raceData.back();
+            if(raceData.empty() == false)
+            {
+                const int value = raceData.back();
 
-					EXPECT_EQ(value,raceData.back());
-				}
+                EXPECT_EQ(value,raceData.back());
+            }
 
-				exclArea.leaverReader();
+            exclArea.leaverReader();
 
-				ddk::sleep(1);
-			}
-		}
-		else
-		{
-			for(;raceIndex<raceDataSize;++raceIndex)
-			{
-				exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
+            ddk::sleep(1);
+        }
+	};
+	auto producerFunc = [&exclArea,&raceData,&raceIndex,&stop]()
+	{
+        for(;raceIndex<raceDataSize;++raceIndex)
+        {
+            exclArea.enterWriter(ddk::Reentrancy::NON_REENTRANT);
 
-				const int randValue = std::rand();
+            const int randValue = std::rand();
 
-				raceData.push_back(randValue);
+            raceData.push_back(randValue);
 
-				EXPECT_EQ(randValue,raceData.back());
+            EXPECT_EQ(randValue,raceData.back());
 
-				exclArea.leaveWriter();
+            exclArea.leaveWriter();
 
-				std::this_thread::yield();
-			}
-		}
+            std::this_thread::yield();
+        }
 	};
 
 	static const size_t threadPoolSize = 5000;
@@ -945,11 +913,11 @@ TEST(DDKExclusionAreaTest,stressTest)
 	size_t threadIndex=0;
 	for(;threadIndex<4800;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,true));
+		threadPool[threadIndex].start(consumerFunc);
 	}
 	for(;threadIndex<threadPoolSize;++threadIndex)
 	{
-		threadPool[threadIndex].start(std::bind(raceFunc,false));
+		threadPool[threadIndex].start(producerFunc);
 	}
 
 	for(size_t index=4800;index<threadPoolSize;++index)

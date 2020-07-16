@@ -54,7 +54,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const std::func
 		{
 			try
 			{
-				i_callable(); 
+				i_callable();
 			}
 			catch(const suspend_exception&)
 			{
@@ -63,6 +63,8 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const std::func
 			--m_pendingFibers;
 			if(m_pendingFibers == 0)
 			{
+			    m_fiberSheaf.clear();
+
 				i_sink(_void);
 			}
 		});

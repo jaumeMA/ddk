@@ -21,9 +21,11 @@ target_link_libraries(ddkFrameworkTests
 	${LOCAL_MODULE_DEPENDENCIES})
 
 set_target_properties(ddkFrameworkTests PROPERTIES FOLDER "1.Tests")
-set_target_properties(ddkFrameworkTests PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${OUTPUT_DIR}/$<CONFIG>")
 
-add_custom_command(TARGET ddkFrameworkTests PRE_BUILD COMMAND ${CMAKE_COMMAND} -E $<IF:$<CONFIG:Debug>,copy_if_different,echo_append> ${THIRD_PARTY_PDBS} $<$<CONFIG:Debug>:"${OUTPUT_DIR}/Debug">)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
-add_custom_command(TARGET ddkFrameworkTests POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${THIRD_PARTY_BINARIES} "${OUTPUT_DIR}/$<CONFIG>")
+  set_target_properties(ddkFrameworkTests PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${OUTPUT_DIR}/$<CONFIG>")
+  add_custom_command(TARGET ddkFrameworkTests PRE_BUILD COMMAND ${CMAKE_COMMAND} -E $<IF:$<CONFIG:Debug>,copy_if_different,echo_append> ${THIRD_PARTY_PDBS} $<$<CONFIG:Debug>:"${OUTPUT_DIR}/Debug">)
+  add_custom_command(TARGET ddkFrameworkTests POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${THIRD_PARTY_BINARIES} "${OUTPUT_DIR}/$<CONFIG>")
 
+endif()

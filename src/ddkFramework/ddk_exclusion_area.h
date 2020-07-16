@@ -12,7 +12,11 @@ class exclusion_area
 {
 public:
 	exclusion_area();
+	exclusion_area(const exclusion_area&) = delete;
+	exclusion_area(exclusion_area&& other);
 	~exclusion_area();
+	exclusion_area& operator=(const exclusion_area&) = delete;
+	exclusion_area& operator=(exclusion_area&&) = delete;
 
 	void enterReader(Reentrancy i_reentrancy);
 	bool tryToEnterReader(Reentrancy i_reentrancy);

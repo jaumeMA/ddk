@@ -63,7 +63,7 @@ void* dynamic_stack_allocator::allocate(void* i_ref, size_t i_size) const
 }
 bool dynamic_stack_allocator::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const
 {
-	if((reinterpret_cast<char*>(i_stackAddr.first) + k_maxNumStackPages * s_pageSize) > i_reason && i_reason > reinterpret_cast<char*>(i_stackAddr.second) - (k_numGuardPages * s_pageSize))
+	if(reinterpret_cast<char*>(i_stackAddr.first) > i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.first) - k_maxNumStackPages * s_pageSize))
 	{
 
 #if defined(WIN32)

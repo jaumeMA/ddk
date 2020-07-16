@@ -9,6 +9,11 @@ exclusion_area::exclusion_area()
 	m_waitingRoom[iwaiting_room::Reader] = new reader_waiting_room(m_sharedState);
 	m_waitingRoom[iwaiting_room::Writer] = new writer_waiting_room(m_sharedState);
 }
+exclusion_area::exclusion_area(exclusion_area&& other)
+: m_waitingRoom{nullptr,nullptr}
+{
+    std::swap(m_waitingRoom,other.m_waitingRoom);
+}
 exclusion_area::~exclusion_area()
 {
 	delete m_waitingRoom[iwaiting_room::Reader];
