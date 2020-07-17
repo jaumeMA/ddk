@@ -61,7 +61,8 @@ private:
 
 TEST(DDKCoIterableTest,stdVectorForwardIteration)
 {
-	std::vector<int> kk1;
+	typedef std::vector<int> container;
+	container kk1;
 
 	kk1.push_back(10);
 	kk1.push_back(2);
@@ -71,10 +72,36 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 	kk1.push_back(-160);
 	kk1.push_back(2345);
 
-	auto res = ddk::co_iterate(kk1);
-	auto itRes = begin(res);
-	for(size_t index=0;itRes != end(res);++itRes,++index)
+	typedef ddk::co_iterable<container> iterable;
+	iterable res = ddk::co_iterate(kk1);
+	typedef typename iterable::iterator iterator;
+	iterator itRes = std::begin(res);
+	for(size_t index=0;itRes != std::end(res);++itRes,++index)
 	{
+		int& res = *itRes;
+		EXPECT_EQ(*itRes, kk1[index]);
+	}
+}
+TEST(DDKCoIterableTest, stdVectorConstForwardIteration)
+{
+	typedef std::vector<int> container;
+	container kk1;
+
+	kk1.push_back(10);
+	kk1.push_back(2);
+	kk1.push_back(567);
+	kk1.push_back(22);
+	kk1.push_back(7);
+	kk1.push_back(-160);
+	kk1.push_back(2345);
+
+	typedef ddk::co_iterable<container> iterable;
+	const iterable res = ddk::co_iterate(kk1);
+	typedef typename iterable::const_iterator const_iterator;
+	const_iterator itRes = std::begin(res);
+	for (size_t index = 0; itRes != std::end(res); ++itRes, ++index)
+	{
+		const int& res = *itRes;
 		EXPECT_EQ(*itRes, kk1[index]);
 	}
 }

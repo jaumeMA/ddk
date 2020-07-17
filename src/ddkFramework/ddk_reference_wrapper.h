@@ -33,7 +33,7 @@ inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, tagged_poi
   return unique_reference_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
 }
 template<typename T>
-inline shared_reference_wrapper<T> __make_shared_pointer(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
+inline shared_pointer_wrapper<T> __make_shared_pointer(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
 {
     return shared_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
 }
@@ -371,6 +371,12 @@ lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentR
 }
 
 template<typename TT, typename T>
+shared_pointer_wrapper<TT> reinterpret_shared_cast(const shared_pointer_wrapper<T>& i_sharedPtr)
+{
+	return __make_shared_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_sharedPtr.m_data)), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
+}
+
+template<typename TT, typename T>
 unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_uniquePtr)
 {
 	unique_pointer_wrapper<TT> res = __make_unique_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_uniquePtr.m_data)), i_uniquePtr.m_refCounter, i_uniquePtr.m_deleter);
@@ -378,6 +384,12 @@ unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_u
 	i_uniquePtr.clear();
 
 	return std::move(res);
+}
+
+template<typename TT, typename T>
+shared_reference_wrapper<TT> reinterpret_shared_cast(const shared_reference_wrapper<T>& i_sharedRef)
+{
+	return __make_shared_reference(reinterpret_cast<TT*>(const_cast<T*>(i_sharedRef.m_data)), i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
 }
 
 template<typename TT, typename T>

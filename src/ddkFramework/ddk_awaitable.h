@@ -49,32 +49,23 @@ private:
 template<typename T, typename Result = awaited_result<T>>
 class awaitable
 {
+	friend Result;
 	friend inline Result resume(awaitable<T,Result>& i_awaitable)
 	{
 		typename awaitable<T,Result>::continue_result res = i_awaitable.resume();
 
 		return (res.hasError() == false) ? i_awaitable.m_executor->extract_value() : Result(none);
 	}
-	friend inline Result begin(awaitable<T,Result>& i_awaitable)
-	{
-		typename awaitable<T,Result>::continue_result res = i_awaitable.resume();
-
-		return (res.hasError() == false) ? i_awaitable.m_executor : Result(none);
-	}
-	friend inline Result end(awaitable<T,Result>&)
-	{
-		return Result(none);
-	}
 
 public:
 	typedef typename async_executor<T>::start_result continue_result;
+	typedef typename Result::reference reference;
+	typedef typename Result::const_reference const_reference;
 
 	template<typename ... Types, typename ... Args>
 	awaitable(const std::function<T(Types...)>& i_function, Args&& ... i_args);
 	awaitable(const awaitable& other);
 	awaitable(awaitable&& other);
-
-protected:
 	continue_result resume();
 
 private:
