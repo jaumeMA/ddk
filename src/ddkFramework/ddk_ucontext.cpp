@@ -87,16 +87,23 @@ int set_context(ucontext_t* i_context)
 int swap_context (ucontext_t* i_oldContext, ucontext_t* i_newContext)
 {
 #if defined(WIN32)
+	bool done = false;
 
 	i_oldContext->uc_mcontext.ContextFlags = CONTEXT_ALL;
 	RtlCaptureContext (&i_oldContext->uc_mcontext);
 
-	detail::unwind_calling_context(i_oldContext);
+	if (!done)
+	{
+		done = true;
 
-	i_oldContext->uc_mcontext.Rax = 0;
+		i_oldContext->uc_mcontext.Rax = 0;
 
-	return set_context(i_newContext);
-
+		return set_context(i_newContext);
+	}
+	else
+	{
+		return 0;
+	}
 #else
 
 	return swapcontext(i_oldContext,i_newContext);

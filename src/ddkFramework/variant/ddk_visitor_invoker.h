@@ -103,8 +103,9 @@ public:
     inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, const variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::outer_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -112,8 +113,9 @@ public:
     inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, const variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::outer_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -121,8 +123,9 @@ public:
     inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::outer_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -130,8 +133,9 @@ public:
     inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::outer_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -139,8 +143,9 @@ public:
     inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::outer_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, std::move(var));
 	}
@@ -148,8 +153,9 @@ public:
     inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::outer_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, std::move(var));
 	}
@@ -157,8 +163,9 @@ public:
     inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, const variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::inner_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -166,8 +173,9 @@ public:
     inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, const variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::inner_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -175,8 +183,9 @@ public:
     inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::inner_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -184,8 +193,9 @@ public:
     inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::inner_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, var);
 	}
@@ -193,8 +203,9 @@ public:
     inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::inner_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, std::move(var));
 	}
@@ -202,8 +213,9 @@ public:
     inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&&);
+		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &variant_visitor_invoker<Return, Types...>::inner_invoke<visitor,TypeIndexs> ... };
+		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		return (*funcTable[var.m_currentType])(_visitor, std::move(var));
 	}

@@ -10,7 +10,7 @@ class DDKArenaTest : public TestWithParam<std::pair<size_t,size_t>>
 
 TEST_P(DDKArenaTest, defaultConstruction)
 {
-	ddk::arena<4096,4096> emptyArena;
+	ddk::arena<sizeof(int),alignof(int)> emptyArena;
 
 	EXPECT_EQ(emptyArena.empty(), true);
 
@@ -18,7 +18,7 @@ TEST_P(DDKArenaTest, defaultConstruction)
 }
 TEST_P(DDKArenaTest, arenaConstruction)
 {
-	ddk::arena<4096,4096> playGround;
+	ddk::arena<sizeof(int),alignof(int)> playGround;
 
 	playGround.construct<int>(10);
 
@@ -28,7 +28,7 @@ TEST_P(DDKArenaTest, arenaConstruction)
 }
 TEST_P(DDKArenaTest, arenaAssignment)
 {
-	ddk::arena<4096,4096> playGround;
+	ddk::arena<sizeof(int),alignof(int)> playGround;
 
 	playGround.construct<int>(10);
 
@@ -42,7 +42,7 @@ TEST_P(DDKArenaTest, arenaAssignment)
 }
 TEST_P(DDKArenaTest, arenaGet)
 {
-	ddk::arena<4096,4096> playGround;
+	ddk::arena<sizeof(int),alignof(int)> playGround;
 
 	playGround.construct<int>(10);
 
@@ -58,7 +58,7 @@ TEST_P(DDKArenaTest, arenaGet)
 }
 TEST_P(DDKArenaTest, arenaGetPtr)
 {
-	ddk::arena<4096,4096> playGround;
+	ddk::arena<sizeof(int),alignof(int)> playGround;
 
 	playGround.construct<int>(10);
 
@@ -72,7 +72,7 @@ TEST_P(DDKArenaTest, arenaGetPtr)
 }
 TEST_P(DDKArenaTest, arenaDestruction)
 {
-	ddk::arena<4096,4096> playGround;
+	ddk::arena<sizeof(int),alignof(int)> playGround;
 
 	playGround.construct<int>(10);
 
