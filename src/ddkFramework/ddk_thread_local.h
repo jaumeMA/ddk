@@ -18,6 +18,8 @@ public:
 
 	template<typename ... Args>
 	T& acquire(Args&& ... i_args);
+	template<typename ... Args>
+	T& set(Args&& ... i_args);
 	T& get();
 	T* get_ptr();
 	bool empty() const;

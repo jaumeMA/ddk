@@ -25,7 +25,7 @@ yielder_lent_ptr thread_impl_interface::set_yielder(yielder_lent_ptr i_yielder)
 
 	yielder_lent_ptr* prevYielder = yielder.get_ptr();
 
-	yielder.acquire(i_yielder);
+	yielder.set(i_yielder);
 
 	return (prevYielder) ? *prevYielder : nullptr;
 }

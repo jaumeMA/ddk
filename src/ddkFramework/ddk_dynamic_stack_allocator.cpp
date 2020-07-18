@@ -21,16 +21,22 @@ void* dynamic_stack_allocator::reserve(size_t i_size) const
 
 #if defined(WIN32)
 
-	void* baseAddr = VirtualAlloc(nullptr,i_size * s_pageSize,MEM_RESERVE,PAGE_NOACCESS);
+	if (void* baseAddr = VirtualAlloc(nullptr, i_size * s_pageSize, MEM_RESERVE, PAGE_NOACCESS))
 
 #elif defined(__LINUX__) || defined(__APPLE__)
 
-	void* baseAddr = mmap(nullptr,i_size * s_pageSize,PROT_NONE,MAP_ANONYMOUS|MAP_PRIVATE,0,0);
+	if (void* baseAddr = mmap(nullptr, i_size * s_pageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0))
 
 #endif
+	{
+		return reinterpret_cast<char*>(baseAddr) + i_size * s_pageSize;
+	}
+	else
+	{
+		DDK_FAIL("Error while trying to allocate memory");
 
-	return reinterpret_cast<char*>(baseAddr) + i_size * s_pageSize;
-
+		return nullptr;
+	}
 }
 void* dynamic_stack_allocator::allocate(void* i_ref, size_t i_size) const
 {

@@ -12,7 +12,9 @@ void yield(T&& i_value)
 	{
 		detail::typed_yielder_context<T> _yielder(std::forward<T>(i_value));
 
-		currYielder->yield(&_yielder);
+		detail::yielder* _currYielder = currYielder.extract();
+
+		_currYielder->yield(&_yielder);
 	}
 	else
 	{

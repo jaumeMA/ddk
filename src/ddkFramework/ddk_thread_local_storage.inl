@@ -36,6 +36,31 @@ void thread_local_storage::destroy()
 		m_address = nullptr;
 	}
 }
+template<typename T, typename ... Args>
+T* thread_local_storage::assign(Args&& ... i_args)
+{
+	if (T* typedAddress = reinterpret_cast<T*>(m_address))
+	{
+		*typedAddress = T(std::forward<Args>(i_args) ...);
+
+		return typedAddress;
+	}
+	else
+	{
+		if ((m_address = m_alloc.allocate(1, sizeof(T))))
+		{
+			new(m_address) T(std::forward<Args>(i_args) ...);
+
+			return reinterpret_cast<T*>(m_address);
+		}
+		else
+		{
+			DDK_FAIL("Could not allocate address");
+
+			return nullptr;
+		}
+	}
+}
 template<typename T>
 T& thread_local_storage::get()
 {

@@ -319,6 +319,28 @@ public:
 	{
 		return m_data;
 	}
+	T* extract()
+	{
+		UNREGISTER_STACK_TRACE(THIS_OBJECT)
+
+		if (T* res = m_data)
+		{
+			m_data = nullptr;
+
+			if (m_refCounter)
+			{
+				m_refCounter->decrementWeakReference();
+
+				m_refCounter = NULL;
+			}
+
+			return res;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
 	tagged_reference_counter get_reference_counter() const
 	{
 		return m_refCounter;

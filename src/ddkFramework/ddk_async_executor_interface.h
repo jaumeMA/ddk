@@ -2,6 +2,7 @@
 
 #include "ddk_executor_interface.h"
 #include "ddk_shared_reference_wrapper.h"
+#include "ddk_unique_reference_wrapper.h"
 #include "ddk_thread.h"
 #include "ddk_fiber.h"
 #include "ddk_embedded_type.h"
@@ -24,6 +25,15 @@ template<typename Return>
 using async_base_shared_ptr = shared_pointer_wrapper<async_interface_base<Return>>;
 template<typename Return>
 using async_base_const_shared_ptr = shared_pointer_wrapper<const async_interface_base<Return>>;
+
+template<typename Return>
+using async_base_unique_ref = unique_reference_wrapper<async_interface_base<Return>>;
+template<typename Return>
+using async_base_const_unique_ref = unique_reference_wrapper<const async_interface_base<Return>>;
+template<typename Return>
+using async_base_unique_ptr = unique_pointer_wrapper<async_interface_base<Return>>;
+template<typename Return>
+using async_base_const_unique_ptr = unique_pointer_wrapper<const async_interface_base<Return>>;
 
 template<typename Return>
 using async_base_lent_ref = lent_reference_wrapper<async_interface_base<Return>>;
@@ -72,6 +82,15 @@ template<typename Return>
 using async_state_const_shared_ptr = shared_reference_wrapper<const typename async_state_interface<Return>::async_public_type>;
 
 template<typename Return>
+using async_state_unique_ref = unique_reference_wrapper<async_state_interface<Return>>;
+template<typename Return>
+using async_state_const_unique_ref = unique_reference_wrapper<const async_state_interface<Return>>;
+template<typename Return>
+using async_state_unique_ptr = unique_pointer_wrapper<async_state_interface<Return>>;
+template<typename Return>
+using async_state_const_unique_ptr = unique_pointer_wrapper<const async_state_interface<Return>>;
+
+template<typename Return>
 using async_state_lent_ref = lent_reference_wrapper<typename async_state_interface<Return>::async_public_type>;
 template<typename Return>
 using async_state_const_lent_ref = lent_reference_wrapper<const typename async_state_interface<Return>::async_public_type>;
@@ -103,6 +122,15 @@ template<typename Return>
 using async_execute_shared_ptr = shared_pointer_wrapper<async_execute_interface<Return>>;
 template<typename Return>
 using async_execute_const_shared_ptr = shared_pointer_wrapper<const async_execute_interface<Return>>;
+
+template<typename Return>
+using async_execute_unique_ref = unique_reference_wrapper<async_execute_interface<Return>>;
+template<typename Return>
+using async_execute_const_unique_ref = unique_reference_wrapper<const async_execute_interface<Return>>;
+template<typename Return>
+using async_execute_unique_ptr = unique_pointer_wrapper<async_execute_interface<Return>>;
+template<typename Return>
+using async_execute_const_unique_ptr = unique_pointer_wrapper<const async_execute_interface<Return>>;
 
 template<typename Return>
 using async_execute_lent_ref = lent_reference_wrapper<async_execute_interface<Return>>;

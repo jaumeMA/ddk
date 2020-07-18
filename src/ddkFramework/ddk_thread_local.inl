@@ -39,6 +39,21 @@ T& threadlocal<T,Tag>::acquire(Args&& ... i_args)
 	}
 }
 template<typename T, typename Tag>
+template<typename ... Args>
+T& threadlocal<T, Tag>::set(Args&& ... i_args)
+{
+	thread_local_storage& address = get_address();
+
+	if (address.empty())
+	{
+		return *address.construct<T>(std::forward<Args>(i_args) ...);
+	}
+	else
+	{
+		return *address.assign<T>(std::forward<Args>(i_args) ...);
+	}
+}
+template<typename T, typename Tag>
 thread_local_storage& threadlocal<T,Tag>::get_address()
 {
 	static thread_local thread_local_storage s_address;

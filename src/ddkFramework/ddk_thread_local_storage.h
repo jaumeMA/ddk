@@ -15,6 +15,8 @@ public:
 	inline T* construct(Args&& ... i_args);
 	template<typename T>
 	inline void destroy();
+	template<typename T, typename ... Args>
+	inline T* assign(Args&& ... i_args);
 	template<typename T>
 	T& get();
 	template<typename T>

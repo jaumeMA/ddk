@@ -43,7 +43,7 @@ const ucontext_t* this_fiber_t::get_context() const
 }
 fiber_id this_fiber_t::get_id() const
 {
-	return get_thread_fiber_id();
+	return fiber_id(reinterpret_cast<size_t>(this));//  get_thread_fiber_id();
 }
 
 fiber_impl::fiber_impl()

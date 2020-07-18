@@ -25,8 +25,12 @@ class shared_pointer_wrapper
 	friend shared_reference_wrapper<TT> static_shared_cast(const shared_reference_wrapper<TTT>&);
 	template<typename TT,typename TTT>
 	friend shared_pointer_wrapper<TT> dynamic_shared_cast(const shared_pointer_wrapper<TTT>&);
+	template<typename TT, typename TTT>
+	friend shared_pointer_wrapper<TT> reinterpret_shared_cast(const shared_pointer_wrapper<TTT>&);
 	template<typename TT,typename TTT>
 	friend shared_pointer_wrapper<TT> dynamic_shared_cast(const shared_reference_wrapper<TTT>&);
+	template<typename TT, typename TTT>
+	friend shared_pointer_wrapper<TT> reinterpret_shared_cast(const shared_reference_wrapper<TTT>&);
 	template<typename TT>
 	friend shared_reference_wrapper<TT> const_shared_cast(const shared_reference_wrapper<const TT>&);
 	template<typename TT>
@@ -41,7 +45,6 @@ class shared_pointer_wrapper
 	friend lent_reference_wrapper<TT> lend(const shared_reference_wrapper<TT>&);
 	template<typename TT>
 	friend shared_reference_wrapper<TT> promote_to_ref(const shared_pointer_wrapper<TT>&);
-
 	template<typename TT>
 	friend shared_pointer_wrapper<TT> __make_shared_pointer(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 
@@ -337,11 +340,5 @@ private:
 	tagged_reference_counter m_refCounter;
 	const IReferenceWrapperDeleter* m_deleter;
 };
-
-template<typename T>
-inline shared_pointer_wrapper<T> __make_shared_pointer(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-	return shared_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-}
 
 }

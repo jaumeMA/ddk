@@ -1,52 +1,24 @@
 #pragma once
 
-#include "ddk_awaitable.h"
+#include "ddk_lendable.h"
 #include "ddk_template_helper.h"
+#include "ddk_co_iterator.h"
 
 namespace ddk
 {
 
-template<typename T>
-struct co_iterator
-{
-	template<typename>
-	friend class co_iterable;
-	template<typename>
-	friend struct co_iterator;
-
-public:
-	typedef typename async_state_interface<T>::reference reference;
-	typedef typename async_state_interface<T>::const_reference const_reference;
-	typedef typename async_state_interface<T>::value_type value_type;
-
-	co_iterator(const detail::none_t&);
-
-	reference operator*();
-	const_reference operator*() const;
-	co_iterator<T>& operator++();
-	bool operator!=(const co_iterator<T>& other) const;
-	bool operator==(const co_iterator<T>& other) const;
-
-private:
-	template<typename TT>
-	co_iterator(const co_iterator<TT>& other);
-	co_iterator(const awaitable<T,co_iterator<T>>& i_awaitable);
-
-	async_execute_shared_ptr<T> m_executor;
-};
-
 template<typename Iterable>
 class co_iterable
 {
+public:
 	typedef typename mpl::which_type<std::is_const<Iterable>::value, typename Iterable::const_reference, typename Iterable::reference>::type reference;
 	typedef typename Iterable::const_reference const_reference;
-	typedef awaitable<reference, co_iterator<reference>> awaitable_type;
+	typedef co_iterator<reference> iterator;
+	typedef co_iterator<const_reference> const_iterator;
 
 	friend inline co_iterator<reference> begin(co_iterable& i_co_iterable)
 	{
-		typename awaitable_type::continue_result res = i_co_iterable.m_impl.resume();
-
-		return (res.hasError() == false) ? i_co_iterable.m_impl : co_iterator<reference>(none);
+		return i_co_iterable.m_iterable;
 	}
 	friend inline co_iterator<reference> end(co_iterable&)
 	{
@@ -54,20 +26,14 @@ class co_iterable
 	}
 	friend inline co_iterator<const_reference> begin(const co_iterable& i_co_iterable)
 	{
-		typename awaitable_type::continue_result res = i_co_iterable.m_impl.resume();
-
-		return (res.hasError() == false) ? i_co_iterable.m_impl : co_iterator<const_reference>(none);
+		return i_co_iterable.m_iterable;
 	}
 	friend inline co_iterator<const_reference> end(const co_iterable&)
 	{
 		return none;
 	}
-public:
-	typedef co_iterator<reference> iterator;
-	typedef co_iterator<const_reference> const_iterator;
 
-	template<typename ... Types, typename ... Args>
-	co_iterable(const std::function<reference(Types...)>& i_function, Args&& ... i_args);
+	co_iterable(const std::function<reference(size_t)>& i_function);
 
 	inline iterator begin();
 	inline iterator end();
@@ -75,7 +41,7 @@ public:
 	inline const_iterator end() const;
 
 private:
-	mutable awaitable_type m_impl;
+	const std::function<reference(size_t)> m_function;
 };
 
 template<typename Iterable>

@@ -15,9 +15,9 @@ struct MyIterable
 	typedef const size_t& const_reference;
 
 	//you shall provide an overload of forward_iterator_awaitable for your custom container
-	friend inline size_t& forward_iterator_awaitable(MyIterable& i_iterable)
+	friend inline size_t& forward_iterator_awaitable(MyIterable& i_iterable, size_t i_initIndex)
 	{
-		size_t value = i_iterable.m_init;
+		size_t value = i_iterable.m_init + i_initIndex;
 
 		while(value <= i_iterable.m_end)
 		{
@@ -30,9 +30,9 @@ struct MyIterable
 
 		return ddk::crash_on_return<size_t&>::value();
 	}
-	friend inline size_t& backward_iterator_awaitable(MyIterable& i_iterable)
+	friend inline size_t& backward_iterator_awaitable(MyIterable& i_iterable, size_t i_initIndex)
 	{
-		size_t value = i_iterable.m_end;
+		size_t value = i_iterable.m_end - i_initIndex;
 
 		while(value >= i_iterable.m_init)
 		{
@@ -62,6 +62,9 @@ private:
 TEST(DDKCoIterableTest,stdVectorForwardIteration)
 {
 	typedef std::vector<int> container;
+	typedef ddk::co_iterable<container> iterable;
+	typedef typename iterable::iterator iterator;
+
 	container kk1;
 
 	kk1.push_back(10);
@@ -72,13 +75,26 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 	kk1.push_back(-160);
 	kk1.push_back(2345);
 
-	typedef ddk::co_iterable<container> iterable;
 	iterable res = ddk::co_iterate(kk1);
-	typedef typename iterable::iterator iterator;
 	iterator itRes = std::begin(res);
 	for(size_t index=0;itRes != std::end(res);++itRes,++index)
 	{
 		int& res = *itRes;
+		EXPECT_EQ(*itRes, kk1[index]);
+	}
+}
+TEST(DDKCoIterableTest, consStdVectorForwardIteration)
+{
+	typedef std::vector<int> container;
+	const container kk1;
+
+	typedef ddk::co_iterable<const container> const_iterable;
+	const_iterable res = ddk::co_iterate(kk1);
+	typedef typename const_iterable::const_iterator const_iterator;
+	const_iterator itRes = std::begin(res);
+	for (size_t index = 0; itRes != std::end(res); ++itRes, ++index)
+	{
+		const int& res = *itRes;
 		EXPECT_EQ(*itRes, kk1[index]);
 	}
 }
@@ -104,6 +120,51 @@ TEST(DDKCoIterableTest, stdVectorConstForwardIteration)
 		const int& res = *itRes;
 		EXPECT_EQ(*itRes, kk1[index]);
 	}
+}
+TEST(DDKCoIterableTest, assignIterator)
+{
+	typedef std::vector<int> container;
+	typedef ddk::co_iterable<container> iterable;
+	typedef typename iterable::iterator iterator;
+
+	container kk1;
+
+	kk1.push_back(10);
+	kk1.push_back(2);
+	kk1.push_back(567);
+	kk1.push_back(22);
+	kk1.push_back(7);
+	kk1.push_back(-160);
+	kk1.push_back(2345);
+
+	iterable res1 = ddk::co_iterate(kk1);
+	iterator itFirst = std::begin(res1);
+
+	typedef std::vector<int> container;
+	container kk2;
+
+	kk2.push_back(10);
+	kk2.push_back(2);
+	kk2.push_back(567);
+	kk2.push_back(22);
+	kk2.push_back(7);
+	kk2.push_back(-160);
+	kk2.push_back(2345);
+
+	iterable res2 = ddk::co_iterate(kk2);
+	iterator itSecond = std::begin(res2);
+
+	++itSecond;
+	++itSecond;
+
+	iterator itThird = itSecond;
+
+	EXPECT_EQ(*itThird, 567);
+
+	++itThird;
+	++itThird;
+
+	EXPECT_EQ(*itThird, 7);
 }
 TEST(DDKCoIterableTest,myIterableForwardIteration)
 {
