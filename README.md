@@ -39,7 +39,7 @@ Its main highlights are:
 Installing CMake
 ----------------
 
-In order to generate eWAS projects, you need CMake 3.13 or newer. You can download the latest version at this link:
+In order to generate DDK project, you need CMake 3.13 or newer. You can download the latest version at this link:
 
 https://cmake.org/download/
 
