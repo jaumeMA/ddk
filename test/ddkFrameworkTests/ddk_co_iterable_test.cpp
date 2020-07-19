@@ -13,32 +13,18 @@ struct MyIterable
 {
 	typedef size_t& reference;
 	typedef const size_t& const_reference;
+	typedef MyIterable iterator;
 
 	//you shall provide an overload of forward_iterator_awaitable for your custom container
-	friend inline size_t& forward_iterator_awaitable(MyIterable& i_iterable, size_t i_initIndex)
+	friend inline size_t& random_access_iterator_awaitable(MyIterable& i_iterable, const ddk::co_random_access_iterator_context& i_context)
 	{
-		size_t value = i_iterable.m_init + i_initIndex;
+		size_t value = i_iterable.m_init + i_context.get_curr_index();
 
 		while(value <= i_iterable.m_end)
 		{
 			ddk::yield(value);
 
 			++value;
-		}
-
-		ddk::suspend();
-
-		return ddk::crash_on_return<size_t&>::value();
-	}
-	friend inline size_t& backward_iterator_awaitable(MyIterable& i_iterable, size_t i_initIndex)
-	{
-		size_t value = i_iterable.m_end - i_initIndex;
-
-		while(value >= i_iterable.m_init)
-		{
-			ddk::yield(value);
-
-			--value;
 		}
 
 		ddk::suspend();
@@ -58,6 +44,7 @@ private:
 	size_t m_end;
 };
 
+ITERATOR_CATEGORY(MyIterable, random_access_iterator_tag)
 
 TEST(DDKCoIterableTest,stdVectorForwardIteration)
 {

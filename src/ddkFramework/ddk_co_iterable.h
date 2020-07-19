@@ -13,27 +13,28 @@ class co_iterable
 public:
 	typedef typename mpl::which_type<std::is_const<Iterable>::value, typename Iterable::const_reference, typename Iterable::reference>::type reference;
 	typedef typename Iterable::const_reference const_reference;
-	typedef co_iterator<reference> iterator;
-	typedef co_iterator<const_reference> const_iterator;
+	typedef typename std::iterator_traits<typename Iterable::iterator>::iterator_category tag;
+	typedef typename detail::iterator_type_correspondence<reference, tag>::type iterator;
+	typedef typename detail::iterator_type_correspondence<const_reference,tag>::type const_iterator;
 
-	friend inline co_iterator<reference> begin(co_iterable& i_co_iterable)
+	friend inline iterator begin(co_iterable& i_co_iterable)
 	{
 		return i_co_iterable.m_iterable;
 	}
-	friend inline co_iterator<reference> end(co_iterable&)
+	friend inline iterator end(co_iterable&)
 	{
 		return none;
 	}
-	friend inline co_iterator<const_reference> begin(const co_iterable& i_co_iterable)
+	friend inline const_iterator begin(const co_iterable& i_co_iterable)
 	{
 		return i_co_iterable.m_iterable;
 	}
-	friend inline co_iterator<const_reference> end(const co_iterable&)
+	friend inline const_iterator end(const co_iterable&)
 	{
 		return none;
 	}
 
-	co_iterable(const std::function<reference(size_t)>& i_function);
+	co_iterable(Iterable& i_iterable);
 
 	inline iterator begin();
 	inline iterator end();
@@ -41,13 +42,8 @@ public:
 	inline const_iterator end() const;
 
 private:
-	const std::function<reference(size_t)> m_function;
+	Iterable& m_iterable;
 };
-
-template<typename Iterable>
-typename Iterable::reference forward_iterator_awaitable(Iterable& i_iterable);
-template<typename Iterable>
-typename Iterable::reference backward_iterator_awaitable(Iterable& i_iterable);
 
 template<typename Iterable>
 co_iterable<Iterable> co_iterate(Iterable& i_iterable);
