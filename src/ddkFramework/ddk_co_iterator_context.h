@@ -15,6 +15,7 @@ public:
 	void incr();
 	void accept();
 	void reject();
+	void close();
 
 	size_t get_current() const;
 	size_t get_target() const;
@@ -37,7 +38,7 @@ struct co_random_access_iterator_context_impl : co_bidirectional_iterator_contex
 public:
 	using co_bidirectional_iterator_context_impl::co_bidirectional_iterator_context_impl;
 
-	void shift(size_t i_shift);
+	void shift(int i_shift);
 	void set_abs(size_t i_index);
 };
 
@@ -74,7 +75,7 @@ public:
 	co_random_access_iterator_context(const detail::co_random_access_iterator_context_impl& i_impl);
 
 	size_t get_curr_index() const;
-	size_t shift() const;
+	int shift() const;
 
 private:
 	const detail::co_random_access_iterator_context_impl& m_impl;

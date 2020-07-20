@@ -16,7 +16,7 @@ async_executor<Return>::async_executor(const std::function<Return(Types...)>& i_
 : m_executor(make_executor<detail::thread_executor<Return>>())
 , m_sharedState(make_shared_reference<detail::private_async_state<Return>>())
 {
-	m_function = [i_function,i_args...]() mutable -> Return { return i_function(std::forward<Args>(i_args) ...); };
+	m_function = [i_function,&i_args...]() mutable -> Return { return i_function(std::forward<Args>(i_args) ...); };
 }
 template<typename Return>
 async_executor<Return>::async_executor(async_executor&& other)

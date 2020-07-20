@@ -24,18 +24,24 @@ private:
 };
 
 template<typename Return>
-class await_executor : public executor_interface<Return()>, private fiber_yielder_interface
+class await_executor : public executor_interface<Return()>, public fiber_scheduler_interface, private fiber_yielder_interface, protected lend_from_this<await_executor<Return>,detail::fiber_scheduler_interface>
 {
 public:
 	await_executor();
+	~await_executor();
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
 	ExecutorState get_state() const override;
+
 	void yield(yielder_context* i_context) override;
 	void suspend(yielder_context* = nullptr) override;
+
+	bool activate(fiber_id, const std::function<void()>&) override;
+	bool deactivate(fiber_id) override;
+	void unregister(fiber_id) override;
 
 	this_fiber_t m_caller;
 	fiber_impl m_callee;

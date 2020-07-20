@@ -6,6 +6,16 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename Comparator>
+bool priority_queue<Comparator>::has_item(const fiber_id& i_id) const
+{
+	return std::find(this->c.begin(), this->c.end(),i_id) != this->c.end();
+}
+
+}
 
 template<typename Comparator>
 fiber_scheduler<Comparator>::fiber_scheduler()
@@ -13,6 +23,7 @@ fiber_scheduler<Comparator>::fiber_scheduler()
 , m_stop(false)
 {
 	pthread_mutex_init(&m_fiberMutex, NULL);
+	pthread_cond_init(&m_fiberCondVar, NULL);
 }
 template<typename Comparator>
 fiber_scheduler<Comparator>::~fiber_scheduler()
@@ -21,6 +32,7 @@ fiber_scheduler<Comparator>::~fiber_scheduler()
 
 	stop();
 
+	pthread_cond_destroy(&m_fiberCondVar);
 	pthread_mutex_destroy(&m_fiberMutex);
 }
 template<typename Comparator>
@@ -118,7 +130,27 @@ void fiber_scheduler<Comparator>::stop()
 {
 	if(m_fiberThread.joinable())
 	{
+		//cleanup
+		pthread_mutex_lock(&m_fiberMutex);
+
+		m_functions.clear();
+
+		while (m_runningFibers.empty() == false)
+		{
+			detail::running_fiber topFiber = m_runningFibers.top();
+
+			pthread_mutex_unlock(&m_fiberMutex);
+
+			topFiber->stop();
+
+			pthread_mutex_lock(&m_fiberMutex);
+		}
+
 		m_stop = true;
+
+		pthread_cond_signal(&m_fiberCondVar);
+
+		pthread_mutex_unlock(&m_fiberMutex);
 
 		m_fiberThread.stop();
 	}
@@ -135,6 +167,8 @@ void fiber_scheduler<Comparator>::yield(detail::yielder_context* i_context)
 template<typename Comparator>
 void fiber_scheduler<Comparator>::suspend(detail::yielder_context* i_context)
 {
+	pthread_cond_signal(&m_fiberCondVar);
+
 	throw detail::suspend_exception(m_callee->get_id());
 }
 template<typename Comparator>
@@ -146,6 +180,8 @@ bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const std::function<vo
 	if(itFiber != m_fibers.end())
 	{
 		std::pair<function_container::iterator,bool> insertRes = m_functions.insert(std::make_pair(i_id,i_function));
+
+		pthread_cond_signal(&m_fiberCondVar);
 
 		pthread_mutex_unlock(&m_fiberMutex);
 
@@ -176,7 +212,10 @@ bool fiber_scheduler<Comparator>::deactivate(fiber_id i_id)
 	}
 	else
 	{
-		DDK_FAIL("Trying to deactivate not registered function");
+		while (m_runningFibers.has_item(i_id))
+		{
+			pthread_cond_wait(&m_fiberCondVar,&m_fiberMutex);
+		}
 
 		pthread_mutex_unlock(&m_fiberMutex);
 
@@ -243,6 +282,14 @@ void fiber_scheduler<Comparator>::run()
 			m_runningFibers.pop();
 
 			m_callee->resume_from(m_caller);
+		}
+		else
+		{
+			pthread_mutex_lock(&m_fiberMutex);
+
+			pthread_cond_wait(&m_fiberCondVar,&m_fiberMutex);
+
+			pthread_mutex_unlock(&m_fiberMutex);
 		}
 	}
 

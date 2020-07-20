@@ -4,6 +4,7 @@
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_lend_from_this.h"
 #include "ddk_embedded_type.h"
+#include "ddk_fiber_defs.h"
 
 namespace ddk
 {
@@ -12,7 +13,14 @@ namespace detail
 
 struct yielder_context
 {
+	yielder_context();
 	virtual ~yielder_context() = default;
+
+	void stop(fiber_id i_id);
+	bool is_stopped(fiber_id i_id) const;
+
+private:
+	std::pair<fiber_id,bool> m_stop;
 };
 
 template<typename T>

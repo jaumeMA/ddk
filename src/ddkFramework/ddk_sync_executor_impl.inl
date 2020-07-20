@@ -27,16 +27,25 @@ ExecutorState deferred_executor<Return>::get_state() const
 
 template<typename Return>
 await_executor<Return>::await_executor()
-: m_callee()
-, m_yielder(*this)
+: m_yielder(*this)
 {
+	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
+}
+template<typename Return>
+await_executor<Return>::~await_executor()
+{
+	yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
+
+	m_callee.stop();
+
+	thread_impl_interface::set_yielder(prevYielder);
 }
 template<typename Return>
 typename await_executor<Return>::start_result await_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
 {
-	if(m_callee.get_state() == FiberExecutionState::Idle)
+	if (m_callee.get_state() == FiberExecutionState::Idle)
 	{
-		m_callee.start_from(m_caller,i_callable);
+		m_callee.start_from(m_caller, i_callable);
 	}
 
 	//update current yielder
@@ -90,6 +99,32 @@ template<typename Return>
 void await_executor<Return>::suspend(yielder_context*)
 {
 	throw detail::suspend_exception(m_callee.get_id());
+}
+template<typename Return>
+bool await_executor<Return>::activate(fiber_id i_id, const std::function<void()>& i_callable)
+{
+	return true;
+}
+template<typename Return>
+bool await_executor<Return>::deactivate(fiber_id i_id)
+{
+	if (m_callee.get_id() == i_id)
+	{
+		m_callee.resume_from(m_caller);
+
+		return true;
+	}
+	else
+	{
+		DDK_FAIL("Trying to deactivate fiber from the wrong executor");
+
+		return false;
+	}
+}
+template<typename Return>
+void await_executor<Return>::unregister(fiber_id)
+{
+
 }
 
 template<typename Return>

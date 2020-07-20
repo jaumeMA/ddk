@@ -29,6 +29,7 @@ public:
 	time_t get_total_duration_time() const;
 	size_t get_num_executions() const;
 	running_fiber& operator++();
+	bool operator==(fiber_id i_id) const;
 	bool operator<(const running_fiber& other) const;
 	detail::fiber_impl* operator->();
 	const detail::fiber_impl* operator->() const;
@@ -45,13 +46,20 @@ struct running_fiber_comparator
 	bool operator()(const running_fiber& i_lhs, running_fiber& i_rhs) const;
 };
 
+template<typename Comparator>
+struct priority_queue : public std::priority_queue<detail::running_fiber, std::vector<detail::running_fiber>, Comparator>
+{
+public:
+	bool has_item(const fiber_id& i_id) const;
+};
+
 }
 
 template<typename Comparator = detail::running_fiber_comparator>
 class fiber_scheduler : public detail::fiber_scheduler_interface, protected detail::fiber_yielder_interface, protected lend_from_this<fiber_scheduler<Comparator>, detail::fiber_scheduler_interface>
 {
 	typedef std::map<fiber_id,detail::fiber_impl*> fiber_container;
-	typedef std::priority_queue<detail::running_fiber,std::vector<detail::running_fiber>,Comparator> running_fiber_container;
+	typedef detail::priority_queue<Comparator> running_fiber_container;
 	typedef std::map<fiber_id,std::function<void()>> function_container;
 
 public:
@@ -102,6 +110,7 @@ private:
 	detail::fiber_yielder m_yielder;
 	bool m_stop;
 	pthread_mutex_t m_fiberMutex;
+	pthread_cond_t m_fiberCondVar;
 };
 
 template<typename Comparator = detail::running_fiber_comparator>

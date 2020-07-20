@@ -6,7 +6,7 @@ namespace detail
 {
 
 co_forward_iterator_context_impl::co_forward_iterator_context_impl(size_t i_currIndex)
-: m_currIndex(npos)
+: m_currIndex(i_currIndex)
 , m_targetIndex(i_currIndex)
 {
 }
@@ -22,6 +22,11 @@ void co_forward_iterator_context_impl::reject()
 {
 	m_targetIndex = m_currIndex;
 }
+void co_forward_iterator_context_impl::close()
+{
+	m_currIndex = npos;
+	m_targetIndex = npos;
+}
 size_t co_forward_iterator_context_impl::get_current() const
 {
 	return m_currIndex;
@@ -36,7 +41,7 @@ void co_bidirectional_iterator_context_impl::decr()
 	--m_targetIndex;
 }
 
-void co_random_access_iterator_context_impl::shift(size_t i_shift)
+void co_random_access_iterator_context_impl::shift(int i_shift)
 {
 	m_targetIndex += i_shift;
 }
@@ -85,7 +90,7 @@ size_t co_random_access_iterator_context::get_curr_index() const
 {
 	return m_impl.get_current();
 }
-size_t co_random_access_iterator_context::shift() const
+int co_random_access_iterator_context::shift() const
 {
 	return m_impl.get_target() - m_impl.get_current();
 }

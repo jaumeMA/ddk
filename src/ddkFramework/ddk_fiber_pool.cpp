@@ -35,6 +35,8 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, stack_alloc_const_
 }
 fiber_pool::~fiber_pool()
 {
+	m_fiberScheduler->stop();
+
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 	for(;itFiber!=m_fiberCtr.end();)
 	{

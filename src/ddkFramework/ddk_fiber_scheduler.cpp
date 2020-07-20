@@ -35,6 +35,10 @@ running_fiber& running_fiber::operator++()
 
 	return *this;
 }
+bool running_fiber::operator==(fiber_id i_id) const
+{
+	return i_id == m_fiber->get_id();
+}
 bool running_fiber::operator<(const running_fiber& other) const
 {
 	return m_lastExecutionTime < other.m_lastExecutionTime;

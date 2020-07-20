@@ -15,6 +15,13 @@ void yield(T&& i_value)
 		detail::yielder* _currYielder = currYielder.extract();
 
 		_currYielder->yield(&_yielder);
+
+		const fiber_id currFiber = get_current_fiber_id();
+
+		if (_yielder.is_stopped(currFiber))
+		{
+			throw detail::suspend_exception(currFiber);
+		}
 	}
 	else
 	{

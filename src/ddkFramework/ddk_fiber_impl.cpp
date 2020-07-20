@@ -43,7 +43,7 @@ const ucontext_t* this_fiber_t::get_context() const
 }
 fiber_id this_fiber_t::get_id() const
 {
-	return fiber_id(reinterpret_cast<size_t>(this));//  get_thread_fiber_id();
+	return fiber_id(reinterpret_cast<size_t>(this));
 }
 
 fiber_impl::fiber_impl()
@@ -86,7 +86,15 @@ void fiber_impl::stop()
 {
 	if(m_executor)
 	{
-		m_executor->deactivate(m_id);
+		if(m_state != FiberExecutionState::Done)
+		{
+			if(yielder_context* yielderCtxt = reinterpret_cast<yielder_context*>(m_context.uc_link))
+			{
+				yielderCtxt->stop(m_id);
+			}
+
+			m_executor->deactivate(m_id);
+		}
 	}
 	else
 	{

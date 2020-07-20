@@ -5,15 +5,28 @@ namespace ddk
 {
 
 template<typename Iterable>
-typename Iterable::reference forward_iterator_awaitable(Iterable& i_iterable, const co_forward_iterator_context& i_context)
+typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, const co_forward_iterator_context& i_context)
 {
-	auto&& itNext = std::begin(i_iterable) + i_context.get_curr_index();
+	auto&& itNext = std::begin(i_iterable);
 
-	while (itNext != std::end(i_iterable))
+	std::next(itNext, i_context.get_curr_index());
+
+	if(itNext != std::end(i_iterable))
 	{
-		yield(*itNext);
+		do
+		{
+			yield(*itNext);
 
-		itNext = std::next(itNext);
+			if (i_context.go_forward())
+			{
+				itNext = std::next(itNext);
+			}
+			else
+			{
+				DDK_FAIL("No movement indicated");
+			}
+		}
+		while (itNext != std::end(i_iterable));
 	}
 
 	suspend();
@@ -21,15 +34,61 @@ typename Iterable::reference forward_iterator_awaitable(Iterable& i_iterable, co
 	return ddk::crash_on_return<typename Iterable::reference>::value();
 }
 template<typename Iterable>
-typename Iterable::reference random_access_iterator_awaitable(Iterable& i_iterable, const co_random_access_iterator_context& i_context)
+typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, const co_bidirectional_iterator_context& i_context)
+{
+	auto&& itNext = std::begin(i_iterable);
+
+	std::next(itNext,i_context.get_curr_index());
+
+	if (itNext != std::end(i_iterable))
+	{
+		do
+		{
+			yield(*itNext);
+
+			if (i_context.go_backward())
+			{
+				itNext = std::next(itNext);
+			}
+			else if(i_context.go_backward())
+			{
+				itNext = std::prev(itNext);
+			}
+			else
+			{
+				DDK_FAIL("No movement indicated");
+			}
+		}
+		while (itNext != std::end(i_iterable));
+	}
+
+	suspend();
+
+	return ddk::crash_on_return<typename Iterable::reference>::value();
+}
+template<typename Iterable>
+typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, const co_random_access_iterator_context& i_context)
 {
 	auto&& itNext = std::begin(i_iterable) + i_context.get_curr_index();
 
-	while (itNext != std::end(i_iterable))
+	if (itNext != std::end(i_iterable))
 	{
-		yield(*itNext);
+		do
+		{
+			yield(*itNext);
 
-		std::next(itNext);
+			const size_t shift = i_context.shift();
+
+			if (shift != 0)
+			{
+				itNext = std::next(itNext,shift);
+			}
+			else
+			{
+				DDK_FAIL("No movement indicated");
+			}
+		} 
+		while (itNext != std::end(i_iterable));
 	}
 
 	suspend();
@@ -57,7 +116,7 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 template<typename T>
 template<typename Iterable>
 co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value==false>::type*)
-: m_function([&i_iterable](const co_forward_iterator_context& i_context) -> reference { return forward_iterator_awaitable(i_iterable, i_context);  })
+: m_function([&i_iterable](const co_forward_iterator_context& i_context) -> reference { return visit_iterator_awaitable(i_iterable, i_context);  })
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
@@ -218,7 +277,10 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++()
 
 		if (execError == async_execute_interface<T>::AlreadyDone)
 		{
-			m_executor.clear();
+			m_context.close();
+		}
+		else
+		{
 			m_context.reject();
 		}
 	}
@@ -290,7 +352,7 @@ bool co_random_access_iterator<T>::operator==(const co_random_access_iterator<T>
 template<typename T>
 template<typename Iterable>
 co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
-: m_function([&i_iterable](const co_random_access_iterator_context& i_context) -> reference { return random_access_iterator_awaitable(i_iterable, i_context);  })
+: m_function([&i_iterable](const co_random_access_iterator_context& i_context) -> reference { return visit_iterator_awaitable(i_iterable, i_context);  })
 , m_context(0)
 {
 	typedef typename async_execute_interface<T>::start_result start_result;

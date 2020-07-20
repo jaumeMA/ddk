@@ -51,7 +51,16 @@ void yield()
 
 		_yielder.insert_value(_void);
 
-		currYielder->yield(&_yielder);
+		detail::yielder* _currYielder = currYielder.extract();
+
+		_currYielder->yield(&_yielder);
+
+		const fiber_id currFiber = get_current_fiber_id();
+
+		if(_yielder.is_stopped(currFiber))
+		{
+			throw detail::suspend_exception(currFiber);
+		}
 	}
 	else
 	{
