@@ -47,7 +47,7 @@ public:
 struct co_forward_iterator_context
 {
 public:
-	co_forward_iterator_context(const detail::co_forward_iterator_context_impl& i_impl);
+	co_forward_iterator_context(const detail::co_forward_iterator_context_impl* i_impl);
 
 	size_t get_curr_index() const;
 	bool go_forward() const;
@@ -59,7 +59,7 @@ private:
 struct co_bidirectional_iterator_context
 {
 public:
-	co_bidirectional_iterator_context(const detail::co_bidirectional_iterator_context_impl& i_impl);
+	co_bidirectional_iterator_context(const detail::co_bidirectional_iterator_context_impl* i_impl);
 
 	size_t get_curr_index() const;
 	bool go_forward() const;
@@ -72,7 +72,7 @@ private:
 struct co_random_access_iterator_context
 {
 public:
-	co_random_access_iterator_context(const detail::co_random_access_iterator_context_impl& i_impl);
+	co_random_access_iterator_context(const detail::co_random_access_iterator_context_impl* i_impl);
 
 	size_t get_curr_index() const;
 	int shift() const;

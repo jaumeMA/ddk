@@ -107,7 +107,7 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function,m_context) -> attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context) -> attach(this_fiber);
 
 	start_result execRes = m_executor->execute();
 
@@ -120,7 +120,7 @@ co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable, typename std::
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function,m_context) -> attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context) -> attach(this_fiber);
 
 	start_result execRes = m_executor->execute();
 
@@ -209,7 +209,7 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator=(const co_forward_itera
 
 	m_context = other.m_context;
 		
-	m_executor = make_async_executor(m_function,m_currIndex) -> attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context) -> attach(this_fiber);
 
 	start_result execRes = m_executor->execute();
 
@@ -239,7 +239,7 @@ co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_i
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function, m_context)->attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context)->attach(this_fiber);
 
 	start_result execRes = m_executor->execute();
 
@@ -331,7 +331,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator=(const co_r
 
 	m_context = other.m_context;
 
-	m_executor = make_async_executor(m_function, m_currIndex)->attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context)->attach(this_fiber);
 
 	start_result execRes = m_executor->execute();
 
@@ -357,7 +357,7 @@ co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, ty
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function, m_context)->attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context)->attach(this_fiber);
 
 	start_result execRes = m_executor->execute();
 

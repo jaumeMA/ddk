@@ -52,8 +52,8 @@ void co_random_access_iterator_context_impl::set_abs(size_t i_index)
 
 }
 
-co_forward_iterator_context::co_forward_iterator_context(const detail::co_forward_iterator_context_impl& i_impl)
-: m_impl(i_impl)
+co_forward_iterator_context::co_forward_iterator_context(const detail::co_forward_iterator_context_impl* i_impl)
+: m_impl(*i_impl)
 {
 }
 size_t co_forward_iterator_context::get_curr_index() const
@@ -65,8 +65,8 @@ bool co_forward_iterator_context::go_forward() const
 	return m_impl.get_target() > m_impl.get_current();
 }
 
-co_bidirectional_iterator_context::co_bidirectional_iterator_context(const detail::co_bidirectional_iterator_context_impl& i_impl)
-: m_impl(i_impl)
+co_bidirectional_iterator_context::co_bidirectional_iterator_context(const detail::co_bidirectional_iterator_context_impl* i_impl)
+: m_impl(*i_impl)
 {
 }
 size_t co_bidirectional_iterator_context::get_curr_index() const
@@ -82,8 +82,8 @@ bool co_bidirectional_iterator_context::go_backward() const
 	return m_impl.get_target() < m_impl.get_current();
 }
 
-co_random_access_iterator_context::co_random_access_iterator_context(const detail::co_random_access_iterator_context_impl& i_impl)
-: m_impl(i_impl)
+co_random_access_iterator_context::co_random_access_iterator_context(const detail::co_random_access_iterator_context_impl* i_impl)
+: m_impl(*i_impl)
 {
 }
 size_t co_random_access_iterator_context::get_curr_index() const
