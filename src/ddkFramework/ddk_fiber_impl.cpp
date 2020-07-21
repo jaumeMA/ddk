@@ -91,9 +91,13 @@ void fiber_impl::stop()
 			if(yielder_context* yielderCtxt = reinterpret_cast<yielder_context*>(m_context.uc_link))
 			{
 				yielderCtxt->stop(m_id);
-			}
 
-			m_executor->deactivate(m_id);
+				m_executor->deactivate(m_id);
+			}
+			else
+			{
+				DDK_FAIL("Error retrieving yielder context while querying stop");
+			}
 		}
 	}
 	else

@@ -62,12 +62,33 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 	kk1.push_back(-160);
 	kk1.push_back(2345);
 
-	iterable res = ddk::co_iterate(kk1);
-	iterator itRes = std::begin(res);
-	for(size_t index=0;itRes != std::end(res);++itRes,++index)
+	iterable res1 = ddk::co_iterate(kk1);
+	iterator itRes1 = std::begin(res1);
+	for(size_t index=0;itRes1!=std::end(res1);++itRes1,++index)
 	{
-		int& res = *itRes;
-		EXPECT_EQ(*itRes, kk1[index]);
+		int& res = *itRes1;
+		EXPECT_EQ(*itRes1, kk1[index]);
+	}
+
+	iterator itRes2 = itRes1;
+	for(size_t index=0;itRes2!=std::end(res1);++itRes2,++index)
+	{
+		int& res = *itRes2;
+		EXPECT_EQ(*itRes2, kk1[index]);
+	}
+
+	iterable res3 = ddk::co_iterate(kk1);
+	iterator itRes3 = std::begin(res3);
+	for (size_t index=0;index<kk1.size();++index)
+	{
+		EXPECT_EQ(*(itRes3[index]),kk1[index]);
+	}
+
+	iterable res4 = ddk::co_iterate(kk1);
+	iterator itRes4 = std::begin(res4);
+	for (size_t index = 0; index < kk1.size(); ++index)
+	{
+		EXPECT_EQ(*(itRes4 + index), kk1[index]);
 	}
 }
 TEST(DDKCoIterableTest, consStdVectorForwardIteration)

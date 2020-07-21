@@ -24,6 +24,8 @@ typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, cons
 			else
 			{
 				DDK_FAIL("No movement indicated");
+
+				break;
 			}
 		}
 		while (itNext != std::end(i_iterable));
@@ -57,6 +59,8 @@ typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, cons
 			else
 			{
 				DDK_FAIL("No movement indicated");
+
+				break;
 			}
 		}
 		while (itNext != std::end(i_iterable));
@@ -86,6 +90,8 @@ typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, cons
 			else
 			{
 				DDK_FAIL("No movement indicated");
+
+				break;
 			}
 		} 
 		while (itNext != std::end(i_iterable));
@@ -95,6 +101,8 @@ typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, cons
 
 	return ddk::crash_on_return<typename Iterable::reference>::value();
 }
+
+//co forward iterator impl
 
 template<typename T>
 co_forward_iterator<T>::co_forward_iterator(const detail::none_t&)
@@ -170,14 +178,14 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator++()
 	return *this;
 }
 template<typename T>
-co_forward_iterator<T>& co_forward_iterator<T>::operator++(int)
+co_forward_iterator<T> co_forward_iterator<T>::operator++(int)
 {
 	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
 
 	typedef typename async_execute_interface<T>::start_result start_result;
 	typedef typename start_result::error_t start_error;
 
-	co_iterator<T> res = *this;
+	co_forward_iterator<T> res = *this;
 
 	m_context.incr();
 
@@ -224,6 +232,205 @@ bool co_forward_iterator<T>::operator!=(const co_forward_iterator<T>& other) con
 }
 template<typename T>
 bool co_forward_iterator<T>::operator==(const co_forward_iterator<T>& other) const
+{
+	m_context.get_current() == other.m_context.get_current();
+}
+
+//co bidirectional iterator impl
+template<typename T>
+co_bidirectional_iterator<T>::co_bidirectional_iterator(const detail::none_t&)
+{
+}
+template<typename T>
+co_bidirectional_iterator<T>::co_bidirectional_iterator(const co_bidirectional_iterator& other)
+: m_function(other.m_function)
+, m_context(other.m_context)
+{
+	typedef typename async_execute_interface<T>::start_result start_result;
+
+	m_executor = make_async_executor(m_function, &m_context)->attach(this_fiber);
+
+	start_result execRes = m_executor->execute();
+
+	DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+}
+template<typename T>
+template<typename Iterable>
+co_bidirectional_iterator<T>::co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
+	: m_function([&i_iterable](const co_bidirectional_iterator_context& i_context) -> reference { return visit_iterator_awaitable(i_iterable, i_context);  })
+{
+	typedef typename async_execute_interface<T>::start_result start_result;
+
+	m_executor = make_async_executor(m_function, &m_context)->attach(this_fiber);
+
+	start_result execRes = m_executor->execute();
+
+	DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+}
+template<typename T>
+typename co_bidirectional_iterator<T>::reference co_bidirectional_iterator<T>::operator*()
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	return m_executor->get_value();
+}
+template<typename T>
+typename co_bidirectional_iterator<T>::const_reference co_bidirectional_iterator<T>::operator*() const
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	return m_executor->get_value();
+}
+template<typename T>
+co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator++()
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	m_context.incr();
+
+	start_result execRes = m_executor->execute();
+
+	if (execRes.hasError())
+	{
+		start_error execError = execRes.getError();
+
+		if (execError == async_execute_interface<T>::AlreadyDone)
+		{
+			m_executor.clear();
+			m_context.reject();
+		}
+	}
+	else
+	{
+		m_context.accept();
+	}
+
+	return *this;
+}
+template<typename T>
+co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator++(int)
+{
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	co_bidirectional_iterator<T> res = *this;
+
+	m_context.incr();
+
+	start_result execRes = m_executor->execute();
+
+	if (execRes.hasError())
+	{
+		start_error execError = execRes.getError();
+
+		if (execError == async_execute_interface<T>::AlreadyDone)
+		{
+			m_executor.clear();
+			m_context.reject();
+		}
+	}
+	else
+	{
+		m_context.accept();
+	}
+
+	return res;
+}
+template<typename T>
+co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator--()
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	m_context.decr();
+
+	start_result execRes = m_executor->execute();
+
+	if (execRes.hasError())
+	{
+		start_error execError = execRes.getError();
+
+		if (execError == async_execute_interface<T>::AlreadyDone)
+		{
+			m_context.close();
+		}
+		else
+		{
+			m_context.reject();
+		}
+	}
+	else
+	{
+		m_context.accept();
+	}
+
+	return *this;
+}
+template<typename T>
+co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator--(int)
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	co_bidirectional_iterator<T> res = *this;
+
+	m_context.decr();
+
+	start_result execRes = m_executor->execute();
+
+	if (execRes.hasError())
+	{
+		start_error execError = execRes.getError();
+
+		if (execError == async_execute_interface<T>::AlreadyDone)
+		{
+			m_context.close();
+		}
+		else
+		{
+			m_context.reject();
+		}
+	}
+	else
+	{
+		m_context.accept();
+	}
+
+	return res;
+}
+template<typename T>
+co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator=(const co_bidirectional_iterator& other)
+{
+	typedef typename async_execute_interface<T>::start_result start_result;
+
+	m_function = other.m_function;
+
+	m_context = other.m_context;
+
+	m_executor = make_async_executor(m_function, &m_context)->attach(this_fiber);
+
+	start_result execRes = m_executor->execute();
+
+	DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+
+	return *this;
+}
+template<typename T>
+bool co_bidirectional_iterator<T>::operator!=(const co_bidirectional_iterator<T>& other) const
+{
+	return m_context.get_current() != other.m_context.get_current();
+}
+template<typename T>
+bool co_bidirectional_iterator<T>::operator==(const co_bidirectional_iterator<T>& other) const
 {
 	m_context.get_current() == other.m_context.get_current();
 }
@@ -292,14 +499,14 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++()
 	return *this;
 }
 template<typename T>
-co_random_access_iterator<T>& co_random_access_iterator<T>::operator++(int)
+co_random_access_iterator<T> co_random_access_iterator<T>::operator++(int)
 {
 	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
 
 	typedef typename async_execute_interface<T>::start_result start_result;
 	typedef typename start_result::error_t start_error;
 
-	co_iterator<T> res = *this;
+	co_random_access_iterator<T> res = *this;
 
 	m_context.incr();
 
@@ -311,7 +518,10 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++(int)
 
 		if (execError == async_execute_interface<T>::AlreadyDone)
 		{
-			m_executor.clear();
+			m_context.close();
+		}
+		else
+		{
 			m_context.reject();
 		}
 	}
@@ -321,6 +531,141 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++(int)
 	}
 
 	return res;
+}
+template<typename T>
+co_random_access_iterator<T>& co_random_access_iterator<T>::operator--()
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	m_context.decr();
+
+	start_result execRes = m_executor->execute();
+
+	if (execRes.hasError())
+	{
+		start_error execError = execRes.getError();
+
+		if (execError == async_execute_interface<T>::AlreadyDone)
+		{
+			m_context.close();
+		}
+		else
+		{
+			m_context.reject();
+		}
+	}
+	else
+	{
+		m_context.accept();
+	}
+
+	return *this;
+}
+template<typename T>
+co_random_access_iterator<T> co_random_access_iterator<T>::operator--(int)
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	co_random_access_iterator<T> res = *this;
+
+	m_context.decr();
+
+	start_result execRes = m_executor->execute();
+
+	if (execRes.hasError())
+	{
+		start_error execError = execRes.getError();
+
+		if (execError == async_execute_interface<T>::AlreadyDone)
+		{
+			m_context.close();
+		}
+		else
+		{
+			m_context.reject
+		}
+	}
+	else
+	{
+		m_context.accept();
+	}
+
+	return res;
+}
+template<typename T>
+co_random_access_iterator<T> co_random_access_iterator<T>::operator+(int i_shift)
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	co_random_access_iterator<T> res = *this;
+
+	if(i_shift != 0)
+	{
+		res.m_context.shift(i_shift);
+
+		start_result execRes = res.m_executor->execute();
+
+		if (execRes.hasError())
+		{
+			start_error execError = execRes.getError();
+
+			if (execError == async_execute_interface<T>::AlreadyDone)
+			{
+				res.m_context.close();
+			}
+			else
+			{
+				res.m_context.reject();
+			}
+		}
+		else
+		{
+			res.m_context.accept();
+		}
+	}
+
+	return res;
+}
+template<typename T>
+co_random_access_iterator<T>& co_random_access_iterator<T>::operator[](int i_absPos)
+{
+	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
+
+	typedef typename async_execute_interface<T>::start_result start_result;
+	typedef typename start_result::error_t start_error;
+
+	if(i_absPos != m_context.get_current())
+	{
+		m_context.set_abs(i_absPos);
+
+		start_result execRes = m_executor->execute();
+
+		if (execRes.hasError())
+		{
+			start_error execError = execRes.getError();
+
+			if (execError == async_execute_interface<T>::AlreadyDone)
+			{
+				m_executor.clear();
+				m_context.reject();
+			}
+		}
+		else
+		{
+			m_context.accept();
+		}
+	}
+
+	return *this;
 }
 template<typename T>
 co_random_access_iterator<T>& co_random_access_iterator<T>::operator=(const co_random_access_iterator& other)

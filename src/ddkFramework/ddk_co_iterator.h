@@ -56,7 +56,7 @@ public:
 	reference operator*();
 	const_reference operator*() const;
 	co_forward_iterator<T>& operator++();
-	co_forward_iterator<T>& operator++(int);
+	co_forward_iterator<T> operator++(int);
 	co_forward_iterator<T>& operator=(const co_forward_iterator& other);
 	bool operator!=(const co_forward_iterator<T>& other) const;
 	bool operator==(const co_forward_iterator<T>& other) const;
@@ -68,6 +68,44 @@ private:
 	async_execute_shared_ptr<T> m_executor;
 	std::function<reference(const co_forward_iterator_context&)> m_function;
 	detail::co_forward_iterator_context_impl m_context;
+};
+
+template<typename T>
+struct co_bidirectional_iterator
+{
+	IS_CO_ITERATOR(co_bidirectional_iterator)
+
+	template<typename>
+	friend class co_iterable;
+	template<typename>
+	friend struct co_bidirectional_iterator;
+
+public:
+	static const size_t npos = -1;
+	typedef typename async_state_interface<T>::reference reference;
+	typedef typename async_state_interface<T>::const_reference const_reference;
+	typedef typename async_state_interface<T>::value_type value_type;
+
+	co_bidirectional_iterator(const detail::none_t&);
+	co_bidirectional_iterator(const co_bidirectional_iterator& other);
+
+	reference operator*();
+	const_reference operator*() const;
+	co_bidirectional_iterator<T>& operator++();
+	co_bidirectional_iterator<T> operator++(int);
+	co_bidirectional_iterator<T>& operator--();
+	co_bidirectional_iterator<T> operator--(int);
+	co_bidirectional_iterator<T>& operator=(const co_bidirectional_iterator& other);
+	bool operator!=(const co_bidirectional_iterator<T>& other) const;
+	bool operator==(const co_bidirectional_iterator<T>& other) const;
+
+private:
+	template<typename Iterable>
+	co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
+
+	async_execute_shared_ptr<T> m_executor;
+	std::function<reference(const co_forward_iterator_context&)> m_function;
+	detail::co_bidirectional_iterator_context_impl m_context;
 };
 
 template<typename T>
@@ -91,7 +129,11 @@ public:
 	reference operator*();
 	const_reference operator*() const;
 	co_random_access_iterator<T>& operator++();
-	co_random_access_iterator<T>& operator++(int);
+	co_random_access_iterator<T> operator++(int);
+	co_random_access_iterator<T>& operator--();
+	co_random_access_iterator<T> operator--(int);
+	co_random_access_iterator<T> operator+(int i_shift);
+	co_random_access_iterator<T>& operator[](int i_absPos);
 	co_random_access_iterator<T>& operator=(const co_random_access_iterator& other);
 	bool operator!=(const co_random_access_iterator<T>& other) const;
 	bool operator==(const co_random_access_iterator<T>& other) const;

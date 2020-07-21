@@ -287,7 +287,10 @@ void fiber_scheduler<Comparator>::run()
 		{
 			pthread_mutex_lock(&m_fiberMutex);
 
-			pthread_cond_wait(&m_fiberCondVar,&m_fiberMutex);
+			if (m_stop == false)
+			{
+				pthread_cond_wait(&m_fiberCondVar,&m_fiberMutex);
+			}
 
 			pthread_mutex_unlock(&m_fiberMutex);
 		}
