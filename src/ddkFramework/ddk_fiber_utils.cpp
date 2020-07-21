@@ -1,6 +1,7 @@
 #include "ddk_fiber_utils.h"
 #include "ddk_thread_utils.h"
 #include "ddk_thread_impl.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -51,7 +52,7 @@ void yield()
 
 		_yielder.insert_value(_void);
 
-		detail::yielder* _currYielder = currYielder.extract();
+		detail::yielder* _currYielder = extract_ptr(currYielder);
 
 		_currYielder->yield(&_yielder);
 

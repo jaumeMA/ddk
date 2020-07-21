@@ -1,6 +1,6 @@
 #pragma once
 
-#include "variant/ddk_variant_interface.h"
+#include "ddk_variant_interface.h"
 
 namespace ddk
 {
