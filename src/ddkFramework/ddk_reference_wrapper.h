@@ -202,7 +202,7 @@ inline const T* get_raw_ptr(const lent_pointer_wrapper<T>& i_ref)
 #endif
 }
 template<typename T>
-inline lent_pointer_wrapper<T> extract_ptr(lent_pointer_wrapper<T>& i_ref)
+inline T* extract_raw_ptr(lent_pointer_wrapper<T>& i_ref)
 {
 #if defined(DDK_DEBUG)
 	return i_ref.extract();

@@ -52,7 +52,7 @@ void yield()
 
 		_yielder.insert_value(_void);
 
-		detail::yielder* _currYielder = extract_ptr(currYielder);
+		detail::yielder* _currYielder = extract_raw_ptr(currYielder);
 
 		_currYielder->yield(&_yielder);
 

@@ -153,12 +153,14 @@ size_t getpagesize()
 
 size_t stack_allocator_interface::s_pageSize = getpagesize();
 
-stack_allocator::stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl)
+stack_allocator::stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl, size_t i_numMaxPages)
 : m_stackAllocImpl(i_stackAllocImpl)
+, m_numMaxPages(i_numMaxPages)
 {
 }
 stack_allocator::stack_allocator(stack_allocator&& other)
 : m_stackAllocImpl(other.m_stackAllocImpl)
+, m_numMaxPages(other.m_numMaxPages)
 {
 }
 std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
@@ -168,7 +170,7 @@ std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
 	m_arena = initialize_thread_map();
 
 	std::pair<void*,void*>& fiberAlloc = (*m_arena)[i_id];
-	fiberAlloc.first = m_stackAllocImpl->reserve(stack_allocator_interface::k_maxNumStackPages);
+	fiberAlloc.first = m_stackAllocImpl->reserve(m_numMaxPages);
 	fiberAlloc.second = m_stackAllocImpl->allocate(fiberAlloc.first,1);
 
 	return std::make_pair(stack_allocator_interface::s_pageSize,fiberAlloc.second);
@@ -198,7 +200,7 @@ void stack_allocator::deallocate(fiber_id i_id) const
 	std::pair<void*,void*>& fiberAlloc = (*m_arena)[i_id];
 
 	m_stackAllocImpl->deallocate(fiberAlloc.first,(reinterpret_cast<char*>(fiberAlloc.first) - reinterpret_cast<char*>(fiberAlloc.second)) / stack_allocator_interface::s_pageSize);
-	m_stackAllocImpl->release(fiberAlloc.first,stack_allocator_interface::k_maxNumStackPages);
+	m_stackAllocImpl->release(fiberAlloc.first,m_numMaxPages);
 
 	m_arena->erase(i_id);
 }

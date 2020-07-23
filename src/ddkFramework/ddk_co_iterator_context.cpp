@@ -92,7 +92,7 @@ size_t co_random_access_iterator_context::get_curr_index() const
 }
 int co_random_access_iterator_context::shift() const
 {
-	return m_impl.get_target() - m_impl.get_current();
+	return static_cast<int>(m_impl.get_target()) - static_cast<int>(m_impl.get_current());
 }
 
 }

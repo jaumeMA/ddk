@@ -42,7 +42,7 @@ public:
     typedef const void* const_pointer;
     typedef std::ptrdiff_t difference_type;
 
-	stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl);
+	stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl, size_t i_numMaxPages = stack_allocator_interface::k_maxNumStackPages);
 	stack_allocator(const stack_allocator&) = delete;
 	stack_allocator(stack_allocator&& other);
     std::pair<size_t,void*> allocate(fiber_id i_id) const;
@@ -58,6 +58,7 @@ private:
 
 	stack_alloc_const_shared_ref m_stackAllocImpl;
 	mutable std::unordered_map<fiber_id,std::pair<void*,void*>>* m_arena;
+	const size_t m_numMaxPages;
 };
 
 }

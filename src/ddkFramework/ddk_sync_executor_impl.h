@@ -28,6 +28,7 @@ class await_executor : public executor_interface<Return()>, public fiber_schedul
 {
 public:
 	await_executor();
+	await_executor(stack_allocator i_stackAlloc);
 	~await_executor();
 
 private:

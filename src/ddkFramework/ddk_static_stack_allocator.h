@@ -13,6 +13,7 @@ class static_stack_allocator : public stack_allocator_interface
 {
 public:
 	static_stack_allocator() = default;
+	~static_stack_allocator();
 
 private:
 	static const size_t s_stackSize = (Size+1) * 4096;
@@ -23,7 +24,7 @@ private:
 	void deallocate(void*,size_t) const override;
 	void release(void*,size_t) const override;
 
-	mutable arena<s_stackSize,4096> m_arena;
+	mutable arena<s_stackSize,0> m_arena;
 	mutable bool m_underUse = false;
 };
 

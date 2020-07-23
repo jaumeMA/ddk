@@ -67,6 +67,28 @@ T& thread_local_storage::get()
 	return *reinterpret_cast<T*>(m_address);
 }
 template<typename T>
+T thread_local_storage::extract()
+{
+	if(T* typedAddress = reinterpret_cast<T*>(m_address))
+	{
+		T res = std::move(*typedAddress);
+
+		typedAddress->~T();
+
+		m_alloc.deallocate(m_address);
+
+		m_address = nullptr;
+
+		return std::move(res);
+	}
+	else
+	{
+		DDK_FAIL("Trying to extract empty thread local storage");
+
+		return crash_on_return<T>::value();
+	}
+}
+template<typename T>
 T* thread_local_storage::get_address()
 {
 	return reinterpret_cast<T*>(m_address);

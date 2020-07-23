@@ -23,11 +23,11 @@ yielder_lent_ptr thread_impl_interface::set_yielder(yielder_lent_ptr i_yielder)
 {
 	threadlocal<yielder_lent_ptr,thread_impl_interface>& yielder = get_yielder_local();
 
-	yielder_lent_ptr* prevYielder = yielder.get_ptr();
+	yielder_lent_ptr prevYielder = (yielder.empty() == false) ? yielder.extract() : nullptr;
 
 	yielder.set(i_yielder);
 
-	return (prevYielder) ? *prevYielder : nullptr;
+	return prevYielder;
 }
 void thread_impl_interface::clear_yielder()
 {

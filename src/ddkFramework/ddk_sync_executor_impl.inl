@@ -32,6 +32,13 @@ await_executor<Return>::await_executor()
 	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
 }
 template<typename Return>
+await_executor<Return>::await_executor(stack_allocator i_stackAlloc)
+: m_callee(std::move(i_stackAlloc))
+, m_yielder(*this)
+{
+	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
+}
+template<typename Return>
 await_executor<Return>::~await_executor()
 {
 	yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
@@ -110,7 +117,10 @@ bool await_executor<Return>::deactivate(fiber_id i_id)
 {
 	if (m_callee.get_id() == i_id)
 	{
-		m_callee.resume_from(m_caller);
+		if (m_callee.get_state() != FiberExecutionState::Done)
+		{
+			m_callee.resume_from(m_caller);
+		}
 
 		return true;
 	}

@@ -133,7 +133,7 @@ public:
 	co_random_access_iterator<T>& operator--();
 	co_random_access_iterator<T> operator--(int);
 	co_random_access_iterator<T> operator+(int i_shift);
-	co_random_access_iterator<T>& operator[](int i_absPos);
+	co_random_access_iterator<T>& operator[](size_t i_absPos);
 	co_random_access_iterator<T>& operator=(const co_random_access_iterator& other);
 	bool operator!=(const co_random_access_iterator<T>& other) const;
 	bool operator==(const co_random_access_iterator<T>& other) const;
@@ -143,6 +143,7 @@ private:
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
 
 	async_execute_shared_ptr<T> m_executor;
+	detail::this_fiber_t m_caller;
 	std::function<reference(const co_random_access_iterator_context&)> m_function;
 	detail::co_random_access_iterator_context_impl m_context;
 };

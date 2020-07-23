@@ -18,20 +18,24 @@ struct this_fiber_t
 {
 public:
 	this_fiber_t();
+	this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages);
 
 	ucontext_t* get_context();
 	const ucontext_t* get_context() const;
 	fiber_id get_id() const;
+	stack_allocator get_allocator() const;
 
 private:
 	mutable ucontext_t m_context;
+	stack_alloc_shared_ref m_stackAllocImpl;
+	size_t m_numMaxPages = 0;
 };
 
 struct fiber_impl
 {
 public:
 	fiber_impl();
-	fiber_impl(stack_alloc_const_shared_ref i_allocImpl);
+	fiber_impl(stack_allocator i_stackAlloc);
 	fiber_impl(const fiber_impl&) = delete;
 	~fiber_impl();
 	template<typename Return>

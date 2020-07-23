@@ -49,6 +49,7 @@ private:
 	mutable fiber_scheduler_shared_ref<> m_fiberScheduler;
 	Policy m_policy;
 	stack_alloc_const_shared_ref m_stackAllocator;
+	size_t m_numMaxPages;
 };
 
 }

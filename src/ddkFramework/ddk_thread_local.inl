@@ -10,6 +10,13 @@ T& threadlocal<T,Tag>::get()
 	return address.template get<T>();
 }
 template<typename T, typename Tag>
+T threadlocal<T,Tag>::extract()
+{
+	thread_local_storage& address = get_address();
+
+	return address.template extract<T>();
+}
+template<typename T, typename Tag>
 T* threadlocal<T,Tag>::get_ptr()
 {
 	thread_local_storage& address = get_address();
@@ -54,7 +61,7 @@ T& threadlocal<T, Tag>::set(Args&& ... i_args)
 	}
 }
 template<typename T, typename Tag>
-thread_local_storage& threadlocal<T,Tag>::get_address()
+thread_local_storage& threadlocal<T,Tag>::get_address() const
 {
 	static thread_local thread_local_storage s_address;
 
@@ -63,7 +70,7 @@ thread_local_storage& threadlocal<T,Tag>::get_address()
 template<typename T, typename Tag>
 bool threadlocal<T,Tag>::empty() const
 {
-	thread_local_storage& address = get_address();
+	const thread_local_storage& address = get_address();
 
 	return address.empty();
 }

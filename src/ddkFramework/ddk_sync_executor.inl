@@ -62,9 +62,9 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(const detail::this_fiber_t&)
+typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(const detail::this_fiber_t& i_fiber)
 {
-	m_executor = make_executor<detail::await_executor<Return>>();
+	m_executor = make_executor<detail::await_executor<Return>>(i_fiber.get_allocator());
 
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
@@ -95,6 +95,13 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 	m_executor.clear();
 
 	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&(newAsyncExecutor->m_refCounter),ReferenceAllocationType::Embedded));
+}
+template<typename Return>
+typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(executor_unique_ptr<Return> i_executor)
+{
+	m_executor = std::move(i_executor);
+
+	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
 template<typename Return>
 async_state_shared_ref<Return> async_executor<Return>::store(promise<Return>& i_promise)

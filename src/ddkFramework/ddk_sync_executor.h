@@ -39,9 +39,9 @@ public:
 	async_shared_ref attach(const detail::this_fiber_t&);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(thread_sheaf i_threadSheaf);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(fiber_sheaf i_fiberSheaf);
+	async_shared_ref attach(executor_unique_ptr<Return> i_executor);
 	async_state_shared_ref<Return> store(promise<Return>& i_promise);
 	void bind();
-
 
 private:
 	reference get_value() override;

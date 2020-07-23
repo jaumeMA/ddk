@@ -1,5 +1,6 @@
 
 #include "ddk_sync_executor.h"
+#include "ddk_co_iterator_allocator_info.h"
 
 namespace ddk
 {
@@ -73,7 +74,8 @@ typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, cons
 template<typename Iterable>
 typename Iterable::reference visit_iterator_awaitable(Iterable& i_iterable, const co_random_access_iterator_context& i_context)
 {
-	auto&& itNext = std::begin(i_iterable) + i_context.get_curr_index();
+	const size_t currPos = i_context.get_curr_index();
+	auto&& itNext = (currPos != detail::co_forward_iterator_context_impl::npos) ? std::begin(i_iterable) + i_context.get_curr_index() : std::end(i_iterable);
 
 	if (itNext != std::end(i_iterable))
 	{
@@ -166,7 +168,10 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator++()
 
 		if (execError == async_execute_interface<T>::AlreadyDone)
 		{
-			m_executor.clear();
+			m_context.close();
+		}
+		else
+		{
 			m_context.reject();
 		}
 	}
@@ -197,7 +202,10 @@ co_forward_iterator<T> co_forward_iterator<T>::operator++(int)
 
 		if (execError == async_execute_interface<T>::AlreadyDone)
 		{
-			m_executor.clear();
+			m_context.close();
+		}
+		else
+		{
 			m_context.reject();
 		}
 	}
@@ -299,7 +307,10 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator++()
 
 		if (execError == async_execute_interface<T>::AlreadyDone)
 		{
-			m_executor.clear();
+			m_context.close();
+		}
+		else
+		{
 			m_context.reject();
 		}
 	}
@@ -330,7 +341,10 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator++(int)
 
 		if (execError == async_execute_interface<T>::AlreadyDone)
 		{
-			m_executor.clear();
+			m_context.close();
+		}
+		else
+		{
 			m_context.reject();
 		}
 	}
@@ -443,14 +457,15 @@ template<typename T>
 co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_iterator& other)
 : m_function(other.m_function)
 , m_context(other.m_context)
+, m_caller(other.m_caller)
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function,&m_context)->attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
 
 	start_result execRes = m_executor->execute();
 
-	DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+	DDK_ASSERT(execRes.hasError() == false || execRes.getError() == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
 }
 template<typename T>
 typename co_random_access_iterator<T>::reference co_random_access_iterator<T>::operator*()
@@ -636,7 +651,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator+(int i_shift
 	return res;
 }
 template<typename T>
-co_random_access_iterator<T>& co_random_access_iterator<T>::operator[](int i_absPos)
+co_random_access_iterator<T>& co_random_access_iterator<T>::operator[](size_t i_absPos)
 {
 	DDK_ASSERT(m_executor != nullptr, "Dereferencing void iterator");
 
@@ -676,11 +691,16 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator=(const co_r
 
 	m_context = other.m_context;
 
-	m_executor = make_async_executor(m_function,&m_context)->attach(this_fiber);
+	m_caller = other.m_caller;
 
-	start_result execRes = m_executor->execute();
+	if (m_stackAllocImpl)
+	{
+		m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
 
-	DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+		start_result execRes = m_executor->execute();
+
+		DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+	}
 
 	return *this;
 }
@@ -699,14 +719,15 @@ template<typename Iterable>
 co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
 : m_function([&i_iterable](const co_random_access_iterator_context& i_context) -> reference { return visit_iterator_awaitable(i_iterable, i_context);  })
 , m_context(0)
+, m_caller(make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages)
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function,&m_context)->attach(this_fiber);
+	m_executor = make_async_executor(m_function,&m_context)->attach(m_caller);
 
 	start_result execRes = m_executor->execute();
 
-	DDK_ASSERT(execRes.hasError() == false, "Error while executing iterator");
+	DDK_ASSERT(execRes.hasError() == false || execRes.getError() == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
 }
 
 }

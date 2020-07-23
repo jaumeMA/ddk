@@ -22,11 +22,12 @@ public:
 	T& set(Args&& ... i_args);
 	T& get();
 	T* get_ptr();
+	T extract();
 	bool empty() const;
 	void clear();
 
 private:
-	inline thread_local_storage& get_address();
+	inline thread_local_storage& get_address() const;
 };
 
 }

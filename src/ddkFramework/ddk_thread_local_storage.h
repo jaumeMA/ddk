@@ -21,6 +21,8 @@ public:
 	T& get();
 	template<typename T>
 	T* get_address();
+	template<typename T>
+	T extract();
 	bool empty() const;
 
 private:
