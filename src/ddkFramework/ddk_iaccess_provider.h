@@ -1,8 +1,11 @@
 #pragma once
 
 #include "ddk_signal.h"
-#include "IAccessCriticalCallContext.h"
-#include "critical_section.h"
+#include "ddk_iaccess_critical_call_context.h"
+#include "ddk_critical_section.h"
+
+namespace ddk
+{
 
 class IAccessProvider
 {
@@ -151,3 +154,5 @@ struct AccessCriticalSection<Traits,IAccessProvider::WRITING>
 		i_accesInterface.leaveWriter(i_criticalSection.extract_context());
 	}
 };
+
+}

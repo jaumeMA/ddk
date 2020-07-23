@@ -10,6 +10,8 @@ struct void_t
 };
 
 }
-}
 
 const ddk::detail::void_t _void = ddk::detail::void_t();
+
+}
+

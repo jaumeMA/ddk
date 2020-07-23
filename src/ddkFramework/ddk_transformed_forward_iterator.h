@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_optional.h"
-#include "TransformedIteratorBase.h"
+#include "ddk_transformed_iterator_base.h"
 
 namespace ddk
 {
@@ -72,7 +72,7 @@ protected:
 }
 }
 
-#include "TransformedIterator.h"
+#include "ddk_transformed_iterator.h"
 
 namespace ddk
 {
