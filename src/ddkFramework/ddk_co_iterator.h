@@ -5,15 +5,15 @@
 #include "ddk_co_iterator_context.h"
 
 #define IS_CO_ITERATOR(_CO_ITERATOR) \
-template<typename T> \
+template<typename TT> \
 struct is_co_iterator; \
  \
-template<typename T> \
-struct is_co_iterator<_CO_ITERATOR<T>> \
+template<typename TT> \
+struct is_co_iterator<_CO_ITERATOR<TT>> \
 { \
 	static const bool value = true; \
 }; \
-template<typename T> \
+template<typename TT> \
 struct is_co_iterator \
 { \
 	static const bool value = false; \
@@ -68,6 +68,7 @@ private:
 	async_execute_shared_ptr<T> m_executor;
 	std::function<reference(const co_forward_iterator_context&)> m_function;
 	detail::co_forward_iterator_context_impl m_context;
+	detail::this_fiber_t m_caller;
 };
 
 template<typename T>
@@ -106,6 +107,7 @@ private:
 	async_execute_shared_ptr<T> m_executor;
 	std::function<reference(const co_forward_iterator_context&)> m_function;
 	detail::co_bidirectional_iterator_context_impl m_context;
+	detail::this_fiber_t m_caller;
 };
 
 template<typename T>
@@ -143,9 +145,9 @@ private:
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
 
 	async_execute_shared_ptr<T> m_executor;
-	detail::this_fiber_t m_caller;
 	std::function<reference(const co_random_access_iterator_context&)> m_function;
 	detail::co_random_access_iterator_context_impl m_context;
+	detail::this_fiber_t m_caller;
 };
 
 namespace detail
