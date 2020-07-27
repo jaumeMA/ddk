@@ -29,7 +29,7 @@ namespace ddk
 namespace detail
 {
 
-void unwind_calling_context(ucontext_t* i_context);
+void unwind_calling_context(mcontext_t* i_context);
 inline void dump_args(ucontext_t*, uintptr_t*, size_t)
 {
 	//empty impl
@@ -95,11 +95,8 @@ void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_
 	//null return address
 	*stackPointer = 0;
 	--stackPointer;
-	//instruction pointer on resume
-	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext.Rip));
-	--stackPointer;
 	//stack pointer on resume
-	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext.Rsp));
+	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext));
 	--stackPointer;
 
 	i_context->uc_mcontext.Rip = reinterpret_cast<uint64_t>(i_func);

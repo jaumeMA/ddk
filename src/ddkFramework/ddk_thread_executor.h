@@ -72,6 +72,7 @@ private:
 	ddk::thread m_updateThread;
 	pthread_cond_t		m_condVar;
 	pthread_mutex_t	m_condVarMutex;
+	bool m_pendingWork;
 };
 
 class thread_fire_and_forget_executor : public thread_executor_interface

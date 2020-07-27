@@ -11,23 +11,23 @@ namespace ddk
 namespace detail
 {
 
-void unwind_calling_context(ucontext_t* i_context)
+void unwind_calling_context(mcontext_t* i_context)
 {
 	ULONG64 imageBase = 0;
 	UNWIND_HISTORY_TABLE unwindTable;
 	RtlZeroMemory(&unwindTable,sizeof(UNWIND_HISTORY_TABLE));
 
-	if(PRUNTIME_FUNCTION currFunc = RtlLookupFunctionEntry(i_context->uc_mcontext.Rip,&imageBase,&unwindTable))
+	if(PRUNTIME_FUNCTION currFunc = RtlLookupFunctionEntry(i_context->Rip,&imageBase,&unwindTable))
 	{
 		void* hdl = nullptr;
-		DWORD64 stablisher = 0;
+		ULONG64 stablisher = 0;
 
-		RtlVirtualUnwind(0,imageBase,i_context->uc_mcontext.Rip,currFunc,&(i_context->uc_mcontext),&hdl,&stablisher,nullptr);
+		RtlVirtualUnwind(0,imageBase,i_context->Rip,currFunc,i_context,&hdl,&stablisher,nullptr);
 	}
 	else
 	{
-		i_context->uc_mcontext.Rip = *(ULONG_PTR *)i_context->uc_mcontext.Rsp;
-		i_context->uc_mcontext.Rsp += 8;
+		i_context->Rip = *(ULONG_PTR *)(i_context->Rsp);
+		i_context->Rsp += 8;
 	}
 }
 ucontext_t* get_return_context()
@@ -49,14 +49,14 @@ int get_context(ucontext_t* i_context)
 {
 #if defined(WIN32)
 	/* Retrieve the full machine context */
-	memset(i_context,0,sizeof(ucontext_t));
+	RtlZeroMemory(&(i_context->uc_mcontext),sizeof(mcontext_t));
 
     i_context->uc_mcontext.ContextFlags = CONTEXT_ALL;
 
 	RtlCaptureContext(&(i_context->uc_mcontext));
 
 	//at least apply one unroll for getting out from here
-	detail::unwind_calling_context(i_context);
+	detail::unwind_calling_context(&(i_context->uc_mcontext));
 
 	return 0;
 
@@ -87,23 +87,17 @@ int set_context(ucontext_t* i_context)
 int swap_context (ucontext_t* i_oldContext, ucontext_t* i_newContext)
 {
 #if defined(WIN32)
-	bool done = false;
+
+	RtlZeroMemory(&(i_oldContext->uc_mcontext),sizeof(mcontext_t));
 
 	i_oldContext->uc_mcontext.ContextFlags = CONTEXT_ALL;
-	RtlCaptureContext (&i_oldContext->uc_mcontext);
 
-	if (!done)
-	{
-		done = true;
+	RtlCaptureContext(&i_oldContext->uc_mcontext);
 
-		i_oldContext->uc_mcontext.Rax = 0;
+	detail::unwind_calling_context(&(i_oldContext->uc_mcontext));
 
-		return set_context(i_newContext);
-	}
-	else
-	{
-		return 0;
-	}
+	return set_context(i_newContext);
+
 #else
 
 	return swapcontext(i_oldContext,i_newContext);
