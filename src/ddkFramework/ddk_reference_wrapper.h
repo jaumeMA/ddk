@@ -207,9 +207,8 @@ inline T* extract_raw_ptr(lent_pointer_wrapper<T>& i_ref)
 #if defined(DDK_DEBUG)
 	return i_ref.extract();
 #else
-	T* res = nullptr;
-
-	std::swap(res,i_ref);
+	T* res = i_ref;
+	i_ref = nullptr;
 
 	return res;
 #endif

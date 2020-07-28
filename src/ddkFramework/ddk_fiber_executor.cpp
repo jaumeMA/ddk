@@ -97,6 +97,7 @@ fiber_event_driven_executor::fiber_event_driven_executor(ddk::fiber i_fiber, uns
 , m_sleepTimeInMS(i_sleepInMs)
 , m_stopped(true)
 , m_executor(nullptr)
+, m_pendingWork(false)
 {
 	pthread_mutex_init(&m_condVarMutex, NULL);
 	pthread_cond_init(&m_condVar, NULL);
@@ -105,8 +106,10 @@ fiber_event_driven_executor::fiber_event_driven_executor(fiber_event_driven_exec
 : m_fiber(std::move(other.m_fiber))
 , m_sleepTimeInMS(other.m_sleepTimeInMS)
 , m_stopped(true)
+, m_pendingWork(false)
 {
 	std::swap(m_stopped,other.m_stopped);
+	std::swap(m_pendingWork,other.m_pendingWork);
 	pthread_mutex_init(&m_condVarMutex, NULL);
 	pthread_cond_init(&m_condVar, NULL);
 }
@@ -117,6 +120,8 @@ fiber_event_driven_executor::~fiber_event_driven_executor()
 		m_stopped = true;
 		m_fiber.stop();
 	}
+
+	DDK_ASSERT(m_pendingWork == false,"Leaving with pending work");
 
 	pthread_cond_destroy(&m_condVar);
 	pthread_mutex_destroy(&m_condVarMutex);
@@ -129,8 +134,17 @@ unsigned int fiber_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
-void fiber_event_driven_executor::start(const std::function<void()>& i_executor)
+void fiber_event_driven_executor::start(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc)
 {
+	if (i_testFunc)
+	{
+		m_testFunc = i_testFunc;
+	}
+	else
+	{
+		m_testFunc = [=](){ return m_pendingWork; };
+	}
+
 	execute(nullptr,i_executor);
 }
 void fiber_event_driven_executor::stop()
@@ -196,7 +210,7 @@ void fiber_event_driven_executor::update()
 		const double refreshPeriod = m_sleepTimeInMS - std::fmod((double)(clock()-start), (double) m_sleepTimeInMS);
 		const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
 
-		if (m_stopped == false)
+		if (m_stopped == false && m_testFunc() == false)
 		{
 			pthread_cond_timedwait(&m_condVar,&m_condVarMutex,&time_to_wait);
 		}

@@ -162,6 +162,11 @@ struct iterator_type_correspondence<T,std::forward_iterator_tag>
 	typedef co_forward_iterator<T> type;
 };
 template<typename T>
+struct iterator_type_correspondence<T,std::bidirectional_iterator_tag>
+{
+	typedef co_bidirectional_iterator<T> type;
+};
+template<typename T>
 struct iterator_type_correspondence<T, std::random_access_iterator_tag>
 {
 	typedef co_random_access_iterator<T> type;

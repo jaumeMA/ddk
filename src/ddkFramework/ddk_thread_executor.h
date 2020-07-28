@@ -54,7 +54,7 @@ public:
 	~thread_event_driven_executor();
 	void set_update_time(unsigned int i_sleepInMs);
 	unsigned int get_update_time() const;
-	void start_thread(const std::function<void()>& i_executor);
+	void start_thread(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc = nullptr);
 	void stop_thread();
 	void signal_thread();
 	bool is_stopped() const;
@@ -68,6 +68,7 @@ private:
 
 	unsigned int m_sleepTimeInMS;
 	std::function<void()> m_executor;
+	std::function<bool()> m_testFunc;
 	bool m_stopped;
 	ddk::thread m_updateThread;
 	pthread_cond_t		m_condVar;

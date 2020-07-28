@@ -19,7 +19,7 @@ public:
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
 
-	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) const override;
+	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
 	ExecutorState get_state() const override;
 };
 

@@ -91,25 +91,25 @@ consolidate_frame PROC FRAME
 
 	pop rbp
 
-	pop rax
+	pop r8
 
-	mov rcx, (Context PTR [rax]).reg_Rcx
-	mov rdx, (Context PTR [rax]).reg_Rdx
-	mov rbx, (Context PTR [rax]).reg_Rbx
-	mov rsp, (Context PTR [rax]).reg_Rsp
-	mov rbp, (Context PTR [rax]).reg_Rbp
-	mov rdi, (Context PTR [rax]).reg_Rdi
-	mov rsi, (Context PTR [rax]).reg_Rsi
-	mov r8, (Context PTR [rax]).reg_R8
+	mov rcx, (Context PTR [r8]).reg_Rcx
+	mov rdx, (Context PTR [r8]).reg_Rdx
+	mov rbx, (Context PTR [r8]).reg_Rbx
+	mov rsp, (Context PTR [r8]).reg_Rsp
+	mov rbp, (Context PTR [r8]).reg_Rbp
+	mov rdi, (Context PTR [r8]).reg_Rdi
+	mov rsi, (Context PTR [r8]).reg_Rsi
+	mov rax, (Context PTR [r8]).reg_Rax
 	mov r9, (Context PTR [rax]).reg_R9
-	mov r10, (Context PTR [rax]).reg_R10
-	mov r11, (Context PTR [rax]).reg_R11
-	mov r12, (Context PTR [rax]).reg_R12
-	mov r13, (Context PTR [rax]).reg_R13
-	mov r14, (Context PTR [rax]).reg_R14
-	mov r15, (Context PTR [rax]).reg_R15
+	mov r10, (Context PTR [r8]).reg_R10
+	mov r11, (Context PTR [r8]).reg_R11
+	mov r12, (Context PTR [r8]).reg_R12
+	mov r13, (Context PTR [r8]).reg_R13
+	mov r14, (Context PTR [r8]).reg_R14
+	mov r15, (Context PTR [r8]).reg_R15
 
-	jmp (Context PTR [rax]).reg_Rip
+	jmp (Context PTR [r8]).reg_Rip
 
 	ret
 

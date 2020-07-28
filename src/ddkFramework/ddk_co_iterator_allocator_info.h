@@ -23,7 +23,7 @@ struct co_iterator_allocator_info<std::vector<T,Alloc>>
 #ifdef DDK_DEBUG
 	static const size_t s_max_num_pages = 8;
 #else
-	static const size_t s_max_num_pages = 2;
+	static const size_t s_max_num_pages = 6;
 #endif
 	typedef detail::dynamic_stack_allocator allocator;
 };

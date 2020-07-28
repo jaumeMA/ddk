@@ -8,7 +8,7 @@ namespace detail
 {
 
 template<typename Return>
-typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) const
+typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{

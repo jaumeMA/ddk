@@ -41,7 +41,7 @@ public:
 	~fiber_event_driven_executor();
 	void set_update_time(unsigned int i_sleepInMs);
 	unsigned int get_update_time() const;
-	void start(const std::function<void()>& i_executor);
+	void start(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc = nullptr);
 	void stop();
 
 private:
@@ -55,8 +55,10 @@ private:
 	unsigned int m_sleepTimeInMS;
 	bool m_stopped;
 	std::function<void()> m_executor;
+	std::function<bool()> m_testFunc;
 	pthread_cond_t		m_condVar;
 	pthread_mutex_t	m_condVarMutex;
+	bool m_pendingWork;
 };
 
 class fiber_fire_and_forget_executor : public thread_executor_interface

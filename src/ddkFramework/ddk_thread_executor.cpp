@@ -173,8 +173,17 @@ unsigned int thread_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
-void thread_event_driven_executor::start_thread(const std::function<void()>& i_executor)
+void thread_event_driven_executor::start_thread(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc)
 {
+	if (i_testFunc)
+	{
+		m_testFunc = i_testFunc;
+	}
+	else
+	{
+		m_testFunc = [=]() mutable { return m_pendingWork; };
+	}
+
 	start_result startRes = execute(nullptr,i_executor);
 
 	DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
@@ -264,11 +273,11 @@ void thread_event_driven_executor::update()
 			pthread_mutex_lock(&m_condVarMutex);
         }
 
-		const double refreshPeriod = m_sleepTimeInMS - fmod((double)(clock()-start), (double) m_sleepTimeInMS);
-		const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
-
-		if (m_stopped == false && m_pendingWork == false)
+		if (m_stopped == false && m_testFunc() == false)
 		{
+			const double refreshPeriod = m_sleepTimeInMS - fmod((double)(clock()-start), (double) m_sleepTimeInMS);
+			const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
+
 			pthread_cond_timedwait(&m_condVar,&m_condVarMutex,&time_to_wait);
 		}
 	}
