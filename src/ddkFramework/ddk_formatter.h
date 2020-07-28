@@ -197,12 +197,20 @@ static std::set<T> format(const std::string& i_str)
 		size_t preTokenPos = 0;
 		size_t separatorPos = i_str.find(",");
 
-		while(separatorPos != std::string::npos)
+		if (separatorPos != std::string::npos)
 		{
-			res.insert(formatter<T>::format(i_str.substr(preTokenPos,separatorPos)));
+			do
+			{
+				res.insert(formatter<T>::format(i_str.substr(preTokenPos,separatorPos)));
 
-			preTokenPos = separatorPos + 1;
-			separatorPos = i_str.find_first_of(",",preTokenPos);
+				preTokenPos = separatorPos + 1;
+				separatorPos = i_str.find_first_of(",",preTokenPos);
+			}
+			while(separatorPos != std::string::npos);
+		}
+		else
+		{
+			res.insert(i_str);
 		}
 	}
 
