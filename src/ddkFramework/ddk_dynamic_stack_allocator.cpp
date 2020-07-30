@@ -50,10 +50,6 @@ void* dynamic_stack_allocator::allocate(void* i_ref, size_t i_size) const
 	//save one page guard
 	VirtualAlloc(reinterpret_cast<char*>(stackAddr) - k_numGuardPages * s_pageSize,k_numGuardPages * s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD);
 
-	auto err = GetLastError();
-
-	DDK_ASSERT(stackAddr, "wtf");
-
 	return reinterpret_cast<char*>(stackAddr);
 
 #elif defined(__LINUX__) || defined(__APPLE__)

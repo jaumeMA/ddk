@@ -16,15 +16,13 @@ public:
 	~static_stack_allocator();
 
 private:
-	static const size_t s_stackSize = (Size+1) * 4096;
-
 	void* reserve(size_t) const override;
 	void* allocate(void* i_ref, size_t i_size) const override;
 	bool reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const override;
 	void deallocate(void*,size_t) const override;
 	void release(void*,size_t) const override;
 
-	mutable arena<s_stackSize,0> m_arena;
+	mutable arena<(Size+1) * 4096,1> m_arena;
 	mutable bool m_underUse = false;
 };
 

@@ -7,6 +7,22 @@ thread_sheaf::thread_sheaf(thread_sheaf&& other)
 : m_threadCtr(std::move(other.m_threadCtr))
 {
 }
+void thread_sheaf::start(const std::function<void()>& i_function)
+{
+	thread_container::iterator itThread = m_threadCtr.begin();
+	for (; itThread != m_threadCtr.end(); ++itThread)
+	{
+		itThread->start(i_function);
+	}
+}
+void thread_sheaf::stop()
+{
+	thread_container::iterator itThread = m_threadCtr.begin();
+	for (; itThread != m_threadCtr.end(); ++itThread)
+	{
+		itThread->stop();
+	}
+}
 void thread_sheaf::clear()
 {
 	m_threadCtr.clear();

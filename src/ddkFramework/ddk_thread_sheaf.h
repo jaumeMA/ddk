@@ -17,6 +17,8 @@ public:
 
 	thread_sheaf(const thread_sheaf&) = delete;
 	thread_sheaf(thread_sheaf&& other);
+	void start(const std::function<void()>& i_function);
+	void stop();
 	void clear();
 	thread extract();
 	iterator begin();

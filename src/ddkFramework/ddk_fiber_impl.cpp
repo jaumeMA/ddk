@@ -81,6 +81,14 @@ fiber_impl::fiber_impl(stack_allocator i_stackAlloc)
 
 	ddk::get_context(&m_context);
 }
+fiber_impl::fiber_impl(fiber_impl&& other)
+: m_id(reinterpret_cast<size_t>(this))
+, m_executor(std::move(other.m_executor))
+, m_context(std::move(other.m_context))
+, m_state(other.m_state)
+, m_alloc(std::move(other.m_alloc))
+{
+}
 fiber_impl::~fiber_impl()
 {
 	if(m_executor)

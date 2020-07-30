@@ -173,7 +173,7 @@ std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
 	fiberAlloc.first = m_stackAllocImpl->reserve(m_numMaxPages);
 	fiberAlloc.second = m_stackAllocImpl->allocate(fiberAlloc.first,1);
 
-	return std::make_pair(stack_allocator_interface::s_pageSize,fiberAlloc.second);
+	return std::make_pair(reinterpret_cast<const char*>(fiberAlloc.first) - reinterpret_cast<const char*>(fiberAlloc.second),fiberAlloc.second);
 }
 void* stack_allocator::attach(fiber_id i_id)
 {

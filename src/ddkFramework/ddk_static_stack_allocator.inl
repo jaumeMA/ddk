@@ -14,7 +14,7 @@ static_stack_allocator<Size>::~static_stack_allocator()
 template<size_t Size>
 void* static_stack_allocator<Size>::reserve(size_t) const
 {
-	return reinterpret_cast<char*>(static_cast<size_t>(m_arena.template get_ptr<char>() + s_stackSize) & ~0xFFF);
+	return reinterpret_cast<char*>(reinterpret_cast<size_t>(m_arena.template get_ptr<char>() + (Size + 1) * s_pageSize) & ~0xFFF);
 }
 template<size_t Size>
 void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
@@ -23,7 +23,7 @@ void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
 
 	m_underUse = true;
 
-	return reinterpret_cast<char*>(i_ref) - i_size * s_pageSize;
+	return reinterpret_cast<char*>(i_ref) - Size * s_pageSize;
 }
 template<size_t Size>
 bool static_stack_allocator<Size>::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const

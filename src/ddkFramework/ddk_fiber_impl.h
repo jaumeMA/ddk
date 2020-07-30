@@ -37,6 +37,7 @@ public:
 	fiber_impl();
 	fiber_impl(stack_allocator i_stackAlloc);
 	fiber_impl(const fiber_impl&) = delete;
+	fiber_impl(fiber_impl&& other);
 	~fiber_impl();
 	template<typename Return>
 	void start_from(this_fiber_t& other, const std::function<Return()>& i_function);

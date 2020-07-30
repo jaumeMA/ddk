@@ -86,7 +86,7 @@ struct AccessCriticalSection<Traits,IAccessProvider::READING>
 	typedef typename std::add_lvalue_reference<const_call_context>::type access_call_context_reference;
 
 public:
-	typedef ConstCriticalSection<Traits> critical_section;
+	typedef const_critical_section<Traits> critical_section;
 
 	static critical_section enter(const IAccessInterface<Traits>& i_accesInterface, Reentrancy i_reentrancy)
 	{
