@@ -10,7 +10,7 @@ namespace ddk
 fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, size_t i_maxNumPagesPerFiber)
 : m_fiberScheduler(make_shared_reference<fiber_scheduler<>>())
 , m_policy(i_policy)
-, m_stackAllocator(make_shared_reference<detail::pool_stack_allocator>(make_shared_reference<detail::dynamic_stack_allocator>(),i_initialSize,i_maxNumPagesPerFiber))
+, m_stackAllocator(make_shared_reference<detail::pool_stack_allocator>(make_shared_reference<detail::default_dynamic_stack_allocator>(),i_initialSize,i_maxNumPagesPerFiber))
 , m_numMaxPages(i_maxNumPagesPerFiber)
 {
 	m_fiberCtr.reserve(i_initialSize);

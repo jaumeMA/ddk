@@ -66,7 +66,7 @@ stack_allocator this_fiber_t::get_allocator() const
 fiber_impl::fiber_impl()
 : m_id(reinterpret_cast<size_t>(this))
 , m_state(FiberExecutionState::Idle)
-, m_alloc(make_shared_reference<dynamic_stack_allocator>())
+, m_alloc(make_shared_reference<default_dynamic_stack_allocator>())
 {
 	memset(&m_context,0,sizeof(ucontext_t));
 
@@ -163,8 +163,6 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 {
 	m_context.uc_link = reinterpret_cast<ucontext_t*>(i_context);
-
-	m_alloc.detach();
 
 	ddk::swap_context(&m_context,other.get_context());
 }

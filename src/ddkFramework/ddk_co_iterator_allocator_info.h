@@ -14,18 +14,16 @@ template<typename Iterable>
 struct co_iterator_allocator_info
 {
 	static const size_t s_max_num_pages = stack_allocator_interface::k_maxNumStackPages;
-	typedef detail::dynamic_stack_allocator allocator;
+	typedef detail::default_dynamic_stack_allocator allocator;
 };
 
 template<typename T, typename Alloc>
 struct co_iterator_allocator_info<std::vector<T,Alloc>>
 {
-#ifdef DDK_DEBUG
-	static const size_t s_max_num_pages = 3;
-#else
-	static const size_t s_max_num_pages = 3;
-#endif
-	typedef detail::static_stack_allocator<s_max_num_pages> allocator;
+	//although max num pages coul be 1, we shall reserve 3 pages because of stack unwinding
+	static const size_t s_max_num_pages = 6;
+
+	typedef detail::dynamic_stack_allocator<1> allocator;
 };
 
 //...

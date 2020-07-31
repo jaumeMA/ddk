@@ -163,6 +163,9 @@ stack_allocator::stack_allocator(stack_allocator&& other)
 , m_numMaxPages(other.m_numMaxPages)
 {
 }
+stack_allocator::~stack_allocator()
+{
+}
 std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
 {
 	static const thread_local bool _ = initialize_thread_stack();
@@ -203,6 +206,8 @@ void stack_allocator::deallocate(fiber_id i_id) const
 	m_stackAllocImpl->release(fiberAlloc.first,m_numMaxPages);
 
 	m_arena->erase(i_id);
+
+	m_arena = nullptr;
 }
 std::pair<void*,void*>*& stack_allocator::get_curr_arena()
 {

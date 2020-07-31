@@ -45,6 +45,7 @@ public:
 	stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl, size_t i_numMaxPages = stack_allocator_interface::k_maxNumStackPages);
 	stack_allocator(const stack_allocator&) = delete;
 	stack_allocator(stack_allocator&& other);
+	~stack_allocator();
     std::pair<size_t,void*> allocate(fiber_id i_id) const;
 	void* attach(fiber_id i_id);
 	void detach();
