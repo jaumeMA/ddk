@@ -43,9 +43,10 @@ public:
 	: future<detail::void_t>(other)
 	{
 	}
-
-private:
-	using future<detail::void_t>::get_value;
+	void get_value()
+	{
+		future<detail::void_t>::get_value();
+	}
 };
 
 }

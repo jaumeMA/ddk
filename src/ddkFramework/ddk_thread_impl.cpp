@@ -7,21 +7,17 @@ namespace ddk
 namespace detail
 {
 
-threadlocal<yielder_lent_ptr,thread_impl_interface>& thread_impl_interface::get_yielder_local()
-{
-	static threadlocal<yielder_lent_ptr,thread_impl_interface> s_yielder;
-
-	return s_yielder;
-}
 yielder_lent_ptr thread_impl_interface::get_yielder()
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface>& yielder = get_yielder_local();
+	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
 
-	return yielder.get();
+	yielder_lent_ptr* yielderPtr = yielder.get_ptr();
+
+	return (yielderPtr) ? *yielderPtr : nullptr;
 }
 yielder_lent_ptr thread_impl_interface::set_yielder(yielder_lent_ptr i_yielder)
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface>& yielder = get_yielder_local();
+	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
 
 	yielder_lent_ptr prevYielder = (yielder.empty() == false) ? yielder.extract() : nullptr;
 
@@ -31,7 +27,7 @@ yielder_lent_ptr thread_impl_interface::set_yielder(yielder_lent_ptr i_yielder)
 }
 void thread_impl_interface::clear_yielder()
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface>& yielder = get_yielder_local();
+	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
 
 	yielder.clear();	
 }
@@ -103,7 +99,10 @@ void one_shot_thread_impl::execute()
 
 		pthread_cleanup_push(&threadExiting,this);
 
-		m_threadFunc();
+		if(m_threadFunc)
+		{
+			m_threadFunc();
+		}
 
 		thread_impl_interface::clear_yielder();
 

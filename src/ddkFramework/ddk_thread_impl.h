@@ -18,8 +18,6 @@ namespace detail
 
 class thread_impl_interface
 {
-	static threadlocal<yielder_lent_ptr,thread_impl_interface>& get_yielder_local();
-
 public:
 	virtual ~thread_impl_interface() = default;
 	virtual void start(const std::function<void()>&, yielder_lent_ptr = nullptr) = 0;
