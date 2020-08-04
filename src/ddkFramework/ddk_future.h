@@ -12,22 +12,24 @@ template<typename T>
 class future
 {
 public:
+	typedef typename async_cancellable_interface<T>::cancel_result cancel_result;
+
 	future() = default;
 	future(const future&) = default;
-	future(detail::private_async_state_lent_ref<T> i_sharedState);
 	template<typename TT>
 	future(shared_reference_wrapper<TT> i_executor);
-	future(async_state_shared_ref<T> i_executor);
+	future(async_cancellable_shared_ref<T> i_executor);
 
 	bool valid() const;
 	const T& get_value() const;
 	T extract_value();
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
+	cancel_result cancel();
 	bool is_attached() const;
 
 private:
-	variant<detail::private_async_state_lent_ref<T>,async_state_shared_ref<T>> m_valueRetriever;
+	async_cancellable_shared_ptr<T> m_valueRetriever;
 };
 
 template<>

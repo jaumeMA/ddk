@@ -14,13 +14,17 @@ template<typename Return>
 class deferred_executor : public executor_interface<Return()>
 {
 public:
-	deferred_executor() = default;
+	deferred_executor();
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
+	typedef typename executor_interface<Return()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
+	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
+
+	atomic<ExecutorState::underlying_type> m_state;
 };
 
 template<typename Return>
@@ -33,8 +37,10 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
+	typedef typename executor_interface<Return()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
+	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
 	void yield(yielder_context* i_context) override;
@@ -47,6 +53,7 @@ private:
 	this_fiber_t m_caller;
 	fiber_impl m_callee;
 	detail::fiber_yielder m_yielder;
+	atomic<ExecutorState::underlying_type> m_state;
 };
 
 template<typename Return>
@@ -57,11 +64,14 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
+	typedef typename executor_interface<Return()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
+	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
 	mutable fiber m_fiber;
+	atomic<ExecutorState::underlying_type> m_state;
 };
 
 class fiber_sheaf_executor : public executor_interface<detail::void_t()>
@@ -72,12 +82,15 @@ public:
 
 private:
 	typedef typename executor_interface<detail::void_t()>::start_result start_result;
+	typedef typename executor_interface<detail::void_t()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(detail::void_t)>& i_sink, const std::function<detail::void_t()>& i_callable) override;
+	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
 	mutable fiber_sheaf m_fiberSheaf;
 	size_t m_pendingFibers;
+	atomic32<ExecutorState::underlying_type> m_state;
 };
 
 template<typename Return>
@@ -92,11 +105,14 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
+	typedef typename executor_interface<Return()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
+	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
 	mutable thread m_thread;
+	atomic<ExecutorState::underlying_type> m_state;
 };
 
 class thread_sheaf_executor : public executor_interface<detail::void_t()>
@@ -106,12 +122,15 @@ public:
 
 private:
 	typedef typename executor_interface<detail::void_t()>::start_result start_result;
+	typedef typename executor_interface<detail::void_t()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(detail::void_t)>& i_sink, const std::function<detail::void_t()>& i_callable) override;
+	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
 	mutable thread_sheaf m_threadSheaf;
 	size_t m_pendingThreads;
+	atomic<ExecutorState::underlying_type> m_state;
 };
 
 }

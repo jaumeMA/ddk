@@ -1,13 +1,10 @@
 #pragma once
 
+#include "ddk_async_exceptions.h"
+
 namespace ddk
 {
 
-template<typename T>
-future<T>::future(detail::private_async_state_lent_ref<T> i_sharedState)
-: m_valueRetriever(i_sharedState)
-{
-}
 template<typename T>
 template<typename TT>
 future<T>::future(shared_reference_wrapper<TT> i_executor)
@@ -18,110 +15,78 @@ future<T>::future(shared_reference_wrapper<TT> i_executor)
 	i_executor->bind();
 }
 template<typename T>
-future<T>::future(async_state_shared_ref<T> i_executor)
+future<T>::future(async_cancellable_shared_ref<T> i_executor)
 : m_valueRetriever(i_executor)
 {
 }
 template<typename T>
 bool future<T>::valid() const
 {
-	if(m_valueRetriever.template is<async_state_shared_ref<T>>())
+	if (m_valueRetriever)
 	{
-		const async_state_shared_ref<T>& sharedState = m_valueRetriever.template get<async_state_shared_ref<T>>();
-
-		return sharedState->ready();
-	}
-	else if(m_valueRetriever.template is<detail::private_async_state_lent_ref<T>>())
-	{
-		detail::private_async_state_lent_ref<T> executeReader = m_valueRetriever.template get<detail::private_async_state_lent_ref<T>>();
-
-		return executeReader->ready();
+		return m_valueRetriever->ready();
 	}
 	else
 	{
-		return false;
+		throw future_exception();
 	}
 }
 template<typename T>
 const T& future<T>::get_value() const
 {
-	if(m_valueRetriever.template is<async_state_shared_ref<T>>())
+	if(m_valueRetriever)
 	{
-		const async_state_shared_ref<T>& sharedState = m_valueRetriever.template get<async_state_shared_ref<T>>();
-
-		return sharedState->get_value();
-	}
-	else if(m_valueRetriever.template is<detail::private_async_state_lent_ref<T>>())
-	{
-		detail::private_async_state_lent_ref<T> executeReader = m_valueRetriever.template get<detail::private_async_state_lent_ref<T>>();
-
-		return executeReader->get_value();
+		return m_valueRetriever->get_value();
 	}
 	else
 	{
-		DDK_FAIL("Trying to acquire value from not ready future");
-
-		return crash_on_return<const T&>::value();
+		throw future_exception();
 	}
 }
 template<typename T>
 T future<T>::extract_value()
 {
-	if(m_valueRetriever.template is<async_state_shared_ref<T>>())
+	if(m_valueRetriever)
 	{
-		async_state_shared_ref<T>& sharedState = m_valueRetriever.template get<async_state_shared_ref<T>>();
-
-		return sharedState->extract_value();
-	}
-	else if(m_valueRetriever.template is<detail::private_async_state_lent_ref<T>>())
-	{
-		detail::private_async_state_lent_ref<T> executeReader = m_valueRetriever.template get<detail::private_async_state_lent_ref<T>>();
-
-		return executeReader->extract_value();
+		return m_valueRetriever->extract_value();
 	}
 	else
 	{
-		DDK_FAIL("Trying to acquire value from not ready future");
-
-		return crash_on_return<T>::value();
+		throw future_exception();
+	}
+}
+template<typename T>
+typename future<T>::cancel_result future<T>::cancel()
+{
+	if (m_valueRetriever)
+	{
+		return m_valueRetriever->cancel();
+	}
+	else
+	{
+		throw future_exception();
 	}
 }
 template<typename T>
 void future<T>::wait() const
 {
-	if(m_valueRetriever.template is<async_state_shared_ref<T>>())
+	if(m_valueRetriever)
 	{
-		const async_state_shared_ref<T>& sharedState = m_valueRetriever.template get<async_state_shared_ref<T>>();
-
-		return sharedState->wait();
-	}
-	else if(m_valueRetriever.template is<detail::private_async_state_lent_ref<T>>())
-	{
-		detail::private_async_state_lent_ref<T> executeReader = m_valueRetriever.template get<detail::private_async_state_lent_ref<T>>();
-
-		return executeReader->wait();
+		return m_valueRetriever->wait();
 	}
 }
 template<typename T>
 void future<T>::wait_for(unsigned int i_period) const
 {
-	if(m_valueRetriever.template is<async_state_shared_ref<T>>())
+	if(m_valueRetriever)
 	{
-		const async_state_shared_ref<T>& sharedState = m_valueRetriever.template get<async_state_shared_ref<T>>();
-
-		return sharedState->wait_for(i_period);
-	}
-	else if(m_valueRetriever.template is<detail::private_async_state_lent_ref<T>>())
-	{
-		detail::private_async_state_lent_ref<T> executeReader = m_valueRetriever.template get<detail::private_async_state_lent_ref<T>>();
-
-		return executeReader->wait_for(i_period);
+		return m_valueRetriever->wait_for(i_period);
 	}
 }
 template<typename T>
 bool future<T>::is_attached() const
 {
-	return m_valueRetriever.empty() == false;
+	return m_valueRetriever != nullptr;
 }
 
 }

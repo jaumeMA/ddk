@@ -30,18 +30,6 @@ public:
 	virtual void unregister(fiber_id) = 0;
 };
 
-struct suspend_exception : public std::exception
-{
-public:
-	suspend_exception(fiber_id i_id);
-
-	const char* what() const noexcept;
-	fiber_id get_id() const;
-
-private:
-	fiber_id m_id;
-};
-
 }
 
 typedef shared_reference_wrapper<detail::fiber_scheduler_interface> fiber_scheduler_interface_shared_ref;

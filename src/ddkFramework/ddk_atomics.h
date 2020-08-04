@@ -260,7 +260,12 @@ typedef typename mpl::which_type<(alignof(uintptr_t)<=4),atomic32<uintptr_t>,ato
 
 template<typename T>
 struct atomic : mpl::which_type<(alignof(T)<=4),atomic32<T>,atomic64<T>>::type
-{};
+{
+private:
+	typedef typename mpl::which_type<(alignof(T)<=4),atomic32<T>,atomic64<T>>::type base_t;
+public:
+	using base_t::base_t;
+};
 
 template<typename T>
 struct atomic<T*>

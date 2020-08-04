@@ -1,5 +1,6 @@
 
 #include "ddk_embedded_type.h"
+#include "ddk_async_exceptions.h"
 
 namespace ddk
 {
@@ -27,7 +28,16 @@ void private_async_state<T>::set_value(reference i_value)
 
 	m_arena.template set_value<T>(i_value);
 
-	pthread_cond_signal(&m_condVar);
+	pthread_cond_broadcast(&m_condVar);
+
+	pthread_mutex_unlock(&m_mutex);
+}
+template<typename T>
+void private_async_state<T>::signal()
+{
+	pthread_mutex_lock(&m_mutex);
+
+	pthread_cond_broadcast(&m_condVar);
 
 	pthread_mutex_unlock(&m_mutex);
 }
@@ -39,6 +49,11 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 	if(m_arena.empty())
 	{
 		pthread_cond_wait(&m_condVar,&m_mutex);
+	}
+
+	if (m_arena.empty())
+	{
+		throw async_exception();
 	}
 
 	const_reference value = m_arena.template get<T>();
@@ -57,6 +72,11 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 		pthread_cond_wait(&m_condVar,&m_mutex);
 	}
 
+	if (m_arena.empty())
+	{
+		throw async_exception();
+	}
+
 	reference value = m_arena.template get<T>();
 
 	pthread_mutex_unlock(&m_mutex);
@@ -71,6 +91,11 @@ typename private_async_state<T>::value_type private_async_state<T>::extract_valu
 	if(m_arena.empty())
 	{
 		pthread_cond_wait(&m_condVar,&m_mutex);
+	}
+
+	if (m_arena.empty())
+	{
+		throw async_exception();
 	}
 
 	value_type value = m_arena.template extract<T>();

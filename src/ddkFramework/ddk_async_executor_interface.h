@@ -27,24 +27,6 @@ template<typename Return>
 using async_base_const_shared_ptr = shared_pointer_wrapper<const async_interface_base<Return>>;
 
 template<typename Return>
-using async_base_unique_ref = unique_reference_wrapper<async_interface_base<Return>>;
-template<typename Return>
-using async_base_const_unique_ref = unique_reference_wrapper<const async_interface_base<Return>>;
-template<typename Return>
-using async_base_unique_ptr = unique_pointer_wrapper<async_interface_base<Return>>;
-template<typename Return>
-using async_base_const_unique_ptr = unique_pointer_wrapper<const async_interface_base<Return>>;
-
-template<typename Return>
-using async_base_lent_ref = lent_reference_wrapper<async_interface_base<Return>>;
-template<typename Return>
-using async_base_const_lent_ref = lent_reference_wrapper<const async_interface_base<Return>>;
-template<typename Return>
-using async_base_lent_ptr = lent_pointer_wrapper<async_interface_base<Return>>;
-template<typename Return>
-using async_base_const_lent_ptr = lent_pointer_wrapper<const async_interface_base<Return>>;
-
-template<typename Return>
 class async_state_interface : public async_interface_base<Return>
 {
 public:
@@ -82,25 +64,25 @@ template<typename Return>
 using async_state_const_shared_ptr = shared_reference_wrapper<const typename async_state_interface<Return>::async_public_type>;
 
 template<typename Return>
-using async_state_unique_ref = unique_reference_wrapper<async_state_interface<Return>>;
-template<typename Return>
-using async_state_const_unique_ref = unique_reference_wrapper<const async_state_interface<Return>>;
-template<typename Return>
-using async_state_unique_ptr = unique_pointer_wrapper<async_state_interface<Return>>;
-template<typename Return>
-using async_state_const_unique_ptr = unique_pointer_wrapper<const async_state_interface<Return>>;
+class async_cancellable_interface : public async_state_interface<Return>
+{
+public:
+	typedef typename executor_interface<Return()>::cancel_result cancel_result;
+
+	virtual cancel_result cancel() = 0;
+};
 
 template<typename Return>
-using async_state_lent_ref = lent_reference_wrapper<typename async_state_interface<Return>::async_public_type>;
+using async_cancellable_shared_ref = shared_reference_wrapper<async_cancellable_interface<Return>>;
 template<typename Return>
-using async_state_const_lent_ref = lent_reference_wrapper<const typename async_state_interface<Return>::async_public_type>;
+using async_cancellable_const_shared_ref = shared_reference_wrapper<const async_cancellable_interface<Return>>;
 template<typename Return>
-using async_state_lent_ptr = lent_pointer_wrapper<typename async_state_interface<Return>::async_public_type>;
+using async_cancellable_shared_ptr = shared_pointer_wrapper<async_cancellable_interface<Return>>;
 template<typename Return>
-using async_state_const_lent_ptr = lent_pointer_wrapper<const typename async_state_interface<Return>::async_public_type>;
+using async_cancellable_const_shared_ptr = shared_pointer_wrapper<const async_cancellable_interface<Return>>;
 
 template<typename Return>
-class async_execute_interface : public async_state_interface<Return>
+class async_execute_interface : public async_cancellable_interface<Return>
 {
 public:
 	enum StartErrorCode
@@ -122,23 +104,5 @@ template<typename Return>
 using async_execute_shared_ptr = shared_pointer_wrapper<async_execute_interface<Return>>;
 template<typename Return>
 using async_execute_const_shared_ptr = shared_pointer_wrapper<const async_execute_interface<Return>>;
-
-template<typename Return>
-using async_execute_unique_ref = unique_reference_wrapper<async_execute_interface<Return>>;
-template<typename Return>
-using async_execute_const_unique_ref = unique_reference_wrapper<const async_execute_interface<Return>>;
-template<typename Return>
-using async_execute_unique_ptr = unique_pointer_wrapper<async_execute_interface<Return>>;
-template<typename Return>
-using async_execute_const_unique_ptr = unique_pointer_wrapper<const async_execute_interface<Return>>;
-
-template<typename Return>
-using async_execute_lent_ref = lent_reference_wrapper<async_execute_interface<Return>>;
-template<typename Return>
-using async_execute_const_lent_ref = lent_reference_wrapper<const async_execute_interface<Return>>;
-template<typename Return>
-using async_execute_lent_ptr = lent_pointer_wrapper<async_execute_interface<Return>>;
-template<typename Return>
-using async_execute_const_lent_ptr = lent_pointer_wrapper<const async_execute_interface<Return>>;
 
 }

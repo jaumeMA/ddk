@@ -2,6 +2,7 @@
 #include "ddk_thread_utils.h"
 #include "ddk_thread_impl.h"
 #include "ddk_reference_wrapper.h"
+#include "ddk_async_exceptions.h"
 
 namespace ddk
 {
@@ -60,7 +61,7 @@ void yield()
 
 		if(_yielder.is_stopped(currFiber))
 		{
-			throw detail::suspend_exception(currFiber);
+			throw suspend_exception(currFiber);
 		}
 	}
 	else

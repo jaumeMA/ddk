@@ -1,6 +1,7 @@
 
 #include "ddk_thread_impl.h"
 #include "ddk_ucontext.h"
+#include "ddk_async_exceptions.h"
 
 namespace ddk
 {
@@ -8,11 +9,16 @@ namespace detail
 {
 
 template<typename Return>
+deferred_executor<Return>::deferred_executor()
+: m_state(ExecutorState::Idle)
+{
+}
+template<typename Return>
 typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
-		return make_error<start_result>(executor_interface<Return()>::NoCallable);
+		return make_error<start_result>(executor_interface<Return()>::StartNoCallable);
 	}
 	else
 	{
@@ -20,14 +26,22 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 	}
 }
 template<typename Return>
+typename deferred_executor<Return>::cancel_result deferred_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+{
+	m_state = ExecutorState::Cancelled;
+
+	return ddk::success;
+}
+template<typename Return>
 ExecutorState deferred_executor<Return>::get_state() const
 {
-	return ExecutorState::Idle;
+	return m_state.get();
 }
 
 template<typename Return>
 await_executor<Return>::await_executor()
 : m_yielder(*this)
+, m_state(ExecutorState::Idle)
 {
 	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
 }
@@ -35,64 +49,87 @@ template<typename Return>
 await_executor<Return>::await_executor(stack_allocator i_stackAlloc)
 : m_callee(std::move(i_stackAlloc))
 , m_yielder(*this)
+, m_state(ExecutorState::Idle)
 {
 	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
 }
 template<typename Return>
 await_executor<Return>::~await_executor()
 {
-	yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
+	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelled))
+	{
+		yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
 
-	m_callee.stop();
+		m_callee.stop();
 
-	thread_impl_interface::set_yielder(prevYielder);
+		thread_impl_interface::set_yielder(prevYielder);
+	}
 }
 template<typename Return>
 typename await_executor<Return>::start_result await_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
 {
-	if (m_callee.get_state() == FiberExecutionState::Idle)
+	if(i_callable == nullptr)
 	{
-		m_callee.start_from(m_caller, i_callable);
-	}
-
-	//update current yielder
-	yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
-
-	yielder_context* i_context = m_callee.resume_from(m_caller);
-
-	thread_impl_interface::set_yielder(prevYielder);
-
-	if(m_callee.get_state() == FiberExecutionState::Done)
-	{
-		thread_impl_interface::clear_yielder();
-
-		return make_result<start_result>(ExecutorState::Executed);
+		return make_error<start_result>(StartErrorCode::StartNoCallable);
 	}
 	else
 	{
-		if(typed_yielder_context<Return>* newContext = static_cast<typed_yielder_context<Return>*>(i_context))
+		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			i_sink(newContext->get_value());
+			m_callee.start_from(m_caller, i_callable);
 		}
 
-		return make_result<start_result>(ExecutorState::Idle);
+		if (m_state.get() != ExecutorState::Cancelled)
+		{
+			//update current yielder
+			yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
+
+			yielder_context* i_context = m_callee.resume_from(m_caller);
+
+			thread_impl_interface::set_yielder(prevYielder);
+
+			if(m_callee.get_state() == FiberExecutionState::Done)
+			{
+				thread_impl_interface::clear_yielder();
+
+				m_state = ExecutorState::Executed;
+
+				return make_result<start_result>(ExecutorState::Executed);
+			}
+			else
+			{
+				if(typed_yielder_context<Return>* newContext = static_cast<typed_yielder_context<Return>*>(i_context))
+				{
+					i_sink(newContext->get_value());
+				}
+
+				return make_result<start_result>(ExecutorState::Idle);
+			}
+		}
+		else
+		{
+			return make_result<start_result>(ExecutorState::Executed);
+		}
+	}
+}
+template<typename Return>
+typename await_executor<Return>::cancel_result await_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+{
+	if (m_state.get() == ExecutorState::Executed)
+	{
+		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
+	}
+	else
+	{
+		m_state = ExecutorState::Cancelled;
+
+		return ddk::success;
 	}
 }
 template<typename Return>
 ExecutorState await_executor<Return>::get_state() const
 {
-	switch(m_callee.get_state().getValue())
-	{
-		case FiberExecutionState::Done:
-		case FiberExecutionState::Executing:
-		{
-			return ExecutorState::Executed;
-		}
-		default:
-		{
-			return ExecutorState::Idle;
-		}
-	}
+	return (m_state.get() == ExecutorState::Idle) ? ExecutorState::Idle : ExecutorState::Executed;
 }
 template<typename Return>
 void await_executor<Return>::yield(yielder_context* i_context)
@@ -105,7 +142,7 @@ void await_executor<Return>::yield(yielder_context* i_context)
 template<typename Return>
 void await_executor<Return>::suspend(yielder_context*)
 {
-	throw detail::suspend_exception(m_callee.get_id());
+	throw suspend_exception(m_callee.get_id());
 }
 template<typename Return>
 bool await_executor<Return>::activate(fiber_id i_id, const std::function<void()>& i_callable)
@@ -134,79 +171,156 @@ bool await_executor<Return>::deactivate(fiber_id i_id)
 template<typename Return>
 void await_executor<Return>::unregister(fiber_id)
 {
-
 }
 
 template<typename Return>
 fiber_executor<Return>::fiber_executor(fiber i_fiber)
 : m_fiber(std::move(i_fiber))
+, m_state(ExecutorState::Idle)
 {
 }
 template<typename Return>
 typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
 {
-	if(m_fiber.ready() == false)
+	if(i_callable == nullptr)
 	{
-		return make_error<start_result>(executor_interface<Return()>::NotAvailable);
-	}
-	else if(i_callable == nullptr)
-	{
-		return make_error<start_result>(executor_interface<Return()>::NoCallable);
+		return make_error<start_result>(StartErrorCode::StartNoCallable);
 	}
 	else
 	{
-		m_fiber.start([i_sink,i_callable](){ const Return res = i_callable(); i_sink(res); });
+		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
+		{
+			m_fiber.start([i_sink,i_callable]()
+			{ 
+				const Return res = i_callable(); 
 
-		return make_result<start_result>(ExecutorState::Executed);
+				while (m_state.get() == ExecutorState::Cancelling)
+				{
+					std::this_thread::yield();
+				}
+
+				if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+				{
+					i_sink(_void);
+				}
+			});
+
+			return make_result<start_result>(ExecutorState::Executed);
+		}
+		else
+		{
+			return make_error<start_result>(executor_interface<Return()>::StartNotAvailable);
+		}
+	}
+}
+template<typename Return>
+typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+{
+	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
+	{
+		return ddk::success;
+	}
+	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
+	{
+		if (i_cancelFunc && i_cancelFunc())
+		{
+			m_state = ExecutorState::Cancelled;
+
+			return ddk::success;
+		}
+		else
+		{
+			m_state = ExecutorState::Executing;
+
+			std::this_thread::yield();
+
+			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
+		}
+	}
+	else
+	{
+		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
 template<typename Return>
 ExecutorState fiber_executor<Return>::get_state() const
 {
-	if(m_fiber.ready() == false)
-	{
-		return ExecutorState::Executed;
-	}
-	else
-	{
-		return ExecutorState::Idle;
-	}
+	return m_state.get();
 }
 
 template<typename Return>
 thread_executor<Return>::thread_executor(thread i_thread)
 : m_thread(std::move(i_thread))
+, m_state(ExecutorState::Idle)
 {
 }
 template<typename Return>
 typename thread_executor<Return>::start_result thread_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
 {
-	if(m_thread.joinable())
+	if(i_callable == nullptr)
 	{
-		return make_error<start_result>(executor_interface<Return()>::NotAvailable);
-	}
-	else if(i_callable == nullptr)
-	{
-		return make_error<start_result>(executor_interface<Return()>::NoCallable);
+		return make_error<start_result>(StartErrorCode::StartNoCallable);
 	}
 	else
 	{
-		m_thread.start([i_sink,i_callable](){ const Return res = i_callable(); i_sink(res); });
+		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
+		{
+			m_thread.start([i_sink,i_callable]()
+			{ 
+				const Return res = i_callable();
 
-		return make_result<start_result>(ExecutorState::Executed);
+				while (m_state.get() == ExecutorState::Cancelling)
+				{
+					std::this_thread::yield();
+				}
+
+				if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+				{
+					i_sink(_void);
+				}
+			});
+
+			return make_result<start_result>(ExecutorState::Executed);
+		}
+		else
+		{
+			return make_error<start_result>(executor_interface<Return()>::StartNotAvailable);
+		}
+	}
+}
+template<typename Return>
+typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+{
+	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
+	{
+		return ddk::success;
+	}
+	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
+	{
+		if (i_cancelFunc && i_cancelFunc())
+		{
+			m_state = ExecutorState::Cancelled;
+
+			return ddk::success;
+		}
+		else
+		{
+			m_state = ExecutorState::Executing;
+
+			std::this_thread::yield();
+
+			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
+		}
+	}
+	else
+	{
+		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
 template<typename Return>
 ExecutorState thread_executor<Return>::get_state() const
 {
-	if(m_thread.joinable())
-	{
-		return ExecutorState::Executed;
-	}
-	else
-	{
-		return ExecutorState::Idle;
-	}
+	return m_state.get();
 }
 
 }

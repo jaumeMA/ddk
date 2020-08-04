@@ -71,7 +71,7 @@ thread_polling_executor::start_result thread_polling_executor::execute(const std
 	}
 	else
 	{
-		return make_error<start_result>(NotAvailable);
+		return make_error<start_result>(StartNotAvailable);
 	}
 }
 ExecutorState thread_polling_executor::get_state() const
@@ -210,7 +210,7 @@ thread_event_driven_executor::start_result thread_event_driven_executor::execute
 	}
 	else
 	{
-		return make_error<start_result>(NotAvailable);
+		return make_error<start_result>(StartNotAvailable);
 	}
 }
 ExecutorState thread_event_driven_executor::get_state() const

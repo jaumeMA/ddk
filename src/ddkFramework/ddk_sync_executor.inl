@@ -104,13 +104,20 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
 template<typename Return>
-async_state_shared_ref<Return> async_executor<Return>::store(promise<Return>& i_promise)
+typename async_executor<Return>::async_shared_ref async_executor<Return>::store(promise<Return>& i_promise)
 {
 	async_shared_ref thisRef = as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 
 	m_sharedState = i_promise = thisRef;
 
 	return thisRef;
+}
+template<typename Return>
+typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const std::function<bool()>& i_cancelFunc)
+{
+	m_cancelFunc = std::move(i_cancelFunc);
+
+	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
 template<typename Return>
 typename async_executor<Return>::start_result async_executor<Return>::execute()
@@ -158,6 +165,18 @@ typename async_executor<Return>::reference async_executor<Return>::get_value()
 	}
 
 	return m_sharedState->get_value();
+}
+template<typename Return>
+typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
+{
+	cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
+
+	if (cancelRes.hasError() == false)
+	{
+		m_sharedState->signal();
+	}
+
+	return cancelRes;
 }
 template<typename Return>
 typename async_executor<Return>::const_reference async_executor<Return>::get_value() const

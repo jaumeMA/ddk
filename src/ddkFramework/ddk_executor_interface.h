@@ -30,24 +30,32 @@ class executor_interface;
 SCOPED_ENUM_DECL(ExecutorState,
 	Idle,
 	Executing,
-	Executed
+	Executed,
+	Cancelling,
+	Cancelled
 );
 
-template<typename Return, typename ... Args>
-class executor_interface<Return(Args...)>
+template<typename Return>
+class executor_interface<Return()>
 {
 public:
 	enum StartErrorCode
 	{
-		NoCallable,
-		NotAvailable
+		StartNoCallable,
+		StartNotAvailable
 	};
-
 	typedef result<ExecutorState,StartErrorCode> start_result;
+	enum CancelErrorCode
+	{
+		CancelNoCallable,
+		CancelAlreadyExecuted
+	};
+	typedef result<void,CancelErrorCode> cancel_result;
 
 	virtual ~executor_interface() = default;
 	virtual ExecutorState get_state() const = 0;
-	virtual start_result execute(const typename detail::function_type<Return>::type&, const std::function<Return(Args...)>&, Args ...) = 0;
+	virtual start_result execute(const typename detail::function_type<Return>::type&, const std::function<Return()>&) = 0;
+	virtual cancel_result cancel(const std::function<bool()>&) = 0;
 };
 
 template<typename Executor, typename ... Args>

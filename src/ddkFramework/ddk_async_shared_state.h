@@ -21,6 +21,7 @@ public:
 	private_async_state();
 	~private_async_state();
 	void set_value(reference i_value);
+	void signal();
 	const_reference get_value() const;
 	reference get_value();
 	value_type extract_value();

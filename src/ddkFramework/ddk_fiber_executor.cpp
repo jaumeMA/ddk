@@ -57,7 +57,7 @@ fiber_polling_executor::start_result fiber_polling_executor::execute(const std::
 	}
 	else
 	{
-		return make_error<start_result>(NotAvailable);
+		return make_error<start_result>(StartNotAvailable);
 	}
 }
 ExecutorState fiber_polling_executor::get_state() const
@@ -163,7 +163,7 @@ fiber_event_driven_executor::start_result fiber_event_driven_executor::execute(c
 	}
 	else
 	{
-		return make_error<start_result>(NotAvailable);
+		return make_error<start_result>(StartNotAvailable);
 	}
 }
 ExecutorState fiber_event_driven_executor::get_state() const
@@ -241,7 +241,7 @@ fiber_fire_and_forget_executor::start_result fiber_fire_and_forget_executor::exe
 	}
 	else
 	{
-		return make_error<start_result>(NotAvailable);
+		return make_error<start_result>(StartNotAvailable);
 	}
 }
 ExecutorState fiber_fire_and_forget_executor::get_state() const

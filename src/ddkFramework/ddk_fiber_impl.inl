@@ -2,6 +2,7 @@
 #include <thread>
 #include "ddk_reference_wrapper.h"
 #include "ddk_thread_impl.h"
+#include "ddk_async_exceptions.h"
 
 extern "C"
 {
@@ -26,7 +27,7 @@ inline void launch_fiber(const std::function<Return()>* i_function, fiber_impl* 
 	{
 		callable();
 	}
-	catch(const detail::suspend_exception& i_excp)
+	catch(const suspend_exception& i_excp)
 	{
 		DDK_ASSERT(i_excp.get_id() == i_fiber->get_id(), "Suspending fiber from the wrong context");
 	}

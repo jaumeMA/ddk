@@ -3,6 +3,7 @@
 #include "ddk_ucontext.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_thread_impl.h"
+#include "ddk_async_exceptions.h"
 
 namespace ddk
 {
@@ -169,7 +170,7 @@ void fiber_scheduler<Comparator>::suspend(detail::yielder_context* i_context)
 {
 	pthread_cond_signal(&m_fiberCondVar);
 
-	throw detail::suspend_exception(m_callee->get_id());
+	throw suspend_exception(m_callee->get_id());
 }
 template<typename Comparator>
 bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const std::function<void()>& i_function)

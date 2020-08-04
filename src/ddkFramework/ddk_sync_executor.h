@@ -24,6 +24,7 @@ public:
 	typedef shared_reference_wrapper<async_executor<Return>> async_shared_ref;
 	typedef shared_reference_wrapper<const async_executor<Return>> async_const_shared_ref;
 	using typename async_execute_interface<Return>::start_result;
+	using typename async_cancellable_interface<Return>::cancel_result;
 	typedef typename promise<Return>::reference reference;
 	typedef typename promise<Return>::const_reference const_reference;
 	typedef typename promise<Return>::value_type value_type;
@@ -40,10 +41,12 @@ public:
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(thread_sheaf i_threadSheaf);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(fiber_sheaf i_fiberSheaf);
 	async_shared_ref attach(executor_unique_ptr<Return> i_executor);
-	async_state_shared_ref<Return> store(promise<Return>& i_promise);
+	async_shared_ref store(promise<Return>& i_promise);
+	async_shared_ref on_cancel(const std::function<bool()>& i_cancelFunc);
 	void bind();
 
 private:
+	cancel_result cancel() override;
 	reference get_value() override;
 	const_reference get_value() const override;
 	value_type extract_value() override;
@@ -55,6 +58,7 @@ private:
 	void set_value(Return i_value);
 
 	std::function<Return()> m_function;
+	std::function<bool()> m_cancelFunc;
 	executor_unique_ptr<Return> m_executor;
 	mutable detail::private_async_state_shared_ptr<Return> m_sharedState;
 	shared_reference_counter m_refCounter;
