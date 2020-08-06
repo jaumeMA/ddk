@@ -67,7 +67,7 @@ template<typename Return>
 class async_cancellable_interface : public async_state_interface<Return>
 {
 public:
-	typedef typename executor_interface<Return()>::cancel_result cancel_result;
+	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
 
 	virtual cancel_result cancel() = 0;
 };

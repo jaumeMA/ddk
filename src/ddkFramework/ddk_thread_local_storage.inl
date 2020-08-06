@@ -4,8 +4,28 @@
 namespace ddk
 {
 
-template<typename T, typename ... Args>
-T* thread_local_storage::construct(Args&& ... i_args)
+template<typename T>
+thread_local_storage<T>::thread_local_storage(thread_local_storage&& other)
+: m_address(nullptr)
+{
+	std::swap(m_address,other.m_address);
+}
+template<typename T>
+thread_local_storage<T>::~thread_local_storage()
+{
+	if (m_address)
+	{
+		destroy();
+	}
+}
+template<typename T>
+bool thread_local_storage<T>::empty() const
+{
+	return m_address == nullptr;
+}
+template<typename T>
+template<typename ... Args>
+T* thread_local_storage<T>::construct(Args&& ... i_args)
 {
 	DDK_ASSERT(m_address==nullptr, "Constructing already constructed address");
 
@@ -23,7 +43,7 @@ T* thread_local_storage::construct(Args&& ... i_args)
 	}
 }
 template<typename T>
-void thread_local_storage::destroy()
+void thread_local_storage<T>::destroy()
 {
 	DDK_ASSERT(m_address!=nullptr, "Destroying null address");
 
@@ -36,8 +56,9 @@ void thread_local_storage::destroy()
 		m_address = nullptr;
 	}
 }
-template<typename T, typename ... Args>
-T* thread_local_storage::assign(Args&& ... i_args)
+template<typename T>
+template<typename ... Args>
+T* thread_local_storage<T>::assign(Args&& ... i_args)
 {
 	if (T* typedAddress = reinterpret_cast<T*>(m_address))
 	{
@@ -62,12 +83,12 @@ T* thread_local_storage::assign(Args&& ... i_args)
 	}
 }
 template<typename T>
-T& thread_local_storage::get()
+T& thread_local_storage<T>::get()
 {
 	return *reinterpret_cast<T*>(m_address);
 }
 template<typename T>
-T thread_local_storage::extract()
+T thread_local_storage<T>::extract()
 {
 	if(T* typedAddress = reinterpret_cast<T*>(m_address))
 	{
@@ -89,7 +110,7 @@ T thread_local_storage::extract()
 	}
 }
 template<typename T>
-T* thread_local_storage::get_address()
+T* thread_local_storage<T>::get_address()
 {
 	return reinterpret_cast<T*>(m_address);
 }

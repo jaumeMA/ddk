@@ -27,7 +27,7 @@ public:
 	void clear();
 
 private:
-	inline thread_local_storage& get_address() const;
+	inline thread_local_storage<T>& get_address() const;
 };
 
 }

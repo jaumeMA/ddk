@@ -4,7 +4,8 @@
 #include <functional>
 #include "ddk_thread_utils.h"
 #include "ddk_executor_interface.h"
-#include <map>
+#include <unordered_map>
+#include <stack>
 #include <queue>
 #include "ddk_fiber_scheduler_interface.h"
 #include "ddk_fiber_impl.h"
@@ -41,13 +42,8 @@ private:
 	size_t m_numOfExecutions = 0;
 };
 
-struct running_fiber_comparator
-{
-	bool operator()(const running_fiber& i_lhs, running_fiber& i_rhs) const;
-};
-
 template<typename Comparator>
-struct priority_queue : public std::priority_queue<detail::running_fiber, std::vector<detail::running_fiber>, Comparator>
+struct priority_queue : public mpl::which_type<std::is_same<void,Comparator>::value,std::stack<detail::running_fiber, std::vector<detail::running_fiber>>,std::priority_queue<detail::running_fiber, std::vector<detail::running_fiber>,Comparator>>::type
 {
 public:
 	bool has_item(const fiber_id& i_id) const;
@@ -55,10 +51,15 @@ public:
 
 }
 
-template<typename Comparator = detail::running_fiber_comparator>
+struct running_fiber_comparator
+{
+	bool operator()(const detail::running_fiber& i_lhs, detail::running_fiber& i_rhs) const;
+};
+
+template<typename Comparator = void>
 class fiber_scheduler : public detail::fiber_scheduler_interface, protected detail::fiber_yielder_interface, protected lend_from_this<fiber_scheduler<Comparator>, detail::fiber_scheduler_interface>
 {
-	typedef std::map<fiber_id,detail::fiber_impl*> fiber_container;
+	typedef std::unordered_map<fiber_id,detail::fiber_impl*> fiber_container;
 	typedef detail::priority_queue<Comparator> running_fiber_container;
 	typedef std::map<fiber_id,std::function<void()>> function_container;
 
@@ -87,6 +88,7 @@ public:
 	unregister_fiber_result unregister_fiber(fiber_id i_id);
 	iterator begin();
 	iterator end();
+	void resize(size_t i_size);
 	const_iterator begin() const;
 	const_iterator end() const;
 	bool empty() const;
@@ -113,22 +115,22 @@ private:
 	pthread_cond_t m_fiberCondVar;
 };
 
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_shared_ref = shared_reference_wrapper<fiber_scheduler<Comparator>>;
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_const_shared_ref = shared_reference_wrapper<const fiber_scheduler<Comparator>>;
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_shared_ptr = shared_pointer_wrapper<fiber_scheduler<Comparator>>;
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_const_shared_ptr = shared_pointer_wrapper<const fiber_scheduler<Comparator>>;
 
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_lent_ref = lent_reference_wrapper<fiber_scheduler<Comparator>>;
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_const_lent_ref = lent_reference_wrapper<const fiber_scheduler<Comparator>>;
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_lent_ptr = lent_pointer_wrapper<fiber_scheduler<Comparator>>;
-template<typename Comparator = detail::running_fiber_comparator>
+template<typename Comparator = void>
 using fiber_scheduler_const_lent_ptr = lent_pointer_wrapper<const fiber_scheduler<Comparator>>;
 
 }

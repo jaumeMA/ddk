@@ -21,7 +21,7 @@ public:
 	inline bool empty() const;
 
 private:
-	inline fiber_local_storage& get_address() const;
+	inline fiber_local_storage<T>& get_address() const;
 };
 
 }

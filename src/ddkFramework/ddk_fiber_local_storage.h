@@ -7,21 +7,20 @@
 namespace ddk
 {
 
+template<typename T>
 class fiber_local_storage
 {
 public:
 	fiber_local_storage() = default;
 
-	template<typename T, typename ... Args>
+	template<typename ... Args>
 	T* construct(const fiber_id& i_id, Args&& ... i_args);
-	template<typename T>
 	void clear(const fiber_id& i_id);
-	template<typename T>
 	T& get(const fiber_id& i_id);
 	bool empty(const fiber_id& i_id) const;
 
 private:
-	std::unordered_map<fiber_id,thread_local_storage> m_fiberStorage;
+	std::unordered_map<fiber_id,thread_local_storage<T>> m_fiberStorage;
 };
 
 }

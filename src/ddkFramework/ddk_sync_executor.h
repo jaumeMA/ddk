@@ -59,7 +59,7 @@ private:
 
 	std::function<Return()> m_function;
 	std::function<bool()> m_cancelFunc;
-	executor_unique_ptr<Return> m_executor;
+	cancellable_executor_unique_ptr<Return> m_executor;
 	mutable detail::private_async_state_shared_ptr<Return> m_sharedState;
 	shared_reference_counter m_refCounter;
 };

@@ -4,8 +4,22 @@
 namespace ddk
 {
 
-template<typename T, typename ... Args>
-T* fiber_local_storage::construct(const fiber_id& i_id, Args&& ... i_args)
+template<typename T>
+bool fiber_local_storage<T>::empty(const fiber_id& i_id) const
+{
+	std::unordered_map<fiber_id,thread_local_storage>::const_iterator itFiber = m_fiberStorage.find(i_id);
+	if(itFiber != m_fiberStorage.end())
+	{
+		return itFiber->second.empty();
+	}
+	else
+	{
+		return true;
+	}
+}
+template<typename T>
+template<typename ... Args>
+T* fiber_local_storage<T>::construct(const fiber_id& i_id, Args&& ... i_args)
 {
 	typedef std::unordered_map<fiber_id,thread_local_storage>::iterator iterator;
 
@@ -24,7 +38,7 @@ T* fiber_local_storage::construct(const fiber_id& i_id, Args&& ... i_args)
 	}
 }
 template<typename T>
-T& fiber_local_storage::get(const fiber_id& i_id)
+T& fiber_local_storage<T>::get(const fiber_id& i_id)
 {
 	typedef std::unordered_map<fiber_id,thread_local_storage>::iterator iterator;
 
@@ -41,7 +55,7 @@ T& fiber_local_storage::get(const fiber_id& i_id)
 	}
 }
 template<typename T>
-void fiber_local_storage::clear(const fiber_id& i_id)
+void fiber_local_storage<T>::clear(const fiber_id& i_id)
 {
 	std::unordered_map<fiber_id,thread_local_storage>::iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())

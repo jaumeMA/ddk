@@ -102,6 +102,11 @@ typename fiber_scheduler<Comparator>::iterator fiber_scheduler<Comparator>::end(
 	return m_fibers.end();
 }
 template<typename Comparator>
+void fiber_scheduler<Comparator>::resize(size_t i_size)
+{
+	m_fibers.reserve(i_size);
+}
+template<typename Comparator>
 typename fiber_scheduler<Comparator>::const_iterator fiber_scheduler<Comparator>::begin() const
 {
 	return m_fibers.begin();

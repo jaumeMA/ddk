@@ -52,11 +52,12 @@ const detail::fiber_impl* running_fiber::operator->() const
 	return m_fiber;
 }
 
-bool running_fiber_comparator::operator()(const running_fiber& i_lhs, running_fiber& i_rhs) const
+}
+
+bool running_fiber_comparator::operator()(const detail::running_fiber& i_lhs, detail::running_fiber& i_rhs) const
 {
 	//default impl
 	return i_lhs.get_last_time() > i_rhs.get_last_time();
 }
 
-}
 }

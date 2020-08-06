@@ -78,6 +78,8 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 		//depending on the policy
 		if(m_policy == GrowsOnDemand)
 		{
+			m_fiberCtr.reserve(i_size);
+
 			const size_t missingFibers = i_size - m_fiberCtr.size();
 			for(size_t fiberIndex=0;fiberIndex<missingFibers;++fiberIndex)
 			{
@@ -91,9 +93,12 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 	}
 
 	fiber_sheaf fiberSheaf;
+	fiberSheaf.m_fiberCtr.reserve(i_size);
+
+	m_fiberScheduler->resize(i_size);
 
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
-	for(size_t fiberIndex=0;fiberIndex<i_size;)
+	for(size_t fiberIndex=0;fiberIndex<i_size;++fiberIndex,++itFiber)
 	{
 		fiber acquiredFiber = as_unique_reference(*itFiber,static_cast<const IReferenceWrapperDeleter&>(*this));
 
@@ -105,15 +110,14 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 		{
 			fiberSheaf.m_fiberCtr.push_back(std::move(acquiredFiber));
 
-			itFiber = m_fiberCtr.erase(itFiber);
-
-			++fiberIndex;
 		}
 		else
 		{
-			++itFiber;
+			return make_error<acquire_result<fiber_sheaf>>(ErrorRegisteringFiber);
 		}
 	}
+
+	m_fiberCtr.erase(m_fiberCtr.begin(),m_fiberCtr.begin()+i_size);
 
 	return make_result<acquire_result<fiber_sheaf>>(std::move(fiberSheaf));
 }

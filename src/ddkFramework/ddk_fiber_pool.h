@@ -24,7 +24,8 @@ public:
 	};
 	enum AcquireErrorCode
 	{
-		NoFiberAvailable
+		NoFiberAvailable,
+		ErrorRegisteringFiber
 	};
 	template<typename T>
 	using acquire_result = result<T,AcquireErrorCode>;

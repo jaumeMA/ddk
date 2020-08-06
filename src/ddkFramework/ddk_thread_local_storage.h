@@ -5,23 +5,20 @@
 namespace ddk
 {
 
+template<typename T>
 class thread_local_storage
 {
 public:
 	thread_local_storage() = default;
 	thread_local_storage(thread_local_storage&& other);
 	~thread_local_storage();
-	template<typename T, typename ... Args>
+	template<typename ... Args>
 	inline T* construct(Args&& ... i_args);
-	template<typename T>
 	inline void destroy();
-	template<typename T, typename ... Args>
+	template<typename ... Args>
 	inline T* assign(Args&& ... i_args);
-	template<typename T>
 	T& get();
-	template<typename T>
 	T* get_address();
-	template<typename T>
 	T extract();
 	bool empty() const;
 
