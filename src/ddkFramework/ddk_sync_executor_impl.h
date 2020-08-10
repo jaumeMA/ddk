@@ -36,7 +36,9 @@ public:
 	~await_executor();
 
 private:
+	using typename executor_interface<Return()>::StartErrorCode;
 	typedef typename executor_interface<Return()>::start_result start_result;
+	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
@@ -64,7 +66,9 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
+	using typename executor_interface<Return()>::StartErrorCode;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
+	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
 	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;
@@ -105,7 +109,9 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::start_result start_result;
+	using typename executor_interface<Return()>::StartErrorCode;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
+	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable) override;
 	cancel_result cancel(const std::function<bool()>& i_cancelFunc) override;

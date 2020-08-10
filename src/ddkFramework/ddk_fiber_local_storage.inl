@@ -7,7 +7,7 @@ namespace ddk
 template<typename T>
 bool fiber_local_storage<T>::empty(const fiber_id& i_id) const
 {
-	std::unordered_map<fiber_id,thread_local_storage>::const_iterator itFiber = m_fiberStorage.find(i_id);
+	typename std::unordered_map<fiber_id,thread_local_storage<T>>::const_iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
 		return itFiber->second.empty();
@@ -21,12 +21,12 @@ template<typename T>
 template<typename ... Args>
 T* fiber_local_storage<T>::construct(const fiber_id& i_id, Args&& ... i_args)
 {
-	typedef std::unordered_map<fiber_id,thread_local_storage>::iterator iterator;
+	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
 
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber == m_fiberStorage.end())
 	{
-		std::pair<iterator,bool> insertRes = m_fiberStorage.insert(std::make_pair(i_id,thread_local_storage{}));
+		std::pair<iterator,bool> insertRes = m_fiberStorage.insert(std::make_pair(i_id,thread_local_storage<T>{}));
 
 		return (insertRes.second) ? insertRes.first->second.template construct<T>(std::forward<Args>(i_args) ...) : nullptr;
 	}
@@ -40,7 +40,7 @@ T* fiber_local_storage<T>::construct(const fiber_id& i_id, Args&& ... i_args)
 template<typename T>
 T& fiber_local_storage<T>::get(const fiber_id& i_id)
 {
-	typedef std::unordered_map<fiber_id,thread_local_storage>::iterator iterator;
+	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
 
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
@@ -57,7 +57,7 @@ T& fiber_local_storage<T>::get(const fiber_id& i_id)
 template<typename T>
 void fiber_local_storage<T>::clear(const fiber_id& i_id)
 {
-	std::unordered_map<fiber_id,thread_local_storage>::iterator itFiber = m_fiberStorage.find(i_id);
+	typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
 		if(T* currYielder = itFiber->second.template get_address<T>())

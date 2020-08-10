@@ -190,9 +190,9 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			m_fiber.start([i_sink,i_callable]()
-			{ 
-				const Return res = i_callable(); 
+			m_fiber.start([=]()
+			{
+				const Return res = i_callable();
 
 				while (m_state.get() == ExecutorState::Cancelling)
 				{
@@ -265,8 +265,8 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			m_thread.start([i_sink,i_callable]()
-			{ 
+			m_thread.start([=]()
+			{
 				const Return res = i_callable();
 
 				while (m_state.get() == ExecutorState::Cancelling)
