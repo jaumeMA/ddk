@@ -155,10 +155,12 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 		//depending on the policy
 		if(m_policy == GrowsOnDemand)
 		{
-			const size_t missingThreads = i_size - m_availableThreads.size();
-			for(size_t threadIndex=0;threadIndex<missingThreads;++threadIndex)
+			m_availableThreads.reserve(i_size);
+
+			const size_t missingFibers = i_size - m_availableThreads.size();
+			for(size_t fiberIndex=0;fiberIndex<missingFibers;++fiberIndex)
 			{
-				m_availableThreads.push_back(new detail::worker_thread_impl());
+				m_availableThreads.emplace_back(new detail::worker_thread_impl());
 			}
 		}
 		else
@@ -168,19 +170,15 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 	}
 
 	thread_sheaf threadSheaf;
+	threadSheaf.m_threadCtr.reserve(i_size);
 
-	for(size_t threadIndex=0;threadIndex<i_size;++threadIndex)
+	thread_container::iterator itThread = m_availableThreads.begin();
+	for(size_t threadIndex=0;threadIndex<i_size;++threadIndex,++itThread)
 	{
-		thread_container::iterator itThread = m_availableThreads.begin();
-
-		detail::thread_impl_interface* acquiredThread = *itThread;
-
-		m_underUseThreads.push_back(acquiredThread);
-
-		threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,static_cast<const IReferenceWrapperDeleter&>(*this)));
-
-		m_availableThreads.erase(itThread);
+		threadSheaf.m_threadCtr.push_back(as_unique_reference(*itThread,static_cast<const IReferenceWrapperDeleter&>(*this)));
 	}
+
+	m_availableThreads.erase(m_availableThreads.begin(),m_availableThreads.begin()+i_size);
 
 	return make_result<acquire_result<thread_sheaf>>(std::move(threadSheaf));
 }

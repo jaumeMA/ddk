@@ -25,7 +25,7 @@ thread::~thread()
 }
 thread& thread::operator=(thread&& other)
 {
-	if(m_threadImpl->joinable())
+	if(m_threadImpl.get() != nullptr)
 	{
 		m_threadImpl->stop();
 	}
@@ -36,7 +36,10 @@ thread& thread::operator=(thread&& other)
 }
 void thread::start(const std::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder)
 {
-	m_threadImpl->start(i_threadFunc,i_yielder);
+	if(m_threadImpl.get() != nullptr)
+	{
+		m_threadImpl->start(i_threadFunc,i_yielder);
+	}
 }
 thread::id thread::get_id() const
 {
@@ -44,11 +47,14 @@ thread::id thread::get_id() const
 }
 void thread::stop()
 {
-	m_threadImpl->stop();
+	if(m_threadImpl.get() != nullptr)
+	{
+		m_threadImpl->stop();
+	}
 }
 bool thread::joinable() const
 {
-	return m_threadImpl->joinable();
+	return (m_threadImpl.get() != nullptr) ? m_threadImpl->joinable() : false;
 }
 
 }
