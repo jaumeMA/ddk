@@ -125,7 +125,7 @@ thread_pool::~thread_pool()
 }
 thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 {
-	if(m_availableThreads.empty() == false)
+	if(m_availableThreads.empty())
 	{
 		//depending on the policy
 		if(m_policy == GrowsOnDemand)
@@ -171,11 +171,16 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 
 	thread_sheaf threadSheaf;
 	threadSheaf.m_threadCtr.reserve(i_size);
+	m_underUseThreads.reserve(m_underUseThreads.size() + i_size);
 
 	thread_container::iterator itThread = m_availableThreads.begin();
 	for(size_t threadIndex=0;threadIndex<i_size;++threadIndex,++itThread)
 	{
-		threadSheaf.m_threadCtr.push_back(as_unique_reference(*itThread,static_cast<const IReferenceWrapperDeleter&>(*this)));
+		detail::thread_impl_interface* acquiredThread = *itThread;
+
+		threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,static_cast<const IReferenceWrapperDeleter&>(*this)));
+
+		m_underUseThreads.push_back(acquiredThread);
 	}
 
 	m_availableThreads.erase(m_availableThreads.begin(),m_availableThreads.begin()+i_size);

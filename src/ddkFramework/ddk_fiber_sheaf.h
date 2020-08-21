@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_fiber.h"
+#include "ddk_optional.h"
 
 namespace ddk
 {
@@ -18,12 +19,10 @@ public:
 
 	fiber_sheaf(const fiber_sheaf&) = delete;
 	fiber_sheaf(fiber_sheaf&& other);
-	void clear();
-	fiber extract();
-	iterator begin();
-	iterator end();
-	const_iterator begin() const;
-	const_iterator end() const;
+	void start(const std::function<void()>& i_function);
+	void stop();
+	void insert(fiber i_fiber);
+	optional<fiber> extract();
 	bool empty() const;
 	size_t size() const;
 

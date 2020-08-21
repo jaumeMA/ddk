@@ -6,6 +6,7 @@
 #include "ddk_thread.h"
 #include "ddk_thread_utils.h"
 #include "ddk_thread_executor_interface.h"
+#include <chrono>
 
 namespace ddk
 {
@@ -21,8 +22,8 @@ public:
 	thread_polling_executor(const thread_polling_executor&) = delete;
 	thread_polling_executor(thread_polling_executor&&);
 	~thread_polling_executor();
-	void set_update_time(unsigned long i_sleepInMs);
-	unsigned int get_update_time() const;
+	void set_update_time(size_t i_sleepInMs);
+	size_t get_update_time() const;
 	void start_thread(const std::function<void()>& i_executor);
 	void stop_thread();
 	void signal_thread();
@@ -35,7 +36,7 @@ private:
 	virtual void signal() override;
 	void update() const;
 
-	unsigned long m_sleepTimeInMS;
+	std::chrono::milliseconds m_sleepTimeInMS;
 	std::function<void()> m_executor;
 	bool m_stopped;
 	ddk::thread m_updateThread;

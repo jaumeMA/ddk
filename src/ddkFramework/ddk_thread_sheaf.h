@@ -2,6 +2,7 @@
 
 #include "ddk_thread.h"
 #include <vector>
+#include "ddk_optional.h"
 
 namespace ddk
 {
@@ -19,12 +20,8 @@ public:
 	thread_sheaf(thread_sheaf&& other);
 	void start(const std::function<void()>& i_function);
 	void stop();
-	void clear();
-	thread extract();
-	iterator begin();
-	iterator end();
-	const_iterator begin() const;
-	const_iterator end() const;
+	void insert(thread i_thread);
+	optional<thread> extract();
 	size_t size() const;
 	bool empty();
 

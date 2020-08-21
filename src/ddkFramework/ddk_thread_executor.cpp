@@ -35,13 +35,13 @@ thread_polling_executor::~thread_polling_executor()
 		m_updateThread.stop();
 	}
 }
-void thread_polling_executor::set_update_time(unsigned long i_sleepInMs)
+void thread_polling_executor::set_update_time(size_t i_sleepInMs)
 {
-	m_sleepTimeInMS = i_sleepInMs;
+	m_sleepTimeInMS = std::chrono::milliseconds(i_sleepInMs);
 }
-unsigned int thread_polling_executor::get_update_time() const
+size_t thread_polling_executor::get_update_time() const
 {
-	return m_sleepTimeInMS;
+	return static_cast<unsigned int>(m_sleepTimeInMS.count());
 }
 void thread_polling_executor::start_thread(const std::function<void()>& i_executor)
 {
@@ -103,9 +103,16 @@ void thread_polling_executor::update() const
 {
 	while(m_stopped == false)
 	{
+		const auto t_start = std::chrono::high_resolution_clock::now();
+
 		m_executor();
 
-		ddk::sleep(m_sleepTimeInMS);
+		const std::chrono::milliseconds t_delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start);
+
+		if (t_delta < m_sleepTimeInMS)
+		{
+			ddk::sleep(static_cast<unsigned long>((m_sleepTimeInMS - t_delta).count()));
+		}
 	}
 }
 

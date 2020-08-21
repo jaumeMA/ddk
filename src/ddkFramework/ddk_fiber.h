@@ -24,6 +24,7 @@ public:
 	void start(const std::function<void()>& i_function);
 	bool ready() const;
 	void stop();
+	bool joinable() const;
 
 private:
 	detail::fiber_impl_unique_ref m_impl;

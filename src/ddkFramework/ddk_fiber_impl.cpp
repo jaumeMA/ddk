@@ -186,6 +186,10 @@ void fiber_impl::set_executor(fiber_scheduler_interface_lent_ptr i_executor)
 {
 	m_executor = i_executor;
 }
+bool fiber_impl::joinable() const
+{
+	return m_state == FiberExecutionState::Executing;
+}
 bool fiber_impl::operator==(const fiber_impl& other) const
 {
 	return m_id == other.m_id;

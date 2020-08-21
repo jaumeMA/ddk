@@ -38,7 +38,7 @@ elsif($^O eq "MSWin32")
 	$platform = 'Windows';
 }
 
-my $Compiler = "\"Visual Studio 14 2015 Win64\"";
+my $Compiler = "\"Visual Studio 15 2017 Win64\"";
 my $SolutionName = '';
 my $Mode='';
 my $Binaries='';

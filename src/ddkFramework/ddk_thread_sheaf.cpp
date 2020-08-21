@@ -23,44 +23,26 @@ void thread_sheaf::stop()
 		itThread->stop();
 	}
 }
-void thread_sheaf::clear()
+void thread_sheaf::insert(thread i_thread)
 {
-	m_threadCtr.clear();
+	m_threadCtr.push_back(std::move(i_thread));
 }
-thread thread_sheaf::extract()
+optional<thread> thread_sheaf::extract()
 {
-	if(m_threadCtr.empty() == false)
+	thread_container::iterator itThread = m_threadCtr.begin();
+	for (; itThread != m_threadCtr.end(); ++itThread)
 	{
-		thread_container::iterator itThread = m_threadCtr.begin();
+		if (itThread->joinable() == false)
+		{
+			thread extractedThread = std::move(*itThread);
 
-		thread firstThread = std::move(*itThread);
+			m_threadCtr.erase(itThread);
 
-		m_threadCtr.erase(itThread);
-
-		return std::move(firstThread);
+			return std::move(extractedThread);
+		}
 	}
-	else
-	{
-		DDK_FAIL("Trying to pop empty thread sheaf");
 
-		return crash_on_return<thread&&>::value();
-	}
-}
-thread_sheaf::iterator thread_sheaf::begin()
-{
-	return m_threadCtr.begin();
-}
-thread_sheaf::iterator thread_sheaf::end()
-{
-	return m_threadCtr.end();
-}
-thread_sheaf::const_iterator thread_sheaf::begin() const
-{
-	return m_threadCtr.begin();
-}
-thread_sheaf::const_iterator thread_sheaf::end() const
-{
-	return m_threadCtr.end();
+	return none;
 }
 size_t thread_sheaf::size() const
 {

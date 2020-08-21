@@ -50,6 +50,7 @@ public:
 	FiberExecutionState get_state() const;
 	ucontext_t* get_context() const;
 	void set_executor(fiber_scheduler_interface_lent_ptr i_executor);
+	bool joinable() const;
 	bool operator==(const fiber_impl& other) const;
 
 private:

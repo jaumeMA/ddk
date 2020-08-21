@@ -35,5 +35,9 @@ fiber_id fiber::get_id() const
 {
 	return m_impl->get_id();
 }
+bool fiber::joinable() const
+{
+	return m_impl->joinable();
+}
 
 }

@@ -21,31 +21,25 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const std::fu
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			thread_sheaf::iterator itThread = m_threadSheaf.begin();
-			for(;itThread!=m_threadSheaf.end();++itThread)
-			{
-				itThread->start([this,i_sink,i_callable]()
-				{ 
-					i_callable();
+			m_threadSheaf.start([this,i_sink,i_callable]()
+			{ 
+				i_callable();
 
-					--m_pendingThreads;
+				--m_pendingThreads;
 
-					if (m_pendingThreads == 0)
+				if (m_pendingThreads == 0)
+				{
+					while (m_state.get() == ExecutorState::Cancelling)
 					{
-						m_threadSheaf.clear();
-
-						while (m_state.get() == ExecutorState::Cancelling)
-						{
-							std::this_thread::yield();
-						}
-
-						if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
-						{
-							i_sink(_void);
-						}
+						std::this_thread::yield();
 					}
-				});
-			}
+
+					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+					{
+						i_sink(_void);
+					}
+				}
+			});
 
 			return make_result<start_result>(ExecutorState::Executed);
 		}
@@ -104,37 +98,31 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const std::func
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			fiber_sheaf::iterator itFiber = m_fiberSheaf.begin();
-			for(;itFiber!=m_fiberSheaf.end();++itFiber)
+			m_fiberSheaf.start([this,i_sink,i_callable]()
 			{
-				itFiber->start([this,i_sink,i_callable]()
+				try
 				{
-					try
+					i_callable();
+				}
+				catch(const suspend_exception&)
+				{
+				}
+
+				--m_pendingFibers;
+
+				if(m_pendingFibers == 0)
+				{
+					while (m_state.get() == ExecutorState::Cancelling)
 					{
-						i_callable();
+						std::this_thread::yield();
 					}
-					catch(const suspend_exception&)
+
+					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
+						i_sink(_void);
 					}
-
-					--m_pendingFibers;
-
-					if(m_pendingFibers == 0)
-					{
-						m_fiberSheaf.clear();
-
-						while (m_state.get() == ExecutorState::Cancelling)
-						{
-							std::this_thread::yield();
-						}
-
-						if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
-						{
-							i_sink(_void);
-						}
-					}
-				});
-			}
+				}
+			});
 
 			return make_result<start_result>(ExecutorState::Executed);
 		}

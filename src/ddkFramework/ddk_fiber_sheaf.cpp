@@ -7,44 +7,42 @@ fiber_sheaf::fiber_sheaf(fiber_sheaf&& other)
 : m_fiberCtr(std::move(other.m_fiberCtr))
 {
 }
-fiber_sheaf::iterator fiber_sheaf::begin()
+void fiber_sheaf::start(const std::function<void()>& i_function)
 {
-	return m_fiberCtr.begin();
-}
-fiber_sheaf::iterator fiber_sheaf::end()
-{
-	return m_fiberCtr.end();
-}
-fiber_sheaf::const_iterator fiber_sheaf::begin() const
-{
-	return m_fiberCtr.begin();
-}
-fiber_sheaf::const_iterator fiber_sheaf::end() const
-{
-	return m_fiberCtr.end();
-}
-void fiber_sheaf::clear()
-{
-	m_fiberCtr.clear();
-}
-fiber fiber_sheaf::extract()
-{
-	if(m_fiberCtr.empty() == false)
+	fiber_container::iterator itFiber = m_fiberCtr.begin();
+	for (; itFiber != m_fiberCtr.end(); ++itFiber)
 	{
-		fiber_container::iterator itFiber = m_fiberCtr.begin();
-
-		fiber newFiber = std::move(*itFiber);
-	
-		m_fiberCtr.erase(itFiber);
-
-		return std::move(newFiber);
+		itFiber->start(i_function);
 	}
-	else
+}
+void fiber_sheaf::stop()
+{
+	fiber_container::iterator itFiber = m_fiberCtr.begin();
+	for (; itFiber != m_fiberCtr.end(); ++itFiber)
 	{
-		DDK_FAIL("Trying to pop fiber from empty sheaf");
-
-		return ddk::crash_on_return<fiber&&>::value();
+		itFiber->stop();
 	}
+}
+void fiber_sheaf::insert(fiber i_fiber)
+{
+	m_fiberCtr.push_back(std::move(i_fiber));
+}
+optional<fiber> fiber_sheaf::extract()
+{
+	fiber_container::iterator itFiber = m_fiberCtr.begin();
+	for (; itFiber != m_fiberCtr.end(); ++itFiber)
+	{
+		if (itFiber->joinable() == false)
+		{
+			fiber extractedFiber = std::move(*itFiber);
+
+			m_fiberCtr.erase(itFiber);
+
+			return std::move(extractedFiber);
+		}
+	}
+
+	return none;
 }
 bool fiber_sheaf::empty() const
 {
