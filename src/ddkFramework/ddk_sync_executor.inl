@@ -115,7 +115,7 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::store(
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const std::function<bool()>& i_cancelFunc)
 {
-	m_cancelFunc = std::move(i_cancelFunc);
+	m_cancelFunc = i_cancelFunc;
 
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }

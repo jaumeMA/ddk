@@ -7,7 +7,7 @@ namespace ddk
 namespace detail
 {
 
-const size_t k_defaultGuardPages = 3;
+const size_t k_defaultGuardPages = 2;
 
 template<size_t NumGuardPages>
 class dynamic_stack_allocator : public stack_allocator_interface

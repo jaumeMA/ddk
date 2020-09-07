@@ -24,6 +24,21 @@ namespace mpl
 {
 
 template<bool,typename,typename>
+struct static_if;
+
+template<typename T,typename TT>
+struct static_if<true,T,TT>
+{
+    typedef T type;
+};
+
+template<typename T,typename TT>
+struct static_if<false,T,TT>
+{
+    typedef TT type;
+};
+
+template<bool,typename,typename>
 struct which_type;
 
 template<typename T1, typename T2>
@@ -83,10 +98,238 @@ struct max_type<Type>
 	typedef Type type;
 };
 
+template<size_t rank1, size_t rank2>
+struct max_rank
+{
+    static const bool value  = (rank1 > rank2);
+};
+
+template<size_t rank1, size_t rank2>
+struct min_rank
+{
+    static const bool value  = (rank1 < rank2);
+};
+
+//ranks
+template<size_t pos, size_t ... ranks>
+struct nth_rank_of;
+
+template<size_t pos, size_t rank, size_t ... ranks>
+struct nth_rank_of<pos,rank,ranks...>
+{
+    static const size_t value = nth_rank_of<pos-1,ranks...>::value;
+};
+
+template<size_t rank, size_t ... ranks>
+struct nth_rank_of<0,rank,ranks...>
+{
+    static const size_t value = rank;
+};
+
 template<size_t ... ranks>
-struct sequence
+struct get_num_ranks;
+
+template<size_t rank, size_t ... ranks>
+struct get_num_ranks<rank,ranks...>
+{
+    static const size_t value = 1 + get_num_ranks<ranks...>::value;
+};
+template<>
+struct get_num_ranks<>
+{
+    static const size_t value = 0;
+};
+
+template<template<size_t,size_t> class cond, size_t ... ranks>
+struct get_cond_rank;
+
+template<template<size_t,size_t> class cond, size_t rank>
+struct get_cond_rank<cond,rank>
+{
+    static const size_t value = rank;
+};
+
+template<template<size_t,size_t> class cond, size_t rank1, size_t rank2, size_t ... ranks>
+struct get_cond_rank<cond,rank1,rank2,ranks...>
+{
+    static const size_t value = (cond<rank1,rank2>::value) ? get_cond_rank<cond,rank1,ranks...>::value : get_cond_rank<cond,rank2,ranks...>::value;
+};
+
+template<size_t ...>
+struct sequence;
+
+template<>
+struct sequence<>
+{
+    template<size_t N>
+    struct contains
+    {
+        static const bool value = false;
+    };
+
+    template<typename>
+    struct at
+    {
+        typedef sequence<> type;
+    };
+};
+
+template<size_t rank, size_t ... ranks>
+struct sequence<rank,ranks...>
 {
     static const size_t size = sizeof...(ranks);
+
+    template<size_t N>
+    struct contains
+    {
+        static const bool value = (N == rank) || sequence<ranks...>::template contains<N>::value;
+    };
+
+    template<typename>
+    struct at;
+
+    template<size_t ... Indexs>
+    struct at<sequence<Indexs...>>
+    {
+        typedef sequence<nth_rank_of<Indexs,rank,ranks...>::value ...> type;
+    };
+
+    template<size_t Index, size_t Pos = 0>
+    struct find;
+
+    template<size_t Index>
+    struct find<Index,mpl::get_num_ranks<rank,ranks...>::value>
+    {
+        static const size_t index = -1;
+    };
+
+    template<size_t Index, size_t Pos>
+    struct find
+    {
+    private:
+        template<bool,typename = void>
+        struct found;
+        template<typename T>
+        struct found<true,T>
+        {
+            static const size_t index = Pos;
+        };
+        template<typename T>
+        struct found<false,T>
+        {
+            static const size_t index = find<Index,Pos+1>::index;
+        };
+
+    public:
+        static const size_t index = found<Index==nth_rank_of<Pos,rank,ranks...>::value>::index;
+    };
+
+    static const size_t min = get_cond_rank<min_rank,rank,ranks...>::value;
+    static const size_t max = get_cond_rank<max_rank,rank,ranks...>::value;
+};
+
+template<typename,typename>
+struct merge_sequence;
+
+template<size_t ... ranksA, size_t ... ranksB>
+struct merge_sequence<sequence<ranksA...>,sequence<ranksB...>>
+{
+    typedef sequence<ranksA...,ranksB...> type;
+};
+
+template<size_t ini, size_t end>
+struct make_sequence;
+
+template<size_t end>
+struct make_sequence<end,end>
+{
+    typedef sequence<> type;
+};
+
+template<size_t ini, size_t end>
+struct make_sequence
+{
+    typedef typename merge_sequence<sequence<ini>,typename make_sequence<ini+1,end>::type>::type type;
+};
+
+template<typename>
+struct dual_sequence;
+
+template<>
+struct dual_sequence<sequence<>>
+{
+
+template<size_t ini, size_t end>
+struct at
+{
+    typedef typename make_sequence<ini,end>::type type;
+};
+
+};
+
+template<size_t rank, size_t ... ranks>
+struct dual_sequence<mpl::sequence<rank,ranks...>>
+{
+
+template<size_t ini, size_t end>
+struct at;
+
+template<size_t ini>
+struct at<ini,ini>
+{
+    typedef sequence<> type;
+};
+
+template<size_t ini, size_t end>
+struct at
+{
+    typedef typename merge_sequence<typename make_sequence<ini,rank>::type,typename dual_sequence<mpl::sequence<ranks...>>::template at<rank+1,end>::type>::type type;
+};
+
+};
+
+template<typename>
+struct inverse_sequence;
+
+template<size_t ... Indexs>
+struct inverse_sequence<sequence<Indexs...>>
+{
+private:
+    template<typename>
+    struct resolve;
+    template<size_t ... IIndexs>
+    struct resolve<sequence<IIndexs...>>
+    {
+        typedef sequence<sequence<Indexs...>::template find<IIndexs>::index ...> type;
+    };
+
+public:
+    typedef typename resolve<typename make_sequence<sequence<Indexs...>::min,sequence<Indexs...>::max+1>::type>::type type;
+};
+
+template<size_t ... ranks>
+struct acc_sequence;
+
+template<>
+struct acc_sequence<>
+{
+    template<size_t carry, size_t ... otherRanks>
+    struct _partial
+    {
+        typedef sequence<otherRanks...> type;
+    };
+};
+
+template<size_t rank, size_t ... ranks>
+struct acc_sequence<rank,ranks...>
+{
+    template<size_t carry, size_t ... otherRanks>
+    struct _partial
+    {
+        typedef typename acc_sequence<ranks...>::template _partial<rank+carry,otherRanks...,rank+carry>::type type;
+    };
+
+typedef typename _partial<0>::type type;
 };
 
 template<size_t, size_t,size_t...>
@@ -199,12 +442,6 @@ struct nth_type_of<0,Type,Types...>
     typedef Type type;
 };
 
-template<int Pos>
-struct nth_type_of<Pos>
-{
-    typedef detail::void_t type;
-};
-
 template<template <class, class...> class predicate, bool cond, int _pos, typename ... Types>
 struct _nth_pos_of_predicate;
 
@@ -293,29 +530,73 @@ struct construct_type
 	}
 };
 
-template<typename>
-struct aqcuire_callable_return_type;
+template<int ...ranks>
+struct check_monotonic_range;
 
-template<typename Return, typename ... Args>
-struct aqcuire_callable_return_type<std::function<Return(Args...)>>
+template<int rank, int ...ranks>
+struct check_monotonic_range<rank,ranks...>
 {
-	typedef Return return_type;
-	typedef std::tuple<Args...> args_type;
-	typedef std::function<Return(Args...)> func_type;
+    static const bool cond = rank < check_monotonic_range<ranks...>::_rank && check_monotonic_range<ranks...>::cond;
+    static const int _rank = rank;
 };
-template<typename Return, typename T, typename ... Args>
-struct aqcuire_callable_return_type<Return(T::*)(Args...) const>
+
+template<>
+struct check_monotonic_range<>
 {
-	typedef Return return_type;
-	typedef std::tuple<Args...> args_type;
-	typedef std::function<Return(Args...)> func_type;
+    static const bool cond = true;
+    static const size_t _rank = -1;
 };
-template<typename Functor>
-struct aqcuire_callable_return_type
+
+template<int rankA, int rankB>
+struct is_same_rank
 {
-	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::return_type return_type;
-	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::args_type args_type;
-	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::func_type func_type;
+    static const bool value = rankA == rankB;
+};
+
+template<typename ...>
+struct get_total_alignment;
+
+template<>
+struct get_total_alignment<>
+{
+    static const size_t value = 1;
+};
+
+template<typename T, typename ... TT>
+struct get_total_alignment<T,TT...>
+{
+    typedef uint8_t type[get_total_size<T,TT...>::value];
+    static const size_t value = std::alignment_of<type>::value;
+    //static const size_t value = std::alignment_of<T>::value * get_total_alignment<TT...>::value;
+};
+
+template<typename>
+struct _acc_sizeof;
+
+template<size_t ... Indexs>
+struct _acc_sizeof<sequence<Indexs...>>
+{
+    static const size_t value[get_num_ranks<Indexs...>::value];
+
+    constexpr _acc_sizeof() = default;
+
+    static constexpr size_t at(size_t i_index)
+    {
+        return (i_index == 0) ? 0 : value[i_index-1];
+    }
+    static constexpr size_t index(size_t i_ptrDiff, size_t i_initialIndex = 0)
+    {
+        return (i_ptrDiff == 0) ? 0 : (value[i_initialIndex] == i_ptrDiff) ? i_initialIndex + 1 : index(i_ptrDiff,i_initialIndex + 1);
+    }
+};
+
+template<size_t ... Indexs>
+const size_t _acc_sizeof<sequence<Indexs...>>::value[get_num_ranks<Indexs...>::value] = { Indexs ... };
+
+template<typename ... Types>
+struct acc_sizeof
+{
+    typedef _acc_sizeof<typename acc_sequence<sizeof(Types) ...>::type> type;
 };
 
 }

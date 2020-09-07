@@ -2,6 +2,7 @@
 
 #include "ddk_sync_executor.h"
 #include "ddk_void.h"
+#include "ddk_function_template_helper.h"
 
 namespace ddk
 {
