@@ -20,7 +20,7 @@ struct get_resolved_function<Return,tuple<Types...>,Allocator>
 };
 
 template<typename Return, typename Type, typename Allocator = system_allocator>
-using resolved_function = typename get_resolved_function<Return,Type,Allocator>::type;
+using resolved_function = typename get_resolved_function<Return,Type,typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type>::type;
 
 template<typename Callable, typename Allocator = system_allocator>
 using resolved_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type,Allocator>;
@@ -117,11 +117,11 @@ inline resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::va
 
 //allocator specified, args specified
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 template<typename Functor, typename Allocator, typename Arg, typename ... Args>
-inline resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,system_allocator,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
+inline resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
 //template<typename Return, typename ... Types>
 //using curried_function = typename yame::mpl::curry_function<yame::ytl::function<Return(Types...)>>::type;

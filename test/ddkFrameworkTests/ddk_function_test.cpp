@@ -46,6 +46,8 @@ TEST(DDKFunctionTest,defaultConstruction)
     ddk::function<int(float,std::string,double)> foo1 = foo(1,ddk::arg_1,ddk::arg_0,ddk::arg_2,'a');
 
     ddk::function<int(double,float)> foo2 = foo1(ddk::arg_1,"hola",ddk::arg_0);
+
+    ddk::function<int(double,float,std::string,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
 }
 
 
