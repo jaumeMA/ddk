@@ -303,7 +303,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 template<typename Functor, typename Allocator, typename Arg, typename ... Args>
 resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(typename mpl::aqcuire_callable_return_type<Functor>::args_type::size == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
 
     typedef resolved_callable<Functor> function_type;
 

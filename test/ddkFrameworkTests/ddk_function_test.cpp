@@ -41,6 +41,10 @@ TEST(DDKFunctionTest,defaultConstruction)
 	ddk::function<size_t(const std::string&)> res8 = ddk::make_function(&thisFoo,&Foo::member_func,'a',ddk::arg_0);
 	ddk::function<bool()> res9 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },"hola");
 
+	ddk::function<int(float)> res10 = ddk::make_function(&sum_func,ddk::system_allocator{},1,ddk::arg_0);
+	ddk::function<size_t(const std::string&)> res11 = ddk::make_function(&thisFoo,&Foo::member_func,ddk::system_allocator{},'a',ddk::arg_0);
+	ddk::function<bool()> res12 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },ddk::system_allocator{},"hola");
+
     ddk::function<int(int,std::string,float,double,char)> foo;
 
     ddk::function<int(float,std::string,double)> foo1 = foo(1,ddk::arg_1,ddk::arg_0,ddk::arg_2,'a');
