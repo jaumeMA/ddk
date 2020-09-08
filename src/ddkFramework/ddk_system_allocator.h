@@ -7,7 +7,6 @@ namespace ddk
 
 class system_allocator
 {
-
 public:
     typedef system_allocator allocator;
     typedef void type;
@@ -24,9 +23,8 @@ public:
 template<typename T>
 class typed_system_allocator : protected system_allocator
 {
-
 public:
-    typedef system_allocator allocator;
+    typedef typed_system_allocator allocator;
     typedef T type;
     typedef T* pointer;
     typedef T& reference;

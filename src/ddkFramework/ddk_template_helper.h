@@ -127,17 +127,9 @@ struct nth_rank_of<0,rank,ranks...>
 };
 
 template<size_t ... ranks>
-struct get_num_ranks;
-
-template<size_t rank, size_t ... ranks>
-struct get_num_ranks<rank,ranks...>
+struct get_num_ranks
 {
-    static const size_t value = 1 + get_num_ranks<ranks...>::value;
-};
-template<>
-struct get_num_ranks<>
-{
-    static const size_t value = 0;
+	static const size_t value = sizeof...(ranks);
 };
 
 template<template<size_t,size_t> class cond, size_t ... ranks>
@@ -161,12 +153,6 @@ struct sequence;
 template<>
 struct sequence<>
 {
-    template<size_t N>
-    struct contains
-    {
-        static const bool value = false;
-    };
-
     template<typename>
     struct at
     {
@@ -174,16 +160,10 @@ struct sequence<>
     };
 };
 
-template<size_t rank, size_t ... ranks>
-struct sequence<rank,ranks...>
+template<size_t ... ranks>
+struct sequence
 {
-    static const size_t size = sizeof...(ranks);
-
-    template<size_t N>
-    struct contains
-    {
-        static const bool value = (N == rank) || sequence<ranks...>::template contains<N>::value;
-    };
+    static const size_t size = 1 + sizeof...(ranks);
 
     template<typename>
     struct at;
@@ -191,14 +171,14 @@ struct sequence<rank,ranks...>
     template<size_t ... Indexs>
     struct at<sequence<Indexs...>>
     {
-        typedef sequence<nth_rank_of<Indexs,rank,ranks...>::value ...> type;
+        typedef sequence<nth_rank_of<Indexs,ranks...>::value ...> type;
     };
 
     template<size_t Index, size_t Pos = 0>
     struct find;
 
     template<size_t Index>
-    struct find<Index,mpl::get_num_ranks<rank,ranks...>::value>
+    struct find<Index,size>
     {
         static const size_t index = -1;
     };
@@ -207,7 +187,7 @@ struct sequence<rank,ranks...>
     struct find
     {
     private:
-        template<bool,typename = void>
+        template<bool,typename>
         struct found;
         template<typename T>
         struct found<true,T>
@@ -221,11 +201,11 @@ struct sequence<rank,ranks...>
         };
 
     public:
-        static const size_t index = found<Index==nth_rank_of<Pos,rank,ranks...>::value>::index;
+        static const size_t index = found<Index==nth_rank_of<Pos,ranks...>::value,void>::index;
     };
 
-    static const size_t min = get_cond_rank<min_rank,rank,ranks...>::value;
-    static const size_t max = get_cond_rank<max_rank,rank,ranks...>::value;
+    static const size_t min = get_cond_rank<min_rank,ranks...>::value;
+    static const size_t max = get_cond_rank<max_rank,ranks...>::value;
 };
 
 template<typename,typename>
@@ -367,18 +347,10 @@ struct get_total_size<>
     static const int value = 0;
 };
 
-template<typename ...>
-struct get_num_types;
-
-template<typename T, typename ... Types>
-struct get_num_types<T,Types...>
+template<typename ... Types>
+struct get_num_types
 {
-    static const int value = 1 + get_num_types<Types...>::value;
-};
-template<>
-struct get_num_types<>
-{
-    static const int value = 0;
+    static const int value = sizeof...(Types);
 };
 
 template<template<typename> class,typename ...>

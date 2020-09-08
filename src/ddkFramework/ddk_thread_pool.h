@@ -33,6 +33,7 @@ private:
 	bool joinable() const override;
 	void setExiting(bool i_exiting) override;
 	void execute() override;
+	bool set_affinity(const cpu_set_t& i_set) override;
 	thread_id_t get_id() const override;
 
 	pthread_t m_thread;

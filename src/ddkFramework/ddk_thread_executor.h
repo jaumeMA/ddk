@@ -48,8 +48,8 @@ public:
 	typedef thread_executor_interface::start_result start_result;
 	typedef thread_executor_interface::resume_result resume_result;
 
-	thread_event_driven_executor(unsigned int i_sleepInMs = 0);
-	thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMs = 0);
+	thread_event_driven_executor(unsigned int i_sleepInMs = 1000);
+	thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMs = 1000);
 	thread_event_driven_executor(const thread_event_driven_executor&) = delete;
 	thread_event_driven_executor(thread_event_driven_executor&& other);
 	~thread_event_driven_executor();

@@ -30,6 +30,8 @@ template<typename TTypes>
 using place_holders_at_indexs = typename mpl::pos_place_holder<0,TTypes>::type;
 template<typename TTypes, typename ... Types>
 using unresolved_types = typename mpl::make_tuple<Types...>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
+template<typename TTypes, typename Types>
+using unresolved_tuple = typename mpl::make_tuple<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 
 template<typename Return, typename ... Types>
 struct function_impl_base<Return, tuple<Types...>>
@@ -37,7 +39,7 @@ struct function_impl_base<Return, tuple<Types...>>
     static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
 
     template<typename, typename>
-    friend class function_impl_base;
+    friend struct function_impl_base;
 
 	template<typename,typename>
 	struct specialized_impl;
@@ -66,12 +68,11 @@ struct function_impl_base<Return, tuple<Types...>>
 	template<typename Allocator, typename ... Args>
 	function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
+    mutable shared_reference_counter m_refCounter;
+
 private:
 	virtual Return operator()(Types ... args) const = 0;
     virtual Return apply(const tuple<Types...>& i_tuple) const = 0;
-
-private:
-    mutable shared_reference_counter m_refCounter;
 };
 
 //non static member function case

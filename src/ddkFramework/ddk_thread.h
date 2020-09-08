@@ -39,6 +39,7 @@ public:
 	void start(const std::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder = nullptr);
 	void stop();
 	bool joinable() const;
+	bool set_affinity(const cpu_set_t& i_set);
 
 private:
 	detail::thread_impl_unique_ref m_threadImpl;

@@ -38,13 +38,14 @@ struct make_tuple<>
 template<typename ... Types>
 struct make_tuple
 {
+	static const size_t size = get_num_types<Types...>::value;
     typedef tuple<Types...> type;
 
     template<template<typename> typename, size_t = 0>
     struct such_that;
 
     template<template<typename> typename Predicate>
-    struct such_that<Predicate,get_num_types<Types...>::value>
+    struct such_that<Predicate,size>
     {
         typedef tuple<Types...> type;
     };

@@ -52,6 +52,10 @@ void thread::stop()
 		m_threadImpl->stop();
 	}
 }
+bool thread::set_affinity(const cpu_set_t& i_set)
+{
+	return (m_threadImpl.get() != nullptr) ? m_threadImpl->set_affinity(i_set) : false;
+}
 bool thread::joinable() const
 {
 	return (m_threadImpl.get() != nullptr) ? m_threadImpl->joinable() : false;

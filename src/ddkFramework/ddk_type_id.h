@@ -9,7 +9,7 @@ namespace ddk
 template<typename UnderlyingType, typename T>
 struct Id
 {
-	friend inline std::string operator<<(std::string& o_str, const Id<UnderlyingType,T>& i_value)
+	friend inline std::string& operator<<(std::string& o_str, const Id<UnderlyingType,T>& i_value)
 	{
 		return o_str << i_value.m_key;
 	}

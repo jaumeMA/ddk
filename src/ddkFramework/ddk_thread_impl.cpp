@@ -111,6 +111,10 @@ void one_shot_thread_impl::execute()
 		pthread_cleanup_pop(0);
 	}
 }
+bool one_shot_thread_impl::set_affinity(const cpu_set_t& i_set)
+{
+	return pthread_setaffinity_np(m_thread,sizeof(cpu_set_t),&i_set) == 0;
+}
 
 this_thread_t::this_thread_t()
 : m_thread(get_current_thread())

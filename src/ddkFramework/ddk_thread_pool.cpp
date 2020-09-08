@@ -35,18 +35,21 @@ worker_thread_impl::~worker_thread_impl()
 }
 void worker_thread_impl::start(const std::function<void()>& i_callable, yielder_lent_ptr i_yielder)
 {
-	pthread_mutex_lock(&m_mutex);
-
-	m_funcToExecute = i_callable;
-
-	if(i_yielder)
+	if (m_state != Running)
 	{
-		m_yielder = promote_to_ref(i_yielder);
+		pthread_mutex_lock(&m_mutex);
+
+		m_funcToExecute = i_callable;
+
+		if(i_yielder)
+		{
+			m_yielder = promote_to_ref(i_yielder);
+		}
+
+		pthread_cond_signal(&m_condVar);
+
+		pthread_mutex_unlock(&m_mutex);
 	}
-
-	pthread_cond_signal(&m_condVar);
-
-	pthread_mutex_unlock(&m_mutex);
 }
 void worker_thread_impl::stop()
 {
@@ -73,22 +76,31 @@ void worker_thread_impl::execute()
 	{
 		pthread_mutex_lock(&m_mutex);
 
-		pthread_cond_wait(&m_condVar,&m_mutex);
+		if (m_funcToExecute)
+		{
+			const std::function<void()> funcToExecute = m_funcToExecute.extract();
 
-		const std::function<void()> funcToExecute = m_funcToExecute.extract();
+			m_state = Running;
 
-		m_state = Running;
+			thread_impl_interface::set_yielder(m_yielder);
 
-		thread_impl_interface::set_yielder(m_yielder);
+			funcToExecute();
 
-		funcToExecute();
+			thread_impl_interface::clear_yielder();
 
-		thread_impl_interface::clear_yielder();
-
-		m_state = Idle;
+			m_state = Idle;
+		}
+		else
+		{
+			pthread_cond_wait(&m_condVar,&m_mutex);
+		}
 
 		pthread_mutex_unlock(&m_mutex);
 	}
+}
+bool worker_thread_impl::set_affinity(const cpu_set_t& i_set)
+{
+	return pthread_setaffinity_np(m_thread,sizeof(cpu_set_t),&i_set) == 0;
 }
 thread_id_t worker_thread_impl::get_id() const
 {

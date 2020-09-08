@@ -12,8 +12,26 @@ void thread_sheaf::start(const std::function<void()>& i_function)
 	thread_container::iterator itThread = m_threadCtr.begin();
 	for (; itThread != m_threadCtr.end(); ++itThread)
 	{
-		itThread->start(i_function);
+		if (itThread->joinable() == false)
+		{
+			itThread->start(i_function);
+		}
 	}
+}
+size_t thread_sheaf::start(const std::function<void()>& i_function, size_t i_numThreads)
+{
+	size_t threadIndex=0;
+	thread_container::iterator itThread = m_threadCtr.begin();
+	for (; threadIndex < i_numThreads && itThread != m_threadCtr.end(); ++itThread)
+	{
+		if (itThread->joinable() == false)
+		{
+			itThread->start(i_function);
+			++threadIndex;
+		}
+	}
+
+	return threadIndex;
 }
 void thread_sheaf::stop()
 {
@@ -22,6 +40,22 @@ void thread_sheaf::stop()
 	{
 		itThread->stop();
 	}
+}
+thread_sheaf::iterator thread_sheaf::begin()
+{
+	return m_threadCtr.begin();
+}
+thread_sheaf::const_iterator thread_sheaf::begin() const
+{
+	return m_threadCtr.begin();
+}
+thread_sheaf::iterator thread_sheaf::end()
+{
+	return m_threadCtr.end();
+}
+thread_sheaf::const_iterator thread_sheaf::end() const
+{
+	return m_threadCtr.end();
 }
 void thread_sheaf::insert(thread i_thread)
 {

@@ -26,6 +26,7 @@ public:
 	virtual thread_id_t get_id() const = 0;
 	virtual void setExiting(bool i_exiting) = 0;
 	virtual void execute() = 0;
+	virtual bool set_affinity(const cpu_set_t&) = 0;
 
 	static yielder_lent_ptr get_yielder();
 	static yielder_lent_ptr set_yielder(yielder_lent_ptr i_yielder);
@@ -58,6 +59,7 @@ private:
 	thread_id_t get_id() const override;
 	void setExiting(bool i_exiting) override;
 	void execute() override;
+	bool set_affinity(const cpu_set_t& i_set) override;
 
 	pthread_t				m_thread;
 	std::function<void()>	m_threadFunc;

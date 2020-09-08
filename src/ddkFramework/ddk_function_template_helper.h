@@ -86,25 +86,22 @@ template<typename>
 struct aqcuire_callable_return_type;
 
 template<typename Return, typename ... Args>
-struct aqcuire_callable_return_type<std::function<Return(Args...)>>
+struct aqcuire_callable_return_type<Return(*)(Args...)>
 {
 	typedef Return return_type;
-	typedef std::tuple<Args...> args_type;
-	typedef std::function<Return(Args...)> func_type;
+	typedef tuple<Args...> args_type;
 };
 template<typename Return, typename T, typename ... Args>
 struct aqcuire_callable_return_type<Return(T::*)(Args...) const>
 {
 	typedef Return return_type;
-	typedef std::tuple<Args...> args_type;
-	typedef std::function<Return(Args...)> func_type;
+	typedef tuple<Args...> args_type;
 };
 template<typename Functor>
 struct aqcuire_callable_return_type
 {
 	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::return_type return_type;
 	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::args_type args_type;
-	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::func_type func_type;
 };
 
 template<typename T>
@@ -112,9 +109,9 @@ struct is_valid_functor
 {
 private:
     template<typename TT>
-    char static func(const TT&, decltype(&TT::operator()) * = nullptr);
-    template<typename TT>
-    int static func(const TT&, ...);
+    char static func(const TT&, decltype(&TT::operator()) = nullptr);
+    template<typename ... TT>
+    int static func(const TT& ...);
 
 public:
     static const bool value = (sizeof(func(std::declval<T>())) == sizeof(char));

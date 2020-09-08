@@ -19,7 +19,12 @@ public:
 	thread_sheaf(const thread_sheaf&) = delete;
 	thread_sheaf(thread_sheaf&& other);
 	void start(const std::function<void()>& i_function);
+	size_t start(const std::function<void()>& i_function, size_t i_numThreads);
 	void stop();
+	iterator begin();
+	const_iterator begin() const;
+	iterator end();
+	const_iterator end() const;
 	void insert(thread i_thread);
 	optional<thread> extract();
 	size_t size() const;

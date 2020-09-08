@@ -20,12 +20,12 @@ public:
 template<typename Type, typename ... Types>
 class tuple<Type,Types...>
 {
-    static const size_t s_num_types = mpl::get_num_types<Type,Types...>::value;
-
     template<typename...>
     friend class tuple;
 
 public:
+    static const size_t size = mpl::get_num_types<Type,Types...>::value;
+
     tuple<Type,Types...>() = default;
     template<size_t Index, size_t ... Indexs, typename Arg, typename ... Args>
     tuple(const mpl::sequence<Index,Indexs...>&, Arg&& i_arg, Args&& ... i_args);

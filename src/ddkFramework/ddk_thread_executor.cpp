@@ -103,16 +103,9 @@ void thread_polling_executor::update() const
 {
 	while(m_stopped == false)
 	{
-		const auto t_start = std::chrono::high_resolution_clock::now();
-
 		m_executor();
 
-		const std::chrono::milliseconds t_delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start);
-
-		if (t_delta < m_sleepTimeInMS)
-		{
-			ddk::sleep(static_cast<unsigned long>((m_sleepTimeInMS - t_delta).count()));
-		}
+		ddk::sleep(static_cast<unsigned long>(m_sleepTimeInMS.count()));
 	}
 }
 

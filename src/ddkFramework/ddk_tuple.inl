@@ -59,7 +59,7 @@ tuple<Type,Types...>::~tuple()
 {
     size_t thisTypeIndex = 1;
 
-    destruct<Type>(PACK_STORAGE_ADDRESS(m_storage)) && ( destruct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++)) && ... );
+    ( destruct<Type>(PACK_STORAGE_ADDRESS(m_storage)) && ( destruct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++)) && ... ) );
 }
 template<typename Type, typename ... Types>
 tuple<Type,Types...>& tuple<Type,Types...>::operator=(const tuple<Type,Types...>& other)

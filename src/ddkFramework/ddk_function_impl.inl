@@ -79,7 +79,7 @@ template<typename ObjectType, typename Return, typename ... Types>
 template<size_t ... Indexs>
 Return relative_function_impl<ObjectType,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const
 {
-    return (m_object->*m_funcPointer)(std::forward<Types>(i_tuple.template get<Indexs>())...);
+    return (m_object->*m_funcPointer)(i_tuple.template get<Indexs>()...);
 }
 
 template<typename Return, typename ... Types>
@@ -103,7 +103,7 @@ template<typename Return, typename ... Types>
 template<size_t ... Indexs>
 Return free_function_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const
 {
-    return (*m_funcPointer)(std::forward<Types>(i_tuple.template get<Indexs>())...);
+    return (*m_funcPointer)(i_tuple.template get<Indexs>()...);
 }
 
 template<typename T, typename Return, typename ... Types>
@@ -127,7 +127,7 @@ template<typename T, typename Return, typename ... Types>
 template<size_t ... Indexs>
 Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const
 {
-    return m_functor(std::forward<Types>(i_tuple.template get<Indexs>())...);
+    return m_functor(i_tuple.template get<Indexs>()...);
 }
 
 }
