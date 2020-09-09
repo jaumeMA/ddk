@@ -100,7 +100,7 @@ typename await_executor<Return>::start_result await_executor<Return>::execute(co
 			{
 				if(typed_yielder_context<Return>* newContext = static_cast<typed_yielder_context<Return>*>(i_context))
 				{
-					i_sink(newContext->get_value());
+					i_sink.eval(newContext->get_value());
 				}
 
 				return make_result<start_result>(ExecutorState::Idle);

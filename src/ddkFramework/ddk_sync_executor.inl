@@ -30,7 +30,7 @@ async_executor<Return>::~async_executor()
 	//if not executed, excute and wait for its result
 	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
 	{
-		Return _tmp = m_function.eval();
+		Return _tmp = m_function();
 
 		m_sharedState->set_value(_tmp);
 	}
@@ -73,7 +73,7 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 	const ddk::function<Return()> thisFunction(m_function);
 
 	//at some point put a composed callable here
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(ddk::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction.eval(); return _void; }));
+	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(ddk::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction(); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -159,7 +159,7 @@ typename async_executor<Return>::reference async_executor<Return>::get_value()
 {
 	if(m_sharedState->ready() == false)
 	{
-		Return _tmp = m_function.eval();
+		Return _tmp = m_function();
 
 		m_sharedState->set_value(_tmp);
 	}
@@ -183,7 +183,7 @@ typename async_executor<Return>::const_reference async_executor<Return>::get_val
 {
 	if(m_sharedState->ready() == false)
 	{
-		Return _tmp = m_function.eval();
+		Return _tmp = m_function();
 
 		m_sharedState->set_value(_tmp);
 	}
@@ -195,7 +195,7 @@ typename async_executor<Return>::value_type async_executor<Return>::extract_valu
 {
 	if(m_sharedState->ready() == false)
 	{
-		Return _tmp = m_function.eval();
+		Return _tmp = m_function();
 
 		m_sharedState->set_value(_tmp);
 	}
