@@ -222,7 +222,7 @@ typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(co
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc && i_cancelFunc())
+		if (i_cancelFunc != nullptr && i_cancelFunc())
 		{
 			m_state = ExecutorState::Cancelled;
 
@@ -297,7 +297,7 @@ typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc && i_cancelFunc())
+		if (i_cancelFunc != nullptr && i_cancelFunc())
 		{
 			m_state = ExecutorState::Cancelled;
 

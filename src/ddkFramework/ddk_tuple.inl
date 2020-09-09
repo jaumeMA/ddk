@@ -81,13 +81,13 @@ template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
 template<size_t IIndex, size_t ... IIndexs, typename TType, typename ... TTypes>
 tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(const tuple_impl<mpl::sequence<IIndex,IIndexs...>,TType,TTypes...>& other)
 {
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index),std::forward<Arg>(get<Arg>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(get<Args>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndexs)))) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::forward<Type>(get<Type>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
 }
 template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
 template<size_t IIndex, size_t ... IIndexs, typename TType, typename ... TTypes>
 tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(tuple_impl<mpl::sequence<IIndex,IIndexs...>,TType,TTypes...>&& other)
 {
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index),std::move(extract<Arg>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Args>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndexs)))) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::move(extract<Type>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
 }
 template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
 tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::~tuple_impl()
@@ -128,8 +128,8 @@ template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
 template<size_t ... IIndexs, typename ... Args>
 void tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::set(const mpl::sequence<IIndexs...>&, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_ranks<Indexs...>::value == mpl::get_num_types<Args>::value, "Unconsistent provided arguments and sequence");
-	static_assert(mpl::get_num_types<Type,Types>::value == mpl::get_num_types<Args>::value, "Wrong number of arguments");
+	static_assert(mpl::get_num_ranks<Indexs...>::value == mpl::get_num_types<Args...>::value, "Unconsistent provided arguments and sequence");
+	static_assert(mpl::get_num_types<Type,Types...>::value == mpl::get_num_types<Args...>::value, "Wrong number of arguments");
 
     ( assign<typename mpl::nth_type_of<Indexs,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
 }
