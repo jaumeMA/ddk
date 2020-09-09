@@ -54,7 +54,7 @@ class tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>
     friend class tuple_impl;
 
 public:
-    tuple_impl() = default;
+    tuple_impl();
     template<size_t IIndex, size_t ... IIndexs, typename Arg, typename ... Args>
     tuple_impl(const mpl::sequence<IIndex,IIndexs...>&, Arg&& i_arg, Args&& ... i_args);
     template<typename Arg, typename ... Args>
