@@ -10,13 +10,12 @@ namespace ddk
 template<typename Return>
 class async_executor : public async_execute_interface<Return>
 {
-	template<typename RReturn, typename ... Types, typename ... Args>
-	friend shared_reference_wrapper<async_executor<RReturn>> make_async_executor(const std::function<RReturn(Types...)>& i_function, Args&& ... i_args);
+	template<typename RReturn>
+	friend shared_reference_wrapper<async_executor<RReturn>> make_async_executor(const ddk::function<RReturn()>& i_function);
 	friend class future<Return>;
 
 	async_executor() = default;
-	template<typename ... Types, typename ... Args>
-	async_executor(const std::function<Return(Types...)>& i_function, Args&& ... i_args);
+	async_executor(const ddk::function<Return()>& i_function);
 	using typename async_execute_interface<Return>::StartErrorCode;
 	typedef typename executor_interface<Return()>::start_result nested_start_result;
 
@@ -42,7 +41,7 @@ public:
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(fiber_sheaf i_fiberSheaf);
 	async_shared_ref attach(executor_unique_ptr<Return> i_executor);
 	async_shared_ref store(promise<Return>& i_promise);
-	async_shared_ref on_cancel(const std::function<bool()>& i_cancelFunc);
+	async_shared_ref on_cancel(const ddk::function<bool()>& i_cancelFunc);
 	void bind();
 
 private:
@@ -57,8 +56,8 @@ private:
 
 	void set_value(Return i_value);
 
-	std::function<Return()> m_function;
-	std::function<bool()> m_cancelFunc;
+	ddk::function<Return()> m_function;
+	ddk::function<bool()> m_cancelFunc;
 	cancellable_executor_unique_ptr<Return> m_executor;
 	mutable detail::private_async_state_shared_ptr<Return> m_sharedState;
 	shared_reference_counter m_refCounter;

@@ -28,7 +28,7 @@ private:
 		Stopped
 	};
 
-	void start(const std::function<void()>&, yielder_lent_ptr i_yielder) override;
+	void start(const ddk::function<void()>&, yielder_lent_ptr i_yielder) override;
 	void stop() override;
 	bool joinable() const override;
 	void setExiting(bool i_exiting) override;
@@ -39,7 +39,7 @@ private:
 	pthread_t m_thread;
 	pthread_mutex_t m_mutex;
 	pthread_cond_t m_condVar;
-	optional<std::function<void()>> m_funcToExecute;
+	optional<ddk::function<void()>> m_funcToExecute;
 	State m_state;
 	detail::yielder_lent_ptr	m_yielder;
 };

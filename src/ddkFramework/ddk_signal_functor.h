@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "ddk_function.h"
 #include "ddk_connection_base.h"
 #include <stdio.h>
 #include <tuple>
@@ -23,7 +23,7 @@ class signal_functor<Return(Types...)> : public detail::connection_base
 	typedef std::tuple<typename std::remove_const<typename std::remove_reference<Types>::type>::type ...> tuple_t;
 
 public:
-    signal_functor(const std::function<Return(Types...)>& call, const detail::signal_connector& i_connector)
+    signal_functor(const ddk::function<Return(Types...)>& call, const detail::signal_connector& i_connector)
 	: connection_base(i_connector)
 	, m_call(call)
 	{
@@ -33,7 +33,7 @@ public:
 	template<typename ... Args>
     Return execute(Args&& ... i_args) const
 	{
-	  return m_call(std::forward<Args>(i_args) ...);
+	  return m_call.eval(std::forward<Args>(i_args) ...);
 	}
     Return execute_tuple(const tuple_t& i_args) const
 	{
@@ -52,10 +52,10 @@ private:
     template<size_t ... Seq>
       inline Return _execute(const tuple_t& i_args, const mpl::sequence<Seq...>&) const
       {
-        return m_call(std::get<Seq>(i_args) ...);
+        return m_call.eval(std::get<Seq>(i_args) ...);
       }
 
-    std::function<Return(Types...)>  m_call;
+    ddk::function<Return(Types...)>  m_call;
 };
 
 }

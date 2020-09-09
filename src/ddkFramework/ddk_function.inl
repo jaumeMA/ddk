@@ -237,12 +237,12 @@ resolved_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>
     return function_type(i_functor);
 }
 template<typename Object, typename Return, typename ... Types, typename Allocator>
-function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
+function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_object, i_funcPtr);
 }
 template<typename Return, typename ... Types, typename Allocator>
-function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
+function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_funcPtr);
 }
@@ -274,7 +274,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<typename std::ena
 template<typename Functor, typename Arg, typename ... Args>
 resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,system_allocator,typename std::enable_if<mpl::is_allocator<Arg>::value==false,Arg>::type,Args...> make_function(Functor&& i_functor, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
 
     typedef resolved_callable<Functor> function_type;
 
@@ -303,7 +303,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 template<typename Functor, typename Allocator, typename Arg, typename ... Args>
 resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
 
     typedef resolved_callable<Functor> function_type;
 

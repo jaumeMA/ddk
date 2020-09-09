@@ -129,7 +129,7 @@ size_t fiber_scheduler<Comparator>::size() const
 template<typename Comparator>
 void fiber_scheduler<Comparator>::start()
 {
-	m_fiberThread.start(std::bind(&fiber_scheduler<Comparator>::run,this),ddk::lend(m_yielder));
+	m_fiberThread.start(ddk::make_function(this,&fiber_scheduler<Comparator>::run),ddk::lend(m_yielder));
 }
 template<typename Comparator>
 void fiber_scheduler<Comparator>::stop()
@@ -178,7 +178,7 @@ void fiber_scheduler<Comparator>::suspend(detail::yielder_context* i_context)
 	throw suspend_exception(m_callee->get_id());
 }
 template<typename Comparator>
-bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const std::function<void()>& i_function)
+bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const ddk::function<void()>& i_function)
 {
 	pthread_mutex_lock(&m_fiberMutex);
 
@@ -254,7 +254,7 @@ void fiber_scheduler<Comparator>::run()
 
 	while(m_stop == false)
 	{
-		std::function<void()> callableObject;
+		ddk::function<void()> callableObject;
 
 		pthread_mutex_lock(&m_fiberMutex);
 

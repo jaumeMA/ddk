@@ -16,11 +16,11 @@ public:
 	~fiber_polling_executor();
 	void set_update_time(unsigned long i_sleepInMs);
 	unsigned int get_update_time() const;
-	void start(const std::function<void()>& i_executor);
+	void start(const ddk::function<void()>& i_executor);
 	void stop();
 
 private:
-	virtual start_result execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor) override;
+	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
@@ -28,7 +28,7 @@ private:
 
 	ddk::fiber m_fiber;
 	unsigned long m_sleepTimeInMS;
-	std::function<void()> m_executor;
+	ddk::function<void()> m_executor;
 	bool m_stopped;
 };
 
@@ -41,11 +41,11 @@ public:
 	~fiber_event_driven_executor();
 	void set_update_time(unsigned int i_sleepInMs);
 	unsigned int get_update_time() const;
-	void start(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc = nullptr);
+	void start(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc = nullptr);
 	void stop();
 
 private:
-	virtual start_result execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor) override;
+	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
@@ -54,8 +54,8 @@ private:
 	ddk::fiber m_fiber;
 	unsigned int m_sleepTimeInMS;
 	bool m_stopped;
-	std::function<void()> m_executor;
-	std::function<bool()> m_testFunc;
+	ddk::function<void()> m_executor;
+	ddk::function<bool()> m_testFunc;
 	pthread_cond_t		m_condVar;
 	pthread_mutex_t	m_condVarMutex;
 	bool m_pendingWork;
@@ -70,7 +70,7 @@ public:
 	~fiber_fire_and_forget_executor();
 
 private:
-	start_result execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor) override;
+	start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	resume_result resume() override;
 	void signal() override;

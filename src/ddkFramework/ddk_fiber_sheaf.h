@@ -19,7 +19,7 @@ public:
 
 	fiber_sheaf(const fiber_sheaf&) = delete;
 	fiber_sheaf(fiber_sheaf&& other);
-	void start(const std::function<void()>& i_function);
+	void start(const ddk::function<void()>& i_function);
 	void stop();
 	void insert(fiber i_fiber);
 	optional<fiber> extract();

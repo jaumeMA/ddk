@@ -33,7 +33,7 @@ worker_thread_impl::~worker_thread_impl()
 	pthread_cond_destroy(&m_condVar);
 	pthread_mutex_destroy(&m_mutex);
 }
-void worker_thread_impl::start(const std::function<void()>& i_callable, yielder_lent_ptr i_yielder)
+void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder_lent_ptr i_yielder)
 {
 	if (m_state != Running)
 	{
@@ -78,7 +78,7 @@ void worker_thread_impl::execute()
 
 		if (m_funcToExecute)
 		{
-			const std::function<void()> funcToExecute = m_funcToExecute.extract();
+			const ddk::function<void()> funcToExecute = m_funcToExecute.extract();
 
 			m_state = Running;
 

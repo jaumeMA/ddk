@@ -8,7 +8,6 @@ namespace ddk
 
     #define CURR_THREAD_ID GetCurrentThreadId()
 	typedef unsigned long long thread_id_t;
-    #define thread_local __declspec( thread )
 
 #elif defined(__LINUX__)
 

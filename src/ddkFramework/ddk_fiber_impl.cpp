@@ -96,7 +96,7 @@ fiber_impl::~fiber_impl()
 		m_executor->unregister(m_id);
 	}
 }
-void fiber_impl::start(const std::function<void()>& i_function)
+void fiber_impl::start(const ddk::function<void()>& i_function)
 {
 	if(m_executor)
 	{

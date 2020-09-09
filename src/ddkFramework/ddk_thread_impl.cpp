@@ -49,7 +49,7 @@ void threadExiting(void* ptr)
 	}
 }
 
-void one_shot_thread_impl::start(const std::function<void()>& i_function, yielder_lent_ptr i_yielder)
+void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder_lent_ptr i_yielder)
 {
 	if(m_started == false)
 	{
@@ -93,16 +93,13 @@ void one_shot_thread_impl::setExiting(bool i_exiting)
 }
 void one_shot_thread_impl::execute()
 {
-	if(m_threadFunc)
+	if(m_threadFunc != nullptr)
 	{
 		thread_impl_interface::set_yielder(m_yielder);
 
 		pthread_cleanup_push(&threadExiting,this);
 
-		if(m_threadFunc)
-		{
-			m_threadFunc();
-		}
+		m_threadFunc();
 
 		thread_impl_interface::clear_yielder();
 

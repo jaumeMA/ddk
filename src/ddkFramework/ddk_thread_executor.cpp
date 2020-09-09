@@ -43,7 +43,7 @@ size_t thread_polling_executor::get_update_time() const
 {
 	return static_cast<unsigned int>(m_sleepTimeInMS.count());
 }
-void thread_polling_executor::start_thread(const std::function<void()>& i_executor)
+void thread_polling_executor::start_thread(const ddk::function<void()>& i_executor)
 {
 	start_result startRes = execute(nullptr,i_executor);
 
@@ -59,13 +59,13 @@ void thread_polling_executor::signal_thread()
 {
 	signal();
 }
-thread_polling_executor::start_result thread_polling_executor::execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor)
+thread_polling_executor::start_result thread_polling_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		m_updateThread.start(std::bind(&thread_polling_executor::update,this));
+		m_updateThread.start(ddk::make_function(this,&thread_polling_executor::update));
 
 		return make_result<start_result>(ExecutorState::Executed);
 	}
@@ -99,7 +99,7 @@ bool thread_polling_executor::is_stopped() const
 {
 	return m_stopped;
 }
-void thread_polling_executor::update() const
+void thread_polling_executor::update()
 {
 	while(m_stopped == false)
 	{
@@ -173,15 +173,15 @@ unsigned int thread_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
-void thread_event_driven_executor::start_thread(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc)
+void thread_event_driven_executor::start_thread(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc)
 {
-	if (i_testFunc)
+	if (i_testFunc != nullptr)
 	{
 		m_testFunc = i_testFunc;
 	}
 	else
 	{
-		m_testFunc = [=]() mutable { return m_pendingWork; };
+		m_testFunc = [=]() { return m_pendingWork; };
 	}
 
 	start_result startRes = execute(nullptr,i_executor);
@@ -198,13 +198,13 @@ void thread_event_driven_executor::signal_thread()
 {
 	signal();
 }
-thread_event_driven_executor::start_result thread_event_driven_executor::execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor)
+thread_event_driven_executor::start_result thread_event_driven_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		m_updateThread.start(std::bind(&thread_event_driven_executor::update,this));
+		m_updateThread.start(ddk::make_function(this,&thread_event_driven_executor::update));
 
 		return make_result<start_result>(ExecutorState::Executed);
 	}
@@ -264,7 +264,7 @@ void thread_event_driven_executor::update()
 
 		m_pendingWork = false;
 
-        if(m_executor)
+        if(m_executor != nullptr)
         {
 			pthread_mutex_unlock(&m_condVarMutex);
 
@@ -302,7 +302,7 @@ thread_fire_and_forget_executor::thread_fire_and_forget_executor(thread_fire_and
 thread_fire_and_forget_executor::~thread_fire_and_forget_executor()
 {
 }
-thread_fire_and_forget_executor::start_result thread_fire_and_forget_executor::execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor)
+thread_fire_and_forget_executor::start_result thread_fire_and_forget_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	m_executor = i_executor;
 
@@ -320,7 +320,7 @@ void thread_fire_and_forget_executor::signal()
 {
 	m_updateThread.stop();
 
-	m_updateThread.start(std::bind(&thread_fire_and_forget_executor::update,this));
+	m_updateThread.start(ddk::make_function(this,&thread_fire_and_forget_executor::update));
 }
 void thread_fire_and_forget_executor::update()
 {

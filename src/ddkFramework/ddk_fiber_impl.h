@@ -40,8 +40,8 @@ public:
 	fiber_impl(fiber_impl&& other);
 	~fiber_impl();
 	template<typename Return>
-	void start_from(this_fiber_t& other, const std::function<Return()>& i_function);
-	void start(const std::function<void()>& i_function);
+	void start_from(this_fiber_t& other, const ddk::function<Return()>& i_function);
+	void start(const ddk::function<void()>& i_function);
 	void stop();
 	yielder_context* resume_from(this_fiber_t& other);
 	void resume_to(this_fiber_t& other, yielder_context* i_context = nullptr);

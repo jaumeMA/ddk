@@ -7,7 +7,7 @@ fiber_sheaf::fiber_sheaf(fiber_sheaf&& other)
 : m_fiberCtr(std::move(other.m_fiberCtr))
 {
 }
-void fiber_sheaf::start(const std::function<void()>& i_function)
+void fiber_sheaf::start(const ddk::function<void()>& i_function)
 {
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 	for (; itFiber != m_fiberCtr.end(); ++itFiber)

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "ddk_template_helper.h"
 
 #if defined(WIN32)

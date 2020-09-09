@@ -37,7 +37,7 @@ unsigned int fiber_polling_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
-void fiber_polling_executor::start(const std::function<void()>& i_executor)
+void fiber_polling_executor::start(const ddk::function<void()>& i_executor)
 {
 	execute(nullptr,i_executor);
 }
@@ -45,13 +45,13 @@ void fiber_polling_executor::stop()
 {
 	resume();
 }
-fiber_polling_executor::start_result fiber_polling_executor::execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor)
+fiber_polling_executor::start_result fiber_polling_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		m_fiber.start(std::bind(&fiber_polling_executor::update,this));
+		m_fiber.start(ddk::make_function(this,&fiber_polling_executor::update));
 
 		return make_result<start_result>(ExecutorState::Executed);
 	}
@@ -134,9 +134,9 @@ unsigned int fiber_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
-void fiber_event_driven_executor::start(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc)
+void fiber_event_driven_executor::start(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc)
 {
-	if (i_testFunc)
+	if (i_testFunc != nullptr)
 	{
 		m_testFunc = i_testFunc;
 	}
@@ -151,13 +151,13 @@ void fiber_event_driven_executor::stop()
 {
 	resume();
 }
-fiber_event_driven_executor::start_result fiber_event_driven_executor::execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor)
+fiber_event_driven_executor::start_result fiber_event_driven_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		m_fiber.start(std::bind(&fiber_event_driven_executor::update,this));
+		m_fiber.start(ddk::make_function(this,&fiber_event_driven_executor::update));
 
 		return make_result<start_result>(ExecutorState::Executed);
 	}
@@ -200,7 +200,7 @@ void fiber_event_driven_executor::update()
 
 		pthread_mutex_unlock(&m_condVarMutex);
 
-        if(m_executor)
+        if(m_executor != nullptr)
         {
             m_executor();
         }
@@ -231,7 +231,7 @@ fiber_fire_and_forget_executor::~fiber_fire_and_forget_executor()
 {
 	m_fiber.stop();
 }
-fiber_fire_and_forget_executor::start_result fiber_fire_and_forget_executor::execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor)
+fiber_fire_and_forget_executor::start_result fiber_fire_and_forget_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_fiber.ready())
 	{

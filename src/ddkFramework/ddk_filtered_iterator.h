@@ -19,7 +19,7 @@ public:
 	typedef typename std::add_pointer<value_type>::type pointer;
 	typedef std::add_const<pointer> const_pointer;
 	typedef std::bidirectional_iterator_tag iterator_category;
-	typedef std::function<bool(const_reference)> predicate;
+	typedef ddk::function<bool(const_reference)> predicate;
 
 	filtered_iterator()
 	: m_filter(nullptr)

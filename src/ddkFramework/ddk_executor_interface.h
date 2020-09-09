@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "ddk_function.h"
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_reference_wrapper.h"
@@ -14,12 +14,12 @@ namespace detail
 template<typename RReturn>
 struct function_type
 {
-    typedef std::function<void(RReturn)> type;
+    typedef ddk::function<void(RReturn)> type;
 };
 template<>
 struct function_type<void>
 {
-    typedef std::function<void()> type;
+    typedef ddk::function<void()> type;
 };
 
 }
@@ -50,7 +50,7 @@ public:
 
 	virtual ~executor_interface() = default;
 	virtual ExecutorState get_state() const = 0;
-	virtual start_result execute(const typename detail::function_type<Return>::type&, const std::function<Return()>&) = 0;
+	virtual start_result execute(const typename detail::function_type<Return>::type&, const ddk::function<Return()>&) = 0;
 };
 
 template<typename Return, typename ... Args>
@@ -73,7 +73,7 @@ public:
 	};
 	typedef result<void,CancelErrorCode> cancel_result;
 
-	virtual cancel_result cancel(const std::function<bool()>&) = 0;
+	virtual cancel_result cancel(const ddk::function<bool()>&) = 0;
 };
 
 template<typename Return, typename ... Args>

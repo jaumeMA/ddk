@@ -38,7 +38,7 @@ class PrivateIteratorWithTransform : public PrivateIterator<Iterator,ReturnType,
 	typedef typename std::add_lvalue_reference<typename std::add_const<value_type>::type>::type const_reference;
 
 public:
-	PrivateIteratorWithTransform(Iterator i_iterator, const std::function<ReturnType(const_reference)>& i_transform)
+	PrivateIteratorWithTransform(Iterator i_iterator, const ddk::function<ReturnType(const_reference)>& i_transform)
 	: PrivateIterator<Iterator,ReturnType,IteratorTag>(i_iterator)
 	, m_transform(i_transform)
 	{}
@@ -53,7 +53,7 @@ private:
 		return new PrivateIteratorWithTransform(this->m_privateIterator,m_transform);
 	}
 
-	std::function<ReturnType(const_reference)> m_transform;
+	ddk::function<ReturnType(const_reference)> m_transform;
 };
 
 }

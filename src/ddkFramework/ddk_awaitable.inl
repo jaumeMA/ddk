@@ -75,10 +75,9 @@ void awaited_result<T>::set(T i_content)
 }
 
 template<typename T, typename Result>
-template<typename ... Types, typename ... Args>
-awaitable<T,Result>::awaitable(const std::function<T(Types...)>& i_function, Args&& ... i_args)
+awaitable<T,Result>::awaitable(const std::function<T()>& i_function)
 {
-	shared_reference_wrapper<async_executor<T>> asyncExecutor = make_async_executor(i_function,std::forward<Args>(i_args) ...);
+	shared_reference_wrapper<async_executor<T>> asyncExecutor = make_async_executor(i_function);
 
 	m_executor = asyncExecutor->attach(this_fiber);
 }

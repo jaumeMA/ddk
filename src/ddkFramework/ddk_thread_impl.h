@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "ddk_function.h"
 #include <thread>
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
@@ -20,7 +20,7 @@ class thread_impl_interface
 {
 public:
 	virtual ~thread_impl_interface() = default;
-	virtual void start(const std::function<void()>&, yielder_lent_ptr = nullptr) = 0;
+	virtual void start(const ddk::function<void()>&, yielder_lent_ptr = nullptr) = 0;
 	virtual void stop() = 0;
 	virtual bool joinable() const = 0;
 	virtual thread_id_t get_id() const = 0;
@@ -53,7 +53,7 @@ public:
 	one_shot_thread_impl() = default;
 
 private:
-	void start(const std::function<void()>&, yielder_lent_ptr i_yielder = nullptr) override;
+	void start(const ddk::function<void()>&, yielder_lent_ptr i_yielder = nullptr) override;
 	void stop() override;
 	bool joinable() const override;
 	thread_id_t get_id() const override;
@@ -62,7 +62,7 @@ private:
 	bool set_affinity(const cpu_set_t& i_set) override;
 
 	pthread_t				m_thread;
-	std::function<void()>	m_threadFunc;
+	ddk::function<void()>	m_threadFunc;
 	yielder_lent_ptr		m_yielder;
 	bool					m_started = false;
 };

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pthread.h>
-#include <functional>
 #include "ddk_thread_utils.h"
 #include "ddk_executor_interface.h"
 #include <unordered_map>
@@ -61,7 +60,7 @@ class fiber_scheduler : public detail::fiber_scheduler_interface, protected deta
 {
 	typedef std::unordered_map<fiber_id,detail::fiber_impl*> fiber_container;
 	typedef detail::priority_queue<Comparator> running_fiber_container;
-	typedef std::map<fiber_id,std::function<void()>> function_container;
+	typedef std::map<fiber_id,ddk::function<void()>> function_container;
 
 public:
 	typedef fiber_container::iterator iterator;
@@ -97,7 +96,7 @@ public:
 private:
 	void yield(detail::yielder_context*) override;
 	void suspend(detail::yielder_context*) override;
-	bool activate(fiber_id i_id, const std::function<void()>& i_function) override;
+	bool activate(fiber_id i_id, const ddk::function<void()>& i_function) override;
 	bool deactivate(fiber_id i_id) override;
 	void unregister(fiber_id i_id) override;
 

@@ -41,15 +41,15 @@ class function<Return(),Allocator>
 public:
     function() = default;
     function(std::nullptr_t);
-    function(const function& other);
-    function(function&& other);
+    function(const function& other) = default;
+    function(function&& other) = default;
     template<typename T>
     function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value>::type* = nullptr);
     template<typename T>
     function(T *pRef, Return(T::*call)(), const Allocator& i_allocator = Allocator());
     function(Return(*call)(), const Allocator& i_allocator = Allocator());
-    function& operator=(const function& other);
-    function& operator=(function&& other);
+    function& operator=(const function& other) = default;
+    function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
     operator Return() const;
     Return operator()() const;
@@ -73,11 +73,15 @@ class function<Return(Types...),Allocator>
 public:
     function() = default;
     function(std::nullptr_t);
+    function(const function& other) = default;
+    function(function&& other) = default;
     template<typename T>
     function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value>::type* = nullptr);
     template<typename T>
     function(T *pRef, Return(T::*call)(Types...), const Allocator& i_allocator = Allocator());
     function(Return(*call)(Types...), const Allocator& i_allocator = Allocator());
+    function& operator=(const function& other) = default;
+    function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
     bool operator==(std::nullptr_t) const;
     bool operator!=(std::nullptr_t) const;
@@ -101,9 +105,9 @@ inline resolved_callable<typename std::enable_if<std::is_class<Functor>::value,F
 
 //allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types, typename Allocator>
-inline function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator);
+inline function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator);
 template<typename Return, typename ... Types, typename Allocator>
-inline function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator);
+inline function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator);
 template<typename Functor, typename Allocator>
 inline resolved_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,Allocator> make_function(Functor&&, const Allocator& i_allocator, typename std::enable_if<mpl::is_allocator<Allocator>::value>::type* = nullptr);
 

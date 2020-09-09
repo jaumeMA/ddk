@@ -64,8 +64,9 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 
 	{
 		iterable res1 = ddk::co_iterate(kk1);
+
 		iterator itRes1 = std::begin(res1);
-		for(size_t index=0;itRes1!=std::end(res1);++itRes1,++index)
+		for(size_t index=0;itRes1!=std::end(res1);itRes1++,++index)
 		{
 			int& res = *itRes1;
 			EXPECT_EQ(*itRes1, kk1[index]);
@@ -137,6 +138,19 @@ TEST(DDKCoIterableTest, assignIterator)
 	typedef ddk::co_iterable<container> iterable;
 	typedef typename iterable::iterator iterator;
 
+	container kk0;
+
+	kk0.push_back(10);
+	kk0.push_back(2);
+	kk0.push_back(567);
+	kk0.push_back(22);
+	kk0.push_back(7);
+	kk0.push_back(-160);
+	kk0.push_back(2345);
+
+	iterable res0 = ddk::co_iterate(kk0);
+	iterator itZero = std::begin(res0);
+
 	container kk1;
 
 	kk1.push_back(10);
@@ -150,7 +164,6 @@ TEST(DDKCoIterableTest, assignIterator)
 	iterable res1 = ddk::co_iterate(kk1);
 	iterator itFirst = std::begin(res1);
 
-	typedef std::vector<int> container;
 	container kk2;
 
 	kk2.push_back(10);
@@ -166,6 +179,8 @@ TEST(DDKCoIterableTest, assignIterator)
 
 	++itSecond;
 	++itSecond;
+
+	printf("done\n");
 
 	iterator itThird = itSecond;
 

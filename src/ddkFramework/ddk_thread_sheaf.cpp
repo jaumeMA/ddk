@@ -7,7 +7,7 @@ thread_sheaf::thread_sheaf(thread_sheaf&& other)
 : m_threadCtr(std::move(other.m_threadCtr))
 {
 }
-void thread_sheaf::start(const std::function<void()>& i_function)
+void thread_sheaf::start(const ddk::function<void()>& i_function)
 {
 	thread_container::iterator itThread = m_threadCtr.begin();
 	for (; itThread != m_threadCtr.end(); ++itThread)
@@ -18,7 +18,7 @@ void thread_sheaf::start(const std::function<void()>& i_function)
 		}
 	}
 }
-size_t thread_sheaf::start(const std::function<void()>& i_function, size_t i_numThreads)
+size_t thread_sheaf::start(const ddk::function<void()>& i_function, size_t i_numThreads)
 {
 	size_t threadIndex=0;
 	thread_container::iterator itThread = m_threadCtr.begin();

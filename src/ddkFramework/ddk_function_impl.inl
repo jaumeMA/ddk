@@ -22,17 +22,23 @@ Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequen
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
-    return m_object->apply(merge(m_specArgs,args_tuple{std::forward<typename mpl::nth_type_of<notSpecIndexs, Types...>::type>(i_args) ...},total_indexs{},inverse_total_indexs{}));
+	//at some point, avoid this incomingTuple construction and merge directly with args
+	auto incomingTuple = args_tuple{std::forward<typename mpl::nth_type_of<notSpecIndexs, Types...>::type>(i_args) ...};
+	auto mergedTuple = merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(m_specArgs,incomingTuple,total_indexs{},inverse_total_indexs{});
+
+    return m_object->apply(mergedTuple);
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
-Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::apply(const vars_tuple& i_tuple) const
+Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::apply(vars_tuple& i_tuple) const
 {
     typedef tuple<typename mpl::nth_type_of<notSpecIndexs, Types...>::type ...> args_tuple;
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
-    return m_object->apply(merge(m_specArgs,i_tuple,total_indexs{},inverse_total_indexs{}));
+	auto mergedTuple = merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(m_specArgs,i_tuple,total_indexs{},inverse_total_indexs{});
+
+    return m_object->apply(mergedTuple);
 }
 
 template<typename Return, typename ... Types>
@@ -69,7 +75,7 @@ Return relative_function_impl<ObjectType,Return,Types...>::operator()(Types ... 
     return (m_object->*m_funcPointer)(std::forward<Types>(args)...);
 }
 template<typename ObjectType, typename Return, typename ... Types>
-Return relative_function_impl<ObjectType,Return,Types...>::apply(const tuple<Types...>& i_tuple) const
+Return relative_function_impl<ObjectType,Return,Types...>::apply(tuple<Types...>& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -77,7 +83,7 @@ Return relative_function_impl<ObjectType,Return,Types...>::apply(const tuple<Typ
 }
 template<typename ObjectType, typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return relative_function_impl<ObjectType,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const
+Return relative_function_impl<ObjectType,Return,Types...>::apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const
 {
     return (m_object->*m_funcPointer)(i_tuple.template get<Indexs>()...);
 }
@@ -93,7 +99,7 @@ Return free_function_impl<Return,Types...>::operator()(Types ... args) const
     return (*m_funcPointer)(std::forward<Types>(args)...);
 }
 template<typename Return, typename ... Types>
-Return free_function_impl<Return,Types...>::apply(const tuple<Types...>& i_tuple) const
+Return free_function_impl<Return,Types...>::apply(tuple<Types...>& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -101,7 +107,7 @@ Return free_function_impl<Return,Types...>::apply(const tuple<Types...>& i_tuple
 }
 template<typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return free_function_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const
+Return free_function_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const
 {
     return (*m_funcPointer)(i_tuple.template get<Indexs>()...);
 }
@@ -117,7 +123,7 @@ Return functor_impl<T,Return,Types...>::operator()(Types ... args) const
     return m_functor(std::forward<Types>(args)...);
 }
 template<typename T, typename Return, typename ... Types>
-Return functor_impl<T,Return,Types...>::apply(const tuple<Types...>& i_tuple) const
+Return functor_impl<T,Return,Types...>::apply(tuple<Types...>& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -125,7 +131,7 @@ Return functor_impl<T,Return,Types...>::apply(const tuple<Types...>& i_tuple) co
 }
 template<typename T, typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const
+Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const
 {
     return m_functor(i_tuple.template get<Indexs>()...);
 }

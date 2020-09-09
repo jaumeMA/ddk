@@ -62,8 +62,7 @@ public:
 	typedef typename Result::reference reference;
 	typedef typename Result::const_reference const_reference;
 
-	template<typename ... Types, typename ... Args>
-	awaitable(const std::function<T(Types...)>& i_function, Args&& ... i_args);
+	awaitable(const ddk::function<T()>& i_function);
 	awaitable(const awaitable& other);
 	awaitable(awaitable&& other);
 	continue_result resume();

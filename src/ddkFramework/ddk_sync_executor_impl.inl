@@ -14,7 +14,7 @@ deferred_executor<Return>::deferred_executor()
 {
 }
 template<typename Return>
-typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
+typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -26,7 +26,7 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 	}
 }
 template<typename Return>
-typename deferred_executor<Return>::cancel_result deferred_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+typename deferred_executor<Return>::cancel_result deferred_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	m_state = ExecutorState::Cancelled;
 
@@ -66,7 +66,7 @@ await_executor<Return>::~await_executor()
 	}
 }
 template<typename Return>
-typename await_executor<Return>::start_result await_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
+typename await_executor<Return>::start_result await_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -113,7 +113,7 @@ typename await_executor<Return>::start_result await_executor<Return>::execute(co
 	}
 }
 template<typename Return>
-typename await_executor<Return>::cancel_result await_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+typename await_executor<Return>::cancel_result await_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	if (m_state.get() == ExecutorState::Executed)
 	{
@@ -145,7 +145,7 @@ void await_executor<Return>::suspend(yielder_context*)
 	throw suspend_exception(m_callee.get_id());
 }
 template<typename Return>
-bool await_executor<Return>::activate(fiber_id i_id, const std::function<void()>& i_callable)
+bool await_executor<Return>::activate(fiber_id i_id, const ddk::function<void()>& i_callable)
 {
 	return true;
 }
@@ -180,7 +180,7 @@ fiber_executor<Return>::fiber_executor(fiber i_fiber)
 {
 }
 template<typename Return>
-typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
+typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -201,7 +201,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 
 				if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 				{
-					i_sink(_void);
+					i_sink.eval(_void);
 				}
 			});
 
@@ -214,7 +214,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 	}
 }
 template<typename Return>
-typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
@@ -255,7 +255,7 @@ thread_executor<Return>::thread_executor(thread i_thread)
 {
 }
 template<typename Return>
-typename thread_executor<Return>::start_result thread_executor<Return>::execute(const std::function<void(Return)>& i_sink, const std::function<Return()>& i_callable)
+typename thread_executor<Return>::start_result thread_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -276,7 +276,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 
 				if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 				{
-					i_sink(_void);
+					i_sink.eval(_void);
 				}
 			});
 
@@ -289,7 +289,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 	}
 }
 template<typename Return>
-typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(const std::function<bool()>& i_cancelFunc)
+typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{

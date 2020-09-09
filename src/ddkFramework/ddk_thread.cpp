@@ -34,7 +34,7 @@ thread& thread::operator=(thread&& other)
 
 	return *this;
 }
-void thread::start(const std::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder)
+void thread::start(const ddk::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder)
 {
 	if(m_threadImpl.get() != nullptr)
 	{

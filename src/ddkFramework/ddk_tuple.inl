@@ -3,113 +3,149 @@
 
 namespace ddk
 {
-
-template<typename Type, typename ... Types>
-template<size_t Index, size_t ... Indexs, typename Arg, typename ... Args>
-tuple<Type,Types...>::tuple(const mpl::sequence<Index,Indexs...>&, Arg&& i_arg, Args&& ... i_args)
+namespace detail
 {
-    size_t thisTypeIndex = 0;
 
-    construct<typename mpl::nth_type_of<Index,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage), std::forward<Arg>(i_arg)) && ( construct<typename mpl::nth_type_of<Indexs,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::forward<Args>(i_args)) && ... );
+template<typename Type>
+template<size_t IIndex, typename Arg>
+tuple_impl<mpl::sequence<0>,Type>::tuple_impl(const mpl::sequence<IIndex>&, Arg&& i_arg)
+: m_val(std::forward<Arg>(i_arg))
+{
+	static_assert(IIndex==0, "Index out of bounds");
 }
-template<typename Type, typename ... Types>
+template<typename Type>
+template<typename Arg>
+tuple_impl<mpl::sequence<0>,Type>::tuple_impl(Arg&& i_val)
+: m_val(std::forward<Arg>(i_val))
+{
+}
+template<typename Type>
+template<typename TType>
+tuple_impl<mpl::sequence<0>,Type>::tuple_impl(const tuple_impl<mpl::sequence<0>,TType>& other)
+: m_val(other.m_val)
+{
+}
+template<typename Type>
+template<typename TType>
+tuple_impl<mpl::sequence<0>,Type>::tuple_impl(tuple_impl<mpl::sequence<0>,TType>&& other)
+: m_val(std::move(other.m_val))
+{
+}
+template<typename Type>
+template<size_t IIndex>
+typename embedded_type<Type>::cref_type tuple_impl<mpl::sequence<0>,Type>::get() const
+{
+	return m_val;
+}
+template<typename Type>
+template<size_t IIndex>
+typename embedded_type<Type>::ref_type tuple_impl<mpl::sequence<0>,Type>::get()
+{
+	return m_val;
+}
+template<typename Type>
+template<size_t Index, typename Arg>
+void tuple_impl<mpl::sequence<0>,Type>::set(Arg&& i_arg)
+{
+	m_val = std::forward<Arg>(i_arg);
+}
+template<typename Type>
+constexpr size_t tuple_impl<mpl::sequence<0>,Type>::size()
+{
+	return 1;
+}
+
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t IIndex, size_t ... IIndexs, typename Arg, typename ... Args>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(const mpl::sequence<IIndex,IIndexs...>&, Arg&& i_arg, Args&& ... i_args)
+{
+    construct<typename mpl::nth_type_of<IIndex,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::forward<Arg>(i_arg)) && ( construct<typename mpl::nth_type_of<IIndexs,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
+}
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
 template<typename Arg, typename ... Args>
-tuple<Type,Types...>::tuple(Arg&& i_arg, Args&& ... i_args)
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(Arg&& i_arg, Args&& ... i_args)
 {
-    size_t thisTypeIndex = 1;
-
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage), std::forward<Arg>(i_arg)) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::forward<Args>(i_args)) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::forward<Arg>(i_arg)) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
 }
-template<typename Type, typename ... Types>
-tuple<Type,Types...>::tuple(const tuple<Type,Types...>& other)
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(const tuple_impl& other)
 {
-    size_t thisTypeIndex = 1;
-    size_t otherTypeIndex = 1;
-
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage), std::forward<Type>(get<Type>(PACK_STORAGE_ADDRESS(other.m_storage) ))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(otherTypeIndex++)))) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::forward<Type>(get<Type>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
 }
-template<typename Type, typename ... Types>
-tuple<Type,Types...>::tuple(tuple<Type,Types...>&& other)
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(tuple_impl&& other)
 {
-    size_t thisTypeIndex = 1;
-    size_t otherTypeIndex = 1;
-
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage), std::move(extract<Type>(PACK_STORAGE_ADDRESS(other.m_storage) ))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(otherTypeIndex++)))) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::move(extract<Type>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
 }
-template<typename Type, typename ... Types>
-template<typename Arg, typename ... Args>
-tuple<Type,Types...>::tuple(const tuple<Arg,Args...>& other)
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t IIndex, size_t ... IIndexs, typename TType, typename ... TTypes>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(const tuple_impl<mpl::sequence<IIndex,IIndexs...>,TType,TTypes...>& other)
 {
-    size_t thisTypeIndex = 1;
-    size_t otherTypeIndex = 1;
-
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage),std::forward<Arg>(get<Arg>(PACK_STORAGE_ADDRESS(other.m_storage)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::forward<Args>(get<Args>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(otherTypeIndex++)))) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index),std::forward<Arg>(get<Arg>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(get<Args>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndexs)))) && ... );
 }
-template<typename Type, typename ... Types>
-template<typename Arg, typename ... Args>
-tuple<Type,Types...>::tuple(tuple<Arg,Args...>&& other)
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t IIndex, size_t ... IIndexs, typename TType, typename ... TTypes>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::tuple_impl(tuple_impl<mpl::sequence<IIndex,IIndexs...>,TType,TTypes...>&& other)
 {
-    size_t thisTypeIndex = 1;
-    size_t otherTypeIndex = 1;
-
-    construct<Type>(PACK_STORAGE_ADDRESS(m_storage),std::move(extract<Arg>(PACK_STORAGE_ADDRESS(other.m_storage)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::move(extract<Args>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(otherTypeIndex++)))) && ... );
+    construct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index),std::move(extract<Arg>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex)))) && ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Args>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndexs)))) && ... );
 }
-template<typename Type, typename ... Types>
-tuple<Type,Types...>::~tuple()
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::~tuple_impl()
 {
-    size_t thisTypeIndex = 1;
-
-    ( destruct<Type>(PACK_STORAGE_ADDRESS(m_storage)) && ( destruct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++)) && ... ) );
+    ( destruct<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index)) && ( destruct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs)) && ... ) );
 }
-template<typename Type, typename ... Types>
-tuple<Type,Types...>& tuple<Type,Types...>::operator=(const tuple<Type,Types...>& other)
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>& tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::operator=(const tuple_impl& other)
 {
-    size_t thisTypeIndex = 1;
-    size_t otherTypeIndex = 1;
-
-    assign<Type>(PACK_STORAGE_ADDRESS(m_storage),std::forward<Type>(get<Type>(PACK_STORAGE_ADDRESS(other.m_storage)))) && ( assign<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(otherTypeIndex++)))) && ... );
+    assign<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index),std::forward<Type>(get<Type>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index)))) && ( assign<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
 
     return *this;
 }
-template<typename Type, typename ... Types>
-tuple<Type,Types...>& tuple<Type,Types...>::operator=(tuple<Type,Types...>&& other)
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>& tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::operator=(tuple_impl&& other)
 {
-    size_t thisTypeIndex = 1;
-    size_t otherTypeIndex = 1;
-
-    assign<Type>(PACK_STORAGE_ADDRESS(m_storage),std::move(extract<Type>(PACK_STORAGE_ADDRESS(other.m_storage)))) && ( assign<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(thisTypeIndex++), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(otherTypeIndex++)))) && ... );
+    assign<Type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index),std::move(extract<Type>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index)))) && ( assign<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
 
     return *this;
 }
-template<typename Type, typename ... Types>
-template<int Index>
-typename embedded_type<typename mpl::nth_type_of<Index,Type,Types...>::type>::cref_type tuple<Type,Types...>::get() const
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t IIndex>
+typename embedded_type<typename mpl::nth_type_of<IIndex,Type,Types...>::type>::cref_type tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::get() const
+{
+    typedef typename mpl::nth_type_of<IIndex,Type,Types...>::type nth_type;
+
+    return get<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(IIndex));
+}
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t IIndex>
+typename embedded_type<typename mpl::nth_type_of<IIndex,Type,Types...>::type>::ref_type tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::get()
+{
+    typedef typename mpl::nth_type_of<IIndex,Type,Types...>::type nth_type;
+
+    return get<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(IIndex));
+}
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t ... IIndexs, typename ... Args>
+void tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::set(const mpl::sequence<IIndexs...>&, Args&& ... i_args)
+{
+	static_assert(mpl::get_num_ranks<Indexs...>::value == mpl::get_num_types<Args>::value, "Unconsistent provided arguments and sequence");
+	static_assert(mpl::get_num_types<Type,Types>::value == mpl::get_num_types<Args>::value, "Wrong number of arguments");
+
+    ( assign<typename mpl::nth_type_of<Indexs,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
+}
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+template<size_t IIndex, typename Arg>
+bool tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::set(Arg&& i_arg)
 {
     typedef typename mpl::nth_type_of<Index,Type,Types...>::type nth_type;
 
-    return get<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index));
+    return assign<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::forward<Arg>(i_arg));
 }
-template<typename Type, typename ... Types>
-template<int Index>
-typename embedded_type<typename mpl::nth_type_of<Index,Type,Types...>::type>::ref_type tuple<Type,Types...>::get()
+template<size_t Index, size_t ... Indexs,typename Type, typename ... Types>
+constexpr size_t tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::size()
 {
-    typedef typename mpl::nth_type_of<Index,Type,Types...>::type nth_type;
-
-    return get<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index));
-}
-template<typename Type, typename ... Types>
-template<int ... Indexs>
-void tuple<Type,Types...>::set(typename mpl::nth_type_of<Indexs,Type,Types...>::type ... args)
-{
-    ( assign<typename mpl::nth_type_of<Indexs,Type,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<typename mpl::nth_type_of<Indexs,Type,Types...>::type>(args)) && ... );
-}
-template<typename Type, typename ... Types>
-template<int Index>
-bool tuple<Type,Types...>::set(typename mpl::nth_type_of<Index,Type,Types...>::type val)
-{
-    typedef typename mpl::nth_type_of<Index,Type,Types...>::type nth_type;
-
-    return assign<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index), std::forward<nth_type>(val));
+	return mpl::get_num_types<Type,Types...>::value;
 }
 
+}
 }

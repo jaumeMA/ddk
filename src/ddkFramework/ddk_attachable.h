@@ -35,7 +35,7 @@ public:
 	~attachable()
 	{
 	}
-	void attach(sender_id i_id, const std::function<void(const message_type&)>& i_processor)
+	void attach(sender_id i_id, const ddk::function<void(const message_type&)>& i_processor)
 	{
 		m_updateThread.start(i_id,i_processor);
 	}

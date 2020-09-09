@@ -19,7 +19,7 @@ fiber& fiber::operator=(fiber&& other)
 
 	return *this;
 }
-void fiber::start(const std::function<void()>& i_function)
+void fiber::start(const ddk::function<void()>& i_function)
 {
 	m_impl->start(i_function);
 }

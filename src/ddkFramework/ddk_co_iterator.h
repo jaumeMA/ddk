@@ -66,7 +66,7 @@ private:
 	co_forward_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value==false>::type* = nullptr);
 
 	async_execute_shared_ptr<T> m_executor;
-	std::function<reference(const co_forward_iterator_context&)> m_function;
+	ddk::function<reference(const co_forward_iterator_context&)> m_function;
 	detail::co_forward_iterator_context_impl m_context;
 	detail::this_fiber_t m_caller;
 };
@@ -105,7 +105,7 @@ private:
 	co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
 
 	async_execute_shared_ptr<T> m_executor;
-	std::function<reference(const co_forward_iterator_context&)> m_function;
+	ddk::function<reference(const co_forward_iterator_context&)> m_function;
 	detail::co_bidirectional_iterator_context_impl m_context;
 	detail::this_fiber_t m_caller;
 };
@@ -145,7 +145,7 @@ private:
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
 
 	async_execute_shared_ptr<T> m_executor;
-	std::function<reference(const co_random_access_iterator_context&)> m_function;
+	ddk::function<reference(const co_random_access_iterator_context&)> m_function;
 	detail::co_random_access_iterator_context_impl m_context;
 	detail::this_fiber_t m_caller;
 };

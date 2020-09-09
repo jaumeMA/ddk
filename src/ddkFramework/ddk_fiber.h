@@ -21,7 +21,7 @@ public:
 	fiber& operator=(fiber&& other);
 
 	fiber_id get_id() const;
-	void start(const std::function<void()>& i_function);
+	void start(const ddk::function<void()>& i_function);
 	bool ready() const;
 	void stop();
 	bool joinable() const;

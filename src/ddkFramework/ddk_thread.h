@@ -12,7 +12,7 @@
 
 #endif
 
-#include <functional>
+#include "ddk_function.h"
 #include "ddk_thread_utils.h"
 #include "ddk_thread_impl.h"
 
@@ -36,7 +36,7 @@ public:
 	thread& operator=(thread&&);
 
 	id get_id() const;	
-	void start(const std::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder = nullptr);
+	void start(const ddk::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder = nullptr);
 	void stop();
 	bool joinable() const;
 	bool set_affinity(const cpu_set_t& i_set);

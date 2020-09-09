@@ -4,6 +4,7 @@
 #include "ddk_thread_yielder.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
+#include "ddk_function.h"
 #include <exception>
 
 namespace ddk
@@ -25,7 +26,7 @@ class fiber_scheduler_interface
 {
 public:
 	virtual ~fiber_scheduler_interface() = default;
-	virtual bool activate(fiber_id, const std::function<void()>&) = 0;
+	virtual bool activate(fiber_id, const ddk::function<void()>&) = 0;
 	virtual bool deactivate(fiber_id) = 0;
 	virtual void unregister(fiber_id) = 0;
 };

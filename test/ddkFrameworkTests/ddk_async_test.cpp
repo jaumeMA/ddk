@@ -27,7 +27,9 @@ void light_func()
 
 	while(true)
 	{
-		if(s_counter < 20)
+        ++s_counter;
+
+		if(s_counter < 1000)
 		{
 			ddk::yield();
 		}
@@ -35,8 +37,6 @@ void light_func()
 		{
 			ddk::suspend();
 		}
-
-        ++s_counter;
 	}
 }
 
@@ -87,7 +87,7 @@ void heavy_func()
 
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 {
-	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
+	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10);
 	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
 
 	if(acquireRes.hasError() == false)
@@ -101,13 +101,15 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
 {
 	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
-	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(1);
 
 	if(acquireRes.hasError() == false)
 	{
 		ddk::promise<void> prom;
 		ddk::fiber_sheaf fiberSheaf = acquireRes.extractPayload();
 		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf)) -> store(prom);
+
+		provaFuture.cancel();
 
 		provaFuture.wait();
 	}

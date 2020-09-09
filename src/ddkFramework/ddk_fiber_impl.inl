@@ -17,9 +17,9 @@ namespace detail
 {
 
 template<typename Return>
-inline void launch_fiber(const std::function<Return()>* i_function, fiber_impl* i_fiber)
+inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
-	const std::function<Return()> callable(*i_function);
+	const ddk::function<Return()> callable(*i_function);
 
 	i_fiber->set_state(FiberExecutionState::Executing);
 
@@ -35,7 +35,7 @@ inline void launch_fiber(const std::function<Return()>* i_function, fiber_impl* 
 	i_fiber->set_state(FiberExecutionState::Done);
 }
 template<typename Return>
-void fiber_impl::start_from(this_fiber_t& other, const std::function<Return()>& i_function)
+void fiber_impl::start_from(this_fiber_t& other, const ddk::function<Return()>& i_function)
 {
 	const std::pair<size_t,void*> allocRes = m_alloc.allocate(m_id);
 

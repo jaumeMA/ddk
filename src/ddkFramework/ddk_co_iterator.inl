@@ -118,7 +118,7 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context)) -> attach(m_caller);
 
 	start_result execRes = m_executor->execute();
 
@@ -134,7 +134,7 @@ co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable, typename std::
 	typedef typename async_execute_interface<T>::start_result start_result;
 	typedef typename start_result::error_t start_error;
 
-	m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context)) -> attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 
@@ -239,7 +239,7 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator=(const co_forward_itera
 
 	m_caller = other.m_caller;
 
-	m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context)) -> attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 
@@ -271,7 +271,7 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(const co_bidirectional_i
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function, &m_context)->attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context))->attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 
@@ -287,7 +287,7 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(Iterable& i_iterable, ty
 	typedef typename async_execute_interface<T>::start_result start_result;
 	typedef typename start_result::error_t start_error;
 
-	m_executor = make_async_executor(m_function, &m_context)->attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context))->attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 
@@ -458,7 +458,7 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator=(const co_b
 
     m_caller = other.m_caller;
 
-	m_executor = make_async_executor(m_function, &m_context)->attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context))->attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 
@@ -489,7 +489,7 @@ co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_i
 {
 	typedef typename async_execute_interface<T>::start_result start_result;
 
-	m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context)) -> attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 
@@ -724,7 +724,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator=(const co_r
 
 	m_caller = other.m_caller;
 
-    m_executor = make_async_executor(m_function,&m_context) -> attach(m_caller);
+    m_executor = make_async_executor(m_function(&m_context)) -> attach(m_caller);
 
     const start_result execRes = m_executor->execute();
 
@@ -752,7 +752,7 @@ co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, ty
 	typedef typename async_execute_interface<T>::start_result start_result;
 	typedef typename start_result::error_t start_error;
 
-	m_executor = make_async_executor(m_function,&m_context)->attach(m_caller);
+	m_executor = make_async_executor(m_function(&m_context))->attach(m_caller);
 
 	const start_result execRes = m_executor->execute();
 

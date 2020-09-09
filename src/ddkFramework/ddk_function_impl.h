@@ -48,7 +48,7 @@ struct function_impl_base<Return, tuple<Types...>>
 	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::make_tuple<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
 	{
         typedef types_at_indexs<mpl::sequence<notSpecIndexs...>,Types...> vars_tuple;
-        typedef types_at_indexs<mpl::sequence<specIndexs...>,Types...> args_tuple;
+        typedef types_at_indexs<mpl::sequence<specIndexs...>,typename std::remove_reference<Types>::type ...> args_tuple;
 
         specialized_impl() = default;
         template<typename ... Args>
@@ -56,9 +56,9 @@ struct function_impl_base<Return, tuple<Types...>>
 
     private:
 		Return operator()(typename mpl::nth_type_of<notSpecIndexs, Types...>::type ... i_args) const override;
-        Return apply(const vars_tuple& i_tuple) const override;
+        Return apply(vars_tuple& i_tuple) const override;
 
-		args_tuple m_specArgs;
+		mutable args_tuple m_specArgs;
         function_base_const_shared_ref<Return,tuple<Types...>> m_object;
 	};
 
@@ -68,11 +68,12 @@ struct function_impl_base<Return, tuple<Types...>>
 	template<typename Allocator, typename ... Args>
 	function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
+	virtual Return operator()(Types ... args) const = 0;
+
     mutable shared_reference_counter m_refCounter;
 
 private:
-	virtual Return operator()(Types ... args) const = 0;
-    virtual Return apply(const tuple<Types...>& i_tuple) const = 0;
+    virtual Return apply(tuple<Types...>& i_tuple) const = 0;
 };
 
 //non static member function case
@@ -87,9 +88,9 @@ public:
 
 private:
 	Return operator()(Types ... args) const override;
-    Return apply(const tuple<Types...>& i_tuple) const override;
+    Return apply(tuple<Types...>& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const;
 
 	ObjectType* m_object;
     FuncPointerType m_funcPointer;
@@ -107,9 +108,9 @@ public:
 
 private:
 	Return operator()(Types ... args) const override;
-    Return apply(const tuple<Types...>& i_tuple) const override;
+    Return apply(tuple<Types...>& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const;
 
     FuncPointerType m_funcPointer;
 };
@@ -125,9 +126,9 @@ public:
 
 private:
 	Return operator()(Types ... args) const override;
-    Return apply(const tuple<Types...>& i_tuple) const override;
+    Return apply(tuple<Types...>& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, const tuple<Types...>& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const;
 
     T m_functor;
 };

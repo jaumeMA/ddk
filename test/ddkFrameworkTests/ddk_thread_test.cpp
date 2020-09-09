@@ -58,7 +58,7 @@ TEST(DDKThreadTest,threadRun)
 	ThreadCallee callee;
 	ddk::thread tmp;
 
-	tmp.start(std::bind(&ThreadCallee::run,&callee));
+	tmp.start(ddk::make_function(&callee,&ThreadCallee::run));
 
 	ddk::sleep(1000);
 
@@ -73,7 +73,7 @@ TEST(DDKThreadTest,threadReRun)
 	ThreadCallee callee;
 	ddk::thread tmp;
 
-	tmp.start(std::bind(&ThreadCallee::run,&callee));
+	tmp.start(ddk::make_function(&callee,&ThreadCallee::run));
 
 	ddk::sleep(1000);
 
@@ -87,7 +87,7 @@ TEST(DDKThreadTest,threadReRun)
 
 	callee.stop(false);
 
-	tmp.start(std::bind(&ThreadCallee::run,&callee));
+	tmp.start(ddk::make_function(&callee,&ThreadCallee::run));
 
 	ddk::sleep(1000);
 

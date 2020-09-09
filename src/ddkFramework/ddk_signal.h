@@ -19,43 +19,11 @@ public:
 	signal() = default;
     signal(const signal<void(Types...)>&) = delete;
     signal<void(Types...)>& operator=(const signal<void(Types...)>&) = delete;
-	//non static member functions
-	template<typename T, typename baseT, typename ... Args>
-	detail::connection_base& connect(T *object, void (baseT::*hook)(Args...)) const
+
+	detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const
 	{
-		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
-
-		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args) mutable { (object->*hook)(std::forward<Args>(i_args)...); };
-
-		return m_callers.push(call,static_cast<const detail::signal_connector&>(*this));
+		return m_callers.push(i_function,static_cast<const detail::signal_connector&>(*this));
 	}
-	template<typename T, typename baseT, typename ... Args>
-	detail::connection_base& connect(const T *object, void (baseT::*hook)(Args...)const) const
-	{
-		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
-
-		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args) mutable { (object->*hook)(std::forward<Args>(i_args)...); };
-
-		return m_callers.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	//functors
-	template<typename Functor>
-	detail::connection_base& connect(const Functor& i_functor) const
-	{
-		std::function<void(Types...)> call(i_functor);
-
-		return m_callers.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-
-	//static member/free functions
-	template<typename ... Args>
-	detail::connection_base& connect(void (*hook)(Args...)) const
-	{
-		std::function<void(Types...)> call = [hook](Args&& ... i_args) mutable { (*hook)(std::forward<Args>(i_args) ...); };
-
-		return m_callers.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-
 	void disconnect()
 	{
 		m_callers.clear();

@@ -24,20 +24,20 @@ public:
 	~thread_polling_executor();
 	void set_update_time(size_t i_sleepInMs);
 	size_t get_update_time() const;
-	void start_thread(const std::function<void()>& i_executor);
+	void start_thread(const ddk::function<void()>& i_executor);
 	void stop_thread();
 	void signal_thread();
 	bool is_stopped() const;
 
 private:
-	virtual start_result execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor) override;
+	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
-	void update() const;
+	void update();
 
 	std::chrono::milliseconds m_sleepTimeInMS;
-	std::function<void()> m_executor;
+	ddk::function<void()> m_executor;
 	bool m_stopped;
 	ddk::thread m_updateThread;
 };
@@ -55,21 +55,21 @@ public:
 	~thread_event_driven_executor();
 	void set_update_time(unsigned int i_sleepInMs);
 	unsigned int get_update_time() const;
-	void start_thread(const std::function<void()>& i_executor, const std::function<bool()>& i_testFunc = nullptr);
+	void start_thread(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc = nullptr);
 	void stop_thread();
 	void signal_thread();
 	bool is_stopped() const;
 
 private:
-	virtual start_result execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor) override;
+	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
 	void update();
 
 	unsigned int m_sleepTimeInMS;
-	std::function<void()> m_executor;
-	std::function<bool()> m_testFunc;
+	ddk::function<void()> m_executor;
+	ddk::function<bool()> m_testFunc;
 	bool m_stopped;
 	ddk::thread m_updateThread;
 	pthread_cond_t		m_condVar;
@@ -90,13 +90,13 @@ public:
 	~thread_fire_and_forget_executor();
 
 private:
-	virtual start_result execute(const std::function<void()>& i_sink, const std::function<void()>& i_executor) override;
+	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
 	void update();
 
-	mutable std::function<void()> m_executor;
+	mutable ddk::function<void()> m_executor;
 	ddk::thread m_updateThread;
 };
 

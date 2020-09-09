@@ -2,21 +2,20 @@
 namespace ddk
 {
 
-template<typename RReturn, typename ... Types, typename ... Args>
-shared_reference_wrapper<async_executor<RReturn>> make_async_executor(const std::function<RReturn(Types...)>& i_function, Args&& ... i_args)
+template<typename RReturn>
+shared_reference_wrapper<async_executor<RReturn>> make_async_executor(const ddk::function<RReturn()>& i_function)
 {
-	async_executor<RReturn>* newAsyncExecutor = new async_executor<RReturn>(i_function,std::forward<Args>(i_args) ...);
+	async_executor<RReturn>* newAsyncExecutor = new async_executor<RReturn>(i_function);
 
 	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&newAsyncExecutor->m_refCounter,ReferenceAllocationType::Embedded));
 }
 
 template<typename Return>
-template<typename ... Types, typename ... Args>
-async_executor<Return>::async_executor(const std::function<Return(Types...)>& i_function, Args&& ... i_args)
+async_executor<Return>::async_executor(const ddk::function<Return()>& i_function)
 : m_executor(make_executor<detail::deferred_executor<Return>>())
 , m_sharedState(make_shared_reference<detail::private_async_state<Return>>())
+, m_function(i_function)
 {
-	m_function = [i_function,i_args...]() mutable -> Return { return i_function(std::forward<Args>(i_args) ...); };
 }
 template<typename Return>
 async_executor<Return>::async_executor(async_executor&& other)
@@ -31,7 +30,7 @@ async_executor<Return>::~async_executor()
 	//if not executed, excute and wait for its result
 	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
 	{
-		Return _tmp = m_function();
+		Return _tmp = m_function.eval();
 
 		m_sharedState->set_value(_tmp);
 	}
@@ -71,9 +70,10 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 template<typename Return>
 shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
-	const std::function<Return()> thisFunction(m_function);
+	const ddk::function<Return()> thisFunction(m_function);
 
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(std::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction(); return _void; }));
+	//at some point put a composed callable here
+	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(ddk::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction.eval(); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -85,9 +85,9 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 template<typename Return>
 shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 {
-	const std::function<Return()> thisFunction(m_function);
+	const ddk::function<Return()> thisFunction(m_function);
 
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(std::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction(); return _void; }));
+	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(ddk::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction(); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
@@ -113,7 +113,7 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::store(
 	return thisRef;
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const std::function<bool()>& i_cancelFunc)
+typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	m_cancelFunc = i_cancelFunc;
 
@@ -122,7 +122,7 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::on_can
 template<typename Return>
 typename async_executor<Return>::start_result async_executor<Return>::execute()
 {
-	nested_start_result execRes = m_executor->execute(std::bind(&async_executor<Return>::set_value,this,std::placeholders::_1),m_function);
+	nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
 
 	if(execRes.hasError() == false)
 	{
@@ -150,7 +150,7 @@ void async_executor<Return>::set_value(Return i_value)
 template<typename Return>
 void async_executor<Return>::bind()
 {
-	nested_start_result execRes = m_executor->execute(std::bind(&async_executor<Return>::set_value,this,std::placeholders::_1),m_function);
+	nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
 
 	DDK_ASSERT(execRes.hasError() == false, "Error while binding async executor");
 }
@@ -159,7 +159,7 @@ typename async_executor<Return>::reference async_executor<Return>::get_value()
 {
 	if(m_sharedState->ready() == false)
 	{
-		Return _tmp = m_function();
+		Return _tmp = m_function.eval();
 
 		m_sharedState->set_value(_tmp);
 	}
@@ -183,7 +183,7 @@ typename async_executor<Return>::const_reference async_executor<Return>::get_val
 {
 	if(m_sharedState->ready() == false)
 	{
-		Return _tmp = m_function();
+		Return _tmp = m_function.eval();
 
 		m_sharedState->set_value(_tmp);
 	}
@@ -195,7 +195,7 @@ typename async_executor<Return>::value_type async_executor<Return>::extract_valu
 {
 	if(m_sharedState->ready() == false)
 	{
-		Return _tmp = m_function();
+		Return _tmp = m_function.eval();
 
 		m_sharedState->set_value(_tmp);
 	}

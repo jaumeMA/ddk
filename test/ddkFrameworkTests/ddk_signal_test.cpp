@@ -60,7 +60,7 @@ TEST(DDKSignalTest,signalToMemberFunctionConnect)
 	ddk::signal<void(int,char,const std::string&)> tmp;
 
 	SignalCallee callee;
-	ddk::connection tmpConn = tmp.connect(&callee,&SignalCallee::memberCall);
+	ddk::connection tmpConn = tmp.connect(ddk::make_function(&callee,&SignalCallee::memberCall));
 
 	EXPECT_EQ(tmpConn.is_connected(),true);
 	EXPECT_EQ(tmpConn.is_enabled(),true);

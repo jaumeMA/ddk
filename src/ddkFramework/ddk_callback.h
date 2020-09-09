@@ -34,47 +34,11 @@ public:
 		disconnect();
 	}
     //non static member functions
-    template<typename T, typename baseT, typename ... Args>
-    detail::connection_base& connect(T *object, Return (baseT::*hook)(Args ...)) const
+    detail::connection_base& connect(const ddk::function<Return(Types...)>& i_function) const
 	{
-		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
-
-		const std::function<Return(Types...)> call = [object,hook](Args&& ... i_args) mutable -> Return { return (object->*hook)(std::forward<Args>(i_args)...); };
-
 		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	template<typename T, typename baseT, typename ... Args>
-	detail::connection_base& connect(const T *object, Return(baseT::*hook)(Args...)const) const
-	{
-		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
-
-		const std::function<Return(Types...)> call = [object,hook](Args&& ... i_args) mutable -> Return { return (object->*hook)(std::forward<Args>(i_args)...); };
-
-		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
-
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	//functors
-	template<typename Functor>
-	detail::connection_base& connect(const Functor& i_functor) const
-	{
-		std::function<Return(Types...)> call(i_functor);
-
-		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
-
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	//static member/free functions
-	template<typename ... Args>
-    detail::connection_base& connect(Return(*hook)(Args...)) const
-	{
-		const std::function<Return(Types...)> call = [hook](Args&& ... i_args) mutable -> Return { return (*hook)(std::forward<Args>(i_args)...); };
-
-		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
-
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
+		return m_recipient.push(i_function,static_cast<const detail::signal_connector&>(*this));
 	}
     void disconnect()
 	{
@@ -127,48 +91,13 @@ public:
 	{
 		disconnect();
 	}
-    //non static member functions
-    template<typename T, typename baseT, typename ... Args>
-    detail::connection_base& connect(T *object, void(baseT::*hook)(Args...)) const
+    detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const
 	{
 		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
 
-		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args) { (object->*hook)(std::forward<Args>(i_args)...); };
-
 		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	template<typename T, typename baseT, typename ... Args>
-	detail::connection_base& connect(const T *object, void(baseT::*hook)(Types...)const) const
-	{
-		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
-
-		const std::function<void(Types...)> call = [object,hook](Args&& ... i_args){ (object->*hook)(std::forward<Args>(i_args)...); };
-
-		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
-
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	//functors
-	template<typename Functor>
-	detail::connection_base& connect(const Functor& i_functor) const
-	{
-		std::function<void(Types...)> call(i_functor);
-
-		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
-
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
-	}
-	//static member/free functions
-	template<typename ... Args>
-    detail::connection_base& connect(void(*hook)(Args ...)) const
-	{
-		const std::function<void(Types...)> call = [hook](Args&& ... i_args) { (*hook)(std::forward<Args>(i_args)...); };
-
-		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
-
-		return m_recipient.push(call,static_cast<const detail::signal_connector&>(*this));
+		return m_recipient.push(i_function,static_cast<const detail::signal_connector&>(*this));
 	}
     void disconnect()
 	{

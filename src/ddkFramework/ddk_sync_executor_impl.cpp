@@ -11,7 +11,7 @@ thread_sheaf_executor::thread_sheaf_executor(thread_sheaf i_threadSheaf)
 , m_pendingThreads(m_threadSheaf.size())
 , m_state(ExecutorState::Idle)
 {}
-thread_sheaf_executor::start_result thread_sheaf_executor::execute(const std::function<void(detail::void_t)>& i_sink, const std::function<detail::void_t()>& i_callable)
+thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::function<void(detail::void_t)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -36,7 +36,7 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const std::fu
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						i_sink(_void);
+						i_sink.eval(_void);
 					}
 				}
 			});
@@ -49,7 +49,7 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const std::fu
 		}
 	}
 }
-thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const std::function<bool()>& i_cancelFunc)
+thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
@@ -88,7 +88,7 @@ fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
 , m_state(ExecutorState::Idle)
 {
 }
-fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const std::function<void(detail::void_t)>& i_sink, const std::function<detail::void_t()>& i_callable)
+fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::function<void(detail::void_t)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -119,7 +119,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const std::func
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						i_sink(_void);
+						i_sink.eval(_void);
 					}
 				}
 			});
@@ -132,7 +132,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const std::func
 		}
 	}
 }
-fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const std::function<bool()>& i_cancelFunc)
+fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
