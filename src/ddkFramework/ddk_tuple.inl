@@ -153,4 +153,37 @@ constexpr size_t tuple_impl<mpl::sequence<Index,Indexs...>,Type,Types...>::size(
 }
 
 }
+
+template<typename ... Types>
+tuple<Types&&...> make_tuple(Types&& ... vals)
+{
+    return tuple<Types&&...>(std::forward<Types>(vals)...);
+}
+
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, size_t ... IndexsA, typename ... TypesA, size_t ... IndexsB, typename ... TypesB>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>&, const mpl::sequence<IndexsA...>&, tuple<TypesA...>& i_lhs, const mpl::sequence<IndexsB...>&, tuple<TypesB...>& i_rhs)
+{
+    return tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...>(i_srcSeq,i_lhs.template get<IndexsA>() ..., i_rhs.template get<IndexsB>() ...);
+}
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, size_t ... Indexs, typename ... Types, typename ... Args>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>&, const mpl::sequence<Indexs...>&, tuple<Types...>& i_lhs, Args&& ... i_args)
+{
+    return tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...>(i_srcSeq,i_lhs.template get<Indexs>() ..., std::forward<Args>(i_args) ...);
+}
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, tuple<TypesA...>& i_lhs, tuple<TypesB...>& i_rhs)
+{
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>::value>::type sequenceA;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>::value>::type sequenceB;
+
+    return merge<FinalTypes...>(i_srcSeq,i_destSeq,sequenceA{},i_lhs,sequenceB{},i_rhs);
+}
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... Types, typename ... Args>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, tuple<Types...>& i_lhs, Args&& ... i_args)
+{
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type sequence_t;
+
+    return merge_args<FinalTypes...>(i_srcSeq,i_destSeq,sequence_t{},i_lhs,std::forward<Args>(i_args) ...);
+}
+
 }

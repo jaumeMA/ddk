@@ -5,6 +5,7 @@
 #include "ddk_function_template_helper.h"
 #include "ddk_tagged_pointer.h"
 #include "ddk_shared_reference_wrapper.h"
+#include "ddk_lent_pointer_wrapper.h"
 
 namespace ddk
 {
@@ -22,6 +23,8 @@ template<typename T, typename TT>
 using function_base_shared_ptr = shared_pointer_wrapper<function_impl_base<T, TT>>;
 template<typename T, typename TT>
 using function_base_const_shared_ptr = shared_pointer_wrapper<const function_impl_base<T, TT>>;
+template<typename T, typename TT>
+using function_base_const_lent_ptr = lent_pointer_wrapper<const function_impl_base<T, TT>>;
 template<typename Sequence, typename ... Types>
 using types_at_indexs = typename mpl::make_tuple<Types...>::template at<Sequence>::type;
 template<typename TTypes, typename ... Types>

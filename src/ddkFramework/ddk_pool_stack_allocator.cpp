@@ -201,8 +201,6 @@ pool_stack_allocator::~pool_stack_allocator()
 }
 void* pool_stack_allocator::reserve(size_t i_size) const
 {
-	const size_t numPages = i_size / s_pageSize;
-
 	void* res = nullptr;
 
 	if(m_buddyAllocator.empty())
@@ -235,8 +233,6 @@ void* pool_stack_allocator::reserve(size_t i_size) const
 }
 void* pool_stack_allocator::allocate(void* i_ref, size_t i_size) const
 {
-	const size_t numPages = i_size / s_pageSize;
-
 	std::set<Buddy>::iterator itBuddy = m_buddyAllocator.find(i_ref);
 	if(itBuddy != m_buddyAllocator.end())
 	{

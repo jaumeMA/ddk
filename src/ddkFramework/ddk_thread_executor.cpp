@@ -99,7 +99,7 @@ bool thread_polling_executor::is_stopped() const
 {
 	return m_stopped;
 }
-void thread_polling_executor::update()
+void thread_polling_executor::update() const
 {
 	while(m_stopped == false)
 	{

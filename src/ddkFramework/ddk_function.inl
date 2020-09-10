@@ -224,6 +224,11 @@ function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_fun
 {
     return function<Return(Types...)>(i_object, i_funcPtr);
 }
+template<typename Object, typename Return, typename ... Types>
+function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...)const)
+{
+    return function<Return(Types...)>(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
+}
 template<typename Return, typename ... Types>
 function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...))
 {
@@ -240,6 +245,11 @@ template<typename Object, typename Return, typename ... Types, typename Allocato
 function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_object, i_funcPtr);
+}
+template<typename Object, typename Return, typename ... Types, typename Allocator>
+function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator)
+{
+    return function<Return(Types...),Allocator>(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
 }
 template<typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
@@ -259,6 +269,15 @@ resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...)> res(i_object, i_funcPtr);
+
+	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+}
+template<typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args>
+resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
+{
+	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+
+    const function<Return(Type,Types...)> res(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -288,6 +307,15 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...)> res(i_object, i_funcPtr);
+
+	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+}
+template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+{
+	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+
+    const function<Return(Type,Types...)> res(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }

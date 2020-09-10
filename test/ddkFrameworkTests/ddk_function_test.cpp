@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
-#include "ddk_function.h"
+#include "ddk_function_view.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
 #include <map>
+#include "ddk_function_ops.h"
 
 using namespace testing;
 using testing::Types;
@@ -41,6 +42,8 @@ TEST(DDKFunctionTest,defaultConstruction)
 	ddk::function<size_t(const std::string&)> res8 = ddk::make_function(&thisFoo,&Foo::member_func,'a',ddk::arg_0);
 	ddk::function<bool()> res9 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },"hola");
 
+	ddk::function<bool()> ress = res9 && res9;
+
 	ddk::function<int(float)> res10 = ddk::make_function(&sum_func,ddk::system_allocator{},1,ddk::arg_0);
 	ddk::function<size_t(const std::string&)> res11 = ddk::make_function(&thisFoo,&Foo::member_func,ddk::system_allocator{},'a',ddk::arg_0);
 	ddk::function<bool()> res12 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },ddk::system_allocator{},"hola");
@@ -52,6 +55,11 @@ TEST(DDKFunctionTest,defaultConstruction)
     ddk::function<int(double,float)> foo2 = foo1(ddk::arg_1,"hola",ddk::arg_0);
 
     ddk::function<int(double,float,std::string,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
+
+	if (ddk::function_view<int(double, float, std::string, char, int)> foo3View = foo3)
+	{
+		int result = foo3View(20.f,10.f,"hola",'a',3);
+	}
 }
 
 

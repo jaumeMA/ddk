@@ -132,24 +132,15 @@ template<typename ... Types>
 using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type,Types...>;
 
 template<typename ... Types>
-tuple<Types&&...> make_tuple(Types&& ... vals)
-{
-    return tuple<Types&&...>(std::forward<Types>(vals)...);
-}
-
-template<typename ... FinalTypes, size_t ... IndexsA, typename ... TypesA, size_t ... IndexsB, typename ... TypesB, size_t ... FromIndexs, size_t ... ToIndexs>
-inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<IndexsA...>&, tuple<TypesA...>& i_lhs, const mpl::sequence<IndexsB...>&, tuple<TypesB...>& i_rhs, const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>&)
-{
-    return tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...>(i_srcSeq,i_lhs.template get<IndexsA>() ..., i_rhs.template get<IndexsB>() ...);
-}
-template<typename ... FinalTypes, typename ... TypesA, typename ... TypesB, size_t ... FromIndexs, size_t ... ToIndexs>
-inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(tuple<TypesA...>& i_lhs, tuple<TypesB...>& i_rhs, const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq)
-{
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>::value>::type sequenceA;
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>::value>::type sequenceB;
-
-    return merge<FinalTypes...>(sequenceA{},i_lhs,sequenceB{},i_rhs,i_srcSeq,i_destSeq);
-}
+tuple<Types&&...> make_tuple(Types&& ... vals);
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, size_t ... IndexsA, typename ... TypesA, size_t ... IndexsB, typename ... TypesB>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>&, const mpl::sequence<ToIndexs...>&, const mpl::sequence<IndexsA...>&, tuple<TypesA...>& i_lhs, const mpl::sequence<IndexsB...>&, tuple<TypesB...>& i_rhs);
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, size_t ... Indexs, typename ... Types, typename ... Args>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>&, const mpl::sequence<Indexs...>&, tuple<Types...>& i_lhs, Args&& ... i_args);
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, tuple<TypesA...>& i_lhs, tuple<TypesB...>& i_rhs);
+template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... Types, typename ... Args>
+inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, tuple<Types...>& i_lhs, Args&& ... i_args);
 
 }
 

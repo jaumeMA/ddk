@@ -28,13 +28,13 @@ using resolved_callable = resolved_function<typename mpl::aqcuire_callable_retur
 template<typename Callable, typename Allocator, typename ... Args>
 using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,detail::unresolved_tuple<tuple<Args...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>,Allocator>;
 
-const size_t k_embeddedStorageSize = 16;
-
 template<typename Return, typename Allocator>
 class function<Return(),Allocator>
 {
     template<typename,typename>
     friend class function;
+    template<typename>
+    friend class function_view;
     typedef detail::function_base_const_shared_ptr<Return,tuple<>> function_base_const_shared_ptr;
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
 
@@ -67,6 +67,8 @@ class function<Return(Types...),Allocator>
 {
     template<typename,typename>
     friend class function;
+    template<typename>
+    friend class function_view;
     typedef detail::function_base_const_shared_ptr<Return,tuple<Types...>> function_base_const_shared_ptr;
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
 
@@ -98,6 +100,8 @@ private:
 //no allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types>
 inline function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...));
+template<typename Object, typename Return, typename ... Types>
+inline function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...)const);
 template<typename Return, typename ... Types>
 inline function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...));
 template<typename Functor>
@@ -106,6 +110,8 @@ inline resolved_callable<typename std::enable_if<std::is_class<Functor>::value,F
 //allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types, typename Allocator>
 inline function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator);
+template<typename Object, typename Return, typename ... Types, typename Allocator>
+inline function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator);
 template<typename Return, typename ... Types, typename Allocator>
 inline function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator);
 template<typename Functor, typename Allocator>
@@ -114,6 +120,8 @@ inline resolved_callable<typename std::enable_if<std::is_class<Functor>::value,F
 //no allocator specified, args specified
 template<typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args>
 inline resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
+template<typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args>
+inline resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args);
 template<typename Return, typename Type, typename ... Types, typename Arg, typename ... Args>
 inline resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 template<typename Functor, typename Arg, typename ... Args>
@@ -122,6 +130,8 @@ inline resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::va
 //allocator specified, args specified
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 template<typename Functor, typename Allocator, typename Arg, typename ... Args>

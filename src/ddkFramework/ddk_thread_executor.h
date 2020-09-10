@@ -34,7 +34,7 @@ private:
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
-	void update();
+	void update() const;
 
 	std::chrono::milliseconds m_sleepTimeInMS;
 	ddk::function<void()> m_executor;
