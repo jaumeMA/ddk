@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_function.h"
+#include "ddk_function_impl.h"
 
 namespace ddk
 {
@@ -19,8 +19,7 @@ public:
 	function_view(const function_view&) = default;
 	function_view(function_view&&) = default;
 	function_view(std::nullptr_t);
-	template<typename Allocator>
-	function_view(const function<Return(Types...),Allocator>& i_function);
+	function_view(function_base_const_lent_ptr i_function);
 
     template<typename ... Args>
     Return operator()(Args&& ... i_args) const;

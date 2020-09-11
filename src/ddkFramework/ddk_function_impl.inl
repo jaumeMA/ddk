@@ -22,7 +22,9 @@ Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequen
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
-    return m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::nth_type_of<notSpecIndexs, Types...>::type>(i_args) ...));
+    auto mergedArgs = merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::nth_type_of<notSpecIndexs, Types...>::type>(i_args) ...);
+
+    return m_object->apply(mergedArgs);
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
@@ -32,7 +34,9 @@ Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequen
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
-    return m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
+    auto mergedTuple = merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple);
+
+    return m_object->apply(mergedTuple);
 }
 
 template<typename Return, typename ... Types>

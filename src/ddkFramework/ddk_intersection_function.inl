@@ -20,7 +20,7 @@ template<typename Callable, typename ... NestedCallables>
 template<typename ... Args>
 typename intersection_function<Callable,NestedCallables...>::callable_return_type intersection_function<Callable,NestedCallables...>::operator()(Args&& ... i_args) const
 {
-    return execute(typename mpl::make_sequence<0,s_num_callables>::type{}, mpl::forward<Args>(i_args)...);
+    return execute(typename mpl::make_sequence<0,s_num_callables>::type{}, std::forward<Args>(i_args)...);
 }
 template<typename Callable, typename ... NestedCallables>
 template<int ... Indexs, typename ... Args>
@@ -45,7 +45,7 @@ const tuple<Callables...>& intersected_functions<Callables...>::get_callables() 
 template<typename Callable, typename ... Callables>
 detail::intersection_function<Callable, Callables...> operator<=(const Callable& i_callable, const detail::intersected_functions<Callables...>& i_nestedCallable)
 {
-	return detail::intersection_function{i_callable,i_nestedCallable.get_callables()};
+	return detail::intersection_function<Callable, Callables...>{i_callable,i_nestedCallable.get_callables()};
 }
 
 }

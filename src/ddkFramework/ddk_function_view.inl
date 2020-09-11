@@ -10,9 +10,8 @@ function_view<Return(Types...)>::function_view(std::nullptr_t)
 {
 }
 template<typename Return, typename ... Types>
-template<typename Allocator>
-function_view<Return(Types...)>::function_view(const function<Return(Types...), Allocator>& i_function)
-: m_functionImpl(ddk::lend(i_function.m_functionImpl))
+function_view<Return(Types...)>::function_view(function_base_const_lent_ptr i_function)
+: m_functionImpl(i_function)
 {
 }
 template<typename Return, typename ... Types>

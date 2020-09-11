@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_intersection_function.h"
+#include "ddk_function.h"
 
 #define DEFINE_HIGHER_ORDER_UNARY_FUNCTION(NAME,OP) \
 template<typename Return> \
