@@ -29,7 +29,12 @@ public:
 
 TEST(DDKFunctionTest,defaultConstruction)
 {
+    ddk::function<int(int,std::string,float,double,char)> foo;
+}
+TEST(DDKFunctionTest,funcMakeConstruction)
+{
 	Foo thisFoo;
+
 	ddk::function<int(int,float)> res1 = ddk::make_function(&sum_func);
 	ddk::function<size_t(char,const std::string&)> res2 = ddk::make_function(&thisFoo,&Foo::member_func);
 	ddk::function<bool(const std::string&)> res3 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); });
@@ -37,22 +42,40 @@ TEST(DDKFunctionTest,defaultConstruction)
 	ddk::function<int(int,float)> res4 = ddk::make_function(&sum_func,ddk::system_allocator{});
 	ddk::function<size_t(char,const std::string&)> res5 = ddk::make_function(&thisFoo,&Foo::member_func,ddk::system_allocator{});
 	ddk::function<bool(const std::string&)> res6 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },ddk::system_allocator{});
+}
+TEST(DDKFunctionTest,funcMakeSpecialization)
+{
+	Foo thisFoo;
 
 	ddk::function<int(float)> res7 = ddk::make_function(&sum_func,1,ddk::arg_0);
 	ddk::function<size_t(const std::string&)> res8 = ddk::make_function(&thisFoo,&Foo::member_func,'a',ddk::arg_0);
 	ddk::function<bool()> res9 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },"hola");
 
-	ddk::function<bool(const std::string&)> ress = res6 && res6;
-
 	ddk::function<int(float)> res10 = ddk::make_function(&sum_func,ddk::system_allocator{},1,ddk::arg_0);
 	ddk::function<size_t(const std::string&)> res11 = ddk::make_function(&thisFoo,&Foo::member_func,ddk::system_allocator{},'a',ddk::arg_0);
 	ddk::function<bool()> res12 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },ddk::system_allocator{},"hola");
-
+}
+TEST(DDKFunctionTest,funcSpecialization)
+{
     ddk::function<int(int,std::string,float,double,char)> foo;
 
     ddk::function<int(float,std::string,double)> foo1 = foo(1,ddk::arg_1,ddk::arg_0,ddk::arg_2,'a');
 
     ddk::function<int(double,float)> foo2 = foo1(ddk::arg_1,"hola",ddk::arg_0);
+
+    ddk::function<int(double,float,std::string,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
+}
+TEST(DDKFunctionTest,funcOps)
+{
+    ddk::function<bool(double,float)> foo1;
+
+    ddk::function<bool(double,float)> foo2;
+
+	ddk::function<bool(double,float)> foo12 = foo1 && foo2;
+}
+TEST(DDKFunctionTest,funcView)
+{
+    ddk::function<int(int,std::string,float,double,char)> foo;
 
     ddk::function<int(double,float,std::string,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
 
@@ -61,5 +84,29 @@ TEST(DDKFunctionTest,defaultConstruction)
 		int result = foo3View(20.f,10.f,"hola",'a',3);
 	}
 }
+TEST(DDKFunctionTest,funcComposition)
+{
+    ddk::function<bool(int)> foo1;
+    ddk::function<int(char)> foo2;
+    ddk::function<char(float,double)> foo3;
 
+    ddk::function<bool(float,double)> foo12 =  foo1 <<= foo2 <<= foo3;
+}
+TEST(DDKFunctionTest,funcIntersection)
+{
+    ddk::function<bool(int,char,float)> foo1;
+    ddk::function<int(float,double)> foo2;
+    ddk::function<char(float,double)> foo3;
+    ddk::function<float(float,double)> foo4;
 
+    ddk::function<bool(float,double)> foo12 =  foo1 <<= (foo2 & foo3 & foo4);
+}
+TEST(DDKFunctionTest,funcUnion)
+{
+    ddk::function<bool(int,char,float)> foo1;
+    ddk::function<int(float,double)> foo2;
+    ddk::function<char(const std::string&)> foo3;
+    ddk::function<float(char)> foo4;
+
+    ddk::function<bool(float,double,const std::string&,char)> foo12 =  foo1 <<= (foo2 | foo3 | foo4);
+}
