@@ -8,26 +8,61 @@ namespace ddk
 namespace detail
 {
 
-template<typename Callable, typename ... NestedCallables>
-class union_function
+template<size_t,typename ...>
+struct sequence_composer;
+
+template<size_t Index>
+struct sequence_composer<Index>
 {
-    typedef typename mpl::aqcuire_callable_return_type<Callable>::return_type callable_return_type;
-    typedef typename mpl::aqcuire_callable_return_type<Callable>::args_type callable_args;
-    static const size_t s_num_callables = callable_args::size();
+    typedef tuple<> type;
+};
+
+template<size_t Index, typename CallableArgs, typename ... CallablesArgs>
+struct sequence_composer<Index,CallableArgs,CallablesArgs...>
+{
+private:
+    typedef typename mpl::make_sequence<Index,Index+CallableArgs::size()>::type curr_sequence;
+    typedef typename sequence_composer<Index+CallableArgs::size(),CallablesArgs...>::type next_composed_sequence;
 
 public:
-    union_function(const Callable& i_callableTransform, const NestedCallables& ... i_args);
-    union_function(const union_function<Callable,NestedCallables...>& other) = default;
-    union_function(union_function<Callable,NestedCallables...>&& other) = default;
+    typedef typename mpl::merge_tuples<tuple<curr_sequence>,next_composed_sequence>::type type;
+};
+
+
+template<typename Callable, typename ... Callables>
+class union_function
+{
+    static const size_t s_num_callables = mpl::get_num_types<Callables...>::value + 1;
+
+    template<typename ... CallablesB>
+    friend inline union_function<Callable,Callables...,CallablesB...> operator|(const union_function<Callable,Callables...>& i_lhs, const union_function<CallablesB...>& i_rhs)
+    {
+        return union_function<Callable,Callables...,CallablesB...>{merge(i_lhs.m_callables,i_rhs.m_callables)};
+    }
+    template<typename CallableB>
+    friend inline union_function<Callable,Callables...,CallableB> operator|(const union_function<Callable,Callables...>& i_lhs, const CallableB& i_rhs)
+    {
+        return union_function<Callable,Callables...,CallableB>{merge_args(i_lhs.m_callables,i_rhs)};
+    }
+
+public:
+    typedef tuple<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
+    typedef typename mpl::merge_tuples<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
+
+    union_function(const Callable& i_callable, const Callables& ... i_callables);
+    union_function(const tuple<Callable,Callables...>& i_callables);
+    union_function(const union_function<Callable,Callables...>& other) = default;
+    union_function(union_function<Callable,Callables...>&& other) = default;
 	template<typename ... Args>
     callable_return_type operator()(Args&& ... i_args) const;
 
 private:
-    template<int ... Indexs, typename ... Args>
-    inline callable_return_type execute(const mpl::sequence<Indexs...>&, Args&& ... i_args) const;
+    template<size_t ... Indexs, typename ... Args>
+    inline callable_return_type execute(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
+    template<typename CCallable, size_t ... Indexs, typename ... Args>
+    inline typename mpl::aqcuire_callable_return_type<CCallable>::return_type execute(const CCallable& i_callable, const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
 
-    Callable m_returnTransform;
-	tuple<NestedCallables...> m_nestedCallables;
+	tuple<Callable,Callables...> m_callables;
 };
 
 }

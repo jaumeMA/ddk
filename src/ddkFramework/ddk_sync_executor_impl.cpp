@@ -36,7 +36,7 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						i_sink.eval(_void);
+						eval(i_sink,_void);
 					}
 				}
 			});
@@ -119,7 +119,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						i_sink.eval(_void);
+						eval(i_sink,_void);
 					}
 				}
 			});

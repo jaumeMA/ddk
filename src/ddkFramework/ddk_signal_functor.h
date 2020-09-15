@@ -33,7 +33,7 @@ public:
 	template<typename ... Args>
     Return execute(Args&& ... i_args) const
 	{
-	  return m_call.eval(std::forward<Args>(i_args) ...);
+	  return eval(m_call,std::forward<Args>(i_args) ...);
 	}
     Return execute_tuple(const tuple_t& i_args) const
 	{
@@ -52,7 +52,7 @@ private:
     template<size_t ... Seq>
       inline Return _execute(const tuple_t& i_args, const mpl::sequence<Seq...>&) const
       {
-        return m_call.eval(std::get<Seq>(i_args) ...);
+        return eval(m_call,std::get<Seq>(i_args) ...);
       }
 
     ddk::function<Return(Types...)>  m_call;

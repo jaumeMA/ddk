@@ -8,13 +8,34 @@ namespace ddk
 namespace mpl
 {
 
-template<typename,typename>
+template<typename>
+struct is_tuple;
+
+template<typename T>
+struct is_tuple
+{
+    static const bool value = false;
+};
+
+template<typename ... Types>
+struct is_tuple<tuple<Types...>>
+{
+    static const bool value = true;
+};
+
+template<typename...>
 struct merge_tuples;
 
-template<typename ... TypesA, typename ... TypesB>
-struct merge_tuples<tuple<TypesA...>,tuple<TypesB...>>
+template<typename ... Types>
+struct merge_tuples<tuple<Types...>>
 {
-    typedef tuple<TypesA...,TypesB...> type;
+    typedef tuple<Types...> type;
+};
+
+template<typename ... TypesA, typename ... TypesB, typename ... T>
+struct merge_tuples<tuple<TypesA...>,tuple<TypesB...>,T...>
+{
+    typedef typename merge_tuples<tuple<TypesA...,TypesB...>,T...>::type type;
 };
 
 template<typename ...>
