@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ddk_tuple.h"
 #include "ddk_function_template_helper.h"
 
 namespace ddk
@@ -8,47 +7,72 @@ namespace ddk
 namespace detail
 {
 
-template<typename Callable, typename ... NestedCallables>
-class intersection_function
+template<typename ...>
+class intersection_function;
+
+template<typename Callable, typename ... Callables>
+class intersection_function<Callable,Callables...>
 {
-    typedef typename mpl::aqcuire_callable_return_type<Callable>::return_type callable_return_type;
-    typedef typename mpl::aqcuire_callable_return_type<Callable>::args_type callable_args;
-    static const size_t s_num_callables = callable_args::size();
+    static const size_t s_num_callables = 1 + mpl::get_num_types<Callables...>::value;
+
+    template<typename ... CallablesB>
+    friend inline intersection_function<Callable,Callables...,CallablesB...> operator&(const intersection_function<Callable,Callables...>& i_lhs, const intersection_function<CallablesB...>& i_rhs)
+    {
+        return intersection_function<Callable,Callables...,CallablesB...>{merge(i_lhs.m_callables,i_rhs.m_callables)};
+    }
+    template<typename CallableB>
+    friend inline intersection_function<Callable,Callables...,CallableB> operator&(const intersection_function<Callable,Callables...>& i_lhs, const CallableB& i_rhs)
+    {
+        return intersection_function<Callable,Callables...,CallableB>{merge_args(i_lhs.m_callables,i_rhs)};
+    }
 
 public:
-    intersection_function(const Callable& i_callableTransform, const NestedCallables& ... i_args);
-    intersection_function(const Callable& i_callableTransform, const tuple<NestedCallables...>& i_callables);
-    intersection_function(const intersection_function<Callable,NestedCallables...>& other) = default;
-    intersection_function(intersection_function<Callable,NestedCallables...>&& other) = default;
+    typedef tuple<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
+    typedef typename mpl::aqcuire_callable_return_type<Callable>::args_type callable_args_type;
+
+    intersection_function(const Callable& i_callable, const Callables& ... i_callables);
+    intersection_function(const tuple<Callable,Callables...>& i_callables);
+    intersection_function(tuple<Callable,Callables...>&& i_callables);
+    intersection_function(const intersection_function<Callable,Callables...>& other);
+    intersection_function(intersection_function<Callable,Callables...>&& other);
 	template<typename ... Args>
     callable_return_type operator()(Args&& ... i_args) const;
 
 private:
-	operator bool() const;
-    template<int ... Indexs, typename ... Args>
+    template<size_t ... Indexs, typename ... Args>
     inline callable_return_type execute(const mpl::sequence<Indexs...>&, Args&& ... i_args) const;
 
-    const Callable m_returnTransform;
-	const tuple<NestedCallables...> m_nestedCallables;
+	const tuple<Callable,Callables...> m_callables;
+};
+
+template<typename...>
+struct resolve_intersection;
+
+template<typename CallableA, typename CallableB>
+struct resolve_intersection<CallableA,CallableB>
+{
+    typedef intersection_function<CallableA,CallableB> type;
+};
+template<typename CallableA, typename ... CallablesB>
+struct resolve_intersection<CallableA,intersection_function<CallablesB...>>
+{
+    typedef intersection_function<CallableA,CallablesB...> type;
+};
+template<typename ... CallablesA, typename CallableB>
+struct resolve_intersection<intersection_function<CallablesA...>,CallableB>
+{
+    typedef intersection_function<CallablesA...,CallableB> type;
+};
+template<typename ... CallablesA, typename ... CallablesB>
+struct resolve_intersection<intersection_function<CallablesA...>,intersection_function<CallablesB...>>
+{
+    typedef intersection_function<CallablesA...,CallablesB...> type;
 };
 
 template<typename ... Callables>
-struct intersected_functions
-{
-public:
-	intersected_functions(const Callables& ... i_callables);
-
-	const tuple<Callables...>& get_callables() const;
-
-private:
-	const tuple<Callables...> m_nestedCallables;
-};
+using resolved_intersection = typename resolve_intersection<Callables...>::type;
 
 }
-
-template<typename Callable, typename ... Callables>
-detail::intersection_function<Callable,Callables...> operator<=(const Callable& i_callable, const detail::intersected_functions<Callables...>& i_nestedCallable);
-
 }
 
 #include "ddk_intersection_function.inl"

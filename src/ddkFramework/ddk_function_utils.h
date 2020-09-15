@@ -1,5 +1,9 @@
 #pragma once
 
+#include "ddk_intersection_function.h"
+#include "ddk_union_function.h"
+#include "ddk_composed_function.h"
+
 namespace ddk
 {
 
@@ -43,11 +47,36 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 template<typename Functor, typename Allocator, typename Arg, typename ... Args>
 inline resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
-template<typename Return, typename ... Types, typename ... Args>
-inline Return eval(const function<Return(Types...)>& i_function, Args&& ... i_args);
+template<typename Return, typename ... Types, typename Allocator>
+inline function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>& i_function);
+template<typename Return, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+inline resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args);
+template<typename Return, typename ... Types, typename Allocator, typename ... Args>
+inline Return eval(const function<Return(Types...),Allocator>& i_function, const tuple<Args...>& i_args);
 
-template<typename RReturn, typename ... TTypes, typename AAllocator>
-inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>&);
+template<typename ... Callables>
+inline detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables);
+
+template<typename ... Callables>
+inline detail::union_function<Callables...> make_union(const Callables& ... i_callables);
+
+template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
+inline detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_composition(const function<ReturnDst(TypesDst...)>& i_fuscDst, const function<ReturnSrc(TypesSrc...)>& i_funcSrc);
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+detail::intersection_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator&(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs);
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+detail::union_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator|(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs);
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+inline function<ReturnA(TypesB...)> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs);
+
+template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
+inline resolved_function<ReturnA,typename detail::intersection_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::intersection_function<CallablesB...>& i_rhs);
+
+template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
+inline resolved_function<ReturnA,typename detail::union_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::union_function<CallablesB...>& i_rhs);
 
 }
 

@@ -5,6 +5,7 @@
 #include "ddk_system_reference_wrapper_allocator.h"
 #include "ddk_allocator_template_helper.h"
 #include "ddk_function_view.h"
+#include "ddk_tuple_template_helper.h"
 
 namespace ddk
 {
@@ -29,6 +30,9 @@ using resolved_callable = resolved_function<typename mpl::aqcuire_callable_retur
 template<typename Callable, typename Allocator, typename ... Args>
 using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,detail::unresolved_tuple<tuple<Args...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>,Allocator>;
 
+template<typename Arg, typename T>
+using resolved_return_type = typename std::enable_if<mpl::is_tuple<Arg>::value==false,T>::type;
+
 template<typename Return, typename Allocator>
 class function<Return(),Allocator>
 {
@@ -36,14 +40,22 @@ class function<Return(),Allocator>
     friend class function;
     typedef detail::function_base_const_shared_ptr<Return,tuple<>> function_base_const_shared_ptr;
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
-    template<typename RReturn, typename ... TTypes, typename AAllocator>
-    friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>&);
+    template<typename RReturn, typename AAllocator>
+    friend inline function_view<RReturn()> lend(const function<RReturn(),AAllocator>&);
+    template<typename RReturn, typename AAllocator>
+    friend inline Return eval(const function<RReturn(),AAllocator>&);
+    template<typename RReturn, typename AAllocator>
+    friend inline RReturn eval(const function<RReturn(),AAllocator>&, const tuple<>&);
 
 public:
     function() = default;
     function(std::nullptr_t);
     function(const function& other) = default;
     function(function&& other) = default;
+    template<typename AAllocator = Allocator>
+    function(const function<Return(),AAllocator>& other);
+    template<typename AAllocator = Allocator>
+    function(function<Return(),AAllocator>&& other);
     template<typename T>
     function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value>::type* = nullptr);
     template<typename T>
@@ -56,9 +68,10 @@ public:
     Return operator()() const;
     bool operator==(std::nullptr_t) const;
     bool operator!=(std::nullptr_t) const;
-    Return eval() const;
 
 private:
+    inline Return eval_tuple(const mpl::sequence<>&) const;
+
     function_base_const_shared_ptr m_functionImpl;
     Allocator m_allocator;
 };
@@ -71,15 +84,23 @@ class function<Return(Types...),Allocator>
     typedef detail::function_base_const_shared_ptr<Return,tuple<Types...>> function_base_const_shared_ptr;
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
     template<typename RReturn, typename ... TTypes, typename AAllocator>
-    friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>&);
+    friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
+    template<typename RReturn, typename ... TTypes, typename AAllocator, typename Arg, typename ... Args>
+    friend inline resolved_return_type<Arg,RReturn> eval(const function<RReturn(TTypes...),AAllocator>& i_function, Arg&& i_arg, Args&& ... i_args);
+    template<typename RReturn, typename ... TTypes, typename AAllocator, typename ... Args>
+    friend inline RReturn eval(const function<RReturn(TTypes...),AAllocator>& i_function, const tuple<Args...>& i_args);
 
 public:
     function() = default;
     function(std::nullptr_t);
     function(const function& other) = default;
     function(function&& other) = default;
+    template<typename AAllocator = Allocator>
+    function(const function<Return(Types...),AAllocator>& other);
+    template<typename AAllocator = Allocator>
+    function(function<Return(Types...),AAllocator>&& other);
     template<typename T>
-    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value>::type* = nullptr);
+    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T,Types...>::value>::type* = nullptr);
     template<typename T>
     function(T *pRef, Return(T::*call)(Types...), const Allocator& i_allocator = Allocator());
     function(Return(*call)(Types...), const Allocator& i_allocator = Allocator());
@@ -90,13 +111,26 @@ public:
     bool operator!=(std::nullptr_t) const;
     template<typename ... Args>
     resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
-    template<typename ... Args>
-    Return eval(Args&& ... i_args) const;
 
 private:
+    template<size_t ... Indexs, typename ... Args>
+    inline Return eval_tuple(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
+
     function_base_const_shared_ptr m_functionImpl;
     Allocator m_allocator;
 };
+
+namespace mpl
+{
+
+template<typename Return, typename ... Types>
+struct aqcuire_callable_return_type<function<Return(Types...)>>
+{
+	typedef Return return_type;
+	typedef tuple<Types...> args_type;
+};
+
+}
 
 //template<typename Return, typename ... Types>
 //using curried_function = typename yame::mpl::curry_function<yame::ytl::function<Return(Types...)>>::type;

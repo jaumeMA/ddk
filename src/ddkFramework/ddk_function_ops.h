@@ -4,64 +4,43 @@
 #include "ddk_function.h"
 
 #define DEFINE_HIGHER_ORDER_UNARY_FUNCTION(NAME,OP) \
+\
+template<typename Return> \
+using inner_unary_return = decltype((OP std::declval<const Return>())); \
+\
 template<typename Return> \
 struct NAME##_unary_op\
 { \
-    typedef decltype((OP std::declval<const Return>())) inner_return; \
     NAME##_unary_op() = default; \
-    inner_return operator()(const Return& i_value) const \
+    inner_unary_return<Return> operator()(const Return& i_value) const \
     { \
         return OP i_value; \
     } \
 }; \
-template<typename ...> \
-class NAME##_callable_t; \
- \
 template<typename Return, typename ... Types> \
-class NAME##_callable_t<Return(Types...)> : public ddk::detail::intersection_function<NAME##_unary_op<Return>,ddk::function<Return(Types...)>> \
+ddk::function<inner_unary_return<Return>(Types...)> operator OP(const ddk::function<Return(Types...)>& i_function) \
 { \
-	typedef ddk::detail::intersection_function<NAME##_unary_op<Return>,ddk::function<Return(Types...)>> base_t; \
-public: \
-    NAME##_callable_t(const ddk::function<Return(Types...)>& i_func) \
-    : base_t(NAME##_unary_op<Return>{},i_func) \
-    {} \
-}; \
-template<typename Return, typename ... Types> \
-ddk::function<Return(Types...)> operator OP(const ddk::function<Return(Types...)>& i_function) \
-{ \
-    return ddk::NAME##_callable_t<Return(Types...)>(i_function); \
+    return ddk::make_composition(ddk::function<inner_unary_return<Return>(const Return&)>(NAME##_unary_op<Return>{}),i_function); \
 }
 
 #define DEFINE_HIGHER_ORDER_BINARY_FUNCTION(NAME,OP) \
-template<typename Return> \
+template<typename ReturnA, typename ReturnB> \
 struct NAME##_binary_op\
 { \
-    typedef decltype((std::declval<const Return>() OP std::declval<const Return>())) inner_return; \
+    typedef decltype(std::declval<ReturnA>() OP std::declval<ReturnB>()) inner_binary_return; \
     NAME##_binary_op() = default; \
-    inner_return operator()(const Return& i_lhs, const Return& i_rhs) const \
+    inner_binary_return operator()(const ReturnA& i_lhs, const ReturnB& i_rhs) const \
     { \
         return i_lhs OP i_rhs; \
     } \
 }; \
-template<typename...> \
-class NAME##_callable_t; \
- \
-template<typename Return, typename ... Types> \
-class NAME##_callable_t<Return(Types...)> : public ddk::detail::intersection_function<NAME##_binary_op<Return>,ddk::function<Return(Types...)>,ddk::function<Return(Types...)>> \
+template<typename ReturnA, typename ReturnB, typename ... Types, typename AllocatorA, typename AllocatorB> \
+ddk::function<decltype(std::declval<ReturnA>() OP std::declval<ReturnB>())(Types...)> operator OP(const ddk::function<ReturnA(Types...),AllocatorA>& i_lhs, const ddk::function<ReturnB(Types...),AllocatorB>& i_rhs) \
 { \
-	typedef ddk::detail::intersection_function<NAME##_binary_op<Return>,ddk::function<Return(Types...)>,ddk::function<Return(Types...)>> base_t; \
-public: \
-    NAME##_callable_t(const ddk::function<Return(Types...)>& i_lhs, const ddk::function<Return(Types...)>& i_rhs) \
-    : base_t(NAME##_binary_op<Return>{},i_lhs,i_rhs) \
-    {} \
-}; \
-template<typename Return, typename ... Types> \
-ddk::function<Return(Types...)> operator OP(const ddk::function<Return(Types...)>& i_lhs, const ddk::function<Return(Types...)>& i_rhs) \
-{ \
+    typedef decltype(std::declval<ReturnA>() OP std::declval<ReturnB>()) inner_binary_return; \
     if(i_lhs != nullptr && i_rhs != nullptr) \
     { \
-		ddk::NAME##_callable_t<Return(Types...)>{i_lhs, i_rhs}; \
-        return nullptr; \
+        return ddk::make_composition(ddk::function<inner_binary_return(const ReturnA&,const ReturnB&)>(NAME##_binary_op<ReturnA,ReturnB>{}),ddk::function<tuple<ReturnA,ReturnB>(Types...)>(ddk::make_intersection(i_lhs,i_rhs))); \
     } \
     else if(i_lhs != nullptr) \
     { \

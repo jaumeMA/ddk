@@ -3,12 +3,26 @@ namespace ddk
 {
 
 template<typename Return, typename ... Types, typename Allocator>
+template<typename AAllocator>
+function<Return(Types...),Allocator>::function(const function<Return(Types...),AAllocator>& other)
+: m_functionImpl(other.m_functionImpl)
+, m_allocator(other.m_allocator)
+{
+}
+template<typename Return, typename ... Types, typename Allocator>
+template<typename AAllocator>
+function<Return(Types...),Allocator>::function(function<Return(Types...),AAllocator>&& other)
+: m_functionImpl(std::move(other.m_functionImpl))
+, m_allocator(other.m_allocator)
+{
+}
+template<typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),Allocator>::function(std::nullptr_t)
 {
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<typename T>
-function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T>::value>::type*)
+function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T,Types...>::value>::type*)
 : m_allocator(i_allocator)
 {
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return,Types...> Functor;
@@ -94,12 +108,12 @@ resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Alloc
     }
 }
 template<typename Return, typename ... Types, typename Allocator>
-template<typename ... Args>
-Return function<Return(Types...),Allocator>::eval(Args&& ... i_args) const
+template<size_t ... Indexs, typename ... Args>
+Return function<Return(Types...),Allocator>::eval_tuple(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const
 {
     if(m_functionImpl)
     {
-        return m_functionImpl->operator()(std::forward<Args>(i_args) ...);
+        return m_functionImpl->operator()(i_args.template get<Indexs>() ...);
     }
     else
     {
@@ -108,6 +122,20 @@ Return function<Return(Types...),Allocator>::eval(Args&& ... i_args) const
 }
 
 //0 args version
+template<typename Return, typename Allocator>
+template<typename AAllocator>
+function<Return(),Allocator>::function(const function<Return(),AAllocator>& other)
+: m_functionImpl(other.m_functionImpl)
+, m_allocator(other.m_allocator)
+{
+}
+template<typename Return, typename Allocator>
+template<typename AAllocator>
+function<Return(),Allocator>::function(function<Return(),AAllocator>&& other)
+: m_functionImpl(std::move(other.m_functionImpl))
+, m_allocator(other.m_allocator)
+{
+}
 template<typename Return, typename Allocator>
 function<Return(),Allocator>::function(std::nullptr_t)
 {
@@ -197,7 +225,17 @@ Return function<Return(),Allocator>::operator()() const
     }
 }
 template<typename Return, typename Allocator>
-Return function<Return(),Allocator>::eval() const
+bool function<Return(),Allocator>::operator==(std::nullptr_t) const
+{
+    return m_functionImpl.empty();
+}
+template<typename Return, typename Allocator>
+bool function<Return(),Allocator>::operator!=(std::nullptr_t) const
+{
+    return m_functionImpl.empty() == false;
+}
+template<typename Return, typename Allocator>
+Return function<Return(),Allocator>::eval_tuple(const mpl::sequence<>&) const
 {
     if(m_functionImpl)
     {
@@ -207,16 +245,6 @@ Return function<Return(),Allocator>::eval() const
     {
         throw std::exception{};
     }
-}
-template<typename Return, typename Allocator>
-bool function<Return(),Allocator>::operator==(std::nullptr_t) const
-{
-    return m_functionImpl.empty();
-}
-template<typename Return, typename Allocator>
-bool function<Return(),Allocator>::operator!=(std::nullptr_t) const
-{
-    return m_functionImpl.empty() == false;
 }
 
 }

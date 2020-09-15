@@ -1,4 +1,6 @@
 
+#include "ddk_composed_function.h"
+
 namespace ddk
 {
 
@@ -123,16 +125,73 @@ resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Fun
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 
-template<typename Return, typename ... Types, typename ... Args>
-Return eval(const function<Return(Types...)>& i_function, Args&& ... i_args)
-{
-    return i_function.getFuncPtr()->operator()(std::forward<Args>(i_args)...);
-}
-
 template<typename Return, typename ... Types, typename Allocator>
 function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>& i_function)
 {
     return lend(i_function.m_functionImpl);
+}
+template<typename Return, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args)
+{
+    if(i_function.m_functionImpl)
+    {
+        return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+    }
+    else
+    {
+        throw std::exception{};
+    }
+}
+template<typename Return, typename ... Types, typename Allocator, typename ... Args>
+Return eval(const function<Return(Types...),Allocator>& i_function, const tuple<Args...>& i_args)
+{
+    return i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+}
+
+template<typename ... Callables>
+detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables)
+{
+    return detail::intersection_function<Callables...>(i_callables...);
+}
+
+template<typename ... Callables>
+detail::union_function<Callables...> make_union(const Callables& ... i_callables)
+{
+    return detail::intersection_function<Callables...>(i_callables...);
+}
+
+template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
+detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_composition(const function<ReturnDst(TypesDst...)>& i_fuscDst, const function<ReturnSrc(TypesSrc...)>& i_funcSrc)
+{
+    return detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>(i_fuscDst,i_funcSrc);
+}
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+detail::intersection_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator&(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs)
+{
+    return detail::resolved_intersection<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>>(i_lhs,i_rhs);
+}
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+detail::union_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator|(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs)
+{
+    return detail::union_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>>(i_lhs,i_rhs);
+}
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+function<ReturnA(TypesB...)> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs)
+{
+    return make_composition(i_lhs,i_rhs);
+}
+template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
+resolved_function<ReturnA,typename detail::intersection_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::intersection_function<CallablesB...>& i_rhs)
+{
+    return make_composition(i_lhs,resolved_function<typename detail::intersection_function<CallablesB...>::callable_return_type,typename detail::intersection_function<CallablesB...>::callable_args_type>(i_rhs));
+}
+template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
+resolved_function<ReturnA,typename detail::union_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::union_function<CallablesB...>& i_rhs)
+{
+    return make_composition(i_lhs,resolved_function<typename detail::union_function<CallablesB...>::callable_return_type,typename detail::union_function<CallablesB...>::callable_args_type>(i_rhs));
 }
 
 }

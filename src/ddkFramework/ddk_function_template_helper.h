@@ -104,17 +104,19 @@ struct aqcuire_callable_return_type
 	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::args_type args_type;
 };
 
-template<typename T>
+template<typename T, typename ... Types>
 struct is_valid_functor
 {
 private:
     template<typename TT>
-    char static func(const TT&, decltype(&TT::operator()) = nullptr);
-    template<typename ... TT>
-    int static func(const TT& ...);
+    char static func(const TT&, decltype(&TT::operator())); // non template call operator
+    template<typename TT, typename TTT = decltype(std::declval<TT>().operator()(std::declval<Types>() ...))>
+    char static func(const TT&, TTT); // template call operator
+    template<typename TT, typename ... TTT>
+    int static func(const TT&, TTT&& ...);
 
 public:
-    static const bool value = (sizeof(func(std::declval<T>())) == sizeof(char));
+    static const bool value = (sizeof(func(std::declval<T>(),nullptr)) == sizeof(char));
 };
 
 }
@@ -125,5 +127,9 @@ define_place_arg(2)
 define_place_arg(3)
 define_place_arg(4)
 define_place_arg(5)
+define_place_arg(6)
+define_place_arg(7)
+define_place_arg(8)
+define_place_arg(9)
 
 }

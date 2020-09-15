@@ -61,8 +61,8 @@ struct function_impl_base<Return, tuple<Types...>>
 		Return operator()(typename mpl::nth_type_of<notSpecIndexs, Types...>::type ... i_args) const override;
         Return apply(vars_tuple& i_tuple) const override;
 
-		mutable args_tuple m_specArgs;
         function_base_const_shared_ref<Return,tuple<Types...>> m_object;
+		mutable args_tuple m_specArgs;
 	};
 
 	function_impl_base() = default;

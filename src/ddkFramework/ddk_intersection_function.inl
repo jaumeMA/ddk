@@ -4,48 +4,43 @@ namespace ddk
 namespace detail
 {
 
-template<typename Callable, typename ... NestedCallables>
-intersection_function<Callable,NestedCallables...>::intersection_function(const Callable& i_callableTransform, const NestedCallables& ... i_args)
-: m_returnTransform(i_callableTransform)
-, m_nestedCallables(i_args ...)
+template<typename Callable, typename ... Callables>
+intersection_function<Callable,Callables...>::intersection_function(const Callable& i_arg, const Callables& ... i_callables)
+: m_callables(i_arg,i_callables...)
 {
 }
-template<typename Callable, typename ... NestedCallables>
-intersection_function<Callable,NestedCallables...>::intersection_function(const Callable& i_callableTransform, const tuple<NestedCallables...>& i_callables)
-: m_returnTransform(i_callableTransform)
-, m_nestedCallables(i_callables)
+template<typename Callable, typename ... Callables>
+intersection_function<Callable,Callables...>::intersection_function(const tuple<Callable,Callables...>& i_callables)
+: m_callables(i_callables)
 {
 }
-template<typename Callable, typename ... NestedCallables>
+template<typename Callable, typename ... Callables>
+intersection_function<Callable,Callables...>::intersection_function(tuple<Callable,Callables...>&& i_callables)
+: m_callables(std::move(i_callables))
+{
+}
+template<typename Callable, typename ... Callables>
+intersection_function<Callable,Callables...>::intersection_function(const intersection_function<Callable,Callables...>& other)
+: m_callables(other.m_callables)
+{
+}
+template<typename Callable, typename ... Callables>
+intersection_function<Callable,Callables...>::intersection_function(intersection_function<Callable,Callables...>&& other)
+: m_callables(std::move(other.m_callables))
+{
+}
+template<typename Callable, typename ... Callables>
 template<typename ... Args>
-typename intersection_function<Callable,NestedCallables...>::callable_return_type intersection_function<Callable,NestedCallables...>::operator()(Args&& ... i_args) const
+typename intersection_function<Callable,Callables...>::callable_return_type intersection_function<Callable,Callables...>::operator()(Args&& ... i_args) const
 {
     return execute(typename mpl::make_sequence<0,s_num_callables>::type{}, std::forward<Args>(i_args)...);
 }
-template<typename Callable, typename ... NestedCallables>
-template<int ... Indexs, typename ... Args>
-typename intersection_function<Callable,NestedCallables...>::callable_return_type intersection_function<Callable,NestedCallables...>::execute(const mpl::sequence<Indexs...>&, Args&& ... i_args) const
-{
-	return m_returnTransform(m_nestedCallables.template get<Indexs>()(std::forward<Args>(i_args) ...) ...);
-}
-
-template<typename ... Callables>
-intersected_functions<Callables...>::intersected_functions(const Callables& ... i_callables)
-: m_nestedCallables(i_callables...)
-{
-}
-template<typename ... Callables>
-const tuple<Callables...>& intersected_functions<Callables...>::get_callables() const
-{
-	return m_nestedCallables;
-}
-
-}
-
 template<typename Callable, typename ... Callables>
-detail::intersection_function<Callable, Callables...> operator<=(const Callable& i_callable, const detail::intersected_functions<Callables...>& i_nestedCallable)
+template<size_t ... Indexs, typename ... Args>
+typename intersection_function<Callable,Callables...>::callable_return_type intersection_function<Callable,Callables...>::execute(const mpl::sequence<Indexs...>&, Args&& ... i_args) const
 {
-	return detail::intersection_function<Callable, Callables...>{i_callable,i_nestedCallable.get_callables()};
+	return { eval(m_callables.template get<Indexs>(),std::forward<Args>(i_args) ...) ... };
 }
 
+}
 }
