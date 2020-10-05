@@ -16,7 +16,7 @@ struct private_async_state
 public:
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
-	typedef typename embedded_type<T>::raw_type value_type;
+	typedef typename embedded_type<T>::rref_type rref_type;
 
 	private_async_state();
 	~private_async_state();
@@ -24,7 +24,7 @@ public:
 	void signal();
 	const_reference get_value() const;
 	reference get_value();
-	value_type extract_value();
+	rref_type extract_value();
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;

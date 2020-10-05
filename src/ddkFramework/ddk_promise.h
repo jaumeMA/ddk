@@ -13,7 +13,7 @@ class promise
 public:
 	typedef typename detail::private_async_state<T>::reference reference;
 	typedef typename detail::private_async_state<T>::const_reference const_reference;
-	typedef typename detail::private_async_state<T>::value_type value_type;
+	typedef typename detail::private_async_state<T>::rref_type rref_type;
 
 	promise();
 	promise(const promise<T>&);
@@ -30,7 +30,7 @@ protected:
 	bool ready() const;
 	reference get_value();
 	const_reference get_value() const;
-	value_type extract_value();
+	rref_type extract_value();
 
 	detail::private_async_state_shared_ptr<T> m_sharedState;
 	async_base_shared_ptr<T> m_asyncExecutor;

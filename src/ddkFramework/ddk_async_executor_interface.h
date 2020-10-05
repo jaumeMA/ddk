@@ -33,13 +33,13 @@ public:
 	typedef async_state_interface<Return> async_public_type;
 	typedef typename embedded_type<Return>::ref_type reference;
 	typedef typename embedded_type<Return>::cref_type const_reference;
-	typedef typename embedded_type<Return>::raw_type value_type;
+	typedef typename embedded_type<Return>::rref_type rref_type;
 
 	virtual void wait() const = 0;
 	virtual void wait_for(unsigned int i_period) const = 0;
 	virtual reference get_value() = 0;
 	virtual const_reference get_value() const = 0;
-	virtual value_type extract_value() = 0;
+	virtual rref_type extract_value() = 0;
 	virtual bool ready() const = 0;
 };
 

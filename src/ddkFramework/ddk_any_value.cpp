@@ -10,7 +10,7 @@ any_value::any_value()
 }
 any_value::~any_value()
 {
-	destroy();			
+	destroy();
 }
 any_value::any_value(const any_value& other)
 : m_currentAgnosticType(k_invalidType)

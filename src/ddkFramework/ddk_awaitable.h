@@ -5,6 +5,8 @@
 
 namespace ddk
 {
+template<typename>
+struct awaited_result;
 
 template<typename T>
 struct awaited_result
@@ -27,7 +29,8 @@ public:
 	typedef typename std::add_const<pointer>::type const_pointer;
 
 	awaited_result(const detail::none_t&);
-	awaited_result(T i_content);
+    template<typename Arg>
+	awaited_result(Arg&& i_arg);
 	awaited_result(const awaited_result&) = delete;
 	awaited_result(awaited_result&& other);
 	~awaited_result();
@@ -46,7 +49,17 @@ private:
 	arena<sizeof(T),alignof(T)> m_content;
 };
 
-template<typename T, typename Result = awaited_result<T>>
+template<>
+struct awaited_result<void> : awaited_result<detail::void_t>
+{
+public:
+    using awaited_result<detail::void_t>::awaited_result;
+};
+
+template<typename T,typename = awaited_result<T>>
+class awaitable;
+
+template<typename T, typename Result>
 class awaitable
 {
 	friend Result;
@@ -54,7 +67,7 @@ class awaitable
 	{
 		typename awaitable<T,Result>::continue_result res = i_awaitable.resume();
 
-		return (res.hasError() == false) ? i_awaitable.m_executor->extract_value() : Result(none);
+		return (res.hasError() == false) ? Result{ i_awaitable.m_executor->extract_value() } : Result{ none };
 	}
 
 public:
@@ -62,13 +75,31 @@ public:
 	typedef typename Result::reference reference;
 	typedef typename Result::const_reference const_reference;
 
-	awaitable(const ddk::function<T()>& i_function);
+    awaitable() = default;
+	awaitable(const ddk::function<T()>& i_function, const detail::this_fiber_t& i_fiber);
 	awaitable(const awaitable& other);
 	awaitable(awaitable&& other);
 	continue_result resume();
+	operator bool() const;
 
-private:
+    awaitable& operator=(const awaitable&) = default;
+    awaitable& operator=(awaitable&&) = default;
+
+protected:
 	async_execute_shared_ptr<T> m_executor;
+};
+
+template<typename Result>
+class awaitable<void,Result> : public awaitable<detail::void_t,Result>
+{
+public:
+    awaitable() = default;
+	awaitable(const ddk::function<void()>& i_function, const detail::this_fiber_t& i_fiber);
+	awaitable(const awaitable& other) = default;
+	awaitable(awaitable&& other) = default;
+
+	awaitable& operator=(const awaitable&) = default;
+	awaitable& operator=(awaitable&&) = default;
 };
 
 }

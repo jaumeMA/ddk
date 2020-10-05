@@ -22,12 +22,6 @@ class unique_pointer_wrapper
 	template<typename>
 	friend class unique_reference_wrapper;
 
-	unique_pointer_wrapper(const unique_pointer_wrapper&);
-	template<typename TT>
-	unique_pointer_wrapper(const unique_pointer_wrapper<TT>&);
-	unique_pointer_wrapper& operator=(const unique_pointer_wrapper&);
-	template<typename TT>
-	unique_pointer_wrapper& operator=(const unique_pointer_wrapper<TT>&);
 	template<typename TTT, typename TT>
 	friend unique_reference_wrapper<TTT> static_unique_cast(unique_reference_wrapper<TT>);
 	template<typename TTT, typename TT>
@@ -59,6 +53,8 @@ public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;
 	typedef T nested_type;
 
+	unique_pointer_wrapper(const unique_pointer_wrapper&) = delete;
+	unique_pointer_wrapper& operator=(const unique_pointer_wrapper&) = delete;
 	unique_pointer_wrapper()
 	: m_data(nullptr)
 	, m_refCounter(nullptr)

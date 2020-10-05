@@ -1,4 +1,7 @@
 
+#include "ddk_function_exceptions.h"
+#include "ddk_allocator_exceptions.h"
+
 namespace ddk
 {
 
@@ -22,9 +25,11 @@ function<Return(Types...),Allocator>::function(std::nullptr_t)
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<typename T>
-function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T,Types...>::value>::type*)
+function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T,Types...>::value && is_function<T>::value==false>::type*)
 : m_allocator(i_allocator)
 {
+    static_assert(is_function<T>::value==false,"wtf");
+
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return,Types...> Functor;
 
     if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
@@ -35,7 +40,7 @@ function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i
     }
     else
     {
-        throw std::exception{};
+        throw bad_allocation_exception{};
     }
 }
 template<typename Return, typename ... Types, typename Allocator>
@@ -52,7 +57,7 @@ function<Return(Types...),Allocator>::function(Return(*i_call)(Types...), const 
     }
     else
     {
-        throw std::exception{};
+        throw bad_allocation_exception{};
     }
 }
 template<typename Return, typename ... Types, typename Allocator>
@@ -70,7 +75,24 @@ function<Return(Types...),Allocator>::function(T *i_pRef, Return(T::*i_call)(Typ
     }
     else
     {
-        throw std::exception{};
+        throw bad_allocation_exception{};
+    }
+}
+template<typename Return, typename ... Types, typename Allocator>
+template<typename T>
+function<Return(Types...),Allocator>::function(const T *i_pRef, Return(T::*i_call)(Types...)const, const Allocator& i_allocator)
+{
+    typedef detail::relative_function_impl<const T,Return,Types...> Functor;
+
+    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
+    {
+        Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
+
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+    }
+    else
+    {
+        throw bad_allocation_exception{};
     }
 }
 template<typename Return, typename ... Types, typename Allocator>
@@ -104,7 +126,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Alloc
     }
     else
     {
-        throw std::exception{};
+        throw call_function_exception{"Trying to call empty function"};
     }
 }
 template<typename Return, typename ... Types, typename Allocator>
@@ -113,11 +135,18 @@ Return function<Return(Types...),Allocator>::eval_tuple(const mpl::sequence<Inde
 {
     if(m_functionImpl)
     {
-        return m_functionImpl->operator()(i_args.template get<Indexs>() ...);
+        if constexpr (std::is_same<Return,void>::value)
+        {
+            m_functionImpl->operator()(i_args.template get<Indexs>() ...);
+        }
+        else
+        {
+            return m_functionImpl->operator()(i_args.template get<Indexs>() ...);
+        }
     }
     else
     {
-        throw std::exception{};
+        throw call_function_exception{"Trying to call empty function"};
     }
 }
 
@@ -142,9 +171,11 @@ function<Return(),Allocator>::function(std::nullptr_t)
 }
 template<typename Return, typename Allocator>
 template<typename T>
-function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T>::value>::type*)
+function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T>::value && is_function<T>::value==false>::type*)
 : m_allocator(i_allocator)
 {
+    static_assert(is_function<T>::value==false,"wtf");
+
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return> Functor;
 
     if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
@@ -155,7 +186,7 @@ function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocat
     }
     else
     {
-        throw std::exception{};
+        throw bad_allocation_exception{};
     }
 }
 template<typename Return, typename Allocator>
@@ -172,7 +203,7 @@ function<Return(),Allocator>::function(Return(*i_call)(), const Allocator& i_all
     }
     else
     {
-        throw std::exception{};
+        throw bad_allocation_exception{};
     }
 }
 template<typename Return, typename Allocator>
@@ -190,7 +221,24 @@ function<Return(),Allocator>::function(T *i_pRef, Return(T::*i_call)(), const Al
     }
     else
     {
-        throw std::exception{};
+        throw bad_allocation_exception{};
+    }
+}
+template<typename Return, typename Allocator>
+template<typename T>
+function<Return(),Allocator>::function(const T *i_pRef, Return(T::*i_call)()const, const Allocator& i_allocator)
+{
+    typedef detail::relative_function_impl<const T,Return> Functor;
+
+    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
+    {
+        Functor* newFuncImpl = new Functor(i_pRef,i_call);
+
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+    }
+    else
+    {
+        throw bad_allocation_exception{};
     }
 }
 template<typename Return, typename Allocator>
@@ -205,11 +253,18 @@ function<Return(),Allocator>::operator Return() const
 {
     if(m_functionImpl)
     {
-        return m_functionImpl->operator()();
+        if constexpr (std::is_same<Return,void>::value)
+        {
+            m_functionImpl->operator()();
+        }
+        else
+        {
+            return m_functionImpl->operator()();
+        }
     }
     else
     {
-        throw std::exception{};
+        throw call_function_exception{"Trying to call empty function"};
     }
 }
 template<typename Return, typename Allocator>
@@ -217,11 +272,18 @@ Return function<Return(),Allocator>::operator()() const
 {
     if(m_functionImpl)
     {
-        return m_functionImpl->operator()();
+        if constexpr (std::is_same<Return,void>::value)
+        {
+            m_functionImpl->operator()();
+        }
+        else
+        {
+            return m_functionImpl->operator()();
+        }
     }
     else
     {
-        throw std::exception{};
+        throw call_function_exception{"Trying to call empty function"};
     }
 }
 template<typename Return, typename Allocator>
@@ -239,11 +301,18 @@ Return function<Return(),Allocator>::eval_tuple(const mpl::sequence<>&) const
 {
     if(m_functionImpl)
     {
-        return m_functionImpl->operator()();
+        if constexpr (std::is_same<Return,void>::value)
+        {
+            return m_functionImpl->operator()();
+        }
+        else
+        {
+            return m_functionImpl->operator()();
+        }
     }
     else
     {
-        throw std::exception{};
+        throw call_function_exception{"Trying to call empty function"};
     }
 }
 

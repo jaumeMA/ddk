@@ -50,7 +50,9 @@ struct function_impl_base<Return, tuple<Types...>>
 	template<size_t ... specIndexs, size_t ... notSpecIndexs>
 	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::make_tuple<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
 	{
-        typedef types_at_indexs<mpl::sequence<notSpecIndexs...>,Types...> vars_tuple;
+        static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs,Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
+
+        typedef types_at_indexs<mpl::sequence<notSpecIndexs...>,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> vars_tuple;
         typedef types_at_indexs<mpl::sequence<specIndexs...>,typename std::remove_reference<Types>::type ...> args_tuple;
 
         specialized_impl() = default;
@@ -65,35 +67,40 @@ struct function_impl_base<Return, tuple<Types...>>
 		mutable args_tuple m_specArgs;
 	};
 
+    typedef tuple<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> tuple_args;
+
 	function_impl_base() = default;
 	virtual ~function_impl_base() = default;
 
 	template<typename Allocator, typename ... Args>
 	function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
-	virtual Return operator()(Types ... args) const = 0;
+	virtual Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const = 0;
 
     mutable shared_reference_counter m_refCounter;
 
 private:
-    virtual Return apply(tuple<Types...>& i_tuple) const = 0;
+    virtual Return apply(tuple_args& i_tuple) const = 0;
 };
 
 //non static member function case
 template<typename ObjectType, typename Return, typename ... Types>
 class relative_function_impl : public function_impl_base<Return, tuple<Types...>>
 {
-    typedef Return(ObjectType::*FuncPointerType)(Types...);
+    typedef Return(ObjectType::*NonConstFuncPointerType)(Types...);
+    typedef Return(ObjectType::*ConstFuncPointerType)(Types...)const;
+    typedef typename mpl::static_if<std::is_const<ObjectType>::value,ConstFuncPointerType,NonConstFuncPointerType>::type FuncPointerType;
     using function_impl_base<Return, tuple<Types...>>::s_numTypes;
+    using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
 
 public:
 	relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
 
 private:
-	Return operator()(Types ... args) const override;
-    Return apply(tuple<Types...>& i_tuple) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
+    Return apply(tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
 
 	ObjectType* m_object;
     FuncPointerType m_funcPointer;
@@ -105,15 +112,16 @@ class free_function_impl : public function_impl_base<Return, tuple<Types...>>
 {
     typedef Return(*FuncPointerType)(Types...);
     using function_impl_base<Return, tuple<Types...>>::s_numTypes;
+    using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
 
 public:
 	free_function_impl(FuncPointerType i_funcPointer);
 
 private:
-	Return operator()(Types ... args) const override;
-    Return apply(tuple<Types...>& i_tuple) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
+    Return apply(tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
 
     FuncPointerType m_funcPointer;
 };
@@ -123,15 +131,17 @@ template<typename T, typename Return, typename ... Types>
 class functor_impl : public function_impl_base<Return, tuple<Types...>>
 {
     using function_impl_base<Return, tuple<Types...>>::s_numTypes;
+    using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
 
 public:
 	functor_impl(const T& i_functor);
+	functor_impl(T&& i_functor);
 
 private:
-	Return operator()(Types ... args) const override;
-    Return apply(tuple<Types...>& i_tuple) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,Types&&>::type ... args) const override;
+    Return apply(tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, tuple<Types...>& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
 
     T m_functor;
 };

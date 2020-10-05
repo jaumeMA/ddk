@@ -16,4 +16,13 @@ fiber_id suspend_exception::get_id() const
 	return m_id;
 }
 
+async_exception::async_exception(const std::string& i_reason)
+: m_reason(i_reason)
+{
+}
+const char* async_exception::what() const noexcept
+{
+    return m_reason.c_str();
+}
+
 }

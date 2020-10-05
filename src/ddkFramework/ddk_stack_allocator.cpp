@@ -180,7 +180,7 @@ std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
 }
 void* stack_allocator::attach(fiber_id i_id)
 {
-	DDK_ASSERT(m_arena, "Attaching with no fiber map set");
+	DDK_ASSERT(m_arena != nullptr, "Attaching with no fiber map set");
 
 	const stack_allocator_interface*& currAllocImpl = get_curr_alloc_impl();
 	currAllocImpl = m_stackAllocImpl.get();
@@ -198,7 +198,7 @@ void stack_allocator::detach()
 }
 void stack_allocator::deallocate(fiber_id i_id) const
 {
-	DDK_ASSERT(m_arena, "Deallocating with no fiber map set");
+	DDK_ASSERT(m_arena != nullptr, "Deallocating with no fiber map set");
 
 	std::pair<void*,void*>& fiberAlloc = (*m_arena)[i_id];
 

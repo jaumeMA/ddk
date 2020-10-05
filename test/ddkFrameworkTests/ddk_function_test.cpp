@@ -5,6 +5,7 @@
 #include "test_utils.h"
 #include <map>
 #include "ddk_function_ops.h"
+#include "ddk_unique_pointer_wrapper.h"
 
 using namespace testing;
 using testing::Types;
@@ -30,6 +31,12 @@ public:
 TEST(DDKFunctionTest,defaultConstruction)
 {
     ddk::function<int(int,std::string,float,double,char)> foo;
+
+    ddk::function<void(ddk::unique_pointer_wrapper<int>)> foo2 = ddk::make_function([](ddk::unique_pointer_wrapper<int> i_value){});
+
+    ddk::unique_pointer_wrapper<int> kk;
+
+    eval(foo2,std::move(kk));
 }
 TEST(DDKFunctionTest,funcMakeConstruction)
 {

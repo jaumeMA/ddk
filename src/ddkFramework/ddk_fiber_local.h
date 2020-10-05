@@ -16,7 +16,11 @@ public:
 
 	template<typename ... Args>
 	inline T& acquire(Args&& ... i_args);
+	template<typename ... Args>
+	T& set(Args&& ... i_args);
 	inline T& get();
+	T* get_ptr();
+	T extract();
 	inline void clear();
 	inline bool empty() const;
 

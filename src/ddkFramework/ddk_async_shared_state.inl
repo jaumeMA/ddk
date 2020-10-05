@@ -53,7 +53,7 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 
 	if (m_arena.empty())
 	{
-		throw async_exception();
+		throw async_exception("Accessing empty async shared state");
 	}
 
 	const_reference value = m_arena.template get<T>();
@@ -74,7 +74,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 
 	if (m_arena.empty())
 	{
-		throw async_exception();
+		throw async_exception("Accessing empty async shared state");
 	}
 
 	reference value = m_arena.template get<T>();
@@ -84,7 +84,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 	return value;
 }
 template<typename T>
-typename private_async_state<T>::value_type private_async_state<T>::extract_value()
+typename private_async_state<T>::rref_type private_async_state<T>::extract_value()
 {
 	pthread_mutex_lock(&m_mutex);
 
@@ -95,14 +95,14 @@ typename private_async_state<T>::value_type private_async_state<T>::extract_valu
 
 	if (m_arena.empty())
 	{
-		throw async_exception();
+		throw async_exception("Accessing empty async shared state");
 	}
 
-	value_type value = m_arena.template extract<T>();
+	rref_type value = m_arena.template extract<T>();
 
 	pthread_mutex_unlock(&m_mutex);
 
-	return std::move(value);
+	return std::forward<rref_type>(value);
 }
 template<typename T>
 void private_async_state<T>::wait() const

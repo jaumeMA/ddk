@@ -13,9 +13,6 @@ class unique_reference_wrapper : public unique_pointer_wrapper<T>
   template<typename TT>
   friend unique_reference_wrapper<TT> __make_unique_reference(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 
-	unique_reference_wrapper(const unique_reference_wrapper&);
-	template<typename TT>
-	unique_reference_wrapper(const unique_reference_wrapper<TT>&);
 	unique_reference_wrapper(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = NULL)
 	: unique_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter)
 	{
@@ -35,6 +32,9 @@ public:
     using unique_pointer_wrapper<T>::operator->;
     using unique_pointer_wrapper<T>::get;
 
+	unique_reference_wrapper(const unique_reference_wrapper&) = delete;
+	template<typename TT>
+	unique_reference_wrapper(const unique_reference_wrapper<TT>&) = delete;
 	unique_reference_wrapper(unique_reference_wrapper<T>&& other)
 	: unique_pointer_wrapper<T>(std::move(other))
 	{

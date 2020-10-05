@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <utility>
+#include "ddk_template_helper.h"
 
 namespace ddk
 {

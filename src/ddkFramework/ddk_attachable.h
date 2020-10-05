@@ -1,55 +1,48 @@
 #pragma once
 
-#include "ddk_thread.h"
-#include "ddk_reference_wrapper.h"
+#include "ddk_sync_executor_impl.h"
 
 namespace ddk
 {
 
-template<typename Thread>
+template<typename>
+class attachable;
+template<typename RReturn>
+class async_executor;
+
+template<typename Return>
 class attachable
 {
-	typedef typename Thread::message_type message_type;
+    friend class async_executor<Return>;
 
 public:
-	template<typename Arg1>
-	attachable(Arg1&& i_arg1)
-	: m_updateThread(std::forward<Arg1>(i_arg1))
-	{
-	}
-	template<typename Arg1, typename Arg2>
-	attachable(Arg1&& i_arg1, Arg2&& i_arg2)
-	: m_updateThread(std::forward<Arg1>(i_arg1),std::forward<Arg2>(i_arg2))
-	{
-	}
-	template<typename Arg1, typename Arg2, typename Arg3>
-	attachable(Arg1&& i_arg1, Arg2&& i_arg2, Arg3&& i_arg3)
-	: m_updateThread(std::forward<Arg1>(i_arg1),std::forward<Arg2>(i_arg2),std::forward<Arg2>(i_arg3))
-	{
-	}
-	template<typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-	attachable(Arg1&& i_arg1, Arg2&& i_arg2, Arg3&& i_arg3, Arg4&& i_arg4)
-	: m_updateThread(std::forward<Arg1>(i_arg1),std::forward<Arg2>(i_arg2),std::forward<Arg3>(i_arg3),std::forward<Arg4>(i_arg4))
-	{
-	}
-	~attachable()
-	{
-	}
-	void attach(sender_id i_id, const ddk::function<void(const message_type&)>& i_processor)
-	{
-		m_updateThread.start(i_id,i_processor);
-	}
-	void detach(sender_id i_id)
-	{
-		m_updateThread.stop(i_id);
-	}
-	void signal_thread()
-	{
-		m_updateThread.signal_thread();
-	}
+    attachable(cancellable_executor_unique_ref<Return> i_executorImpl);
+    attachable(const attachable&) = delete;
+    attachable(attachable&&) = default;
+	~attachable() = default;
 
 private:
-	Thread m_updateThread;
+    cancellable_executor_unique_ref<Return> m_executorImpl;
 };
 
+template<>
+class attachable<void> : public attachable<detail::void_t>
+{
+public:
+    using attachable<detail::void_t>::attachable;
+
+    attachable(const attachable&) = delete;
+    attachable(attachable&&) = default;
+	~attachable() = default;
+};
+
+attachable<void> attach(thread i_thread);
+attachable<void> attach(const detail::this_thread_t&);
+attachable<void> attach(fiber i_fiber);
+attachable<void> attach(const detail::this_fiber_t&);
+attachable<void> attach(thread_sheaf i_threadSheaf);
+attachable<void> attach(fiber_sheaf i_fiberSheaf);
+
 }
+
+#include "ddk_attachable.inl"

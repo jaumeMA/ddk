@@ -16,20 +16,21 @@ struct MyIterable
 	typedef MyIterable iterator;
 
 	//you shall provide an overload of forward_iterator_awaitable for your custom container
-	friend inline size_t& visit_iterator_awaitable(MyIterable& i_iterable, const ddk::co_random_access_iterator_context& i_context)
+	friend inline size_t& visit_iterator(MyIterable& i_iterable, const ddk::function<ddk::iter::random_access_action(size_t&)>& i_sink, const ddk::iter::iterable_state& i_initState = ddk::iter::iterable_state())
 	{
-		size_t value = i_iterable.m_init + i_context.get_curr_index();
+		size_t value = i_iterable.m_init + i_initState.position();
 
 		while(value <= i_iterable.m_end)
 		{
-			ddk::yield(value);
+			const ddk::iter::random_access_action currAction = i_sink(value);
 
-			++value;
+            if(currAction.is<ddk::iter::go_forward_action>())
+            {
+                ++value;
+            }
 		}
 
-		ddk::suspend();
-
-		return ddk::crash_on_return<size_t&>::value();
+        ddk::suspend();
 	}
 
 	MyIterable(size_t i_init, size_t i_end)

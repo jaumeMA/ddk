@@ -29,6 +29,8 @@ void light_func()
 	{
         ++s_counter;
 
+        printf("curr counter %zd\n",s_counter);
+
 		if(s_counter < 1000)
 		{
 			ddk::yield();
@@ -87,8 +89,8 @@ void heavy_func()
 
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 {
-	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10);
-	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10000);
+	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10000);
 
 	if(acquireRes.hasError() == false)
 	{

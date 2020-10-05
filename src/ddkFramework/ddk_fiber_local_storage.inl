@@ -28,13 +28,46 @@ T* fiber_local_storage<T>::construct(const fiber_id& i_id, Args&& ... i_args)
 	{
 		std::pair<iterator,bool> insertRes = m_fiberStorage.insert(std::make_pair(i_id,thread_local_storage<T>{}));
 
-		return (insertRes.second) ? insertRes.first->second.template construct<T>(std::forward<Args>(i_args) ...) : nullptr;
+		return (insertRes.second) ? insertRes.first->second.construct(std::forward<Args>(i_args) ...) : nullptr;
 	}
 	else
 	{
 		DDK_FAIL("Trying to construct already present address");
 
-		return itFiber->second.template get_address<T>();
+		return nullptr;
+	}
+}
+template<typename T>
+void fiber_local_storage<T>::destroy(const fiber_id& i_id)
+{
+	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
+
+	iterator itFiber = m_fiberStorage.find(i_id);
+	if(itFiber != m_fiberStorage.end())
+	{
+		itFiber->second.destroy();
+	}
+	else
+	{
+		DDK_FAIL("Trying to construct already present address");
+	}
+}
+template<typename T>
+template<typename ... Args>
+T* fiber_local_storage<T>::assign(const fiber_id& i_id, Args&& ... i_args)
+{
+	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
+
+	iterator itFiber = m_fiberStorage.find(i_id);
+	if(itFiber != m_fiberStorage.end())
+	{
+		return itFiber->second.assign(std::forward<Args>(i_args) ...);
+	}
+	else
+	{
+		DDK_FAIL("Trying to construct already present address");
+
+		return nullptr;
 	}
 }
 template<typename T>
@@ -45,12 +78,10 @@ T& fiber_local_storage<T>::get(const fiber_id& i_id)
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
-		return itFiber->second.template get<T>();
+		return itFiber->second.get();
 	}
 	else
 	{
-		MAKE_IT_CRASH
-
 		return crash_on_return<T&>::value();
 	}
 }

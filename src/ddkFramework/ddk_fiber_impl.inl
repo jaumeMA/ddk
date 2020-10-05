@@ -25,6 +25,24 @@ inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* 
 
 	try
 	{
+		yield(callable());
+	}
+	catch(const suspend_exception& i_excp)
+	{
+		DDK_ASSERT(i_excp.get_id() == i_fiber->get_id(), "Suspending fiber from the wrong context");
+	}
+
+	i_fiber->set_state(FiberExecutionState::Done);
+}
+template<>
+inline void launch_fiber<void>(const ddk::function<void()>* i_function, fiber_impl* i_fiber)
+{
+	const ddk::function<void()> callable(*i_function);
+
+	i_fiber->set_state(FiberExecutionState::Executing);
+
+	try
+	{
 		callable();
 	}
 	catch(const suspend_exception& i_excp)

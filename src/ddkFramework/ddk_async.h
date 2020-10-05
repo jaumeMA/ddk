@@ -12,8 +12,8 @@ using async_shared_ref = typename async_executor<Return>::async_shared_ref;
 template<typename Return>
 using async_const_shared_ref = typename async_executor<Return>::async_const_shared_ref;
 
-template<typename Return, typename ... Types>
-async_shared_ref<Return> async(const ddk::function<Return(Types...)>& i_function);
+template<typename Return>
+inline async_shared_ref<Return> async(const ddk::function<Return()>& i_function);
 
 //void version
 async_shared_ref<void> async(const ddk::function<void()>& i_function);

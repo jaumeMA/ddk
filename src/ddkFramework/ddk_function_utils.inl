@@ -10,9 +10,9 @@ function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_fun
     return function<Return(Types...)>(i_object, i_funcPtr);
 }
 template<typename Object, typename Return, typename ... Types>
-function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...)const)
+function<Return(Types...)> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const)
 {
-    return function<Return(Types...)>(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
+    return function<Return(Types...)>(i_object,i_funcPtr);
 }
 template<typename Return, typename ... Types>
 function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...))
@@ -32,9 +32,9 @@ function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::
     return function<Return(Types...),Allocator>(i_object, i_funcPtr);
 }
 template<typename Object, typename Return, typename ... Types, typename Allocator>
-function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator)
+function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator)
 {
-    return function<Return(Types...),Allocator>(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
+    return function<Return(Types...),Allocator>(i_object,i_funcPtr);
 }
 template<typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
@@ -58,11 +58,11 @@ resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 template<typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args>
-resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
+resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
-    const function<Return(Type,Types...)> res(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
+    const function<Return(Type,Types...)> res(i_object,i_funcPtr);
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -96,11 +96,11 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
-    const function<Return(Type,Types...)> res(i_object, reinterpret_cast<Return(Object::*)(Types...)>(i_funcPtr));
+    const function<Return(Type,Types...)> res(i_object,i_funcPtr);
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -130,22 +130,55 @@ function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>&
 {
     return lend(i_function.m_functionImpl);
 }
+template<typename Return, typename Allocator>
+Return eval(const function<Return(),Allocator>& i_function)
+{
+    if(i_function.m_functionImpl)
+    {
+        if constexpr (std::is_same<Return,void>::value)
+        {
+            i_function.m_functionImpl->operator()();
+        }
+        else
+        {
+            return i_function.m_functionImpl->operator()();
+        }
+    }
+    else
+    {
+        throw call_function_exception{"Trying to call empty function"};
+    }
+}
 template<typename Return, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args)
 {
     if(i_function.m_functionImpl)
     {
-        return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+        if constexpr (std::is_same<Return,void>::value)
+        {
+            i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+        }
+        else
+        {
+            return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+        }
     }
     else
     {
-        throw std::exception{};
+        throw call_function_exception{"Trying to call empty function"};
     }
 }
 template<typename Return, typename ... Types, typename Allocator, typename ... Args>
 Return eval(const function<Return(Types...),Allocator>& i_function, const tuple<Args...>& i_args)
 {
-    return i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+    if constexpr (std::is_same<Return,void>::value)
+    {
+        i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+    }
+    else
+    {
+        return i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+    }
 }
 
 template<typename ... Callables>

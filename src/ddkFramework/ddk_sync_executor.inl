@@ -2,16 +2,16 @@
 namespace ddk
 {
 
-template<typename RReturn>
-shared_reference_wrapper<async_executor<RReturn>> make_async_executor(const ddk::function<RReturn()>& i_function)
+template<typename Return>
+shared_reference_wrapper<async_executor<Return>> make_async_executor(const function<Return()>& i_function)
 {
-	async_executor<RReturn>* newAsyncExecutor = new async_executor<RReturn>(i_function);
+	async_executor<Return>* newAsyncExecutor = new async_executor<Return>(i_function);
 
 	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&newAsyncExecutor->m_refCounter,ReferenceAllocationType::Embedded));
 }
 
 template<typename Return>
-async_executor<Return>::async_executor(const ddk::function<Return()>& i_function)
+async_executor<Return>::async_executor(const function<Return()>& i_function)
 : m_executor(make_executor<detail::deferred_executor<Return>>())
 , m_sharedState(make_shared_reference<detail::private_async_state<Return>>())
 , m_function(i_function)
@@ -97,9 +97,9 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&(newAsyncExecutor->m_refCounter),ReferenceAllocationType::Embedded));
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(executor_unique_ptr<Return> i_executor)
+typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(attachable<Return> i_attachable)
 {
-	m_executor = std::move(i_executor);
+	m_executor = std::move(i_attachable.m_executorImpl);
 
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
@@ -191,7 +191,7 @@ typename async_executor<Return>::const_reference async_executor<Return>::get_val
 	return m_sharedState->get_value();
 }
 template<typename Return>
-typename async_executor<Return>::value_type async_executor<Return>::extract_value()
+typename async_executor<Return>::rref_type async_executor<Return>::extract_value()
 {
 	if(m_sharedState->ready() == false)
 	{

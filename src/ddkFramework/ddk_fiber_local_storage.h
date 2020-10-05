@@ -15,6 +15,9 @@ public:
 
 	template<typename ... Args>
 	T* construct(const fiber_id& i_id, Args&& ... i_args);
+	inline void destroy(const fiber_id& i_id);
+	template<typename ... Args>
+	inline T* assign(const fiber_id& i_id, Args&& ... i_args);
 	void clear(const fiber_id& i_id);
 	T& get(const fiber_id& i_id);
 	bool empty(const fiber_id& i_id) const;

@@ -40,7 +40,7 @@ const T& future<T>::get_value() const
 	}
 	else
 	{
-		throw future_exception();
+		throw future_exception("Accessing empty future");
 	}
 }
 template<typename T>
@@ -52,7 +52,7 @@ T future<T>::extract_value()
 	}
 	else
 	{
-		throw future_exception();
+		throw future_exception("Accessing empty future");
 	}
 }
 template<typename T>
@@ -64,7 +64,7 @@ typename future<T>::cancel_result future<T>::cancel()
 	}
 	else
 	{
-		throw future_exception();
+		throw future_exception("Accessing empty future");
 	}
 }
 template<typename T>

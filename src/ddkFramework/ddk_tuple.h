@@ -133,10 +133,6 @@ using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::get_num_type
 
 template<typename ... Types>
 tuple<Types&&...> make_tuple(Types&& ... vals);
-template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, size_t ... IndexsA, typename ... TypesA, size_t ... IndexsB, typename ... TypesB>
-inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>&, const mpl::sequence<ToIndexs...>&, const mpl::sequence<IndexsA...>&, const tuple<TypesA...>& i_lhs, const mpl::sequence<IndexsB...>&, const tuple<TypesB...>& i_rhs);
-template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, size_t ... Indexs, typename ... Types, typename ... Args>
-inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>&, const mpl::sequence<Indexs...>&, const tuple<Types...>& i_lhs, Args&& ... i_args);
 template<typename ... TypesA, typename ... TypesB>
 inline tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs);
 template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>

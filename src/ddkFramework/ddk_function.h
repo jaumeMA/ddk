@@ -13,6 +13,27 @@ namespace ddk
 template<typename,typename = system_allocator>
 class function;
 
+template<typename>
+struct _is_function;
+
+template<typename T>
+struct _is_function
+{
+    static const bool value = false;
+};
+template<typename Return, typename ... Types, typename Allocator>
+struct _is_function<function<Return(Types...),Allocator>>
+{
+    static const bool value = true;
+};
+
+template<typename T>
+struct is_function
+{
+    typedef typename std::remove_reference<typename std::remove_const<T>::type>::type raw_type;
+    static const bool value = _is_function<raw_type>::value;
+};
+
 template<typename,typename,typename>
 struct get_resolved_function;
 template<typename Return,typename ... Types,typename Allocator>
@@ -43,7 +64,7 @@ class function<Return(),Allocator>
     template<typename RReturn, typename AAllocator>
     friend inline function_view<RReturn()> lend(const function<RReturn(),AAllocator>&);
     template<typename RReturn, typename AAllocator>
-    friend inline Return eval(const function<RReturn(),AAllocator>&);
+    friend inline RReturn eval(const function<RReturn(),AAllocator>&);
     template<typename RReturn, typename AAllocator>
     friend inline RReturn eval(const function<RReturn(),AAllocator>&, const tuple<>&);
 
@@ -57,9 +78,11 @@ public:
     template<typename AAllocator = Allocator>
     function(function<Return(),AAllocator>&& other);
     template<typename T>
-    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value>::type* = nullptr);
+    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value && is_function<T>::value==false>::type* = nullptr);
     template<typename T>
     function(T *pRef, Return(T::*call)(), const Allocator& i_allocator = Allocator());
+    template<typename T>
+    function(const T *pRef, Return(T::*call)()const, const Allocator& i_allocator = Allocator());
     function(Return(*call)(), const Allocator& i_allocator = Allocator());
     function& operator=(const function& other) = default;
     function& operator=(function&& other) = default;
@@ -100,9 +123,11 @@ public:
     template<typename AAllocator = Allocator>
     function(function<Return(Types...),AAllocator>&& other);
     template<typename T>
-    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T,Types...>::value>::type* = nullptr);
+    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T,Types...>::value && is_function<T>::value==false>::type* = nullptr);
     template<typename T>
     function(T *pRef, Return(T::*call)(Types...), const Allocator& i_allocator = Allocator());
+    template<typename T>
+    function(const T *pRef, Return(T::*call)(Types...)const, const Allocator& i_allocator = Allocator());
     function(Return(*call)(Types...), const Allocator& i_allocator = Allocator());
     function& operator=(const function& other) = default;
     function& operator=(function&& other) = default;

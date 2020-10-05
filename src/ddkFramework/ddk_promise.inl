@@ -73,7 +73,7 @@ typename promise<T>::const_reference promise<T>::get_value() const
 	return m_sharedState->get_value();
 }
 template<typename T>
-typename promise<T>::value_type promise<T>::extract_value()
+typename promise<T>::rref_type promise<T>::extract_value()
 {
 	return m_sharedState->extract_value();
 }

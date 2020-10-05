@@ -57,6 +57,8 @@ class lent_pointer_wrapper
 	friend lent_reference_wrapper<TTT> static_lent_cast(const lent_reference_wrapper<TT>&);
 	template<typename TTT, typename TT>
 	friend lent_pointer_wrapper<TTT> reinterpret_lent_cast(const lent_pointer_wrapper<TT>&);
+	template<typename TTT, typename TT>
+	friend lent_reference_wrapper<TTT> reinterpret_lent_cast(const lent_reference_wrapper<TT>&);
 	template<typename TT>
 	lent_pointer_wrapper<TT> const_lent_cast(const lent_pointer_wrapper<const TT>&);
 	template<typename TT>
