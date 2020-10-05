@@ -35,6 +35,10 @@ Its main highlights are:
 
 15.- Lock free structures (already used by asynchronous signals).
 
+16.- Functions. The design of the function class has in mind a good memory usage by means of shared objects and user provided allocators. Functions can be specialized giving other functions (instead of using separate bind methods). A set of make_function methods has been provided.
+
+17.- Iterables free of iterators. Fully functional style for iterables. Client code can compose transformations and filtering over a given iterable. Client code shall provide a function which receives a iterable value and is able to ask for some shifts over the current iterable place (such as next value, prev value and so on). With this design there is no visible iterator concept. The client code can run iteration process in a certain context, that is, as in the case of asynchronous operations, we will be able to attach an iteration execution in a user provided context (thread, fiber ,...)
+
 
 Installing CMake
 ----------------
@@ -57,7 +61,7 @@ Just launch the installer and follow the instructions.
 Preconditions
 =============
 
-None
+This code compiles in windows visual studio 2015 (15.7 or later) and in linux gcc 7 or later.
 
 Building the Project
 ====================
