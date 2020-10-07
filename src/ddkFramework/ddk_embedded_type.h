@@ -68,6 +68,14 @@ public:
 	{
 		return &m_data;
 	}
+    cref_type operator*() const
+	{
+		return m_data;
+	}
+    ref_type operator*()
+	{
+		return m_data;
+	}
     pointer_type operator->()
 	{
 		return &m_data;
@@ -157,6 +165,14 @@ public:
     rref_type extract()
 	{
 		return std::move(m_data);
+	}
+    cref_type operator*() const
+	{
+		return m_data;
+	}
+    ref_type operator*()
+	{
+		return m_data;
 	}
     pointer_type operator->()
 	{
@@ -275,6 +291,14 @@ public:
     rref_type extract()
 	{
 		return std::forward<embedded_type<T>::rref_type>(m_data);
+	}
+    cref_type operator*() const
+	{
+		return std::forward<embedded_type<T>::cref_type>(m_data);
+	}
+    ref_type operator*()
+	{
+		return std::forward<embedded_type<T>::ref_type>(m_data);
 	}
     pointer_type operator->()
 	{

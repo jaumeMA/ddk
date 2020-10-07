@@ -2,6 +2,7 @@
 #include "ddk_function.h"
 #include "ddk_iterable_action.h"
 #include "ddk_fiber_utils.h"
+#include "ddk_iterable_exceptions.h"
 
 namespace ddk
 {
@@ -24,27 +25,35 @@ iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const s
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const erase_action&)
 {
-    return m_currIterator;//m_iterable.erase(m_currIterator);
+    if constexpr (std::is_const<Iterable>::value == false)
+    {
+        return m_iterable.erase(m_currIterator);
+    }
+
+    throw iterable_operation_forbidden{"You cannot erase elements from const iterable"};
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const add_action& i_action)
 {
-    typedef typename Iterable::value_type value_type;
+    if constexpr (std::is_const<Iterable>::value == false)
+    {
+        typedef typename Iterable::value_type value_type;
 
-    return m_currIterator;//m_iterable.insert(m_currIterator,i_action.template get<value_type>());
+        return m_iterable.insert(m_currIterator,i_action.template get<value_type>());
+    }
+
+    throw iterable_operation_forbidden{"You cannot add elements into const iterable"};
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const go_forward_action&)
 {
     return ++m_currIterator;
 }
-
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,bidirectional_action>::visit(const go_backward_action&)
 {
     return --(this->m_currIterator);
 }
-
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,random_access_action>::visit(const shift_action& i_action)
 {

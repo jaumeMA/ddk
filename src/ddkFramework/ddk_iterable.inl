@@ -35,9 +35,9 @@ iterable<Traits>::iterable(iterable<TTraits>&& other)
 {
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void()>& i_finally)
+void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void()>& i_finally, const iter::iterable_state& i_initState)
 {
-    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate)));
+    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initState));
 
     while(true)
     {
@@ -47,7 +47,7 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
         {
             try
             {
-                eval(i_try,make_iterable_value<iterable_value>(m_iterableValueContainer.template extract<reference>(),lendable_base::template ref_from_this<detail::iterable_interface<iterable_base_traits>>(static_cast<detail::iterable_interface<iterable_base_traits>&>(*this))));
+                eval(i_try,make_iterable_value<iterable_value>(*m_iterableValueContainer.template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action)));
             }
             catch(const suspend_exception&)
             {
@@ -63,12 +63,12 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
     eval(i_finally);
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void()>& i_finally) const
+void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void()>& i_finally, const iter::iterable_state& i_initState) const
 {
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
     static func_ptr privateIteratorFunc = &iterable<Traits>::private_iterate;
 
-    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,privateIteratorFunc)));
+    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initState));
 
     while(true)
     {
@@ -78,7 +78,7 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
         {
             try
             {
-                eval(i_try,make_iterable_value<iterable_const_value>(m_iterableValueContainer.template extract<const_reference>(),lendable_base::template ref_from_this<detail::iterable_interface<iterable_base_traits>>(static_cast<const detail::iterable_interface<typename Traits::iterable_base_traits>&>(*this))));
+                eval(i_try,make_iterable_value<iterable_const_value>(*m_iterableValueContainer.template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action)));
             }
             catch(const suspend_exception&)
             {
@@ -102,6 +102,16 @@ template<typename Traits>
 bool iterable<Traits>::operator!=(const std::nullptr_t&) const
 {
     return m_iterableImpl != nullptr;
+}
+template<typename Traits>
+size_t iterable<Traits>::size() const
+{
+    return m_iterableImpl->size();
+}
+template<typename Traits>
+bool iterable<Traits>::empty() const
+{
+    return m_iterableImpl->empty();
 }
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)

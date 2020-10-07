@@ -15,8 +15,10 @@ public:
     intersection_iterable(const Iterable& i_iterable, const Iterables& ... i_iterables);
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try) override;
-    void iterate_impl(const function<action(const_reference)>& i_try) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const override;
+    size_t size() const override;
+    bool empty() const override;
 
     tuple<Iterable,Iterables...> m_iterables;
 };

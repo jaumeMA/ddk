@@ -5,6 +5,10 @@ namespace ddk
 namespace iter
 {
 
+iterable_state::iterable_state(size_t i_initPos)
+: m_currPos(i_initPos)
+{
+}
 size_t iterable_state::position() const
 {
     return m_currPos;

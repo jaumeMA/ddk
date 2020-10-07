@@ -2,21 +2,74 @@
 
 #include "ddk_tuple.h"
 #include "ddk_iterable_impl_interface.h"
+#include "ddk_iterable_traits.h"
+#include "ddk_static_visitor.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename Iterable, typename ... Iterables>
-class union_iterable_impl : public iterable_impl_interface<typename Traits::iterable_base_traits>
+template<typename, typename ...>
+struct union_iterable_visitor_type;
+
+template<size_t ... Indexs, typename ... Iterables>
+struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : public static_visitor<std::pair<size_t,size_t>>
 {
+    static const size_t s_num_iterables = tuple<Iterables...>::size();
+    typedef size_t(union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::*size_t_func)(const tuple<Iterables...>&);
+
 public:
+    union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
+
+    std::pair<size_t,size_t> visit(const iter::stop_action& i_action) const;
+    std::pair<size_t,size_t> visit(const iter::erase_action& i_action) const;
+    std::pair<size_t,size_t> visit(const iter::add_action& i_action) const;
+    std::pair<size_t,size_t> visit(const iter::go_forward_action& i_action) const;
+    std::pair<size_t,size_t> visit(const iter::go_backward_action& i_action) const;
+    std::pair<size_t,size_t> visit(const iter::shift_action& i_action) const;
+
+private:
+    template<size_t Index>
+    static size_t iterable_size(const tuple<Iterables...>&);
+
+    size_t m_currIterableIndex;
+    const tuple<Iterables...>& m_iterables;
+    static const size_t_func s_size_funcs;
+};
+
+template<typename ... Iterables>
+using union_iterable_visitor = union_iterable_visitor_type<typename mpl::make_sequence<0,mpl::get_num_types<Iterables...>::value>::type,Iterables...>;
+
+template<typename Iterable, typename ... Iterables>
+class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterable::traits,typename Iterables::traits ...>>
+{
+    static const size_t s_num_iterables = tuple<Iterable,Iterables...>::size();
+    typedef union_iterable_traits<typename Iterable::traits,typename Iterables::traits ...> valued_traits;
+
+public:
+    typedef typename valued_traits::value_type value_type;
+    typedef typename valued_traits::reference reference;
+    typedef typename valued_traits::const_reference const_reference;
+    typedef typename valued_traits::action action;
+
     union_iterable_impl(const Iterable& i_iterable, const Iterables& ... i_iterables);
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try) override;
-    void iterate_impl(const function<action(const_reference)>& i_try) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const override;
+    size_t size() const override;
+    bool empty() const override;
+
+    template<size_t ... Indexs>
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::iterable_state& i_initState);
+    template<size_t ... Indexs>
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const;
+
+    template<size_t Index>
+    static action navigate(tuple<Iterable,Iterables...>& i_tuple, const function<action(reference)>& i_try, const iter::iterable_state& i_initState);
+    template<size_t Index>
+    static action navigate(const tuple<Iterable,Iterables...>& i_tuple, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState);
 
     tuple<Iterable,Iterables...> m_iterables;
 };
@@ -24,3 +77,4 @@ private:
 }
 }
 
+#include "ddk_union_iterable_impl.inl"

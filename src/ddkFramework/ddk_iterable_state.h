@@ -12,7 +12,7 @@ struct iterable_state
 public:
     static const size_t npos = -1;
 
-    iterable_state() = default;
+    iterable_state(size_t i_initPos = npos);
     template<typename Action>
     void apply(const Action& i_action);
     size_t position() const;
@@ -20,7 +20,7 @@ public:
     bool operator!=(const iterable_state& other) const;
 
 private:
-    size_t m_currPos = npos;
+    size_t m_currPos;
 };
 
 namespace detail

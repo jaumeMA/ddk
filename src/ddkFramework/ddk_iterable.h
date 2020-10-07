@@ -1,13 +1,12 @@
 #pragma once
 
-#include "ddk_iterable_interface.h"
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_function.h"
 #include "ddk_iterable_action.h"
 #include "ddk_awaitable.h"
-#include "ddk_lend_from_this.h"
 #include "ddk_iterable_valued_traits.h"
 #include "ddk_arena.h"
+#include "ddk_iterable_state.h"
 
 namespace ddk
 {
@@ -15,7 +14,7 @@ namespace detail
 {
 
 template<typename Traits>
-class iterable : protected detail::iterable_interface<typename Traits::iterable_base_traits>, public lend_from_this<iterable<Traits>,detail::iterable_interface<typename Traits::iterable_base_traits>>
+class iterable
 {
     template<typename TTraits>
     friend class iterable;
@@ -27,7 +26,6 @@ class iterable : protected detail::iterable_interface<typename Traits::iterable_
     {
         return i_iterable.m_iterableImpl;
     }
-    typedef lend_from_this<iterable<Traits>,detail::iterable_interface<typename Traits::iterable_base_traits>> lendable_base;
 
 public:
     typedef typename Traits::iterable_value iterable_value;
@@ -47,16 +45,18 @@ public:
     template<typename TTraits>
     iterable(iterable<TTraits>&& other);
 
-    void iterate(const function<void(iterable_value)>& i_try, const function<void()>& i_finally = nullptr);
-    void iterate(const function<void(iterable_const_value)>& i_try, const function<void()>& i_finally = nullptr) const;
+    void iterate(const function<void(iterable_value)>& i_try, const function<void()>& i_finally = nullptr, const iter::iterable_state& i_initState = iter::iterable_state());
+    void iterate(const function<void(iterable_const_value)>& i_try, const function<void()>& i_finally = nullptr, const iter::iterable_state& i_initState = iter::iterable_state()) const;
     bool operator==(const std::nullptr_t&) const;
     bool operator!=(const std::nullptr_t&) const;
+    size_t size() const;
+    bool empty() const;
 
 private:
     action private_iterate(reference i_value);
     action private_iterate(const_reference i_value) const;
-    reference resolve_action(const action&) override;
-    const_reference resolve_action(const action&) const override;
+    reference resolve_action(const action&);
+    const_reference resolve_action(const action&) const;
 
     iterable_impl_shared_ref<iterable_base_traits> m_iterableImpl;
     mutable awaitable<void> m_awaitable;

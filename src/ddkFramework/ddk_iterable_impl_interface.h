@@ -4,6 +4,7 @@
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_function.h"
+#include "ddk_iterable_state.h"
 
 namespace ddk
 {
@@ -21,8 +22,10 @@ public:
 
     virtual ~iterable_impl_interface() = default;
 
-    virtual void iterate_impl(const function<action(reference)>& i_try) = 0;
-    virtual void iterate_impl(const function<action(const_reference)>& i_try) const = 0;
+    virtual void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState = iter::iterable_state()) = 0;
+    virtual void iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState = iter::iterable_state()) const = 0;
+    virtual size_t size() const = 0;
+    virtual bool empty() const = 0;
 };
 
 template<typename Traits>

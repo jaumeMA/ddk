@@ -26,8 +26,10 @@ public:
     transformed_iterable_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<reference(private_reference)>& i_transform);
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try) override;
-    void iterate_impl(const function<action(const_reference)>& i_try) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const override;
+    size_t size() const override;
+    bool empty() const override;
 
     iterable_impl_shared_ref<private_iterable_base_traits> m_iterableRef;
     const function<reference(private_reference)> m_transform;

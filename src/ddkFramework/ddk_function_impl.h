@@ -143,7 +143,7 @@ private:
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
 
-    T m_functor;
+    mutable T m_functor;
 };
 
 }

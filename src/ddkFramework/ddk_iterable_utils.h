@@ -7,6 +7,9 @@
 namespace ddk
 {
 
+template<typename Iterable, typename IIterable>
+inline Iterable make_iterable(IIterable&& i_iterable);
+
 template<template<typename> typename Traits, typename IterableType>
 using transformed_traits = typename std::enable_if<std::is_same<typename Traits<IterableType>::reference,void>::value==false,typename mpl::static_if<std::is_reference<IterableType>::value,Traits<IterableType>,Traits<typename std::add_const<IterableType>::type>>::type>::type;
 
@@ -24,6 +27,9 @@ inline iteration<Traits> operator<<=(const function<void(IterableValue),Allocato
 
 template<typename Traits>
 inline future<void> operator<<=(attachable<void> i_attachable, iteration<Traits> i_iteration);
+
+template<typename Traits1, typename Traits2>
+inline detail::iterable<detail::union_iterable_traits<Traits1,Traits2>> operator|(const detail::iterable<Traits1>& i_lhs, const detail::iterable<Traits2>& i_rhs);
 
 }
 
