@@ -52,6 +52,7 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
 {
     template<typename,typename...>
     friend class tuple_impl;
+    static const size_t s_total_size = mpl::get_total_size<Type1,Type2,Types...>::value;
 
 public:
     tuple_impl();
@@ -79,7 +80,7 @@ public:
     static constexpr size_t size();
 
 private:
-    typedef arena<mpl::get_total_size<Type1,Type2,Types...>::value,mpl::get_total_alignment<Type1,Type2,Types...>::value> data_type;
+    typedef arena<s_total_size,mpl::get_total_alignment<Type1,Type2,Types...>::value> data_type;
 
     template<typename TType, typename Arg>
     inline bool construct(void* i_address, Arg&& i_val)

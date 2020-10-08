@@ -7,7 +7,7 @@ namespace ddk
 template<typename T>
 bool fiber_local_storage<T>::empty(const fiber_id& i_id) const
 {
-	typename std::unordered_map<fiber_id,thread_local_storage<T>>::const_iterator itFiber = m_fiberStorage.find(i_id);
+	typename std::unordered_map<fiber_id,T>::const_iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
 		return itFiber->second.empty();
@@ -21,14 +21,14 @@ template<typename T>
 template<typename ... Args>
 T* fiber_local_storage<T>::construct(const fiber_id& i_id, Args&& ... i_args)
 {
-	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
+	typedef typename std::unordered_map<fiber_id,T>::iterator iterator;
 
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber == m_fiberStorage.end())
 	{
-		std::pair<iterator,bool> insertRes = m_fiberStorage.insert(std::make_pair(i_id,thread_local_storage<T>{}));
+		std::pair<iterator,bool> insertRes = m_fiberStorage.emplace(std::make_pair(i_id,std::forward<Args>(i_args) ...));
 
-		return (insertRes.second) ? insertRes.first->second.construct(std::forward<Args>(i_args) ...) : nullptr;
+		return (insertRes.second) ? &(insertRes.first->second) : nullptr;
 	}
 	else
 	{
@@ -40,12 +40,12 @@ T* fiber_local_storage<T>::construct(const fiber_id& i_id, Args&& ... i_args)
 template<typename T>
 void fiber_local_storage<T>::destroy(const fiber_id& i_id)
 {
-	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
+	typedef typename std::unordered_map<fiber_id,T>::iterator iterator;
 
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
-		itFiber->second.destroy();
+        m_fiberStorage.erase(itFiber);
 	}
 	else
 	{
@@ -56,12 +56,12 @@ template<typename T>
 template<typename ... Args>
 T* fiber_local_storage<T>::assign(const fiber_id& i_id, Args&& ... i_args)
 {
-	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
+	typedef typename std::unordered_map<fiber_id,T>::iterator iterator;
 
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
-		return itFiber->second.assign(std::forward<Args>(i_args) ...);
+	    return &(itFiber->second = T{std::forward<Args>(i_args) ...});
 	}
 	else
 	{
@@ -73,12 +73,12 @@ T* fiber_local_storage<T>::assign(const fiber_id& i_id, Args&& ... i_args)
 template<typename T>
 T& fiber_local_storage<T>::get(const fiber_id& i_id)
 {
-	typedef typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator iterator;
+	typedef typename std::unordered_map<fiber_id,T>::iterator iterator;
 
 	iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
-		return itFiber->second.get();
+		return itFiber->second;
 	}
 	else
 	{
@@ -88,14 +88,9 @@ T& fiber_local_storage<T>::get(const fiber_id& i_id)
 template<typename T>
 void fiber_local_storage<T>::clear(const fiber_id& i_id)
 {
-	typename std::unordered_map<fiber_id,thread_local_storage<T>>::iterator itFiber = m_fiberStorage.find(i_id);
+	typename std::unordered_map<fiber_id,T>::iterator itFiber = m_fiberStorage.find(i_id);
 	if(itFiber != m_fiberStorage.end())
 	{
-		if(T* currYielder = itFiber->second.template get_address<T>())
-		{
-			currYielder->~T();
-		}
-
 		m_fiberStorage.erase(itFiber);
 	}
 }

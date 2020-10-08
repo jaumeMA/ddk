@@ -339,12 +339,12 @@ struct get_total_size;
 template<typename T, typename ... Types>
 struct get_total_size<T,Types...>
 {
-    static const int value = sizeof(T) + get_total_size<Types...>::value;
+    static const size_t value = size_of_qualified_type<T>::value + get_total_size<Types...>::value;
 };
 template<>
 struct get_total_size<>
 {
-    static const int value = 0;
+    static const size_t value = 0;
 };
 
 template<typename ... Types>

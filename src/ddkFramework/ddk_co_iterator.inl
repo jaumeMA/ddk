@@ -88,6 +88,10 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator++()
 	{
         m_currState.apply(m_currAction.get());
     }
+    else
+    {
+        m_currState.reset();
+    }
 
 	return *this;
 }
@@ -107,6 +111,10 @@ co_forward_iterator<T> co_forward_iterator<T>::operator++(int)
 	if (execRes.hasError() == false)
 	{
         m_currState.apply(m_currAction.get());
+    }
+    else
+    {
+        m_currState.reset();
     }
 
 	return res;
@@ -229,6 +237,10 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator++()
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return *this;
 }
@@ -249,6 +261,10 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator++(int)
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return res;
 }
@@ -267,6 +283,10 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator--()
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return *this;
 }
@@ -287,6 +307,10 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator--(int)
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return res;
 }
@@ -408,6 +432,10 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++()
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return *this;
 }
@@ -428,6 +456,10 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator++(int)
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return res;
 }
@@ -446,6 +478,10 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator--()
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return *this;
 }
@@ -466,6 +502,10 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator--(int)
 	{
         m_currState.apply(m_currAction.get());
 	}
+    else
+    {
+        m_currState.reset();
+    }
 
 	return res;
 }
@@ -480,13 +520,17 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator+(int i_shift
 
 	if(i_shift != 0)
 	{
-		m_currAction.set(iter::go_shift_place(i_shift));
+		res.m_currAction.set(iter::go_shift_place(i_shift));
 
 		const start_result execRes = res.m_executor->execute();
 
         if (execRes.hasError() == false)
         {
-            m_currState.apply(m_currAction.get());
+            res.m_currState.apply(res.m_currAction.get());
+        }
+        else
+        {
+            res.m_currState.reset();
         }
 	}
 
@@ -511,6 +555,10 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator[](size_t i_
 		{
             m_currState.apply(m_currAction.get());
 		}
+        else
+        {
+            m_currState.reset();
+        }
 	}
 
 	return *this;

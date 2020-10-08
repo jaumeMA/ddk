@@ -27,13 +27,18 @@ struct E : C
 TEST(DDKIterableTest, forwardIterableConstruction)
 {
     std::vector<int> foo;
-    ddk::thread myThread;
+    foo.push_back(10);
+    foo.push_back(-25);
+    foo.push_back(4);
+    foo.push_back(1897);
+    foo.push_back(76);
+
 
     ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 
     ddk::const_random_access_iterable<const int> transformedFoo = ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
-//
-//    ddk::future<void> itFuture = ( ddk::make_function([](ddk::const_bidirectional_value<const int> i_value){ printf("current value: %d\n",*i_value); i_value = prev_value(std::move(i_value)); }) <<= fooIterable ) -> attach(std::move(myThread));
+
+    ddk::make_function([](ddk::const_bidirectional_value<const int> i_value){ printf("current value: %d\n",*i_value); }) <<=  ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
 }
 TEST(DDKIterableTest, iterableUnion)
 {

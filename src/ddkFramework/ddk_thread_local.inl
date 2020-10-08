@@ -7,7 +7,7 @@ T& threadlocal<T,Tag>::get()
 {
 	thread_local_storage<T>& address = get_address();
 
-	return address.template get<T>();
+	return address.get();
 }
 template<typename T, typename Tag>
 T threadlocal<T,Tag>::extract()

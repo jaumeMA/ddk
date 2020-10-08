@@ -1,6 +1,4 @@
 
-#define PACK_STORAGE_ADDRESS(_STORAGE) reinterpret_cast<char*>(const_cast<decltype(_STORAGE)*>(&_STORAGE))
-
 namespace ddk
 {
 namespace detail
@@ -58,78 +56,78 @@ constexpr size_t tuple_impl<mpl::sequence<0>,Type>::size()
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl()
 {
-    construct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), Type1{}) &&
-    construct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), Type2{}) &&
-    ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), Types{}) && ... );
+    construct<Type1>(m_storage.get_arena() + data_offset::at(Index1), Type1{}) &&
+    construct<Type2>(m_storage.get_arena() + data_offset::at(Index2), Type2{}) &&
+    ( construct<Types>(m_storage.get_arena() + data_offset::at(Indexs), Types{}) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
-    construct<typename mpl::nth_type_of<IIndex1,Type1,Type2,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), std::forward<Arg1>(i_arg1)) &&
-    construct<typename mpl::nth_type_of<IIndex2,Type1,Type2,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), std::forward<Arg2>(i_arg2)) &&
-    ( construct<typename mpl::nth_type_of<IIndexs,Type1,Type2,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
+    construct<typename mpl::nth_type_of<IIndex1,Type1,Type2,Types...>::type>(m_storage.get_arena() + data_offset::at(Index1), std::forward<Arg1>(i_arg1)) &&
+    construct<typename mpl::nth_type_of<IIndex2,Type1,Type2,Types...>::type>(m_storage.get_arena() + data_offset::at(Index2), std::forward<Arg2>(i_arg2)) &&
+    ( construct<typename mpl::nth_type_of<IIndexs,Type1,Type2,Types...>::type>(m_storage.get_arena() + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<typename Arg1, typename Arg2, typename ... Args>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
-    construct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), std::forward<Arg1>(i_arg1)) &&
-    construct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), std::forward<Arg2>(i_arg2)) &&
-    ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
+    construct<Type1>(m_storage.get_arena() + data_offset::at(Index1), std::forward<Arg1>(i_arg1)) &&
+    construct<Type2>(m_storage.get_arena() + data_offset::at(Index2), std::forward<Arg2>(i_arg2)) &&
+    ( construct<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::forward<Args>(i_args)) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const tuple_impl& other)
 {
-    construct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), std::forward<Type1>(get<Type1>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index1)))) &&
-    construct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), std::forward<Type2>(get<Type2>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index2)))) &&
-    ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
+    construct<Type1>(m_storage.get_arena() + data_offset::at(Index1), std::forward<Type1>(get<Type1>(other.m_storage.get_arena() + data_offset::at(Index1)))) &&
+    construct<Type2>(m_storage.get_arena() + data_offset::at(Index2), std::forward<Type2>(get<Type2>(other.m_storage.get_arena() + data_offset::at(Index2)))) &&
+    ( construct<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::forward<Types>(get<Types>(other.m_storage.get_arena() + data_offset::at(Indexs)))) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(tuple_impl&& other)
 {
-    construct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), std::move(extract<Type1>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index1)))) &&
-    construct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), std::move(extract<Type2>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index2)))) &&
-    ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
+    construct<Type1>(m_storage.get_arena() + data_offset::at(Index1), std::move(extract<Type1>(other.m_storage.get_arena() + data_offset::at(Index1)))) &&
+    construct<Type2>(m_storage.get_arena() + data_offset::at(Index2), std::move(extract<Type2>(other.m_storage.get_arena() + data_offset::at(Index2)))) &&
+    ( construct<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::move(extract<Types>(other.m_storage.get_arena() + data_offset::at(Indexs)))) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename TType1, typename TType2, typename ... TTypes>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const tuple_impl<mpl::sequence<IIndex1,IIndex2,IIndexs...>,TType1,TType2,TTypes...>& other)
 {
-    construct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), std::forward<TType1>(get<TType1>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex1)))) &&
-    construct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), std::forward<TType2>(get<TType2>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex2)))) &&
-    ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<TTypes>(get<TTypes>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndexs)))) && ... );
+    construct<Type1>(m_storage.get_arena() + data_offset::at(Index1), std::forward<TType1>(get<TType1>(other.m_storage.get_arena() + data_offset::at(IIndex1)))) &&
+    construct<Type2>(m_storage.get_arena() + data_offset::at(Index2), std::forward<TType2>(get<TType2>(other.m_storage.get_arena() + data_offset::at(IIndex2)))) &&
+    ( construct<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::forward<TTypes>(get<TTypes>(other.m_storage.get_arena() + data_offset::at(IIndexs)))) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename TType1, typename TType2, typename ... TTypes>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(tuple_impl<mpl::sequence<IIndex1,IIndex2,IIndexs...>,TType1,TType2,TTypes...>&& other)
 {
-    construct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1), std::move(extract<TType1>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex1)))) &&
-    construct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2), std::move(extract<TType2>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndex2)))) &&
-    ( construct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<TTypes>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(IIndexs)))) && ... );
+    construct<Type1>(m_storage.get_arena() + data_offset::at(Index1), std::move(extract<TType1>(other.m_storage.get_arena() + data_offset::at(IIndex1)))) &&
+    construct<Type2>(m_storage.get_arena() + data_offset::at(Index2), std::move(extract<TType2>(other.m_storage.get_arena() + data_offset::at(IIndex2)))) &&
+    ( construct<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::move(extract<TTypes>(other.m_storage.get_arena() + data_offset::at(IIndexs)))) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::~tuple_impl()
 {
-    destruct<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1)) &&
-    destruct<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2)) &&
-    ( destruct<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs)) && ... );
+    destruct<Type1>(m_storage.get_arena() + data_offset::at(Index1)) &&
+    destruct<Type2>(m_storage.get_arena() + data_offset::at(Index2)) &&
+    ( destruct<Types>(m_storage.get_arena() + data_offset::at(Indexs)) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>& tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::operator=(const tuple_impl& other)
 {
-    assign<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1),std::forward<Type1>(get<Type1>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index1)))) &&
-    assign<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2),std::forward<Type2>(get<Type2>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index2)))) &&
-    ( assign<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::forward<Types>(get<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
+    assign<Type1>(m_storage.get_arena() + data_offset::at(Index1),std::forward<Type1>(get<Type1>(other.m_storage.get_arena() + data_offset::at(Index1)))) &&
+    assign<Type2>(m_storage.get_arena() + data_offset::at(Index2),std::forward<Type2>(get<Type2>(other.m_storage.get_arena() + data_offset::at(Index2)))) &&
+    ( assign<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::forward<Types>(get<Types>(other.m_storage.get_arena() + data_offset::at(Indexs)))) && ... );
 
     return *this;
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>& tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::operator=(tuple_impl&& other)
 {
-    assign<Type1>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index1),std::move(extract<Type1>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index1)))) &&
-    assign<Type2>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Index2),std::move(extract<Type2>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Index2)))) &&
-    ( assign<Types>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(Indexs), std::move(extract<Types>(PACK_STORAGE_ADDRESS(other.m_storage) + data_offset::at(Indexs)))) && ... );
+    assign<Type1>(m_storage.get_arena() + data_offset::at(Index1),std::move(extract<Type1>(other.m_storage.get_arena() + data_offset::at(Index1)))) &&
+    assign<Type2>(m_storage.get_arena() + data_offset::at(Index2),std::move(extract<Type2>(other.m_storage.get_arena() + data_offset::at(Index2)))) &&
+    ( assign<Types>(m_storage.get_arena() + data_offset::at(Indexs), std::move(extract<Types>(other.m_storage.get_arena() + data_offset::at(Indexs)))) && ... );
 
     return *this;
 }
@@ -139,7 +137,7 @@ typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::t
 {
     typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
 
-    return get<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(IIndex));
+    return get<nth_type>(m_storage.get_arena() + data_offset::at(IIndex));
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex>
@@ -147,7 +145,7 @@ typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::t
 {
     typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
 
-    return get<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(IIndex));
+    return get<nth_type>(m_storage.get_arena() + data_offset::at(IIndex));
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t ... IIndexs, typename ... Args>
@@ -156,7 +154,7 @@ void tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::se
 	static_assert(mpl::get_num_ranks<IIndexs...>::value == mpl::get_num_types<Args...>::value, "Unconsistent provided arguments and sequence");
 	static_assert(mpl::get_num_types<Type1,Type2,Types...>::value == mpl::get_num_types<Args...>::value, "Wrong number of arguments");
 
-    ( assign<typename mpl::nth_type_of<Indexs,Type1,Type2,Types...>::type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(IIndexs), std::forward<Args>(i_args)) && ... );
+    ( assign<typename mpl::nth_type_of<Indexs,Type1,Type2,Types...>::type>(m_storage.get_arena() + data_offset::at(IIndexs), std::forward<Args>(i_args)) && ... );
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex, typename Arg>
@@ -164,7 +162,7 @@ bool tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::se
 {
     typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
 
-    return assign<nth_type>(PACK_STORAGE_ADDRESS(m_storage) + data_offset::at(IIndex), std::forward<Arg>(i_arg));
+    return assign<nth_type>(m_storage.get_arena() + data_offset::at(IIndex), std::forward<Arg>(i_arg));
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 constexpr size_t tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::size()

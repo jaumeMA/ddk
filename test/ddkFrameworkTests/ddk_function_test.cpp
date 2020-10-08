@@ -19,6 +19,11 @@ int sum_func(int a, float b)
 	return a;
 }
 
+int prod_func(int a, const std::string& b,float c,double d,char f)
+{
+    return a * b.size();
+}
+
 class Foo
 {
 public:
@@ -64,13 +69,13 @@ TEST(DDKFunctionTest,funcMakeSpecialization)
 }
 TEST(DDKFunctionTest,funcSpecialization)
 {
-    ddk::function<int(int,std::string,float,double,char)> foo;
+    ddk::function<int(int,const std::string&,float,double,char)> foo = ddk::make_function(&prod_func);;
 
-    ddk::function<int(float,std::string,double)> foo1 = foo(1,ddk::arg_1,ddk::arg_0,ddk::arg_2,'a');
+    ddk::function<int(float,const std::string&,double)> foo1 = foo(1,ddk::arg_1,ddk::arg_0,ddk::arg_2,'a');
 
     ddk::function<int(double,float)> foo2 = foo1(ddk::arg_1,"hola",ddk::arg_0);
 
-    ddk::function<int(double,float,std::string,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
+    ddk::function<int(double,float,const std::string&,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
 }
 TEST(DDKFunctionTest,funcOps)
 {
@@ -82,11 +87,11 @@ TEST(DDKFunctionTest,funcOps)
 }
 TEST(DDKFunctionTest,funcView)
 {
-    ddk::function<int(int,std::string,float,double,char)> foo;
+    ddk::function<int(int,const std::string&,float,double,char)> foo = ddk::make_function(&prod_func);
 
-    ddk::function<int(double,float,std::string,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
+    ddk::function<int(double,float,const std::string&,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
 
-	if (ddk::function_view<int(double, float, std::string, char, int)> foo3View = ddk::lend(foo3))
+	if (ddk::function_view<int(double, float, const std::string&, char, int)> foo3View = ddk::lend(foo3))
 	{
 		int result = foo3View(20.f,10.f,"hola",'a',3);
 	}

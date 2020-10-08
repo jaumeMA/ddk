@@ -16,6 +16,7 @@ public:
     template<typename Action>
     void apply(const Action& i_action);
     size_t position() const;
+    void reset();
     bool operator==(const iterable_state& other) const;
     bool operator!=(const iterable_state& other) const;
 
@@ -30,40 +31,31 @@ template<typename>
 struct state_visitor;
 
 template<>
-struct state_visitor<input_action> : public static_visitor<void>
+struct state_visitor<input_action> : public static_visitor<size_t>
 {
 public:
-    state_visitor(size_t& i_currPos)
+    state_visitor(size_t i_currPos)
     : m_currPos(i_currPos)
     {}
-    ddk::detail::void_t visit(const stop_action&)
-    {
-        m_currPos = iterable_state::npos;
-
-        return _void;
-    }
-    ddk::detail::void_t visit(const erase_action&)
-    {
-        return _void;
-    }
-    ddk::detail::void_t visit(const add_action&)
-    {
-        return _void;
-    }
-    ddk::detail::void_t visit(const go_forward_action&)
-    {
-        ++m_currPos;
-
-        return _void;
-    }
-
-    size_t get_pos() const
+    size_t visit(const stop_action&)
     {
         return m_currPos;
     }
+    size_t visit(const erase_action&)
+    {
+        return m_currPos;
+    }
+    size_t visit(const add_action&)
+    {
+        return m_currPos;
+    }
+    size_t visit(const go_forward_action&)
+    {
+        return m_currPos + 1;
+    }
 
 protected:
-    size_t& m_currPos;
+    size_t m_currPos;
 };
 template<>
 struct state_visitor<bidirectional_action> : state_visitor<input_action>
@@ -72,11 +64,9 @@ public:
     using state_visitor<input_action>::state_visitor;
     using state_visitor<input_action>::visit;
 
-    ddk::detail::void_t visit(const go_backward_action&)
+    size_t visit(const go_backward_action&)
     {
-        m_currPos--;
-
-        return _void;
+        return m_currPos - 1;
     }
 };
 
@@ -87,11 +77,9 @@ public:
     using state_visitor<bidirectional_action>::state_visitor;
     using state_visitor<bidirectional_action>::visit;
 
-    ddk::detail::void_t visit(const shift_action& i_action)
+    size_t visit(const shift_action& i_action)
     {
-        m_currPos += i_action.shifted();
-
-        return _void;
+        return m_currPos + i_action.shifted();
     }
 };
 

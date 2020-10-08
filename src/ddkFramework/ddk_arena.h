@@ -36,6 +36,8 @@ public:
 	typename embedded_type<T>::cpointer_type get_ptr() const;
 	template<typename T>
 	typename embedded_type<T>::pointer_type get_ptr();
+    char* get_arena();
+    const char* get_arena() const;
 	inline bool empty() const;
 	template<typename T, typename Arg>
 	bool compare(Arg&& i_arg) const;

@@ -70,7 +70,7 @@ Reference visit_iterator(Iterable& i_iterable, const function<Action(Reference)>
 
     if(currPos != iter::iterable_state::npos)
     {
-        std::next(itNext,currPos);
+        itNext = std::next(itNext,currPos);
     }
 
 	if(itNext != std::end(i_iterable))

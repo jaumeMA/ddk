@@ -56,7 +56,7 @@ const ucontext_t* this_fiber_t::get_context() const
 }
 fiber_id this_fiber_t::get_id() const
 {
-	return fiber_id(reinterpret_cast<size_t>(this));
+	return fiber_id(static_cast<size_t>(get_current_thread_id()));
 }
 stack_allocator this_fiber_t::get_allocator() const
 {

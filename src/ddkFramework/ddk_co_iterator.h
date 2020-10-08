@@ -70,7 +70,7 @@ private:
 	ddk::function<reference(const iter::iterable_state&, const function<iter::forward_action(reference)>&)> m_function;
     iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
-    fiberlocal<iter::forward_action,co_forward_iterator<T>> m_currAction;
+    threadlocal<iter::forward_action,co_forward_iterator<T>> m_currAction;
 };
 
 template<typename T>
@@ -110,7 +110,7 @@ private:
 	ddk::function<reference(const iter::iterable_state&, const function<iter::bidirectional_action(reference)>&)> m_function;
     iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
-    fiberlocal<iter::bidirectional_action,co_bidirectional_iterator<T>> m_currAction;
+    threadlocal<iter::bidirectional_action,co_bidirectional_iterator<T>> m_currAction;
 };
 
 template<typename T>
@@ -151,7 +151,7 @@ private:
     iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
 	async_execute_shared_ptr<T> m_executor;
-    fiberlocal<iter::random_access_action,co_random_access_iterator<T>> m_currAction;
+    threadlocal<iter::random_access_action,co_random_access_iterator<T>> m_currAction;
 };
 
 namespace detail

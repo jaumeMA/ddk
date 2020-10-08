@@ -15,6 +15,10 @@ size_t iterable_state::position() const
 {
     return m_currPos;
 }
+void iterable_state::reset()
+{
+    m_currPos = npos;
+}
 bool iterable_state::operator==(const iterable_state& other) const
 {
     return m_currPos == other.m_currPos;

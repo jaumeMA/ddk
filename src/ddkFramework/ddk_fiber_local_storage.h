@@ -23,7 +23,7 @@ public:
 	bool empty(const fiber_id& i_id) const;
 
 private:
-	std::unordered_map<fiber_id,thread_local_storage<T>> m_fiberStorage;
+	std::unordered_map<fiber_id,T> m_fiberStorage;
 };
 
 }

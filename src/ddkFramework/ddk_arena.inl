@@ -13,7 +13,7 @@ arena<ArenaSize,ArenaAlignment>::arena()
 template<size_t ArenaSize, size_t ArenaAlignment>
 arena<ArenaSize,ArenaAlignment>::~arena()
 {
-	DDK_ASSERT(m_empty, "Destroying arena with getting rid of its contents");
+	DDK_ASSERT(m_empty, "Destroying arena without getting rid of its contents");
 }
 template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T, typename ... Args>
@@ -104,6 +104,16 @@ template<typename T>
 typename embedded_type<T>::pointer_type arena<ArenaSize,ArenaAlignment>::get_ptr()
 {
 	return reinterpret_cast<T*>(&m_storage);
+}
+template<size_t ArenaSize, size_t ArenaAlignment>
+char* arena<ArenaSize,ArenaAlignment>::get_arena()
+{
+    return reinterpret_cast<char*>(&m_storage);
+}
+template<size_t ArenaSize, size_t ArenaAlignment>
+const char* arena<ArenaSize,ArenaAlignment>::get_arena() const
+{
+    return reinterpret_cast<const char*>(&m_storage);
 }
 template<size_t ArenaSize, size_t ArenaAlignment>
 bool arena<ArenaSize,ArenaAlignment>::empty() const
