@@ -138,7 +138,7 @@ public:
 	functor_impl(T&& i_functor);
 
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,Types&&>::type ... args) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
     Return apply(tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;

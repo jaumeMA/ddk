@@ -10,7 +10,7 @@ namespace iter
 struct iterable_state
 {
 public:
-    static const size_t npos = -1;
+    static const size_t npos;
 
     iterable_state(size_t i_initPos = npos);
     template<typename Action>

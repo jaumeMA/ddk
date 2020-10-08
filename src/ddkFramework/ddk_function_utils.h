@@ -65,21 +65,17 @@ inline detail::union_function<Callables...> make_union(const Callables& ... i_ca
 template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
 inline detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_composition(const function<ReturnDst(TypesDst...)>& i_fuscDst, const function<ReturnSrc(TypesSrc...)>& i_funcSrc);
 
-template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
-detail::intersection_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator&(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs);
-
-template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
-detail::union_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator|(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs);
-
-template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
-inline function<ReturnA(TypesB...)> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs);
-
-template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
-inline resolved_function<ReturnA,typename detail::intersection_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::intersection_function<CallablesB...>& i_rhs);
-
-template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
-inline resolved_function<ReturnA,typename detail::union_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::union_function<CallablesB...>& i_rhs);
-
 }
+
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+inline ddk::detail::intersection_function<ddk::function<ReturnA(TypesA...)>,ddk::function<ReturnB(TypesB...)>> operator&(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs);
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+inline ddk::detail::union_function<ddk::function<ReturnA(TypesA...)>,ddk::function<ReturnB(TypesB...)>> operator|(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs);
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+inline ddk::function<ReturnA(TypesB...)> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs);
+template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
+inline ddk::resolved_function<ReturnA,typename ddk::detail::intersection_function<CallablesB...>::callable_args_type> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::detail::intersection_function<CallablesB...>& i_rhs);
+template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
+inline ddk::resolved_function<ReturnA,typename ddk::detail::union_function<CallablesB...>::callable_args_type> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::detail::union_function<CallablesB...>& i_rhs);
 
 #include "ddk_function_utils.inl"

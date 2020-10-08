@@ -21,6 +21,8 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 
 	m_executor = make_async_executor(m_function(m_currState,make_function(this,&co_forward_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
+    m_currAction.set(iter::go_next_place);
+
 	const start_result execRes = m_executor->execute();
 
     if(execRes.hasError() == false)
@@ -37,6 +39,8 @@ co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable, typename std::
 	typedef typename async_execute_interface<T>::start_result start_result;
 
 	m_executor = make_async_executor(m_function(m_currState,make_function(this,&co_forward_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
+
+    m_currAction.set(iter::go_next_place);
 
 	const start_result execRes = m_executor->execute();
 
@@ -158,6 +162,8 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(const co_bidirectional_i
 
 	m_executor = make_async_executor(m_function(m_currState,make_function(this,&co_bidirectional_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
+    m_currAction.set(iter::go_next_place);
+
 	const start_result execRes = m_executor->execute();
 
     if(execRes.hasError() == false)
@@ -174,6 +180,8 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(Iterable& i_iterable, ty
 	typedef typename async_execute_interface<T>::start_result start_result;
 
 	m_executor = make_async_executor(m_function(m_currState,make_function(this,&co_bidirectional_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
+
+    m_currAction.set(iter::go_next_place);
 
 	const start_result execRes = m_executor->execute();
 
@@ -333,6 +341,8 @@ co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_i
 
 	m_executor = make_async_executor(m_function(m_currState,make_function(this,&co_random_access_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
+    m_currAction.set(iter::go_next_place);
+
 	const start_result execRes = m_executor->execute();
 
     if(execRes.hasError() == false)
@@ -349,6 +359,8 @@ co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, ty
 	typedef typename async_execute_interface<T>::start_result start_result;
 
 	m_executor = make_async_executor(m_function(m_currState,make_function(this,&co_random_access_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
+
+    m_currAction.set(iter::go_next_place);
 
 	const start_result execRes = m_executor->execute();
 

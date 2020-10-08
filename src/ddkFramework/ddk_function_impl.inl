@@ -60,7 +60,6 @@ function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>>
     typedef typename mpl::pos_place_holder<0,tuple<Args...>>::type not_spec_indexs;
     typedef typename mpl::dual_sequence<not_spec_indexs>::template at<0,s_numTypes>::type spec_sequence;
     typedef typename not_spec_indexs::template at<typename mpl::sequence_place_holder<tuple<Args...>>::type>::type not_spec_sequence;
-    typedef typename mpl::make_tuple<Types...>::template at<not_spec_sequence>::type not_spec_types;
     typedef specialized_impl<spec_sequence,not_spec_sequence> spec_func_type;
 
     if(void* mem = i_allocator.allocate(1,sizeof(spec_func_type)))
@@ -177,7 +176,7 @@ functor_impl<T,Return,Types...>::functor_impl(T&& i_functor)
 {
 }
 template<typename T, typename Return, typename ... Types>
-Return functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,Types&&>::type ... args) const
+Return functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {

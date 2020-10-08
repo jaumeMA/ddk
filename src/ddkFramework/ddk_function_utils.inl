@@ -199,32 +199,30 @@ detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_co
     return detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>(i_fuscDst,i_funcSrc);
 }
 
-template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
-detail::intersection_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator&(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs)
-{
-    return detail::resolved_intersection<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>>(i_lhs,i_rhs);
 }
 
 template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
-detail::union_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>> operator|(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs)
+ddk::detail::intersection_function<ddk::function<ReturnA(TypesA...)>,ddk::function<ReturnB(TypesB...)>> operator&(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs)
 {
-    return detail::union_function<function<ReturnA(TypesA...)>,function<ReturnB(TypesB...)>>(i_lhs,i_rhs);
+    return ddk::detail::resolved_intersection<ddk::function<ReturnA(TypesA...)>,ddk::function<ReturnB(TypesB...)>>(i_lhs,i_rhs);
 }
-
 template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
-function<ReturnA(TypesB...)> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const function<ReturnB(TypesB...)>& i_rhs)
+ddk::detail::union_function<ddk::function<ReturnA(TypesA...)>,ddk::function<ReturnB(TypesB...)>> operator|(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs)
 {
-    return make_composition(i_lhs,i_rhs);
+    return ddk::detail::union_function<ddk::function<ReturnA(TypesA...)>,ddk::function<ReturnB(TypesB...)>>(i_lhs,i_rhs);
+}
+template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
+ddk::function<ReturnA(TypesB...)> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs)
+{
+    return ddk::make_composition(i_lhs,i_rhs);
 }
 template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
-resolved_function<ReturnA,typename detail::intersection_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::intersection_function<CallablesB...>& i_rhs)
+ddk::resolved_function<ReturnA,typename ddk::detail::intersection_function<CallablesB...>::callable_args_type> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::detail::intersection_function<CallablesB...>& i_rhs)
 {
-    return make_composition(i_lhs,resolved_function<typename detail::intersection_function<CallablesB...>::callable_return_type,typename detail::intersection_function<CallablesB...>::callable_args_type>(i_rhs));
+    return ddk::make_composition(i_lhs,ddk::resolved_function<typename ddk::detail::intersection_function<CallablesB...>::callable_return_type,typename ddk::detail::intersection_function<CallablesB...>::callable_args_type>(i_rhs));
 }
 template<typename ReturnA, typename ... TypesA, typename ... CallablesB>
-resolved_function<ReturnA,typename detail::union_function<CallablesB...>::callable_args_type> operator<<=(const function<ReturnA(TypesA...)>& i_lhs, const detail::union_function<CallablesB...>& i_rhs)
+ddk::resolved_function<ReturnA,typename ddk::detail::union_function<CallablesB...>::callable_args_type> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::detail::union_function<CallablesB...>& i_rhs)
 {
-    return make_composition(i_lhs,resolved_function<typename detail::union_function<CallablesB...>::callable_return_type,typename detail::union_function<CallablesB...>::callable_args_type>(i_rhs));
-}
-
+    return ddk::make_composition(i_lhs,ddk::resolved_function<typename ddk::detail::union_function<CallablesB...>::callable_return_type,typename ddk::detail::union_function<CallablesB...>::callable_args_type>(i_rhs));
 }

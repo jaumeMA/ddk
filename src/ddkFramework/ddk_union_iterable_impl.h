@@ -17,7 +17,7 @@ template<size_t ... Indexs, typename ... Iterables>
 struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : public static_visitor<std::pair<size_t,size_t>>
 {
     static const size_t s_num_iterables = tuple<Iterables...>::size();
-    typedef size_t(union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::*size_t_func)(const tuple<Iterables...>&);
+    typedef size_t(*size_t_func)(const tuple<Iterables...>&);
 
 public:
     union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
@@ -35,7 +35,7 @@ private:
 
     size_t m_currIterableIndex;
     const tuple<Iterables...>& m_iterables;
-    static const size_t_func s_size_funcs;
+    static const size_t_func s_size_funcs[s_num_iterables];
 };
 
 template<typename ... Iterables>
@@ -45,13 +45,12 @@ template<typename Iterable, typename ... Iterables>
 class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterable::traits,typename Iterables::traits ...>>
 {
     static const size_t s_num_iterables = tuple<Iterable,Iterables...>::size();
-    typedef union_iterable_traits<typename Iterable::traits,typename Iterables::traits ...> valued_traits;
+    typedef iterable_impl_interface<union_iterable_base_traits<typename Iterable::traits,typename Iterables::traits ...>> base_t;
 
 public:
-    typedef typename valued_traits::value_type value_type;
-    typedef typename valued_traits::reference reference;
-    typedef typename valued_traits::const_reference const_reference;
-    typedef typename valued_traits::action action;
+    using typename base_t::reference;
+    using typename base_t::const_reference;
+    using typename base_t::action;
 
     union_iterable_impl(const Iterable& i_iterable, const Iterables& ... i_iterables);
 

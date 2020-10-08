@@ -14,12 +14,7 @@ class composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>
 public:
     composed_function(const function<ReturnDst(TypesDst...)>& i_lhs, const function<ReturnSrc(TypesSrc...)>& i_rhs);
 
-    template<typename ... Args>
-    ReturnDst operator()(Args&& ... i_args) const;
-    ReturnDst operator()(const TypesSrc& ... i_args) const
-    {
-        return ReturnDst{};
-    }
+    ReturnDst operator()(TypesSrc ... i_args) const;
 
 private:
     const function<ReturnDst(TypesDst...)> m_lhs;

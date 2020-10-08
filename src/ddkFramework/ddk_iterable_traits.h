@@ -13,10 +13,10 @@ struct base_iterable_traits
 {
     typedef T base_type;
     typedef typename std::remove_reference<T>::type value_type;
-    typedef typename std::add_lvalue_reference<T>::type reference;
-    typedef typename std::add_const<reference>::type const_reference;
-    typedef typename std::add_pointer<T>::type pointer;
-    typedef typename std::add_const<pointer>::type const_pointer;
+    typedef T& reference;
+    typedef typename std::add_const<T>::type& const_reference;
+    typedef T* pointer;
+    typedef typename std::add_const<T>::type* const_pointer;
 };
 
 template<typename T>

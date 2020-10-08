@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #ifdef _WIN32
 
 #pragma warning ( push )
@@ -38,6 +40,8 @@ template<typename Allocator>
 const IReferenceWrapperDeleter& get_reference_wrapper_deleter(const Allocator&)
 {
     static_assert(sizeof(Allocator)==0, "You shall specialize this reference wrapper allocator for this type");
+
+    return std::declval<IReferenceWrapperDeleter>();
 }
 
 inline const void* allocator_address_reference_wrapper(const void* i_ptr, ...)

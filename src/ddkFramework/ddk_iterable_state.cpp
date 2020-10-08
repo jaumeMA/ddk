@@ -5,6 +5,8 @@ namespace ddk
 namespace iter
 {
 
+const size_t iterable_state::npos = -1;
+
 iterable_state::iterable_state(size_t i_initPos)
 : m_currPos(i_initPos)
 {

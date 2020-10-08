@@ -11,10 +11,9 @@ composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::composed_funct
 {
 }
 template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
-template<typename ... Args>
-ReturnDst composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::operator()(Args&& ... i_args) const
+ReturnDst composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::operator()(TypesSrc ... i_args) const
 {
-    return eval(m_lhs,eval(m_rhs,std::forward<Args>(i_args) ...));
+    return eval(m_lhs,eval(m_rhs,std::forward<TypesSrc>(i_args) ...));
 }
 
 }
