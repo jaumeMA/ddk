@@ -24,7 +24,7 @@ std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,It
 {
     if(m_currIterableIndex < s_num_iterables)
     {
-        return std::make_pair(m_currIterableIndex+1,0);
+        return std::make_pair(m_currIterableIndex+1,iter::iterable_state::npos);
     }
     else
     {
@@ -39,9 +39,10 @@ std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,It
 template<size_t ... Indexs, typename ... Iterables>
 std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::go_forward_action& i_action) const
 {
-    if(m_currIterableIndex < s_num_iterables)
+    const size_t newIterableIndex = m_currIterableIndex + 1;
+    if(newIterableIndex < s_num_iterables)
     {
-        return std::make_pair(m_currIterableIndex+1,0);
+        return std::make_pair(newIterableIndex,iter::iterable_state::npos);
     }
     else
     {
@@ -109,6 +110,8 @@ void union_iterable_impl<Iterable,Iterables...>::iterate_impl(const mpl::sequenc
         iterableIndex = currIndexes.first;
         iterableInitState = iter::iterable_state(currIndexes.second);
     }
+
+    suspend();
 }
 template<typename Iterable, typename ... Iterables>
 template<size_t ... Indexs>
@@ -132,6 +135,8 @@ void union_iterable_impl<Iterable,Iterables...>::iterate_impl(const mpl::sequenc
         iterableIndex = currIndexes.first;
         iterableInitState = iter::iterable_state(currIndexes.second);
     }
+
+    suspend();
 }
 template<typename Iterable, typename ... Iterables>
 size_t union_iterable_impl<Iterable,Iterables...>::size() const
@@ -154,7 +159,7 @@ typename union_iterable_impl<Iterable,Iterables...>::action union_iterable_impl<
 
     action lastAction;
 
-    i_tuple.template get<Index>().iterate(make_function([&i_try,&lastAction](iterable_value i_value) { lastAction = eval(i_try,*i_value); }),nullptr,i_initState);
+    i_tuple.template get<Index>().iterate(make_function([i_try,&lastAction](iterable_value i_value){ lastAction = eval(i_try,*i_value); }),nullptr,i_initState);
 
     return lastAction;
 }
@@ -167,7 +172,7 @@ typename union_iterable_impl<Iterable,Iterables...>::action union_iterable_impl<
 
     action lastAction;
 
-    i_tuple.template get<Index>().iterate(make_function([&i_try,&lastAction](iterable_const_value i_value) { lastAction = eval(i_try,*i_value); }),nullptr,i_initState);
+    i_tuple.template get<Index>().iterate(make_function([i_try,&lastAction](iterable_const_value i_value) { lastAction = eval(i_try,*i_value); }),nullptr,i_initState);
 
     return lastAction;
 }

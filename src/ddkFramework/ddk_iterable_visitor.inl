@@ -79,7 +79,7 @@ Reference visit_iterator(Iterable& i_iterable, const function<Action(Reference)>
 
 		do
 		{
-            const Action currAction = i_sink(*itNext);
+            const Action currAction = eval(i_sink,*itNext);
 
             itNext = currAction.visit(actionVisitor);
 		}

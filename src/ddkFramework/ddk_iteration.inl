@@ -56,12 +56,18 @@ const iteration<Traits>* iteration<Traits>::operator->() const
 template<typename Traits>
 void iteration<Traits>::execute()
 {
-    m_iterable.iterate(m_try,m_finally);
+    if(m_iterable != nullptr)
+    {
+        m_iterable.iterate(m_try,m_finally);
+    }
 }
 template<typename Traits>
 void iteration<Traits>::execute() const
 {
-    m_iterable.iterate(m_try,m_finally);
+    if(m_iterable != nullptr)
+    {
+        m_iterable.iterate(m_try,m_finally);
+    }
 }
 template<typename Traits>
 future<void> iteration<Traits>::attach(thread i_thread)

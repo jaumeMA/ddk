@@ -90,8 +90,6 @@ typename await_executor<Return>::start_result await_executor<Return>::execute(co
 
 			if(m_callee.get_state() == FiberExecutionState::Done)
 			{
-				thread_impl_interface::clear_yielder();
-
 				m_state = ExecutorState::Executed;
 
 				return make_result<start_result>(ExecutorState::Executed);

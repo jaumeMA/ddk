@@ -30,9 +30,9 @@ async_executor<Return>::~async_executor()
 	//if not executed, excute and wait for its result
 	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
 	{
-		Return _tmp = m_function();
+        execute();
 
-		m_sharedState->set_value(_tmp);
+        m_sharedState->wait();
 	}
 }
 template<typename Return>
@@ -122,6 +122,11 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::on_can
 template<typename Return>
 typename async_executor<Return>::start_result async_executor<Return>::execute()
 {
+    if(m_executor == nullptr)
+    {
+        throw async_exception{"Trying to execute empty executor"};
+    }
+
 	nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
 
 	if(execRes.hasError() == false)
@@ -157,11 +162,14 @@ void async_executor<Return>::bind()
 template<typename Return>
 typename async_executor<Return>::reference async_executor<Return>::get_value()
 {
-	if(m_sharedState->ready() == false)
-	{
-		Return _tmp = m_function();
+    if(m_executor == nullptr)
+    {
+        throw async_exception{"Trying to get value from empty executor"};
+    }
 
-		m_sharedState->set_value(_tmp);
+	if(m_executor->get_state() == ExecutorState::Idle)
+	{
+        throw async_exception{"Trying to get value from idled executor"};
 	}
 
 	return m_sharedState->get_value();
@@ -169,6 +177,11 @@ typename async_executor<Return>::reference async_executor<Return>::get_value()
 template<typename Return>
 typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 {
+    if(m_executor == nullptr)
+    {
+        throw async_exception{"Trying to cancel from empty executor"};
+    }
+
 	cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
 
 	if (cancelRes.hasError() == false)
@@ -181,11 +194,14 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 template<typename Return>
 typename async_executor<Return>::const_reference async_executor<Return>::get_value() const
 {
-	if(m_sharedState->ready() == false)
-	{
-		Return _tmp = m_function();
+    if(m_executor == nullptr)
+    {
+        throw async_exception{"Trying to get value from empty executor"};
+    }
 
-		m_sharedState->set_value(_tmp);
+	if(m_executor->get_state() == ExecutorState::Idle)
+	{
+        throw async_exception{"Trying to get value from idled executor"};
 	}
 
 	return m_sharedState->get_value();
@@ -193,11 +209,14 @@ typename async_executor<Return>::const_reference async_executor<Return>::get_val
 template<typename Return>
 typename async_executor<Return>::rref_type async_executor<Return>::extract_value()
 {
-	if(m_sharedState->ready() == false)
-	{
-		Return _tmp = m_function();
+    if(m_executor == nullptr)
+    {
+        throw async_exception{"Trying to extract value from empty executor"};
+    }
 
-		m_sharedState->set_value(_tmp);
+	if(m_executor->get_state() == ExecutorState::Idle)
+	{
+        throw async_exception{"Trying to extract value from idled executor"};
 	}
 
 	return m_sharedState->extract_value();

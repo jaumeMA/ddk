@@ -29,7 +29,7 @@ void thread_impl_interface::clear_yielder()
 {
 	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
 
-	yielder.clear();	
+	yielder.clear();
 }
 
 void* threadFunc(void *ptr)
