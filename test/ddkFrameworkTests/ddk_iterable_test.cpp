@@ -55,7 +55,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
     ddk::const_random_access_iterable<const int> transformedFoo = ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
 
-    ddk::make_function([](ddk::const_bidirectional_value<const int> i_value){ printf("current value: %d\n",*i_value); }) <<=  ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
+    ddk::make_function([](ddk::const_bidirectional_value<const int> i_value){ printf("current value: %d at %d\n",*i_value,value_position(i_value)); }) <<=  ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
 }
 TEST(DDKIterableTest, iterableUnion)
 {
@@ -79,6 +79,6 @@ TEST(DDKIterableTest, iterableUnion)
     ddk::const_random_access_iterable<D> fooIterable2 = ddk::make_iterable<ddk::random_access_iterable<D>>(foo2);
     ddk::const_random_access_iterable<E> fooIterable3 = ddk::make_iterable<ddk::random_access_iterable<E>>(foo3);
 
-    ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d\n",**i_value); }) <<=  (fooIterable1 | fooIterable2);
+    ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %d\n",**i_value,value_position(i_value)); }) <<=  (fooIterable1 | fooIterable2);
 //    ddk::const_random_access_iterable<A> fooIterableUnion2 = fooIterable1 | fooIterable2 | fooIterable3;
 }

@@ -14,7 +14,7 @@ namespace detail
 {
 
 template<typename Traits>
-class iterable
+class iterable : protected iterable_interface
 {
     template<typename TTraits>
     friend class iterable;
@@ -53,12 +53,16 @@ public:
     bool empty() const;
 
 private:
+    iter::iterable_state& get_state() override;
+    const iter::iterable_state& get_state() const override;
+
     action private_iterate(reference i_value);
     action private_iterate(const_reference i_value) const;
     reference resolve_action(const action&);
     const_reference resolve_action(const action&) const;
 
     iterable_impl_shared_ref<iterable_base_traits> m_iterableImpl;
+    mutable iter::iterable_state m_iterableState;
     mutable awaitable<void> m_awaitable;
     mutable typed_arena<reference> m_iterableValueContainer;
     mutable action m_currAction = iterable_base_traits::default_action();

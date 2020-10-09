@@ -47,7 +47,9 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
         {
             try
             {
-                eval(i_try,make_iterable_value<iterable_value>(*m_iterableValueContainer.template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action)));
+                m_iterableState.apply(m_currAction);
+
+                eval(i_try,make_iterable_value<iterable_value>(*m_iterableValueContainer.template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action),static_cast<iterable_interface&>(*this)));
             }
             catch(const suspend_exception&)
             {
@@ -81,7 +83,9 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
         {
             try
             {
-                eval(i_try,make_iterable_value<iterable_const_value>(*m_iterableValueContainer.template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action)));
+                m_iterableState.apply(m_currAction);
+
+                eval(i_try,make_iterable_value<iterable_const_value>(*m_iterableValueContainer.template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action),const_cast<iterable_interface&>(static_cast<const iterable_interface&>(*this))));
             }
             catch(const suspend_exception&)
             {
@@ -120,6 +124,16 @@ bool iterable<Traits>::empty() const
     return m_iterableImpl->empty();
 }
 template<typename Traits>
+iter::iterable_state& iterable<Traits>::get_state()
+{
+    return m_iterableState;
+}
+template<typename Traits>
+const iter::iterable_state& iterable<Traits>::get_state() const
+{
+    return m_iterableState;
+}
+template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
 {
     m_iterableValueContainer.template construct<reference>(i_value);
@@ -144,6 +158,8 @@ typename iterable<Traits>::reference iterable<Traits>::resolve_action(const acti
 
     if (awaited_result<void> res = resume(m_awaitable))
     {
+        m_iterableState.apply(m_currAction);
+
         return m_iterableValueContainer.template extract<reference>();
     }
     else
@@ -158,6 +174,8 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
 
     if (awaited_result<void> res = resume(m_awaitable))
     {
+        m_iterableState.apply(m_currAction);
+
         return m_iterableValueContainer.template extract<const_reference>();
     }
     else

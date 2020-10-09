@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_traits.h"
+#include "ddk_iterable_interface.h"
 #include <type_traits>
 
 namespace ddk
@@ -29,9 +30,9 @@ public:
     typedef typename Traits::const_pointer const_pointer;
     typedef typename Traits::action action;
 
-    iterable_value(reference i_value, const function<reference(action)>& i_resolver);
+    iterable_value(reference i_value, const function<reference(action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
     template<typename Reference, typename Action>
-    iterable_value(Reference&& i_value, const function<Reference(Action)>& i_resolver);
+    iterable_value(Reference&& i_value, const function<Reference(Action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
     iterable_value(const iterable_value&) = delete;
     iterable_value(iterable_value&&) = default;
     iterable_value& operator=(const iterable_value&) = delete;
@@ -47,11 +48,18 @@ public:
 protected:
     pointer m_value;
     function<reference(action)> m_resolver;
+    detail::iterable_interface& m_iterableInterface;
 };
 
 template<typename T>
 struct random_accessed_value : public iterable_value<detail::random_access_iterable_traits<T>>
 {
+    friend inline size_t value_position(const random_accessed_value& i_value)
+    {
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return currState.position();
+    }
     friend inline random_accessed_value erase_value(random_accessed_value i_value)
     {
         return { eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver };
@@ -89,6 +97,12 @@ struct const_random_accessed_value : public iterable_value<detail::random_access
 {
     template<typename>
     friend class const_random_accessed_value;
+    friend inline size_t value_position(const const_random_accessed_value& i_value)
+    {
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return currState.position();
+    }
     friend inline const_random_accessed_value next_value(const_random_accessed_value i_value)
     {
         return { eval(i_value.m_resolver,iter::go_next_place),i_value.m_resolver };
@@ -117,6 +131,12 @@ public:
 template<typename T>
 struct bidirectional_value : public iterable_value<detail::bidirectional_iterable_traits<T>>
 {
+    friend inline size_t value_position(const bidirectional_value& i_value)
+    {
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return currState.position();
+    }
     friend inline bidirectional_value erase_value(bidirectional_value i_value)
     {
         return { eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver };
@@ -153,6 +173,12 @@ struct const_bidirectional_value : public iterable_value<detail::bidirectional_i
 {
     template<typename>
     friend class const_bidirectional_value;
+    friend inline size_t value_position(const const_bidirectional_value& i_value)
+    {
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return currState.position();
+    }
     friend inline const_bidirectional_value next_value(const_bidirectional_value i_value)
     {
         return { eval(i_value.m_resolver,iter::go_next_place),i_value.m_resolver };
@@ -177,6 +203,12 @@ public:
 template<typename T>
 struct forwarded_value : public iterable_value<detail::forward_iterable_traits<T>>
 {
+    friend inline size_t value_position(const forwarded_value& i_value)
+    {
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return currState.position();
+    }
     friend inline forwarded_value erase_value(forwarded_value i_value)
     {
         return { eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver };
@@ -213,6 +245,12 @@ struct const_forwarded_value : public iterable_value<detail::forward_iterable_tr
 {
     template<typename>
     friend class const_forwarded_value;
+    friend inline size_t value_position(const const_forwarded_value& i_value)
+    {
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return currState.position();
+    }
     friend inline const_forwarded_value next_value(const_forwarded_value i_value)
     {
         return { eval(i_value.m_resolver,iter::go_next_place),i_value.m_resolver };
