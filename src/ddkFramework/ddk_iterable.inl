@@ -60,7 +60,10 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
         }
     }
 
-    eval(i_finally);
+    if(i_finally != nullptr)
+    {
+        eval(i_finally);
+    }
 }
 template<typename Traits>
 void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void()>& i_finally, const iter::iterable_state& i_initState) const
@@ -91,7 +94,10 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
         }
     }
 
-    eval(i_finally);
+    if(i_finally != nullptr)
+    {
+        eval(i_finally);
+    }
 }
 template<typename Traits>
 bool iterable<Traits>::operator==(const std::nullptr_t&) const

@@ -94,6 +94,8 @@ TEST(DDKFunctionTest,funcView)
 	if (ddk::function_view<int(double, float, const std::string&, char, int)> foo3View = ddk::lend(foo3))
 	{
 		int result = foo3View(20.f,10.f,"hola",'a',3);
+
+        EXPECT_EQ(result,12);
 	}
 }
 TEST(DDKFunctionTest,funcComposition)
