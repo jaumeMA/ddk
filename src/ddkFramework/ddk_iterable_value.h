@@ -9,6 +9,19 @@ namespace ddk
 template<typename Traits>
 struct iterable_value
 {
+    template<typename T>
+    friend struct random_accessed_value;
+    template<typename T>
+    friend struct const_random_accessed_value;
+    template<typename T>
+    friend struct bidirectional_value;
+    template<typename T>
+    friend struct const_bidirectional_value;
+    template<typename T>
+    friend struct forwarded_value;
+    template<typename T>
+    friend struct const_forwarded_value;
+
 public:
     typedef typename Traits::reference reference;
     typedef typename Traits::const_reference const_reference;
@@ -31,7 +44,7 @@ public:
     bool operator==(const_reference i_value) const;
     bool operator!=(const_reference i_value) const;
 
-//protected:
+protected:
     pointer m_value;
     function<reference(action)> m_resolver;
 };
