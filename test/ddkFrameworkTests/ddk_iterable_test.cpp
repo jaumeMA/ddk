@@ -74,11 +74,17 @@ TEST(DDKIterableTest, iterableUnion)
     foo2.push_back(-53);
 
     std::vector<E> foo3;
+    foo2.push_back(66);
+    foo2.push_back(167);
+    foo2.push_back(7639);
+    foo2.push_back(-46);
+    foo2.push_back(-189);
 
     ddk::const_random_access_iterable<A> fooIterable1 = ddk::make_iterable<ddk::random_access_iterable<A>>(foo1);
     ddk::const_random_access_iterable<D> fooIterable2 = ddk::make_iterable<ddk::random_access_iterable<D>>(foo2);
     ddk::const_random_access_iterable<E> fooIterable3 = ddk::make_iterable<ddk::random_access_iterable<E>>(foo3);
 
     ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %d\n",**i_value,value_position(i_value)); }) <<=  (fooIterable1 | fooIterable2);
-//    ddk::const_random_access_iterable<A> fooIterableUnion2 = fooIterable1 | fooIterable2 | fooIterable3;
+    ddk::const_random_access_iterable<A> fooIterableUnion2 = fooIterable1 | fooIterable2 | fooIterable3;
+    ddk::make_function([](ddk::const_bidirectional_value<const ddk::values_tuple<A,D,A>> i_value){ const ddk::values_tuple<A,D,A> currValues = *i_value; printf("current values tuple: %d, %d, %d\n",*currValues.get<0>(),*currValues.get<1>(),*currValues.get<2>()); }) <<=  (fooIterable1 & fooIterable2 & (fooIterable1 | fooIterable2 | fooIterable3));
 }

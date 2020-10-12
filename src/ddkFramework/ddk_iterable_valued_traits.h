@@ -107,5 +107,36 @@ using union_iterable_traits = typename union_iterable_traits_resolver<Traits ...
 template<typename ... Traits>
 using union_iterable_base_traits = typename union_iterable_traits_resolver<Traits ...>::base_traits;
 
+template<typename ...>
+struct intersection_iterable_traits_resolver;
+
+template<typename Traits>
+struct intersection_iterable_traits_resolver<Traits>
+{
+    typedef Traits traits;
+    typedef typename traits::iterable_base_traits base_traits;
+};
+
+template<template <typename> typename Traits1, typename ... BaseType1, template<typename> typename Traits2, typename BaseType2, typename ... Traits>
+struct intersection_iterable_traits_resolver<Traits1<values_tuple<BaseType1...>>,Traits2<BaseType2>,Traits...>
+{
+    typedef decltype(traits_common_access(std::declval<Traits1<values_tuple<BaseType1...,BaseType2>>>(),std::declval<Traits2<values_tuple<BaseType1...,BaseType2>>>())) common_traits;
+    typedef typename intersection_iterable_traits_resolver<common_traits,Traits...>::traits traits;
+    typedef typename traits::iterable_base_traits base_traits;
+};
+
+template<template <typename> typename Traits1, typename BaseType1, template<typename> typename Traits2, typename BaseType2, typename ... Traits>
+struct intersection_iterable_traits_resolver<Traits1<BaseType1>,Traits2<BaseType2>,Traits...>
+{
+    typedef decltype(traits_common_access(std::declval<Traits1<values_tuple<BaseType1,BaseType2>>>(),std::declval<Traits2<values_tuple<BaseType1,BaseType2>>>())) common_traits;
+    typedef typename intersection_iterable_traits_resolver<common_traits,Traits...>::traits traits;
+    typedef typename traits::iterable_base_traits base_traits;
+};
+
+template<typename ... Traits>
+using intersection_iterable_traits = typename intersection_iterable_traits_resolver<Traits...>::traits;
+template<typename ... Traits>
+using intersection_iterable_base_traits = typename intersection_iterable_traits_resolver<Traits...>::base_traits;
+
 }
 }

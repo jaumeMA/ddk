@@ -53,6 +53,10 @@ public:
     using typename base_t::action;
 
     union_iterable_impl(const Iterable& i_iterable, const Iterables& ... i_iterables);
+    union_iterable_impl(const tuple<Iterable,Iterables...>& i_tupleIterable);
+
+    const tuple<Iterable,Iterables...>& get_iterables() const;
+    tuple<Iterable,Iterables...>& get_iterables();
 
 private:
     void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;

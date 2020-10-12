@@ -54,7 +54,7 @@ inline Return eval(const function<Return(),Allocator>& i_function);
 template<typename Return, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 inline resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args);
 template<typename Return, typename ... Types, typename Allocator, typename ... Args>
-inline Return eval(const function<Return(Types...),Allocator>& i_function, const tuple<Args...>& i_args);
+inline Return eval(const function<Return(Types...),Allocator>& i_function, const function_arguments<Args...>& i_args);
 
 template<typename ... Callables>
 inline detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables);

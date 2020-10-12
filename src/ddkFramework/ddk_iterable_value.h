@@ -31,8 +31,8 @@ public:
     typedef typename Traits::action action;
 
     iterable_value(reference i_value, const function<reference(action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
-    template<typename Reference, typename Action>
-    iterable_value(Reference&& i_value, const function<Reference(Action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
+    template<typename Reference, typename Return, typename Action>
+    iterable_value(Reference&& i_value, const function<Return(Action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
     iterable_value(const iterable_value&) = delete;
     iterable_value(iterable_value&&) = default;
     iterable_value& operator=(const iterable_value&) = delete;

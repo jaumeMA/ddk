@@ -40,7 +40,7 @@ ddk::function<decltype(std::declval<ReturnA>() OP std::declval<ReturnB>())(Types
     typedef decltype(std::declval<ReturnA>() OP std::declval<ReturnB>()) inner_binary_return; \
     if(i_lhs != nullptr && i_rhs != nullptr) \
     { \
-        return ddk::make_composition(ddk::function<inner_binary_return(const ReturnA&,const ReturnB&)>(NAME##_binary_op<ReturnA,ReturnB>{}),ddk::function<tuple<ReturnA,ReturnB>(Types...)>(ddk::make_intersection(i_lhs,i_rhs))); \
+        return ddk::make_composition(ddk::function<inner_binary_return(const ReturnA&,const ReturnB&)>(NAME##_binary_op<ReturnA,ReturnB>{}),ddk::function<ddk::function_arguments<ReturnA,ReturnB>(Types...)>(ddk::make_intersection(i_lhs,i_rhs))); \
     } \
     else if(i_lhs != nullptr) \
     { \

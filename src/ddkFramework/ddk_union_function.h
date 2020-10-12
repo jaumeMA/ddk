@@ -2,6 +2,7 @@
 
 #include "ddk_tuple.h"
 #include "ddk_function_template_helper.h"
+#include "ddk_function_arguments.h"
 
 namespace ddk
 {
@@ -46,7 +47,7 @@ class union_function
     }
 
 public:
-    typedef tuple<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
+    typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
     typedef typename mpl::merge_tuples<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
 
     union_function(const Callable& i_callable, const Callables& ... i_callables);

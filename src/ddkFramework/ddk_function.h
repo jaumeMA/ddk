@@ -6,6 +6,7 @@
 #include "ddk_allocator_template_helper.h"
 #include "ddk_function_view.h"
 #include "ddk_tuple_template_helper.h"
+#include "ddk_function_arguments.h"
 
 namespace ddk
 {
@@ -52,7 +53,7 @@ template<typename Callable, typename Allocator, typename ... Args>
 using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,detail::unresolved_tuple<tuple<Args...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>,Allocator>;
 
 template<typename Arg, typename T>
-using resolved_return_type = typename std::enable_if<mpl::is_tuple<Arg>::value==false,T>::type;
+using resolved_return_type = typename std::enable_if<are_function_arguments<Arg>::value==false,T>::type;
 
 template<typename Return, typename Allocator>
 class function<Return(),Allocator>
@@ -66,7 +67,7 @@ class function<Return(),Allocator>
     template<typename RReturn, typename AAllocator>
     friend inline RReturn eval(const function<RReturn(),AAllocator>&);
     template<typename RReturn, typename AAllocator>
-    friend inline RReturn eval(const function<RReturn(),AAllocator>&, const tuple<>&);
+    friend inline RReturn eval(const function<RReturn(),AAllocator>&, const function_arguments<>&);
 
 public:
     function() = default;
@@ -111,7 +112,7 @@ class function<Return(Types...),Allocator>
     template<typename RReturn, typename ... TTypes, typename AAllocator, typename Arg, typename ... Args>
     friend inline resolved_return_type<Arg,RReturn> eval(const function<RReturn(TTypes...),AAllocator>& i_function, Arg&& i_arg, Args&& ... i_args);
     template<typename RReturn, typename ... TTypes, typename AAllocator, typename ... Args>
-    friend inline RReturn eval(const function<RReturn(TTypes...),AAllocator>& i_function, const tuple<Args...>& i_args);
+    friend inline RReturn eval(const function<RReturn(TTypes...),AAllocator>& i_function, const function_arguments<Args...>& i_args);
 
 public:
     function() = default;

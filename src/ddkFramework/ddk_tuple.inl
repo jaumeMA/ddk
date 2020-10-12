@@ -198,12 +198,12 @@ tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs, const tuple<Type
     return merge<TypesA...,TypesB...>(total_sequence{},total_sequence{},sequenceA{},i_lhs,sequenceB{},i_rhs);
 }
 template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>
-tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, const tuple<TypesA...>& i_lhs, tuple<TypesB...>& i_rhs)
+tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs)
 {
     typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>::value>::type sequenceA;
     typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>::value>::type sequenceB;
 
-    return merge<FinalTypes...>(i_srcSeq,i_destSeq,sequenceA{},const_cast<tuple<TypesA...>&>(i_lhs),sequenceB{},i_rhs);
+    return merge<FinalTypes...>(i_srcSeq,i_destSeq,sequenceA{},const_cast<tuple<TypesA...>&>(i_lhs),sequenceB{},const_cast<tuple<TypesB...>&>(i_rhs));
 }
 template<typename ... Types, typename ... Args>
 tuple<Types...,Args...> merge_args(const tuple<Types...>& i_lhs, Args&& ... i_args)

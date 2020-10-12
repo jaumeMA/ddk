@@ -53,15 +53,15 @@ struct function_impl_base<Return, tuple<Types...>>
         static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs,Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
 
         typedef types_at_indexs<mpl::sequence<notSpecIndexs...>,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> vars_tuple;
-        typedef types_at_indexs<mpl::sequence<specIndexs...>,typename std::remove_reference<Types>::type ...> args_tuple;
+        typedef types_at_indexs<mpl::sequence<specIndexs...>,typename std::remove_reference<typename std::remove_const<Types>::type>::type ...> args_tuple;
 
         specialized_impl() = default;
         template<typename ... Args>
 		specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, const tuple<Args...>& i_args);
 
     private:
-		Return operator()(typename mpl::nth_type_of<notSpecIndexs, Types...>::type ... i_args) const override;
-        Return apply(vars_tuple& i_tuple) const override;
+		Return operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const override;
+        Return apply(const vars_tuple& i_tuple) const override;
 
         function_base_const_shared_ref<Return,tuple<Types...>> m_object;
 		mutable args_tuple m_specArgs;
@@ -80,7 +80,7 @@ struct function_impl_base<Return, tuple<Types...>>
     mutable shared_reference_counter m_refCounter;
 
 private:
-    virtual Return apply(tuple_args& i_tuple) const = 0;
+    virtual Return apply(const tuple_args& i_tuple) const = 0;
 };
 
 //non static member function case
@@ -98,9 +98,9 @@ public:
 
 private:
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
-    Return apply(tuple_args& i_tuple) const override;
+    Return apply(const tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 
 	ObjectType* m_object;
     FuncPointerType m_funcPointer;
@@ -119,9 +119,9 @@ public:
 
 private:
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
-    Return apply(tuple_args& i_tuple) const override;
+    Return apply(const tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 
     FuncPointerType m_funcPointer;
 };
@@ -139,9 +139,9 @@ public:
 
 private:
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
-    Return apply(tuple_args& i_tuple) const override;
+    Return apply(const tuple_args& i_tuple) const override;
     template<size_t ... Indexs>
-    Return apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const;
+    Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 
     mutable T m_functor;
 };

@@ -79,6 +79,21 @@ union_iterable_impl<Iterable,Iterables...>::union_iterable_impl(const Iterable& 
 {
 }
 template<typename Iterable, typename ... Iterables>
+union_iterable_impl<Iterable,Iterables...>::union_iterable_impl(const tuple<Iterable,Iterables...>& i_tupleIterable)
+: m_iterables(i_tupleIterable)
+{
+}
+template<typename Iterable, typename ... Iterables>
+const tuple<Iterable,Iterables...>& union_iterable_impl<Iterable,Iterables...>::get_iterables() const
+{
+    return m_iterables;
+}
+template<typename Iterable, typename ... Iterables>
+tuple<Iterable,Iterables...>& union_iterable_impl<Iterable,Iterables...>::get_iterables()
+{
+    return m_iterables;
+}
+template<typename Iterable, typename ... Iterables>
 void union_iterable_impl<Iterable,Iterables...>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
 {
     iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initState);

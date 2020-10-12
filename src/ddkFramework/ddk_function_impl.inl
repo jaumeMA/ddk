@@ -18,38 +18,34 @@ function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<spec
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
-Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::operator()(typename mpl::nth_type_of<notSpecIndexs, Types...>::type ... i_args) const
+Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const
 {
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
-    auto mergedArgs = merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::nth_type_of<notSpecIndexs, Types...>::type>(i_args) ...);
-
     if constexpr (std::is_same<Return,void>::value)
     {
-        m_object->apply(mergedArgs);
+        m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type>(i_args) ...));
     }
     else
     {
-        return m_object->apply(mergedArgs);
+        return m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type>(i_args) ...));
     }
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
-Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::apply(vars_tuple& i_tuple) const
+Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::apply(const vars_tuple& i_tuple) const
 {
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
-    auto mergedTuple = merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,Types...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple);
-
     if constexpr (std::is_same<Return,void>::value)
     {
-        m_object->apply(mergedTuple);
+        m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
     }
     else
     {
-        return m_object->apply(mergedTuple);
+        return m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
     }
 }
 
@@ -93,7 +89,7 @@ Return relative_function_impl<ObjectType,Return,Types...>::operator()(typename m
     }
 }
 template<typename ObjectType, typename Return, typename ... Types>
-Return relative_function_impl<ObjectType,Return,Types...>::apply(tuple_args& i_tuple) const
+Return relative_function_impl<ObjectType,Return,Types...>::apply(const tuple_args& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -108,15 +104,15 @@ Return relative_function_impl<ObjectType,Return,Types...>::apply(tuple_args& i_t
 }
 template<typename ObjectType, typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return relative_function_impl<ObjectType,Return,Types...>::apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const
+Return relative_function_impl<ObjectType,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
-        (m_object->*m_funcPointer)(i_tuple.template get<Indexs>()...);
+        (m_object->*m_funcPointer)(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
     else
     {
-        return (m_object->*m_funcPointer)(i_tuple.template get<Indexs>()...);
+        return (m_object->*m_funcPointer)(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
 }
 
@@ -138,7 +134,7 @@ Return free_function_impl<Return,Types...>::operator()(typename mpl::static_if<s
     }
 }
 template<typename Return, typename ... Types>
-Return free_function_impl<Return,Types...>::apply(tuple_args& i_tuple) const
+Return free_function_impl<Return,Types...>::apply(const tuple_args& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -153,15 +149,15 @@ Return free_function_impl<Return,Types...>::apply(tuple_args& i_tuple) const
 }
 template<typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return free_function_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const
+Return free_function_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
-        (*m_funcPointer)(i_tuple.template get<Indexs>()...);
+        (*m_funcPointer)(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
     else
     {
-        return (*m_funcPointer)(i_tuple.template get<Indexs>()...);
+        return (*m_funcPointer)(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
 }
 
@@ -188,7 +184,7 @@ Return functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::
     }
 }
 template<typename T, typename Return, typename ... Types>
-Return functor_impl<T,Return,Types...>::apply(tuple_args& i_tuple) const
+Return functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -203,15 +199,15 @@ Return functor_impl<T,Return,Types...>::apply(tuple_args& i_tuple) const
 }
 template<typename T, typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, tuple_args& i_tuple) const
+Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
-        m_functor(i_tuple.template get<Indexs>()...);
+        m_functor(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
     else
     {
-        return m_functor(i_tuple.template get<Indexs>()...);
+        return m_functor(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
 }
 

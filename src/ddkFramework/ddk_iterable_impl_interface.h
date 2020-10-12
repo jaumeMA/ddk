@@ -68,7 +68,7 @@ template<typename T>
 using forward_iterable_impl_const_lent_ptr = lent_pointer_wrapper<const iterable_impl_interface<detail::forward_iterable_traits<T>>>;
 
 template<typename IterableImpl, typename ... Args>
-inline iterable_impl_shared_ref<typename IterableImpl::traits> make_iterable_impl(Args&& ... i_args);
+inline shared_reference_wrapper<IterableImpl> make_iterable_impl(Args&& ... i_args);
 
 }
 }

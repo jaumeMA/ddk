@@ -169,7 +169,7 @@ resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>
     }
 }
 template<typename Return, typename ... Types, typename Allocator, typename ... Args>
-Return eval(const function<Return(Types...),Allocator>& i_function, const tuple<Args...>& i_args)
+Return eval(const function<Return(Types...),Allocator>& i_function, const function_arguments<Args...>& i_args)
 {
     if constexpr (std::is_same<Return,void>::value)
     {

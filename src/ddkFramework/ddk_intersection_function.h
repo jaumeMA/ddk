@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_function_template_helper.h"
+#include "ddk_function_arguments.h"
 
 namespace ddk
 {
@@ -27,7 +28,7 @@ class intersection_function<Callable,Callables...>
     }
 
 public:
-    typedef tuple<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
+    typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
     typedef typename mpl::aqcuire_callable_return_type<Callable>::args_type callable_args_type;
 
     intersection_function(const Callable& i_callable, const Callables& ... i_callables);
