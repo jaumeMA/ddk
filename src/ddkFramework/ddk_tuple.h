@@ -41,6 +41,8 @@ public:
     typename embedded_type<Type>::ref_type get();
     template<size_t IIndex, typename Arg>
     void set(Arg&& i_arg);
+    tuple_impl<mpl::sequence<0>,Type>* operator->();
+    const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
     static constexpr size_t size();
 
 private:
@@ -77,6 +79,8 @@ public:
     void set(const mpl::sequence<IIndexs...>&, Args&& ... i_args);
     template<size_t IIndex, typename Arg>
     bool set(Arg&& i_val);
+    tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* operator->();
+    const tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* operator->() const;
     static constexpr size_t size();
 
 private:
@@ -85,12 +89,12 @@ private:
     template<typename TType, typename Arg>
     inline bool construct(void* i_address, Arg&& i_val)
     {
-        return embedded_type<TType>::construct(i_address,i_val);
+        return embedded_type<TType>::construct(i_address,std::forward<Arg>(i_val));
     }
     template<typename TType, typename Arg>
     inline bool assign(void* i_address, Arg&& i_val)
     {
-        return embedded_type<TType>::assign(i_address,i_val);
+        return embedded_type<TType>::assign(i_address,std::forward<Arg>(i_val));
     }
     template<typename TType>
     inline bool destruct(void* i_address)
@@ -133,7 +137,7 @@ template<typename ... Types>
 using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type,Types...>;
 
 template<typename ... Types>
-tuple<Types&&...> make_tuple(Types&& ... vals);
+tuple<Types...> make_tuple(Types&& ... vals);
 template<typename ... TypesA, typename ... TypesB>
 inline tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs);
 template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>

@@ -25,12 +25,25 @@ awaited_result<T>::awaited_result(awaited_result&& other)
 template<typename T>
 awaited_result<T>::~awaited_result()
 {
-	m_content.template destroy<T>();
+	if(m_content.empty() == false)
+	{
+        m_content.template destroy<T>();
+	}
 }
 template<typename T>
 awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
 {
-	m_content.template assign<T>(other.m_content.template extract<T>());
+	if(other.m_content.empty() == false)
+	{
+	    if(m_content.empty())
+	    {
+            m_content.template construct<T>(other.m_content.template extract<T>());
+	    }
+        else
+        {
+            m_content.template assign<T>(other.m_content.template extract<T>());
+        }
+	}
 
 	return *this;
 }

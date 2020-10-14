@@ -4,79 +4,116 @@ namespace ddk
 namespace detail
 {
 
-template<typename Iterable, typename ... Iterables>
-intersection_iterable_impl<Iterable,Iterables...>::intersection_iterable_impl(const Iterable& i_iterable, const Iterables& ... i_iterables)
-: m_iterables(i_iterable,i_iterables...)
+template<typename ... Iterables>
+intersection_iterable_impl<Iterables...>::intersection_iterable_impl(const Iterables& ... i_iterables)
+: m_iterables(i_iterables...)
 {
 }
-template<typename Iterable, typename ... Iterables>
-intersection_iterable_impl<Iterable,Iterables...>::intersection_iterable_impl(const tuple<Iterable,Iterables...>& i_tupleIterable)
+template<typename ... Iterables>
+intersection_iterable_impl<Iterables...>::intersection_iterable_impl(const tuple<Iterables...>& i_tupleIterable)
 : m_iterables(i_tupleIterable)
 {
 }
-template<typename Iterable, typename ... Iterables>
-const tuple<Iterable,Iterables...>& intersection_iterable_impl<Iterable,Iterables...>::get_iterables() const
+template<typename ... Iterables>
+const tuple<Iterables...>& intersection_iterable_impl<Iterables...>::get_iterables() const
 {
     return m_iterables;
 }
-template<typename Iterable, typename ... Iterables>
-tuple<Iterable,Iterables...>& intersection_iterable_impl<Iterable,Iterables...>::get_iterables()
+template<typename ... Iterables>
+tuple<Iterables...>& intersection_iterable_impl<Iterables...>::get_iterables()
 {
     return m_iterables;
 }
-template<typename Iterable, typename ... Iterables>
-void intersection_iterable_impl<Iterable,Iterables...>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
+template<typename ... Iterables>
+void intersection_iterable_impl<Iterables...>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
 {
-    m_iterables.template get<0>().iterate(make_function(this,&intersection_iterable_impl<Iterable,Iterables...>::template iterate_impl<0>,i_try,i_initState,arg_0),nullptr,i_initState);
+    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initState);
 }
-template<typename Iterable, typename ... Iterables>
-void intersection_iterable_impl<Iterable,Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
+template<typename ... Iterables>
+void intersection_iterable_impl<Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
 {
-    m_iterables.template get<0>().iterate(make_function(this,&intersection_iterable_impl<Iterable,Iterables...>::template iterate_impl<0>,i_try,i_initState,arg_0),nullptr,i_initState);
+    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initState);
 }
-template<typename Iterable, typename ... Iterables>
-size_t intersection_iterable_impl<Iterable,Iterables...>::size() const
+template<typename ... Iterables>
+size_t intersection_iterable_impl<Iterables...>::size() const
 {
     return 0;
 }
-template<typename Iterable, typename ... Iterables>
-bool intersection_iterable_impl<Iterable,Iterables...>::empty() const
+template<typename ... Iterables>
+bool intersection_iterable_impl<Iterables...>::empty() const
 {
     return true;
 }
-template<typename Iterable, typename ... Iterables>
-template<size_t Index, typename ... References>
-void intersection_iterable_impl<Iterable,Iterables...>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState, typename mpl::nth_type_of<Index,Iterable,Iterables...>::type::iterable_value i_iterableValue, References ... i_references)
+template<typename ... Iterables>
+template<size_t ... Indexs>
+void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
 {
-    if constexpr (Index < s_num_iterables - 1)
-    {
-        typedef typename mpl::nth_type_of<Index,Iterable,Iterables...>::type curr_iterable;
-        typedef typename mpl::nth_type_of<Index+1,Iterable,Iterables...>::type next_iterable;
-        typedef typename curr_iterable::reference reference;
+    tuple<awaitable<typename Iterables::reference>...> awaitableTuple(await(make_function(this,&intersection_iterable_impl<Iterables...>::private_iterate_impl<Indexs>,m_iterables.template get<Indexs>(),i_initState))...);
+    tuple<awaited_result<typename Iterables::reference>...> awaitableResultTuple;
 
-        m_iterables.template get<Index+1>().iterate(make_function(this,&intersection_iterable_impl<Iterable,Iterables...>::template iterate_impl<Index+1,References...,embedded_type<reference>>,i_try,i_initState,arg_0,i_references...,embedded_type<reference>(*i_iterableValue)),nullptr,i_initState);
-    }
-    else
+    bool cond = true;
+    do
     {
-        eval(i_try,make_tuple(*i_references...,*i_iterableValue));
+        (awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...);
+
+        if((static_cast<bool>(awaitableResultTuple.template get<Indexs>()) && ...))
+        {
+            eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
+        }
+        else
+        {
+            break;
+        }
     }
+    while(true);
 }
-template<typename Iterable, typename ... Iterables>
-template<size_t Index, typename ... References>
-void intersection_iterable_impl<Iterable,Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState, typename mpl::nth_type_of<Index,Iterable,Iterables...>::type::iterable_const_value i_iterableValue, References ... i_references) const
+template<typename ... Iterables>
+template<size_t ... Indexs>
+void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
 {
-    if constexpr (Index < s_num_iterables - 1)
-    {
-        typedef typename mpl::nth_type_of<Index,Iterable,Iterables...>::type curr_iterable;
-        typedef typename mpl::nth_type_of<Index+1,Iterable,Iterables...>::type next_iterable;
-        typedef typename curr_iterable::const_reference const_reference;
+    tuple<awaitable<typename Iterables::const_reference>...> awaitableTuple(await(make_function(this,&intersection_iterable_impl<Iterables...>::private_iterate_impl<Indexs>,m_iterables.template get<Indexs>(),i_initState))...);
+    tuple<awaited_result<typename Iterables::const_reference>...> awaitableResultTuple;
 
-        m_iterables.template get<Index+1>().iterate(make_function(this,&intersection_iterable_impl<Iterable,Iterables...>::template iterate_impl<Index+1,References...,embedded_type<const_reference>>,i_try,i_initState,arg_0,i_references...,embedded_type<const_reference>(*i_iterableValue)),nullptr,i_initState);
-    }
-    else
+    bool cond = true;
+    do
     {
-        eval(i_try,make_tuple(*i_references...,*i_iterableValue));
+        (awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...);
+
+        if((static_cast<bool>(awaitableResultTuple.template get<Indexs>()) && ...))
+        {
+            eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
+        }
+        else
+        {
+            break;
+        }
     }
+    while(true);
+}
+template<typename ... Iterables>
+template<size_t Index>
+typename mpl::nth_type_of<Index,Iterables...>::type::reference intersection_iterable_impl<Iterables...>::private_iterate_impl(typename mpl::nth_type_of<Index,Iterables...>::type& i_iterable, const iter::iterable_state& i_initState)
+{
+    typedef typename mpl::nth_type_of<Index,Iterables...>::type::reference curr_reference;
+    typedef typename mpl::nth_type_of<Index,Iterables...>::type::iterable_value curr_iterable_value;
+
+    i_iterable.iterate(make_function([](curr_iterable_value i_value)
+                                     {
+                                         yield<curr_reference>(*i_value);
+                                     }),nullptr,i_initState);
+
+    suspend();
+}
+template<typename ... Iterables>
+template<size_t Index>
+typename mpl::nth_type_of<Index,Iterables...>::type::const_reference intersection_iterable_impl<Iterables...>::private_iterate_impl(const typename mpl::nth_type_of<Index,Iterables...>::type& i_iterable, const iter::iterable_state& i_initState) const
+{
+    typedef typename mpl::nth_type_of<Index,Iterables...>::type::const_reference curr_const_reference;
+    typedef typename mpl::nth_type_of<Index,Iterables...>::type::iterable_const_value curr_iterable_const_value;
+
+    i_iterable.iterate(make_function([](curr_iterable_const_value i_value){ yield<curr_const_reference>(*i_value); }),nullptr,i_initState);
+
+    suspend();
 }
 
 }

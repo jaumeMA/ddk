@@ -46,7 +46,7 @@ class result<void,Error>
 		return res;
 	}
 	result<void,Error>& operator=(const result<void,Error>&);
-	
+
 public:
 	typedef void payload_t;
 	typedef Error error_t;
@@ -101,7 +101,7 @@ public:
 	}
 
 private:
-	optional<Error> m_nestedRes;	
+	optional<Error> m_nestedRes;
 #if defined(DDK_DEBUG)
 	mutable bool m_checked;
 #endif
@@ -210,7 +210,7 @@ public:
 	}
 
 private:
-	variant<Payload,Error> m_nestedRes;	
+	variant<Payload,Error> m_nestedRes;
 #if defined(DDK_DEBUG)
 	mutable bool m_checked;
 #endif

@@ -60,7 +60,7 @@ function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>>
 
     if(void* mem = i_allocator.allocate(1,sizeof(spec_func_type)))
     {
-        spec_func_type* newFuncImpl = new(mem) spec_func_type(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)),tuple<Args...>{ std::forward<Args>(args)... } );
+        spec_func_type* newFuncImpl = new(mem) spec_func_type(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)),make_tuple(std::forward<Args>(args)...));
 
         return as_shared_reference(newFuncImpl,tagged_pointer<shared_reference_counter>(&(newFuncImpl->m_refCounter),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(i_allocator));
     }

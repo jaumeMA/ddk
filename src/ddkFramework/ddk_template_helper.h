@@ -77,6 +77,12 @@ struct size_of_qualified_type<T&>
 };
 
 template<typename T>
+struct size_of_qualified_type<T&&>
+{
+	static const size_t value = sizeof(decltype(reinterpret_cast<T*>(NULL)));
+};
+
+template<typename T>
 struct size_of_qualified_type<T*>
 {
 	static const size_t value = sizeof(decltype(reinterpret_cast<T*>(NULL)));
@@ -568,7 +574,7 @@ const size_t _acc_sizeof<sequence<Indexs...>>::value[get_num_ranks<Indexs...>::v
 template<typename ... Types>
 struct acc_sizeof
 {
-    typedef _acc_sizeof<typename acc_sequence<sizeof(Types) ...>::type> type;
+    typedef _acc_sizeof<typename acc_sequence<size_of_qualified_type<Types>::value ...>::type> type;
 };
 
 }

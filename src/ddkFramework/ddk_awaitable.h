@@ -28,6 +28,7 @@ public:
 	typedef typename std::add_pointer<T>::type pointer;
 	typedef typename std::add_const<pointer>::type const_pointer;
 
+	awaited_result() = default;
 	awaited_result(const detail::none_t&);
     template<typename Arg>
 	awaited_result(Arg&& i_arg);

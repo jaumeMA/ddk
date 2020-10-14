@@ -66,11 +66,11 @@ template<typename ... Types>
 struct base_iterable_traits<const values_tuple<Types...>>
 {
     typedef const values_tuple<Types...> base_type;
-    typedef const tuple<typename std::remove_reference<Types>::type ...> value_type;
-    typedef const tuple<typename std::add_const<Types>::type& ...> reference;
-    typedef const tuple<typename std::add_const<Types>::type& ...> const_reference;
-    typedef const tuple<typename std::add_const<Types>::type* ...> pointer;
-    typedef const tuple<typename std::add_const<Types>::type* ...> const_pointer;
+    typedef tuple<typename std::remove_reference<Types>::type ...> value_type;
+    typedef tuple<typename std::add_const<Types>::type& ...> reference;
+    typedef tuple<typename std::add_const<Types>::type& ...> const_reference;
+    typedef tuple<typename std::add_const<Types>::type* ...> pointer;
+    typedef tuple<typename std::add_const<Types>::type* ...> const_pointer;
 
     static inline pointer get_address(reference i_ref)
     {

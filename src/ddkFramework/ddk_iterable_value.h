@@ -10,17 +10,17 @@ namespace ddk
 template<typename Traits>
 struct iterable_value
 {
-    template<typename T>
+    template<typename...>
     friend struct random_accessed_value;
-    template<typename T>
+    template<typename...>
     friend struct const_random_accessed_value;
-    template<typename T>
+    template<typename...>
     friend struct bidirectional_value;
-    template<typename T>
+    template<typename...>
     friend struct const_bidirectional_value;
-    template<typename T>
+    template<typename...>
     friend struct forwarded_value;
-    template<typename T>
+    template<typename...>
     friend struct const_forwarded_value;
 
 public:
@@ -51,8 +51,11 @@ protected:
     detail::iterable_interface& m_iterableInterface;
 };
 
+template<typename...>
+struct random_accessed_value;
+
 template<typename T>
-struct random_accessed_value : public iterable_value<detail::random_access_iterable_traits<T>>
+struct random_accessed_value<T> : public iterable_value<detail::random_access_iterable_traits<T>>
 {
     friend inline size_t value_position(const random_accessed_value& i_value)
     {
@@ -91,11 +94,19 @@ public:
 
     random_accessed_value& operator=(random_accessed_value&&) = default;
 };
+template<typename Type, typename ... Types>
+struct random_accessed_value<Type,Types...> : public random_accessed_value<values_tuple<Type,Types...>>
+{
+    using random_accessed_value<values_tuple<Type,Types...>>::random_accessed_value;
+};
+
+template<typename...>
+struct const_random_accessed_value;
 
 template<typename T>
-struct const_random_accessed_value : public iterable_value<detail::random_access_iterable_traits<T>>
+struct const_random_accessed_value<T> : public iterable_value<detail::random_access_iterable_traits<T>>
 {
-    template<typename>
+    template<typename...>
     friend class const_random_accessed_value;
     friend inline size_t value_position(const const_random_accessed_value& i_value)
     {
@@ -127,9 +138,17 @@ public:
 
     const_random_accessed_value& operator=(const_random_accessed_value&&) = default;
 };
+template<typename Type, typename ... Types>
+struct const_random_accessed_value<Type,Types...> : public const_random_accessed_value<values_tuple<Type,Types...>>
+{
+    using const_random_accessed_value<values_tuple<Type,Types...>>::const_random_accessed_value;
+};
+
+template<typename...>
+struct bidirectional_value;
 
 template<typename T>
-struct bidirectional_value : public iterable_value<detail::bidirectional_iterable_traits<T>>
+struct bidirectional_value<T> : public iterable_value<detail::bidirectional_iterable_traits<T>>
 {
     friend inline size_t value_position(const bidirectional_value& i_value)
     {
@@ -167,11 +186,19 @@ public:
 
     bidirectional_value& operator=(bidirectional_value&&) = default;
 };
+template<typename Type, typename ... Types>
+struct bidirectional_value<Type,Types...> : public bidirectional_value<values_tuple<Type,Types...>>
+{
+    using bidirectional_value<values_tuple<Type,Types...>>::bidirectional_value;
+};
+
+template<typename...>
+struct const_bidirectional_value;
 
 template<typename T>
-struct const_bidirectional_value : public iterable_value<detail::bidirectional_iterable_traits<T>>
+struct const_bidirectional_value<T> : public iterable_value<detail::bidirectional_iterable_traits<T>>
 {
-    template<typename>
+    template<typename...>
     friend class const_bidirectional_value;
     friend inline size_t value_position(const const_bidirectional_value& i_value)
     {
@@ -199,9 +226,17 @@ public:
 
     const_bidirectional_value& operator=(const_bidirectional_value&&) = default;
 };
+template<typename Type, typename ... Types>
+struct const_bidirectional_value<Type,Types...> : public const_bidirectional_value<values_tuple<Type,Types...>>
+{
+    using const_bidirectional_value<values_tuple<Type,Types...>>::const_bidirectional_value;
+};
+
+template<typename...>
+struct forwarded_value;
 
 template<typename T>
-struct forwarded_value : public iterable_value<detail::forward_iterable_traits<T>>
+struct forwarded_value<T> : public iterable_value<detail::forward_iterable_traits<T>>
 {
     friend inline size_t value_position(const forwarded_value& i_value)
     {
@@ -239,11 +274,19 @@ public:
 
     forwarded_value& operator=(forwarded_value&&) = default;
 };
+template<typename Type, typename ... Types>
+struct forwarded_value<Type,Types...> : public forwarded_value<values_tuple<Type,Types...>>
+{
+    using forwarded_value<values_tuple<Type,Types...>>::forwarded_value;
+};
+
+template<typename...>
+struct const_forwarded_value;
 
 template<typename T>
-struct const_forwarded_value : public iterable_value<detail::forward_iterable_traits<T>>
+struct const_forwarded_value<T> : public iterable_value<detail::forward_iterable_traits<T>>
 {
-    template<typename>
+    template<typename...>
     friend class const_forwarded_value;
     friend inline size_t value_position(const const_forwarded_value& i_value)
     {
@@ -268,6 +311,11 @@ public:
     const_forwarded_value(const_random_accessed_value<TT>&&);
 
     const_forwarded_value& operator=(const_forwarded_value&&) = default;
+};
+template<typename Type, typename ... Types>
+struct const_forwarded_value<Type,Types...> : public const_forwarded_value<values_tuple<Type,Types...>>
+{
+    using const_forwarded_value<values_tuple<Type,Types...>>::const_forwarded_value;
 };
 
 template<typename Value, typename ... Args>
