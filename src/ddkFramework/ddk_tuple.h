@@ -40,7 +40,7 @@ public:
     template<size_t IIndex>
     typename embedded_type<Type>::ref_type get();
     template<size_t IIndex, typename Arg>
-    void set(Arg&& i_arg);
+    typename embedded_type<Type>::ref_type set(Arg&& i_arg);
     tuple_impl<mpl::sequence<0>,Type>* operator->();
     const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
     static constexpr size_t size();
@@ -78,7 +78,7 @@ public:
     template<size_t ... IIndexs, typename ... Args>
     void set(const mpl::sequence<IIndexs...>&, Args&& ... i_args);
     template<size_t IIndex, typename Arg>
-    bool set(Arg&& i_val);
+    typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::ref_type set(Arg&& i_val);
     tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* operator->();
     const tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* operator->() const;
     static constexpr size_t size();

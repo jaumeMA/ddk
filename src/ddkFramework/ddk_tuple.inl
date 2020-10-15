@@ -43,9 +43,9 @@ typename embedded_type<Type>::ref_type tuple_impl<mpl::sequence<0>,Type>::get()
 }
 template<typename Type>
 template<size_t Index, typename Arg>
-void tuple_impl<mpl::sequence<0>,Type>::set(Arg&& i_arg)
+typename embedded_type<Type>::ref_type tuple_impl<mpl::sequence<0>,Type>::set(Arg&& i_arg)
 {
-	m_val = std::forward<Arg>(i_arg);
+	return (m_val = std::forward<Arg>(i_arg));
 }
 template<typename Type>
 tuple_impl<mpl::sequence<0>,Type>* tuple_impl<mpl::sequence<0>,Type>::operator->()
@@ -168,11 +168,13 @@ void tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::se
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex, typename Arg>
-bool tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::set(Arg&& i_arg)
+typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::ref_type tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::set(Arg&& i_arg)
 {
     typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
 
-    return assign<nth_type>(m_storage.get_arena() + data_offset::at(IIndex), std::forward<Arg>(i_arg));
+    assign<nth_type>(m_storage.get_arena() + data_offset::at(IIndex), std::forward<Arg>(i_arg));
+
+    return get<nth_type>(m_storage.get_arena() + data_offset::at(IIndex));
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::operator->()

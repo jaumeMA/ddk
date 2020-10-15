@@ -44,6 +44,10 @@ awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
             m_content.template assign<T>(other.m_content.template extract<T>());
         }
 	}
+    else if(m_content.empty() == false)
+    {
+        m_content.template destroy<T>();
+    }
 
 	return *this;
 }

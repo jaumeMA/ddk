@@ -51,12 +51,9 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
     tuple<awaitable<typename Iterables::reference>...> awaitableTuple(await(make_function(this,&intersection_iterable_impl<Iterables...>::private_iterate_impl<Indexs>,m_iterables.template get<Indexs>(),i_initState))...);
     tuple<awaited_result<typename Iterables::reference>...> awaitableResultTuple;
 
-    bool cond = true;
     do
     {
-        (awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...);
-
-        if((static_cast<bool>(awaitableResultTuple.template get<Indexs>()) && ...))
+        if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
             eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
         }
@@ -66,6 +63,8 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
         }
     }
     while(true);
+
+    suspend();
 }
 template<typename ... Iterables>
 template<size_t ... Indexs>
@@ -74,12 +73,9 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
     tuple<awaitable<typename Iterables::const_reference>...> awaitableTuple(await(make_function(this,&intersection_iterable_impl<Iterables...>::private_iterate_impl<Indexs>,m_iterables.template get<Indexs>(),i_initState))...);
     tuple<awaited_result<typename Iterables::const_reference>...> awaitableResultTuple;
 
-    bool cond = true;
     do
     {
-        (awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...);
-
-        if((static_cast<bool>(awaitableResultTuple.template get<Indexs>()) && ...))
+        if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
             eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
         }
@@ -89,6 +85,8 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
         }
     }
     while(true);
+
+    suspend();
 }
 template<typename ... Iterables>
 template<size_t Index>
