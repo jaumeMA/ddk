@@ -35,7 +35,7 @@ iterable<Traits>::iterable(iterable<TTraits>&& other)
 {
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void()>& i_finally, const iter::iterable_state& i_initState)
+void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void(iter::IterableStateError)>& i_finally, const iter::iterable_state& i_initState)
 {
     m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initState));
 
@@ -64,11 +64,11 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
 
     if(i_finally != nullptr)
     {
-        eval(i_finally);
+        eval(i_finally,m_iterableState.consume_error());
     }
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void()>& i_finally, const iter::iterable_state& i_initState) const
+void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::IterableStateError)>& i_finally, const iter::iterable_state& i_initState) const
 {
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
     static func_ptr privateIteratorFunc = &iterable<Traits>::private_iterate;
@@ -100,7 +100,7 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
 
     if(i_finally != nullptr)
     {
-        eval(i_finally);
+        eval(i_finally,m_iterableState.consume_error());
     }
 }
 template<typename Traits>
@@ -181,6 +181,20 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
     else
     {
         throw suspend_exception{get_current_fiber_id()};
+    }
+}
+template<typename Traits>
+bool iterable<Traits>::forward_action(action i_action) const
+{
+    if(m_currAction != i_action)
+    {
+        m_currAction = i_action;
+
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 

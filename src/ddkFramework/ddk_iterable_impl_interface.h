@@ -5,6 +5,7 @@
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_function.h"
 #include "ddk_iterable_state.h"
+#include "ddk_result.h"
 
 namespace ddk
 {

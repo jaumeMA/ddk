@@ -86,5 +86,5 @@ TEST(DDKIterableTest, iterableUnion)
 
     ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %d\n",**i_value,value_position(i_value)); }) <<=  (fooIterable1 | fooIterable2);
     ddk::const_random_access_iterable<A> fooIterableUnion2 = fooIterable1 | fooIterable2 | fooIterable3;
-    ddk::make_function([](ddk::const_bidirectional_value<const A,const D,const A> i_value){ printf("current values tuple: %d, %d, %d\n",*i_value->get<0>(),*i_value->get<1>(),*i_value->get<2>()); }) <<=  (fooIterable1 & fooIterable2 & fooIterable3);
+    ddk::make_function([](ddk::const_bidirectional_value<const A, const D,const A> i_value){ printf("current values tuple: %d, %d, %d\n",*i_value->get<0>(),*i_value->get<1>(),*i_value->get<2>()); }) <<=  ((fooIterable1 | fooIterable2) & fooIterable2 & (fooIterable1 | fooIterable3)), ddk::make_function([](ddk::iter::IterableStateError i_code){ printf("Ending with error code %d\n",i_code.getValue()); });
 }

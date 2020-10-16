@@ -14,10 +14,17 @@ class iteration
 
     template<typename TTraits>
     friend void execute_iteration(iteration<TTraits> i_iteration);
+    friend inline iteration operator,(const iteration& i_lhs, const function<void(iter::IterableStateError)>& i_rhs)
+    {
+        i_lhs.m_received = true;
+
+        return iteration(i_lhs.m_iterable,i_lhs.m_try,i_rhs);
+    }
+
 
 public:
     template<typename IterableValue>
-    iteration(const detail::iterable<Traits>& i_iterable, const function<void(IterableValue)>& i_try, const function<void()>& i_finally);
+    iteration(const detail::iterable<Traits>& i_iterable, const function<void(IterableValue)>& i_try, const function<void(iter::IterableStateError)>& i_finally = nullptr);
     iteration(const iteration&);
     iteration(iteration&&);
     ~iteration();
@@ -36,7 +43,7 @@ public:
 private:
     detail::iterable<Traits> m_iterable;
     const function<void(iterable_value)> m_try;
-    const function<void()> m_finally;
+    const function<void(iter::IterableStateError)> m_finally;
     mutable bool m_received;
 };
 

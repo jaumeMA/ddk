@@ -270,7 +270,7 @@ bool variant_impl<Types...>::operator==(const variant_impl<Types...>& other) con
 	{
 		if(m_currentType != _numTypes)
 		{
-			comparison_visitor<Types...,variant_impl<Types...> > comparator(*this);
+			comparison_visitor<variant_impl<Types...>,Types...> comparator(*this);
 
 			CREATE_INNER_VISITOR(comparator,Types);
 			res = CALL_INNER_VISITOR(comparator,other);
@@ -291,7 +291,7 @@ bool variant_impl<Types...>::operator==(variant_impl<Types...>&& other) const
 
 	if (m_currentType == other.m_currentType)
 	{
-		comparison_visitor<Types...,variant_impl<Types...> > comparator(*this);
+		comparison_visitor<variant_impl<Types...>,Types...> comparator(*this);
 
 		CREATE_INNER_VISITOR(comparator,Types);
 		res = CALL_INNER_VISITOR(comparator,other);
@@ -306,7 +306,7 @@ bool variant_impl<Types...>::operator!=(const variant_impl<Types...>& other) con
 
 	if (m_currentType == other.m_currentType)
 	{
-		comparison_visitor<Types...,variant_impl<Types...> > comparator(*this);
+		comparison_visitor<variant_impl<Types...>,Types...> comparator(*this);
 
 		CREATE_INNER_VISITOR(comparator,Types);
 		res = !CALL_INNER_VISITOR(comparator,other);
@@ -321,7 +321,7 @@ bool variant_impl<Types...>::operator!=(variant_impl<Types...>&& other) const
 
 	if (m_currentType == other.m_currentType)
 	{
-		comparison_visitor<Types...,variant_impl<Types...> > comparator(*this);
+		comparison_visitor<variant_impl<Types...>,Types...> comparator(*this);
 
 		CREATE_INNER_VISITOR(comparator,Types);
 		res = !CALL_INNER_VISITOR(comparator,other);

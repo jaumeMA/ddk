@@ -159,7 +159,7 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
 
     //for the rest of unsused types
     template<size_t PosType, typename Type>
-    typename embedded_type<retType>::ref_type visit(Type&& val, ...) const
+    typename embedded_type<retType>::cref_type visit(Type&& val, ...) const
 	{
 		typedef typename embedded_type<retType>::ref_type ref_type;
 
@@ -183,17 +183,6 @@ struct swaper_visitor : public static_visitor<void>
     detail::void_t visit(Type&& otherVal)
 	{
 		static_assert(mpl::is_among_convertible_types<Type, Types...>::value, "Not present type!");
-
-		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
-		typedef typename embedded_type<varType>::ref_type ref_type;
-
-		val_retriever_visitor<Types...,ref_type> getter;
-
-		//this reference here is ok by reference collapsing
-		typedef typename mpl::create_range_rank<0,mpl::get_num_types<Types...>::value>::type range_seq_t;
-		typedef variant_visitor_invoker<decltype(getter),Types...> variant_visitor_t;
-
-		ref_type thisVal = variant_visitor_t::template invoke(range_seq_t{},getter,m_thisVariant);
 
 		m_thisVariant.m_storage.template swap<Type>(m_otherVariant.m_storage);
 
@@ -219,17 +208,14 @@ struct comparison_visitor : public static_visitor<bool>
     bool visit(Type&& otherVal)
 	{
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
-		typedef typename embedded_type<varType>::cref_type cref_type;
 
-		const val_retriever_visitor<cref_type> getter;
+		const val_retriever_visitor<varType,Types...> getter;
 
 		//this reference here is ok by reference collapsing
 		typedef typename mpl::create_range_rank<0,mpl::get_num_types<Types...>::value>::type range_seq_t;
-		typedef variant_visitor_invoker<decltype(getter),Types...> variant_visitor_t;
+		typedef variant_visitor_invoker<varType,Types...> variant_visitor_t;
 
-		cref_type thisVal = variant_visitor_t::template invoke(range_seq_t{},getter,m_variant); \
-
-		return thisVal == std::forward<Type>(otherVal);
+		return variant_visitor_t::template inner_invoker(range_seq_t{},getter,m_variant) == otherVal;
 	}
 
 private:

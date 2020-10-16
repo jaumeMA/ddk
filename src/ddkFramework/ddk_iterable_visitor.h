@@ -2,6 +2,7 @@
 
 #include "ddk_iterable_state.h"
 #include "ddk_iterable_action.h"
+#include "ddk_scoped_enum.h"
 
 namespace ddk
 {

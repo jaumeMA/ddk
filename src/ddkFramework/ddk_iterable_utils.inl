@@ -32,12 +32,12 @@ ddk::detail::iterable<Traits> operator<<=(const ddk::filter_function<bool(Types.
 template<typename IterableValue, typename Allocator, typename Traits>
 ddk::iteration<Traits> operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::iterable<Traits>& i_rhs)
 {
-    return ddk::iteration<Traits>(i_rhs,i_lhs,nullptr);
+    return ddk::iteration<Traits>(i_rhs,i_lhs);
 }
 template<typename IterableValue, typename Allocator, typename Traits>
 ddk::iteration<Traits> operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
 {
-    return ddk::iteration<Traits>(i_rhs,i_lhs,nullptr);
+    return ddk::iteration<Traits>(i_rhs,i_lhs);
 }
 template<typename Return, typename Type, typename Allocator, typename ... Iterables>
 ddk::detail::iterable<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::function<Return(Type),Allocator>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
@@ -122,6 +122,13 @@ union_iterable<Iterables...,iterable<Traits>> operator|(const union_iterable<Ite
 {
     return union_iterable<Iterables...,iterable<Traits>>(make_shared_reference<union_iterable_impl<Iterables...,iterable<Traits>>>(merge_args(i_lhs.m_iterableImpl->get_iterables(),i_rhs)));
 }
+template<typename ... Iterables, typename Traits>
+union_iterable<typename intersection_iterable<Iterables...>::related_iterable,iterable<Traits>> operator|(const intersection_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs)
+{
+    typedef typename intersection_iterable<Iterables...>::related_iterable lhs_iterable;
+
+    return union_iterable<lhs_iterable,iterable<Traits>>(make_shared_reference<union_iterable_impl<lhs_iterable,iterable<Traits>>>(lhs_iterable(i_lhs.m_iterableImpl),i_rhs));
+}
 template<typename ... Iterables, typename ... IIterables>
 union_iterable<Iterables...,typename intersection_iterable<IIterables...>::related_iterable> operator|(const union_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs)
 {
@@ -132,10 +139,25 @@ union_iterable<typename intersection_iterable<Iterables...>::related_iterable,II
 {
     return union_iterable<typename intersection_iterable<Iterables...>::related_iterable,IIterables...>(make_shared_reference<union_iterable_impl<typename intersection_iterable<Iterables...>::related_iterable,Iterables...>>(merge_args(i_lhs.m_iterableImpl,i_rhs.m_iterableImpl->get_iterables())));
 }
+template<typename ... Iterables, typename ... IIterables>
+union_iterable<typename intersection_iterable<Iterables...>::related_iterable,typename intersection_iterable<IIterables...>::related_iterable> operator|(const intersection_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs)
+{
+    typedef typename intersection_iterable<Iterables...>::related_iterable lhs_iterable;
+    typedef typename intersection_iterable<IIterables...>::related_iterable rhs_iterable;
+
+    return union_iterable<lhs_iterable,rhs_iterable>(make_shared_reference<intersection_iterable_impl<lhs_iterable,rhs_iterable>>(lhs_iterable(i_lhs.m_iterableImpl),rhs_iterable(i_rhs.m_iterableImpl)));
+}
 template<typename ... Iterables, typename Traits>
 intersection_iterable<Iterables...,iterable<Traits>> operator&(const intersection_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs)
 {
     return intersection_iterable<Iterables...,iterable<Traits>>(make_shared_reference<intersection_iterable_impl<Iterables...,iterable<Traits>>>(merge_args(i_lhs.m_iterableImpl->get_iterables(),i_rhs)));
+}
+template<typename ... Iterables, typename Traits>
+intersection_iterable<typename union_iterable<Iterables...>::related_iterable,iterable<Traits>> operator&(const union_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs)
+{
+    typedef typename union_iterable<Iterables...>::related_iterable lhs_iterable;
+
+    return intersection_iterable<lhs_iterable,iterable<Traits>>(make_shared_reference<intersection_iterable_impl<lhs_iterable,iterable<Traits>>>(lhs_iterable(i_lhs.m_iterableImpl),i_rhs));
 }
 template<typename ... Iterables, typename ... IIterables>
 intersection_iterable<Iterables...,IIterables...> operator&(const intersection_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs)
@@ -150,7 +172,17 @@ intersection_iterable<Iterables...,typename union_iterable<IIterables...>::relat
 template<typename ... Iterables, typename ... IIterables>
 intersection_iterable<typename union_iterable<Iterables...>::related_iterable,IIterables...> operator&(const union_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs)
 {
-    return intersection_iterable<typename union_iterable<Iterables...>::related_iterable,IIterables...>(make_shared_reference<intersection_iterable_impl<typename union_iterable<Iterables...>::related_iterable,IIterables...>>(merge_args(i_lhs.m_iterableImpl,i_rhs.m_iterableImpl->get_iterables())));
+    typedef typename union_iterable<Iterables...>::related_iterable lhs_iterable;
+
+    return intersection_iterable<typename union_iterable<Iterables...>::related_iterable,IIterables...>(make_shared_reference<intersection_iterable_impl<typename union_iterable<Iterables...>::related_iterable,IIterables...>>(merge(tuple<lhs_iterable>(lhs_iterable(i_lhs.m_iterableImpl),i_rhs.m_iterableImpl->get_iterables()))));
+}
+template<typename ... Iterables, typename ... IIterables>
+intersection_iterable<typename union_iterable<Iterables...>::related_iterable,typename union_iterable<IIterables...>::related_iterable> operator&(const union_iterable<Iterables...>& i_lhs, const union_iterable<IIterables...>& i_rhs)
+{
+    typedef typename union_iterable<Iterables...>::related_iterable lhs_iterable;
+    typedef typename union_iterable<IIterables...>::related_iterable rhs_iterable;
+
+    return intersection_iterable<lhs_iterable,rhs_iterable>(make_shared_reference<intersection_iterable_impl<lhs_iterable,rhs_iterable>>(lhs_iterable(i_lhs.m_iterableImpl),rhs_iterable(i_rhs.m_iterableImpl)));
 }
 
 }

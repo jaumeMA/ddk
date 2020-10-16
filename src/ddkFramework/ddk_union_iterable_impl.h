@@ -41,22 +41,22 @@ private:
 template<typename ... Iterables>
 using union_iterable_visitor = union_iterable_visitor_type<typename mpl::make_sequence<0,mpl::get_num_types<Iterables...>::value>::type,Iterables...>;
 
-template<typename Iterable, typename ... Iterables>
-class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterable::traits,typename Iterables::traits ...>>
+template<typename ... Iterables>
+class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>>
 {
-    static const size_t s_num_iterables = tuple<Iterable,Iterables...>::size();
-    typedef iterable_impl_interface<union_iterable_base_traits<typename Iterable::traits,typename Iterables::traits ...>> base_t;
+    static const size_t s_num_iterables = tuple<Iterables...>::size();
+    typedef iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>> base_t;
 
 public:
     using typename base_t::reference;
     using typename base_t::const_reference;
     using typename base_t::action;
 
-    union_iterable_impl(const Iterable& i_iterable, const Iterables& ... i_iterables);
-    union_iterable_impl(const tuple<Iterable,Iterables...>& i_tupleIterable);
+    union_iterable_impl(const Iterables& ... i_iterables);
+    union_iterable_impl(const tuple<Iterables...>& i_tupleIterable);
 
-    const tuple<Iterable,Iterables...>& get_iterables() const;
-    tuple<Iterable,Iterables...>& get_iterables();
+    const tuple<Iterables...>& get_iterables() const;
+    tuple<Iterables...>& get_iterables();
 
 private:
     void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;
@@ -70,11 +70,11 @@ private:
     inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const;
 
     template<size_t Index>
-    static action navigate(tuple<Iterable,Iterables...>& i_tuple, const function<action(reference)>& i_try, const iter::iterable_state& i_initState);
+    static action navigate(tuple<Iterables...>& i_tuple, const function<action(reference)>& i_try, const iter::iterable_state& i_initState);
     template<size_t Index>
-    static action navigate(const tuple<Iterable,Iterables...>& i_tuple, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState);
+    static action navigate(const tuple<Iterables...>& i_tuple, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState);
 
-    tuple<Iterable,Iterables...> m_iterables;
+    tuple<Iterables...> m_iterables;
 };
 
 }

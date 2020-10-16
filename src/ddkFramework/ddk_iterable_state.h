@@ -1,11 +1,29 @@
 #pragma once
 
 #include "ddk_iterable_action.h"
+#include "ddk_shared_reference_wrapper.h"
 
 namespace ddk
 {
 namespace iter
 {
+namespace detail
+{
+
+class action_state
+{
+public:
+    action_state() = default;
+
+    void set_error(IterableStateError i_error) const;
+    IterableStateError get_error() const;
+    void reset() const;
+
+private:
+    mutable IterableStateError m_error = IterableStateError::None;
+};
+
+}
 
 struct iterable_state
 {
@@ -13,15 +31,20 @@ public:
     static const size_t npos;
 
     iterable_state(size_t i_initPos = npos);
+    iterable_state(const iterable_state&) = default;
+
     template<typename Action>
     void apply(const Action& i_action);
     size_t position() const;
     void reset();
     bool operator==(const iterable_state& other) const;
     bool operator!=(const iterable_state& other) const;
+    void produce_error(IterableStateError i_error) const;
+    IterableStateError consume_error() const;
 
 private:
     size_t m_currPos;
+    shared_reference_wrapper<detail::action_state> m_actionState;
 };
 
 namespace detail

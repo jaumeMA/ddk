@@ -82,14 +82,23 @@ namespace detail
 template<typename ... Iterables, typename Traits>
 inline union_iterable<Iterables...,iterable<Traits>> operator|(const union_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
 
+template<typename ... Iterables, typename Traits>
+inline union_iterable<typename intersection_iterable<Iterables...>::related_iterable,iterable<Traits>> operator|(const intersection_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
+
 template<typename ... Iterables, typename ... IIterables>
 inline union_iterable<Iterables...,typename intersection_iterable<IIterables...>::related_iterable> operator|(const union_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
 
 template<typename ... Iterables, typename ... IIterables>
 inline union_iterable<typename intersection_iterable<Iterables...>::related_iterable,IIterables...> operator|(const intersection_iterable<IIterables...>& i_lhs, const union_iterable<Iterables...>& i_rhs);
 
+template<typename ... Iterables, typename ... IIterables>
+inline union_iterable<typename intersection_iterable<Iterables...>::related_iterable,typename intersection_iterable<IIterables...>::related_iterable> operator|(const intersection_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
+
 template<typename ... Iterables, typename Traits>
 inline intersection_iterable<Iterables...,iterable<Traits>> operator&(const intersection_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
+
+template<typename ... Iterables, typename Traits>
+inline intersection_iterable<typename union_iterable<Iterables...>::related_iterable,iterable<Traits>> operator&(const union_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
 
 template<typename ... Iterables, typename ... IIterables>
 inline intersection_iterable<Iterables...,IIterables...> operator&(const intersection_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
@@ -99,6 +108,9 @@ inline intersection_iterable<Iterables...,typename union_iterable<IIterables...>
 
 template<typename ... Iterables, typename ... IIterables>
 inline intersection_iterable<typename union_iterable<Iterables...>::related_iterable,IIterables...> operator&(const union_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
+
+template<typename ... Iterables, typename ... IIterables>
+inline intersection_iterable<typename union_iterable<Iterables...>::related_iterable,typename union_iterable<IIterables...>::related_iterable> operator&(const union_iterable<Iterables...>& i_lhs, const union_iterable<IIterables...>& i_rhs);
 
 }
 }

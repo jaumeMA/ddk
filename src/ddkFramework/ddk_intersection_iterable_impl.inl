@@ -50,12 +50,16 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
 {
     tuple<awaitable<typename Iterables::reference>...> awaitableTuple(await(make_function(this,&intersection_iterable_impl<Iterables...>::private_iterate_impl<Indexs>,m_iterables.template get<Indexs>(),i_initState))...);
     tuple<awaited_result<typename Iterables::reference>...> awaitableResultTuple;
+    action currAction = traits::default_action();
 
     do
     {
+        //update current action
+        (m_iterables.template get<Indexs>().forward_action(currAction) && ...);
+
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
+            currAction = eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
         }
         else
         {
@@ -72,12 +76,15 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
 {
     tuple<awaitable<typename Iterables::const_reference>...> awaitableTuple(await(make_function(this,&intersection_iterable_impl<Iterables...>::private_iterate_impl<Indexs>,m_iterables.template get<Indexs>(),i_initState))...);
     tuple<awaited_result<typename Iterables::const_reference>...> awaitableResultTuple;
+    action currAction = traits::default_action();
 
     do
     {
+        (m_iterables.template get<Indexs>().forward_action(currAction) && ...);
+
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
+            currAction = eval(i_try,make_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
         }
         else
         {

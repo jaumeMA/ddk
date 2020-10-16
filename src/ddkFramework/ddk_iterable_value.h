@@ -63,14 +63,18 @@ struct random_accessed_value<T> : public iterable_value<detail::random_access_it
 
         return currState.position();
     }
-    friend inline random_accessed_value erase_value(random_accessed_value i_value)
+    friend inline std::pair<random_accessed_value,bool> erase_value(random_accessed_value i_value)
     {
-        return { eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver };
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver), currState.consume_error() == iter::IterableStateError::None);
     }
     template<typename ... Args>
-    friend inline random_accessed_value add_value(random_accessed_value i_value, Args&& ... i_args)
+    friend inline std::pair<random_accessed_value,bool> add_value(random_accessed_value i_value, Args&& ... i_args)
     {
-        return { eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver };
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currState.consume_error() == iter::IterableStateError::None);
     }
     friend inline random_accessed_value next_value(random_accessed_value i_value)
     {
@@ -156,14 +160,18 @@ struct bidirectional_value<T> : public iterable_value<detail::bidirectional_iter
 
         return currState.position();
     }
-    friend inline bidirectional_value erase_value(bidirectional_value i_value)
+    friend inline std::pair<bidirectional_value,bool> erase_value(bidirectional_value i_value)
     {
-        return { eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver };
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver ), currState.consume_error() == iter::IterableStateError::None);
     }
     template<typename ... Args>
-    friend inline bidirectional_value add_value(bidirectional_value i_value, Args&& ... i_args)
+    friend inline std::pair<bidirectional_value,bool> add_value(bidirectional_value i_value, Args&& ... i_args)
     {
-        return { eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver };
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currState.consume_error() == iter::IterableStateError::None);
     }
     friend inline bidirectional_value next_value(bidirectional_value i_value)
     {
@@ -244,14 +252,18 @@ struct forwarded_value<T> : public iterable_value<detail::forward_iterable_trait
 
         return currState.position();
     }
-    friend inline forwarded_value erase_value(forwarded_value i_value)
+    friend inline std::pair<forwarded_value,bool> erase_value(forwarded_value i_value)
     {
-        return { eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver };
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return std::make_pair(forwarded_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver),currState.consume_error() == iter::IterableStateError::None);
     }
     template<typename ... Args>
-    friend inline forwarded_value add_value(forwarded_value i_value, Args&& ... i_args)
+    friend inline std::pair<forwarded_value,bool> add_value(forwarded_value i_value, Args&& ... i_args)
     {
-        return { eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver };
+        const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
+
+        return std::make_pair(forwarded_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currState.consume_error() == iter::IterableStateError::None);
     }
     friend inline forwarded_value next_value(forwarded_value i_value)
     {

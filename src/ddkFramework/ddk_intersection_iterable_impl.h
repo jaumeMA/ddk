@@ -14,6 +14,7 @@ class intersection_iterable_impl : public iterable_impl_interface<intersection_i
 {
     static const size_t s_num_iterables = tuple<Iterables...>::size();
     typedef iterable_impl_interface<intersection_iterable_base_traits<typename Iterables::traits ...>> base_t;
+    using typename base_t::traits;
     typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_value iterable_value;
     typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_const_value iterable_const_value;
 

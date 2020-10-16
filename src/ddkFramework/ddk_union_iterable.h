@@ -27,6 +27,10 @@ class union_iterable
     friend inline intersection_iterable<IIterables...,typename union_iterable<IIIterables...>::related_iterable> operator&(const intersection_iterable<IIterables...>&, const union_iterable<IIIterables...>&);
     template<typename ... IIterables, typename ... IIIterables>
     friend inline intersection_iterable<typename union_iterable<IIterables...>::related_iterable,IIIterables...> operator&(const union_iterable<IIterables...>&, const intersection_iterable<IIIterables...>&);
+    template<typename ... IIterables, typename ... IIIterables>
+    friend inline intersection_iterable<typename union_iterable<IIterables...>::related_iterable,typename union_iterable<IIIterables...>::related_iterable> operator&(const union_iterable<IIterables...>&, const union_iterable<IIIterables...>&);
+    template<typename ... IIterables, typename Traits>
+    friend inline intersection_iterable<typename union_iterable<IIterables...>::related_iterable,iterable<Traits>> operator&(const union_iterable<IIterables...>& i_lhs, const iterable<Traits>& i_rhs);
 
 public:
     typedef iterable<union_iterable_traits<typename Iterables::traits...>> related_iterable;
