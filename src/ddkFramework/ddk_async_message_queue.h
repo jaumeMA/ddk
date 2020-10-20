@@ -76,7 +76,7 @@ public:
 			{
 				thread_executor_interface::start_result startRes = m_executor->execute(nullptr,ddk::make_function(this,&async_attachable_message_queue<MessageType>::dispatch_messages));
 
-				DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
+				DDK_ASSERT(startRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.error()));
 			}
 
 			m_receivers.push(std::make_pair(i_id,i_processor));
@@ -100,7 +100,7 @@ public:
 			{
 				thread_executor_interface::resume_result stopRes = m_executor->resume();
 
-				DDK_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.getError()));
+				DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 			}
 		}
 

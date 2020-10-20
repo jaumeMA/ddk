@@ -15,12 +15,13 @@ class action_state
 public:
     action_state() = default;
 
-    void set_error(IterableStateError i_error) const;
-    IterableStateError get_error() const;
-    void reset() const;
+    void set_error(action_error i_error);
+    action_result get_result() const;
+    action_result extract_result();
+    void reset();
 
 private:
-    mutable IterableStateError m_error = IterableStateError::None;
+    action_result m_actionResult = success;
 };
 
 }
@@ -39,12 +40,14 @@ public:
     void reset();
     bool operator==(const iterable_state& other) const;
     bool operator!=(const iterable_state& other) const;
-    void produce_error(IterableStateError i_error) const;
-    IterableStateError consume_error() const;
+    void forward_result(action_result i_result) const;
+    action_result forward_result() const;
+    template<typename Result>
+    Result forward_result_as() const;
 
 private:
     size_t m_currPos;
-    shared_reference_wrapper<detail::action_state> m_actionState;
+    mutable shared_reference_wrapper<detail::action_state> m_actionState;
 };
 
 namespace detail

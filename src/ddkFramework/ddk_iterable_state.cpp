@@ -8,17 +8,25 @@ namespace iter
 namespace detail
 {
 
-void action_state::set_error(IterableStateError i_error) const
+void action_state::set_error(action_error i_error)
 {
-    m_error = i_error;
+    m_actionResult = make_error<action_result>(i_error);
 }
-IterableStateError action_state::get_error() const
+action_result action_state::get_result() const
 {
-    return m_error;
+    return m_actionResult;
 }
-void action_state::reset() const
+action_result action_state::extract_result()
 {
-    m_error = IterableStateError::None;
+    action_result res = m_actionResult;
+
+    m_actionResult = success;
+
+    return res;
+}
+void action_state::reset()
+{
+    m_actionResult = success;
 }
 
 }
@@ -38,17 +46,16 @@ void iterable_state::reset()
 {
     m_currPos = npos;
 }
-void iterable_state::produce_error(IterableStateError i_error) const
+void iterable_state::forward_result(action_result i_result) const
 {
-    m_actionState->set_error(i_error);
+    if(i_result)
+    {
+        m_actionState->set_error(i_result.error());
+    }
 }
-IterableStateError iterable_state::consume_error() const
+action_result iterable_state::forward_result() const
 {
-    IterableStateError res = m_actionState->get_error();
-
-    m_actionState->reset();
-
-    return res;
+    return m_actionState->extract_result();
 }
 bool iterable_state::operator==(const iterable_state& other) const
 {

@@ -4,6 +4,7 @@
 #include "ddk_optional.h"
 #include "ddk_macros.h"
 #include "ddk_formatter.h"
+#include "ddk_error.h"
 
 namespace ddk
 {
@@ -45,72 +46,36 @@ class result<void,Error>
 
 		return res;
 	}
-	result<void,Error>& operator=(const result<void,Error>&);
 
 public:
 	typedef void payload_t;
 	typedef Error error_t;
 
-	result(const result_success_t&)
-	: m_nestedRes()
-#if defined(DDK_DEBUG)
-	, m_checked(false)
-#endif
-	{
-	}
-	result(const Error& i_error)
-	: m_nestedRes(i_error)
-#if defined(DDK_DEBUG)
-	, m_checked(false)
-#endif
-	{
-	}
-	result(result&& other)
-	: m_nestedRes(std::move(other.m_nestedRes))
-#if defined(DDK_DEBUG)
-	, m_checked(other.m_checked)
-#endif
-	{
-#if defined(DDK_DEBUG)
-		other.m_checked = true;
-#endif
-	}
-	~result()
-	{
-#if defined(DDK_DEBUG)
-		DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
-#endif
-	}
-	bool hasError() const
-	{
-#if defined(DDK_DEBUG)
-	m_checked = true;
-#endif
-		return m_nestedRes.empty() == false;
-	}
-	Error getError() const
-	{
-#if defined(DDK_DEBUG)
-	m_checked = true;
-#endif
-		return *m_nestedRes;
-	}
-	void clear()
-	{
-		m_nestedRes.clear();
-	}
+	result(const result_success_t&);
+	result(const Error& i_error);
+	result(const result& other);
+	result(result&& other);
+	~result();
+	result& operator=(const result& other);
+	result& operator=(result&& other);
+	Error error() const;
+	void clear();
+	explicit operator bool() const;
+	bool operator==(const result_success_t&) const;
+	bool operator!=(const result_success_t&) const;
 
 private:
 	optional<Error> m_nestedRes;
+
 #if defined(DDK_DEBUG)
-	mutable bool m_checked;
+	mutable bool m_checked = false;
 #endif
 };
 
-template<typename Payload, typename Error>
+template<typename T, typename Error>
 class result
 {
-	friend std::ostringstream& operator<<(std::ostringstream& o_stream, const result<Payload,Error>& i_result)
+	friend std::ostringstream& operator<<(std::ostringstream& o_stream, const result<T,Error>& i_result)
 	{
 		if (i_result.hasError())
 		{
@@ -118,12 +83,12 @@ class result
 		}
 		else
 		{
-			o_stream << "Success: " << i_result.getPayload();
+			o_stream << "Success: " << i_result.getT();
 		}
 
 		return o_stream;
 	}
-	friend std::string operator<<(const std::string& i_str, const result<Payload,Error>& i_result)
+	friend std::string operator<<(const std::string& i_str, const result<T,Error>& i_result)
 	{
 		std::ostringstream res;
 
@@ -133,95 +98,41 @@ class result
 		}
 		else
 		{
-			res << "Success " << i_result.getPayload();
+			res << "Success " << i_result.getT();
 		}
 
 		return res.str();
 	}
 
-	result<Payload, Error>& operator=(const result<Payload,Error>&);
-
 public:
-	typedef Payload payload_t;
+	typedef T payload_t;
 	typedef Error error_t;
 
-	result(const Payload& i_payload)
-	: m_nestedRes(i_payload)
-#if defined(DDK_DEBUG)
-	, m_checked(false)
-#endif
-	{
-	}
-	result(Payload&& i_payload)
-	: m_nestedRes(std::move(i_payload))
-#if defined(DDK_DEBUG)
-	, m_checked(false)
-#endif
-	{
-	}
-	result(const Error& i_error)
-	: m_nestedRes(i_error)
-#if defined(DDK_DEBUG)
-	, m_checked(false)
-#endif
-	{
-	}
-	result(result&& other)
-	: m_nestedRes(std::move(other.m_nestedRes))
-#if defined(DDK_DEBUG)
-	, m_checked(other.m_checked)
-#endif
-	{
-#if defined(DDK_DEBUG)
-		other.m_checked = true;
-#endif
-	}
-	~result()
-	{
-#if defined(DDK_DEBUG)
-		DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
-#endif
-	}
-	bool hasError() const
-	{
-#if defined(DDK_DEBUG)
-	m_checked = true;
-#endif
-		return m_nestedRes.template is<Error>();
-	}
-	Error getError() const
-	{
-#if defined(DDK_DEBUG)
-	m_checked = true;
-#endif
-		return m_nestedRes.template get<Error>();
-	}
-	Payload getPayload() const
-	{
-		return m_nestedRes.template get<Payload>();
-	}
-	Payload extractPayload()
-	{
-		return m_nestedRes.template extract<Payload>();
-	}
-	void clear()
-	{
-		m_nestedRes.clear();
-	}
+	result(const T& i_payload);
+	result(T&& i_payload);
+	result(const Error& i_error);
+	result(const result& other);
+	result(result&& other);
+	~result();
+	result& operator=(const result& other);
+	result& operator=(result&& other);
+	Error error() const;
+	T get() const;
+	T extract();
+	void clear();
+	explicit operator bool() const;
+	bool operator==(const result_success_t&) const;
+	bool operator!=(const result_success_t&) const;
 
 private:
-	variant<Payload,Error> m_nestedRes;
+	variant<T,Error> m_nestedRes;
+
 #if defined(DDK_DEBUG)
-	mutable bool m_checked;
+	mutable bool m_checked = false;
 #endif
 };
 
 
-template<typename Result, typename ... Args>
-inline Result make_error(Args&& ... i_args)
-{
-	return  typename Result::error_t(std::forward<Args>(i_args) ...);
-}
 template<typename Result>
 inline Result make_result()
 {
@@ -234,3 +145,5 @@ inline Result make_result(Args&& ... i_args)
 }
 
 }
+
+#include "ddk_result.inl"

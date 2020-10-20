@@ -23,9 +23,7 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-    if(execRes.hasError() == false)
+    if(const start_result execRes = m_executor->execute())
     {
         m_currState.apply(m_currAction.get());
     }
@@ -42,9 +40,7 @@ co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable, typename std::
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-    if (execRes.hasError() == false)
+    if (const start_result execRes = m_executor->execute())
     {
         m_currState.apply(m_currAction.get());
     }
@@ -82,9 +78,7 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator++()
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
     }
@@ -106,9 +100,7 @@ co_forward_iterator<T> co_forward_iterator<T>::operator++(int)
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
     }
@@ -134,7 +126,7 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator=(const co_forward_itera
 
 	const start_result execRes = m_executor->execute();
 
-	DDK_ASSERT(execRes.hasError() == false || execRes.getError() == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
+	DDK_ASSERT(execRes == success || execRes.error() == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
 
 	return *this;
 }
@@ -172,9 +164,7 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(const co_bidirectional_i
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-    if(execRes.hasError() == false)
+    if(const start_result execRes = m_executor->execute())
     {
         m_currState.apply(m_currAction.get());
     }
@@ -191,9 +181,7 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(Iterable& i_iterable, ty
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-    if (execRes.hasError() == false)
+    if (const start_result execRes = m_executor->execute())
     {
         m_currState.apply(m_currAction.get());
     }
@@ -231,9 +219,7 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator++()
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -255,9 +241,7 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator++(int)
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -277,9 +261,7 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator--()
 
     m_currAction.set(iter::go_prev_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -301,9 +283,7 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator--(int)
 
     m_currAction.set(iter::go_prev_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -329,7 +309,7 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator=(const co_b
 
 	const start_result execRes = m_executor->execute();
 
-	DDK_ASSERT(execRes.hasError() == false || execRes.getError() == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
+	DDK_ASSERT(execRes == success || execRes.error() == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
 
 	return *this;
 }
@@ -367,9 +347,7 @@ co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_i
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-    if(execRes.hasError() == false)
+    if(const start_result execRes = m_executor->execute())
     {
         m_currState.apply(m_currAction.get());
     }
@@ -386,9 +364,7 @@ co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, ty
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-    if (execRes.hasError() == false)
+    if (const start_result execRes = m_executor->execute())
     {
         m_currState.apply(m_currAction.get());
     }
@@ -426,9 +402,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++()
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -450,9 +424,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator++(int)
 
     m_currAction.set(iter::go_next_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -472,9 +444,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator--()
 
     m_currAction.set(iter::go_prev_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -496,9 +466,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator--(int)
 
     m_currAction.set(iter::go_prev_place);
 
-	const start_result execRes = m_executor->execute();
-
-	if (execRes.hasError() == false)
+	if (const start_result execRes = m_executor->execute())
 	{
         m_currState.apply(m_currAction.get());
 	}
@@ -522,9 +490,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator+(int i_shift
 	{
 		res.m_currAction.set(iter::go_shift_place(i_shift));
 
-		const start_result execRes = res.m_executor->execute();
-
-        if (execRes.hasError() == false)
+        if (const start_result execRes = res.m_executor->execute())
         {
             res.m_currState.apply(res.m_currAction.get());
         }
@@ -549,9 +515,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator[](size_t i_
 	{
         m_currAction.set(iter::go_shift_place(i_absPos - currPos));
 
-		const start_result execRes = m_executor->execute();
-
-		if (execRes.hasError() == false)
+		if (const start_result execRes = m_executor->execute())
 		{
             m_currState.apply(m_currAction.get());
 		}
@@ -578,7 +542,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator=(const co_r
 
     const start_result execRes = m_executor->execute();
 
-    DDK_ASSERT(execRes.hasError() == false || execRes == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
+    DDK_ASSERT(execRes == success || execRes == async_execute_interface<T>::AlreadyDone, "Error while executing iterator");
 
 	return *this;
 }

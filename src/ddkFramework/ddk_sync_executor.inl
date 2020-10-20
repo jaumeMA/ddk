@@ -127,11 +127,11 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
         throw async_exception{"Trying to execute empty executor"};
     }
 
-	nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
+	const nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
 
-	if(execRes.hasError() == false)
+	if(execRes == success)
 	{
-		const ExecutorState currState = execRes.getPayload();
+		const ExecutorState currState = execRes.get();
 
 		if(currState == ExecutorState::Executed)
 		{
@@ -157,7 +157,7 @@ void async_executor<Return>::bind()
 {
 	nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
 
-	DDK_ASSERT(execRes.hasError() == false, "Error while binding async executor");
+	DDK_ASSERT(execRes == success, "Error while binding async executor");
 }
 template<typename Return>
 typename async_executor<Return>::reference async_executor<Return>::get_value()
@@ -182,9 +182,9 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
         throw async_exception{"Trying to cancel from empty executor"};
     }
 
-	cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
+	const cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
 
-	if (cancelRes.hasError() == false)
+	if (cancelRes == success)
 	{
 		m_sharedState->signal();
 	}

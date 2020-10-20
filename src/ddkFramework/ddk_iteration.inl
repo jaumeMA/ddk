@@ -12,7 +12,7 @@ void execute_iteration(iteration<Traits> i_iteration)
 
 template<typename Traits>
 template<typename IterableValue>
-iteration<Traits>::iteration(const detail::iterable<Traits>& i_iterable, const function<void(IterableValue)>& i_try, const function<void(iter::IterableStateError)>& i_finally)
+iteration<Traits>::iteration(const detail::iterable<Traits>& i_iterable, const function<void(IterableValue)>& i_try, const function<void(iter::action_result)>& i_finally)
 : m_iterable(i_iterable)
 , m_try(make_function([i_try](iterable_value i_value){ eval(i_try,IterableValue(std::move(i_value))); }))
 , m_finally(i_finally)

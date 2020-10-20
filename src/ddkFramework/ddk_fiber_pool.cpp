@@ -106,7 +106,7 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 
 		fiber_secheduler_t::register_fiber_result regRes = m_fiberScheduler->register_fiber(acquiredFiber);
 
-		if(regRes.hasError() == false)
+		if(regRes == success)
 		{
 			fiberSheaf.m_fiberCtr.push_back(std::move(acquiredFiber));
 
@@ -138,7 +138,7 @@ void fiber_pool::Deallocate(const void* i_object) const
 		{
 			fiber_secheduler_t::unregister_fiber_result unregRes = m_fiberScheduler->unregister_fiber(itFiber->first);
 
-			if(unregRes.hasError() == false)
+			if(unregRes == success)
 			{
 				m_fiberCtr.push_back(itFiber->second);
 			}

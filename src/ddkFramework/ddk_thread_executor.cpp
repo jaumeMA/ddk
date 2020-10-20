@@ -45,15 +45,15 @@ size_t thread_polling_executor::get_update_time() const
 }
 void thread_polling_executor::start_thread(const ddk::function<void()>& i_executor)
 {
-	start_result startRes = execute(nullptr,i_executor);
+	const start_result startRes = execute(nullptr,i_executor);
 
-	DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
+	DDK_ASSERT(startRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.error()));
 }
 void thread_polling_executor::stop_thread()
 {
-	resume_result stopRes = resume();
+	const resume_result stopRes = resume();
 
-	DDK_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.getError()));
+	DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 }
 void thread_polling_executor::signal_thread()
 {
@@ -184,15 +184,15 @@ void thread_event_driven_executor::start_thread(const ddk::function<void()>& i_e
 		m_testFunc = [=]() { return m_pendingWork; };
 	}
 
-	start_result startRes = execute(nullptr,i_executor);
+	const start_result startRes = execute(nullptr,i_executor);
 
-	DDK_ASSERT(startRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.getError()));
+	DDK_ASSERT(startRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.error()));
 }
 void thread_event_driven_executor::stop_thread()
 {
-	resume_result stopRes = resume();
+	const resume_result stopRes = resume();
 
-	DDK_ASSERT(stopRes.hasError() == false, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.getError()));
+	DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 }
 void thread_event_driven_executor::signal_thread()
 {
@@ -243,7 +243,7 @@ thread_event_driven_executor::resume_result thread_event_driven_executor::resume
 void thread_event_driven_executor::signal()
 {
 	pthread_mutex_lock(&m_condVarMutex);
-	
+
 	m_pendingWork = true;
 
 	pthread_cond_signal(&m_condVar);

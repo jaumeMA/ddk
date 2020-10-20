@@ -68,7 +68,7 @@ class awaitable
 	{
 		typename awaitable<T,Result>::continue_result res = i_awaitable.resume();
 
-		return (res.hasError() == false) ? Result{ i_awaitable.m_executor->extract_value() } : Result{ none };
+		return (res == success) ? Result{ i_awaitable.m_executor->extract_value() } : Result{ none };
 	}
 
 public:

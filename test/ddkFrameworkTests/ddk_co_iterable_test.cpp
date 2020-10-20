@@ -67,9 +67,11 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 		iterable res1 = ddk::co_iterate(kk1);
 
 		iterator itRes1 = std::begin(res1);
+
 		for(size_t index=0;itRes1!=std::end(res1);itRes1++,++index)
 		{
 			int& res = *itRes1;
+
 			EXPECT_EQ(*itRes1, kk1[index]);
 		}
 
@@ -77,6 +79,7 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 		for(size_t index=0;itRes2!=std::end(res1);++itRes2,++index)
 		{
 			int& res = *itRes2;
+
 			EXPECT_EQ(*itRes2, kk1[index]);
 		}
 

@@ -4,6 +4,7 @@
 #include "ddk_variant.h"
 #include "ddk_any_value.h"
 #include "ddk_scoped_enum.h"
+#include "ddk_result.h"
 
 namespace ddk
 {
@@ -13,6 +14,10 @@ namespace iter
 struct erase_action
 {
 };
+SCOPED_ENUM_DECL(EraseActionError,
+                 NonExistingValue,
+                 ErasingFromConstantIterable);
+typedef ddk::result<void,EraseActionError> erase_result;
 
 struct add_action
 {
@@ -40,6 +45,10 @@ private:
 
     any_value m_value;
 };
+SCOPED_ENUM_DECL(AddActionError,
+                 NonConvertibleType,
+                 AddingToConstantIterable);
+typedef ddk::result<void,AddActionError> add_result;
 
 struct stop_action
 {
@@ -64,11 +73,14 @@ public:
 private:
     int m_shift = 0;
 };
+SCOPED_ENUM_DECL(ShiftActionError,
+                 ShiftBeyondBounds);
+typedef result<void,ShiftActionError> shift_result;
 
-SCOPED_ENUM_DECL(IterableStateError,
-                 None,
-                 InvalidDeletion,
-                 InvalidAddition);
+SCOPED_ENUM_DECL(ActionError,
+                 RemovalError,AdditionError,ShiftError);
+typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
+typedef result<void,action_error> action_result;
 
 typedef variant<stop_action,erase_action,add_action,go_forward_action> input_action;
 typedef variant<stop_action,erase_action,add_action,go_forward_action> output_action;

@@ -58,10 +58,10 @@ TEST(DDKLockFreeStackTest,singleProducerMultipleConsumer)
 		{
 			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
 			{
-				DefaultType currValue = *currValueOpt;
+				const DefaultType currValue = *currValueOpt;
 
 				EXPECT_GT(currValue,0);
-			}		
+			}
 
 			ddk::sleep(10);
 		}
@@ -88,6 +88,8 @@ TEST(DDKLockFreeStackTest,singleProducerMultipleConsumer)
 		ddk::sleep(100);
 	}
 
+	printf("closing\n");
+
 	stop = true;
 
 	for(size_t index=0;index<threadPoolSize;++index)
@@ -95,8 +97,11 @@ TEST(DDKLockFreeStackTest,singleProducerMultipleConsumer)
 		threadPool[index].stop();
 	}
 
+	printf("checking\n");
 
 	EXPECT_EQ(lockFreeStack.empty(),true);
+
+	printf("leaving\n");
 }
 TEST(DDKLockFreeStackTest,multipleProducerSingleConsumer)
 {
@@ -123,7 +128,7 @@ TEST(DDKLockFreeStackTest,multipleProducerSingleConsumer)
 				DefaultType currValue = *currValueOpt;
 
 				EXPECT_GT(currValue,0);
-			}		
+			}
 		}
 	};
 
@@ -176,7 +181,7 @@ TEST(DDKLockFreeStackTest,multipleProducerMultipleConsumer)
 				DefaultType currValue = *currValueOpt;
 
 				EXPECT_GT(currValue,0);
-			}		
+			}
 		}
 	};
 

@@ -45,8 +45,8 @@ public:
     template<typename TTraits>
     iterable(iterable<TTraits>&& other);
 
-    void iterate(const function<void(iterable_value)>& i_try, const function<void(iter::IterableStateError)>& i_finally = nullptr, const iter::iterable_state& i_initState = iter::iterable_state());
-    void iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::IterableStateError)>& i_finally = nullptr, const iter::iterable_state& i_initState = iter::iterable_state()) const;
+    void iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::iterable_state& i_initState = iter::iterable_state());
+    void iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::iterable_state& i_initState = iter::iterable_state()) const;
     bool inline forward_action(action i_action) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;
