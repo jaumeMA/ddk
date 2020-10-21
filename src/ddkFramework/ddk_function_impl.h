@@ -50,8 +50,10 @@ struct function_impl_base<Return, tuple<Types...>>
 	template<size_t ... specIndexs, size_t ... notSpecIndexs>
 	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::make_tuple<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
 	{
-        static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs,Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
 
+#ifndef _WIN32
+		static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs, Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
+#endif
         typedef types_at_indexs<mpl::sequence<notSpecIndexs...>,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> vars_tuple;
         typedef types_at_indexs<mpl::sequence<specIndexs...>,typename std::remove_const<typename std::remove_reference<Types>::type>::type ...> args_tuple;
 

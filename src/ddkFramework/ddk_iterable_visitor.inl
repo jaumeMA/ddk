@@ -87,6 +87,8 @@ Reference visit_iterator(Iterable& i_iterable, const function<Action(Reference)>
 	}
 
     suspend();
+
+	return ddk::crash_on_return<Reference>::value();
 }
 
 }

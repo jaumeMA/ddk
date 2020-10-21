@@ -368,11 +368,11 @@ typename embedded_type<TType>::ref_type variant_impl<Types...>::get()
 }
 template<typename ... Types>
 template<typename TType>
-embedded_type<TType> variant_impl<Types...>::extract()
+TType variant_impl<Types...>::extract()
 {
 	m_currentType = _numTypes;
 
-	return m_storage.template extract<TType>();
+	return m_storage.template extract<TType>().extract();
 }
 template<typename ... Types>
 template<typename TType>

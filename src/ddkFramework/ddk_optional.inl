@@ -224,7 +224,7 @@ typename embedded_type<T>::pointer_type optional<T>::get_ptr()
 template<typename T>
 T optional<T>::extract()
 {
-	return m_storage.template extract<T>();
+	return m_storage.template extract<T>().extract();
 }
 template<typename T>
 typename embedded_type<T>::cref_type optional<T>::operator*() const
