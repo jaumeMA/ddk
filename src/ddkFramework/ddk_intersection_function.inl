@@ -39,7 +39,7 @@ template<typename Callable, typename ... Callables>
 template<size_t ... Indexs, typename ... Args>
 typename intersection_function<Callable,Callables...>::callable_return_type intersection_function<Callable,Callables...>::execute(const mpl::sequence<Indexs...>&, Args&& ... i_args) const
 {
-	return { eval(m_callables.template get<Indexs>(),std::forward<Args>(i_args) ...) ... };
+	return callable_return_type{ eval(m_callables.template get<Indexs>(),std::forward<Args>(i_args) ...) ... };
 }
 
 }

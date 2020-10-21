@@ -46,6 +46,10 @@ class union_iterable_impl : public iterable_impl_interface<union_iterable_base_t
 {
     static const size_t s_num_iterables = tuple<Iterables...>::size();
     typedef iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>> base_t;
+	template<size_t Index, typename ... IIterables>
+	friend typename union_iterable_impl<IIterables...>::action navigate(union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::reference)>& i_try, const ddk::iter::iterable_state& i_initState);
+	template<size_t Index, typename ... IIterables>
+	friend typename union_iterable_impl<IIterables...>::action navigate(const union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::const_reference)>& i_try, const ddk::iter::iterable_state& i_initState);
 
 public:
     using typename base_t::reference;
@@ -68,11 +72,6 @@ private:
     inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::iterable_state& i_initState);
     template<size_t ... Indexs>
     inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const;
-
-    template<size_t Index>
-    static action navigate(tuple<Iterables...>& i_tuple, const function<action(reference)>& i_try, const iter::iterable_state& i_initState);
-    template<size_t Index>
-    static action navigate(const tuple<Iterables...>& i_tuple, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState);
 
     tuple<Iterables...> m_iterables;
 };

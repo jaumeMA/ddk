@@ -17,6 +17,10 @@ class intersection_iterable_impl : public iterable_impl_interface<intersection_i
     using typename base_t::traits;
     typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_value iterable_value;
     typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_const_value iterable_const_value;
+	template<size_t Index, typename ... IIterables>
+	friend typename mpl::nth_type_of<Index, IIterables...>::type::reference intersection_navigate(intersection_iterable_impl<IIterables...>& i_iterable, const iter::iterable_state& i_initState);
+	template<size_t Index, typename ... IIterables>
+	friend typename mpl::nth_type_of<Index, IIterables...>::type::const_reference const_intersection_navigate(const intersection_iterable_impl<IIterables...>& i_iterable, const iter::iterable_state& i_initState);
 
 public:
     using typename base_t::reference;
@@ -25,6 +29,8 @@ public:
 
     intersection_iterable_impl(const Iterables& ... i_iterables);
     intersection_iterable_impl(const tuple<Iterables...>& i_tupleIterable);
+	intersection_iterable_impl(const intersection_iterable_impl&) = default;
+	intersection_iterable_impl(intersection_iterable_impl&&) = default;
 
     const tuple<Iterables...>& get_iterables() const;
     tuple<Iterables...>& get_iterables();

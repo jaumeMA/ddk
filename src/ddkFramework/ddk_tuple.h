@@ -30,7 +30,7 @@ public:
     template<size_t IIndex, typename Arg>
     tuple_impl(const mpl::sequence<IIndex>&, Arg&& i_arg);
     template<typename Arg>
-    tuple_impl(Arg&& i_val);
+    explicit tuple_impl(Arg&& i_val);
     template<typename TType>
     tuple_impl(const tuple_impl<mpl::sequence<0>,TType>& other);
     template<typename TType>
@@ -56,12 +56,12 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
     friend class tuple_impl;
     static const size_t s_total_size = mpl::get_total_size<Type1,Type2,Types...>::value;
 
-public:
-    tuple_impl();
+public:	
+	tuple_impl();
     template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args>
     tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args);
     template<typename Arg1, typename Arg2, typename ... Args>
-    tuple_impl(Arg1&& i_arg1, Arg2&& i_arg2, Args&& ...vals);
+    explicit tuple_impl(Arg1&& i_arg1, Arg2&& i_arg2, Args&& ...vals);
     tuple_impl(const tuple_impl& other);
     tuple_impl(tuple_impl&& other);
     template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename TType1, typename TType2, typename ... TTypes>

@@ -31,6 +31,8 @@ struct MyIterable
 		}
 
         ddk::suspend();
+
+		return ddk::crash_on_return<size_t&>::value();
 	}
 
 	MyIterable(size_t i_init, size_t i_end)

@@ -27,7 +27,7 @@ typename union_function<Callable,Callables...>::callable_return_type union_funct
     typedef typename sequence_composer<0,typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type composed_sequence;
     static const composed_sequence s_composedSequence;
 
-    return { execute(m_callables.template get<Indexs>(),s_composedSequence.template get<Indexs>(),i_args) ... };
+    return callable_return_type{ execute(m_callables.template get<Indexs>(),s_composedSequence.template get<Indexs>(),i_args) ... };
 }
 template<typename Callable, typename ... Callables>
 template<typename CCallable, size_t ... Indexs, typename ... Args>

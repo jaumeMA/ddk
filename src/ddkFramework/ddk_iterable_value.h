@@ -111,7 +111,7 @@ template<typename T>
 struct const_random_accessed_value<T> : public iterable_value<detail::random_access_iterable_traits<T>>
 {
     template<typename...>
-    friend class const_random_accessed_value;
+    friend struct const_random_accessed_value;
     friend inline size_t value_position(const const_random_accessed_value& i_value)
     {
         const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
@@ -207,7 +207,7 @@ template<typename T>
 struct const_bidirectional_value<T> : public iterable_value<detail::bidirectional_iterable_traits<T>>
 {
     template<typename...>
-    friend class const_bidirectional_value;
+    friend struct const_bidirectional_value;
     friend inline size_t value_position(const const_bidirectional_value& i_value)
     {
         const iter::iterable_state currState = i_value.m_iterableInterface.get_state();
@@ -299,7 +299,7 @@ template<typename T>
 struct const_forwarded_value<T> : public iterable_value<detail::forward_iterable_traits<T>>
 {
     template<typename...>
-    friend class const_forwarded_value;
+    friend struct const_forwarded_value;
     friend inline size_t value_position(const const_forwarded_value& i_value)
     {
         const iter::iterable_state currState = i_value.m_iterableInterface.get_state();

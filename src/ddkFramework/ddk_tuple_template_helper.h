@@ -106,5 +106,14 @@ struct make_tuple<tuple<Types...>> : make_tuple<Types...>
 {
 };
 
+template<size_t,typename>
+struct nth_type_of_tuple;
+	
+template<size_t Index,typename ... Types>
+struct nth_type_of_tuple<Index,tuple<Types...>>
+{
+	typedef typename nth_type_of<Index, Types...>::type type;
+};
+
 }
 }

@@ -51,7 +51,7 @@ public:
     template<typename TType>
     typename embedded_type<TType>::ref_type get();
     template<typename TType>
-    embedded_type<TType> extract();
+    TType extract();
     template<typename TType>
     bool is() const;
     template<size_t Pos>

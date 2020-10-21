@@ -513,7 +513,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator[](size_t i_
 
 	if(i_absPos != currPos)
 	{
-        m_currAction.set(iter::go_shift_place(i_absPos - currPos));
+        m_currAction.set(iter::go_shift_place(static_cast<int>(i_absPos) - static_cast<int>(currPos)));
 
 		if (const start_result execRes = m_executor->execute())
 		{

@@ -31,7 +31,7 @@ struct _is_function<function<Return(Types...),Allocator>>
 template<typename T>
 struct is_function
 {
-    typedef typename std::remove_reference<typename std::remove_const<T>::type>::type raw_type;
+    typedef typename std::remove_const<typename std::remove_reference<T>::type>::type raw_type;
     static const bool value = _is_function<raw_type>::value;
 };
 
