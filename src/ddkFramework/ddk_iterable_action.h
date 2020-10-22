@@ -78,7 +78,10 @@ SCOPED_ENUM_DECL(ShiftActionError,
 typedef result<void,ShiftActionError> shift_result;
 
 SCOPED_ENUM_DECL(ActionError,
-                 RemovalError,AdditionError,ShiftError);
+                 RemovalError,
+                 AdditionError,
+                 ShiftError);
+
 typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
 typedef result<void,action_error> action_result;
 

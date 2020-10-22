@@ -12,9 +12,11 @@ void iterable_state::apply(const Action& i_action)
     m_currPos = i_action.visit(actionVisitor);
 }
 template<typename Result>
-Result iterable_state::forward_result_as() const
+Result iterable_state::forward_result_as()
 {
-    if(action_result currRes = m_actionState->extract_result())
+    const action_result currRes = m_actionState->extract();
+
+    if(currRes != success)
     {
         return success;
     }

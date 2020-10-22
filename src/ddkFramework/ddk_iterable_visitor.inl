@@ -12,9 +12,10 @@ namespace detail
 {
 
 template<typename Iterable>
-action_visitor<Iterable,input_action>::action_visitor(Iterable& i_iterable, iterable_iterator<Iterable> i_currIterator)
+action_visitor<Iterable,input_action>::action_visitor(Iterable& i_iterable, iterable_iterator<Iterable> i_currIterator, const iter::iterable_state& i_iterableState)
 : m_iterable(i_iterable)
 , m_currIterator(i_currIterator)
+, m_iterableState(i_iterableState)
 {
 }
 template<typename Iterable>
@@ -29,8 +30,12 @@ iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const e
     {
         return m_iterable.erase(m_currIterator);
     }
+    else
+    {
+        m_iterableState.forward_result(make_error<action_result>(iter::ActionError::RemovalError,EraseActionError::ErasingFromConstantIterable));
 
-    throw iterable_operation_forbidden{"You cannot erase elements from const iterable"};
+        return m_currIterator;
+    }
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const add_action& i_action)
@@ -41,23 +46,27 @@ iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const a
 
         return m_iterable.insert(m_currIterator,i_action.template get<value_type>());
     }
+    else
+    {
+        m_iterableState.forward_result(make_error<action_result>(iter::ActionError::AdditionError,AddActionError::AddingToConstantIterable));
 
-    throw iterable_operation_forbidden{"You cannot add elements into const iterable"};
+        return m_currIterator;
+    }
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const go_forward_action&)
 {
-    return ++m_currIterator;
+    return std::next(this->m_currIterator,this->m_iterableState.distance_to_next());
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,bidirectional_action>::visit(const go_backward_action&)
 {
-    return --(this->m_currIterator);
+    return std::next(this->m_currIterator,this->m_iterableState.distance_to_prev());
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,random_access_action>::visit(const shift_action& i_action)
 {
-    return (this->m_currIterator += i_action.shifted());
+    return std::next(this->m_currIterator,this->m_iterableState.distance_to_next(i_action.shifted()));
 }
 
 }
@@ -75,7 +84,7 @@ Reference visit_iterator(Iterable& i_iterable, const function<Action(Reference)>
 
 	if(itNext != std::end(i_iterable))
 	{
-        detail::action_visitor<Iterable,Action> actionVisitor(i_iterable,itNext);
+        detail::action_visitor<Iterable,Action> actionVisitor(i_iterable,itNext,i_initState);
 
 		do
 		{

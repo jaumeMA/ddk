@@ -21,7 +21,7 @@ template<typename Iterable>
 struct action_visitor<Iterable,input_action> : public static_visitor<iterable_iterator<Iterable>>
 {
 public:
-    action_visitor(Iterable& i_iterable, iterable_iterator<Iterable> i_currIterator);
+    action_visitor(Iterable& i_iterable, iterable_iterator<Iterable> i_currIterator, const iter::iterable_state& i_iterableState);
 
     iterable_iterator<Iterable> visit(const stop_action&);
     iterable_iterator<Iterable> visit(const erase_action&);
@@ -31,6 +31,7 @@ public:
 protected:
     Iterable& m_iterable;
     iterable_iterator<Iterable> m_currIterator;
+    iter::iterable_state m_iterableState;
 };
 
 template<typename Iterable>
