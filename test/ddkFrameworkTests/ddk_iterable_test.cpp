@@ -53,9 +53,9 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
     ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 
-    ddk::const_random_access_iterable<const int> transformedFoo = ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
+    ddk::const_random_access_iterable<const int> transformedFoo = ddk::view::transform([](int i_value) { return 2 * i_value; }) <<= fooIterable;
 
-    ddk::make_function([](ddk::const_bidirectional_value<const int> i_value){ printf("current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<=  ddk::make_function([](int i_value) { return 2 * i_value; }) <<= fooIterable;
+	ddk::make_function([](ddk::const_bidirectional_value<const int> i_value) { printf("current value: %d at %zd\n", *i_value, value_position(i_value)); }) <<= ddk::view::order(ddk::iter::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value % 4 == 0; }) <<= ddk::view::transform([](int i_value) { return 2 * i_value; }) <<= fooIterable;
 }
 TEST(DDKIterableTest, iterableUnion)
 {

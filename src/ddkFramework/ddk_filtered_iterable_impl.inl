@@ -4,6 +4,17 @@ namespace ddk
 namespace detail
 {
 
+template<typename Function>
+iterable_filter<Function>::iterable_filter(const Function& i_filter)
+: m_filter(i_filter)
+{
+}
+template<typename Function>
+Function iterable_filter<Function>::get_filter() const
+{
+	return m_filter;
+}
+
 template<typename Traits>
 filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<bool(reference)>& i_filter)
 : m_iterableRef(i_iterableRef)

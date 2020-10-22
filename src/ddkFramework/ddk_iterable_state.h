@@ -27,32 +27,6 @@ private:
 
 typedef shared_reference_wrapper<action_state> action_state_shared_ref;
 
-//pointer component
-struct iterable_pointer_interface
-{
-public:
-    typedef int distance;
-
-    virtual ~iterable_pointer_interface() = default;
-
-    virtual distance distance_to_next(int i_next) const = 0;
-    virtual distance distance_to_prev(int i_next) const = 0;
-};
-
-typedef shared_reference_wrapper<iterable_pointer_interface> iterable_pointer_shared_ref;
-
-struct defaul_iterable_pointer : public iterable_pointer_interface
-{
-public:
-    defaul_iterable_pointer(bool i_forward);
-
-private:
-    distance distance_to_next(int i_next) const override;
-    distance distance_to_prev(int i_next) const override;
-
-    bool m_forward;
-};
-
 }
 
 struct iterable_state
@@ -60,7 +34,7 @@ struct iterable_state
 public:
     static const size_t npos;
 
-    iterable_state(size_t i_initPos = npos, bool i_forward = true);
+    iterable_state(size_t i_initPos = npos);
     iterable_state(const iterable_state&) = default;
 
     template<typename Action>
@@ -73,13 +47,10 @@ public:
     action_result forward_result();
     template<typename Result>
     Result forward_result_as();
-    int distance_to_next(int i_next = 1) const;
-    int distance_to_prev(int i_next = 1) const;
 
 private:
     size_t m_currPos;
     detail::action_state_shared_ref m_actionState;
-    detail::iterable_pointer_shared_ref m_iterablePointer;
 };
 
 namespace detail

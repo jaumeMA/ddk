@@ -8,6 +8,18 @@ namespace ddk
 namespace detail
 {
 
+template<typename Function>
+class iterable_transform
+{
+public:
+	iterable_transform(const Function& i_transform);
+
+	Function get_transform() const;
+
+private:
+	const Function m_transform;
+};
+
 template<typename PublicTraits, typename PrivateTraits, typename Return, typename Type>
 class transformed_iterable_impl : public iterable_impl_interface<typename PublicTraits::iterable_base_traits>
 {

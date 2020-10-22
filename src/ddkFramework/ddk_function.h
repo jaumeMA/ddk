@@ -70,7 +70,9 @@ class function<Return(),Allocator>
     friend inline RReturn eval(const function<RReturn(),AAllocator>&, const function_arguments<>&);
 
 public:
-    function() = default;
+	typedef Return return_type;
+	
+	function() = default;
     function(std::nullptr_t);
     function(const function& other) = default;
     function(function&& other) = default;
@@ -115,7 +117,9 @@ class function<Return(Types...),Allocator>
     friend inline RReturn eval(const function<RReturn(TTypes...),AAllocator>& i_function, const function_arguments<Args...>& i_args);
 
 public:
-    function() = default;
+	typedef Return return_type;
+	
+	function() = default;
     function(std::nullptr_t);
     function(const function& other) = default;
     function(function&& other) = default;

@@ -8,6 +8,21 @@ namespace ddk
 namespace detail
 {
 
+template<typename Function>
+class iterable_filter
+{
+	static_assert(std::is_same<typename Function::return_type,bool>::value, "You shall provide a boolen function");
+
+public:
+	iterable_filter(const Function& i_filter);
+
+	Function get_filter() const;
+
+private:
+	const Function m_filter;
+};
+
+
 template<typename Traits>
 class filtered_iterable_impl : public iterable_impl_interface<typename Traits::iterable_base_traits>
 {

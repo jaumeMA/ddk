@@ -1,7 +1,6 @@
 
+#include "ddk_iterable.h"
 #include "ddk_iterable_impl.h"
-#include "ddk_transformed_iterable_impl.h"
-#include "ddk_filtered_iterable_impl.h"
 #include "ddk_union_iterable_impl.h"
 #include "ddk_intersection_iterable_impl.h"
 #include "ddk_async.h"
@@ -19,15 +18,20 @@ Iterable make_iterable(IIterable&& i_iterable)
 
 }
 
-template<typename Return, typename Type, template<typename> typename Traits, typename IterableValue>
-ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>> operator<<=(const ddk::function<Return(Type)>& i_lhs, const ddk::detail::iterable<Traits<IterableValue>>& i_rhs)
+template<typename Return, typename Type, typename Allocator, template<typename> typename Traits, typename IterableValue>
+ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::iterable<Traits<IterableValue>>& i_rhs)
 {
-    return ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<Traits<Return>>,Traits<IterableValue>,Return,Type>>(share(i_rhs),i_lhs));
+    return ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<Traits<Return>>,Traits<IterableValue>,Return,Type>>(share(i_rhs),i_lhs.get_transform()));
 }
-template<typename ... Types, typename Allocator, typename Traits>
-ddk::detail::iterable<Traits> operator<<=(const ddk::filter_function<bool(Types...),Allocator>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
+template<typename Type, typename Allocator, typename Traits>
+ddk::detail::iterable<Traits> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
 {
-    return ddk::detail::iterable<Traits>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<Traits>>(share(i_rhs),i_lhs));
+    return ddk::detail::iterable<Traits>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<Traits>>(share(i_rhs),i_lhs.get_filter()));
+}
+template<typename T, typename Traits>
+ddk::detail::iterable<Traits> operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
+{
+	return ddk::detail::iterable<Traits>(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,Traits>>(share(i_rhs), i_lhs.get_order()));
 }
 template<typename IterableValue, typename Allocator, typename Traits>
 ddk::iteration<Traits> operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::iterable<Traits>& i_rhs)
@@ -40,19 +44,27 @@ ddk::iteration<Traits> operator<<=(const ddk::function<void(IterableValue),Alloc
     return ddk::iteration<Traits>(i_rhs,i_lhs);
 }
 template<typename Return, typename Type, typename Allocator, typename ... Iterables>
-ddk::detail::iterable<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::function<Return(Type),Allocator>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
+ddk::detail::iterable<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
 {
     typedef typename ddk::detail::union_iterable<Iterables...>::related_iterable::traits nested_traits;
 
-    return ddk::detail::iterable<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>,nested_traits,Return,Type>>(share(i_rhs),as_iterable(i_lhs)));
+    return ddk::detail::iterable<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>,nested_traits,Return,Type>>(share(as_iterable(i_rhs)),i_lhs.get_transform()));
 }
-template<typename ... Types, typename Allocator, typename ... Iterables>
-typename ddk::detail::union_iterable<Iterables...>::related_iterable operator<<=(const ddk::filter_function<bool(Types...),Allocator>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
+template<typename Type, typename Allocator, typename ... Iterables>
+typename ddk::detail::union_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
 {
     typedef typename ddk::detail::union_iterable<Iterables...>::related_iterable related_iterable;
     typedef typename related_iterable::traits nested_traits;
 
-    return related_iterable(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<nested_traits>>(share(i_rhs),as_iterable(i_lhs)));
+    return related_iterable(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<nested_traits>>(share(as_iterable(i_rhs)),i_lhs.get_filter()));
+}
+template<typename T, typename ... Iterables>
+typename ddk::detail::union_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
+{
+	typedef typename ddk::detail::union_iterable<Iterables...>::related_iterable related_iterable;
+	typedef typename related_iterable::traits nested_traits;
+
+	return related_iterable(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,nested_traits>>(share(as_iterable(i_rhs)), i_lhs.get_order()));
 }
 template<typename IterableValue, typename Allocator, typename ... Iterables>
 ddk::iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits> operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::union_iterable<Iterables...>& i_rhs)
@@ -69,19 +81,27 @@ ddk::iteration<typename ddk::detail::union_iterable<Iterables...>::related_trait
     return ddk::iteration<nested_traits>(as_iterable(i_rhs),i_lhs,nullptr);
 }
 template<typename Return, typename Type, typename Allocator, typename ... Iterables>
-ddk::detail::iterable<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::function<Return(Type),Allocator>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
+ddk::detail::iterable<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
 {
     typedef typename ddk::detail::intersection_iterable<Iterables...>::related_iterable::traits nested_traits;
 
-    return ddk::detail::iterable<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>,nested_traits,Return,Type>>(share(i_rhs),as_iterable(i_lhs)));
+    return ddk::detail::iterable<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>,nested_traits,Return,Type>>(share(as_iterable(i_rhs)),i_lhs.get_transform()));
 }
-template<typename ... Types, typename Allocator, typename ... Iterables>
-typename ddk::detail::intersection_iterable<Iterables...>::related_iterable operator<<=(const ddk::filter_function<bool(Types...),Allocator>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
+template<typename Type, typename Allocator, typename ... Iterables>
+typename ddk::detail::intersection_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
 {
     typedef typename ddk::detail::intersection_iterable<Iterables...>::related_iterable related_iterable;
     typedef typename related_iterable::traits nested_traits;
 
-    return related_iterable(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<nested_traits>>(share(i_rhs),as_iterable(i_lhs)));
+    return related_iterable(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<nested_traits>>(share(as_iterable(i_rhs)),i_lhs.get_filter()));
+}
+template<typename T, typename ... Iterables>
+typename ddk::detail::intersection_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
+{
+	typedef typename ddk::detail::intersection_iterable<Iterables...>::related_iterable related_iterable;
+	typedef typename related_iterable::traits nested_traits;
+
+	return related_iterable(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,nested_traits>>(share(as_iterable(i_rhs)), i_lhs.get_order()));
 }
 template<typename IterableValue, typename Allocator, typename ... Iterables>
 ddk::iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits> operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::intersection_iterable<Iterables...>& i_rhs)

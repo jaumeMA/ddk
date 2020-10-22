@@ -56,17 +56,17 @@ iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const a
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const go_forward_action&)
 {
-    return std::next(this->m_currIterator,this->m_iterableState.distance_to_next());
+    return ++(this->m_currIterator);
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,bidirectional_action>::visit(const go_backward_action&)
 {
-    return std::next(this->m_currIterator,this->m_iterableState.distance_to_prev());
+    return --(this->m_currIterator);
 }
 template<typename Iterable>
 iterable_iterator<Iterable> action_visitor<Iterable,random_access_action>::visit(const shift_action& i_action)
 {
-    return std::next(this->m_currIterator,this->m_iterableState.distance_to_next(i_action.shifted()));
+    return (this->m_currIterator + i_action.shifted());
 }
 
 }
