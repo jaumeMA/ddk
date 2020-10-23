@@ -79,7 +79,9 @@ Error result<void,Error>::error() const
 template<typename Error>
 void result<void,Error>::clear()
 {
-    m_nestedRes.clear();
+	SET_CHECK_RESULT(true)
+		
+	m_nestedRes = none;
 }
 template<typename Error>
 result<void,Error>::operator bool() const

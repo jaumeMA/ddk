@@ -5,6 +5,15 @@ namespace ddk
 namespace iter
 {
 
+displacement_action::displacement_action(size_t i_currDisplacement)
+: m_currDisplacement(i_currDisplacement)
+{
+}
+size_t displacement_action::get_displacement() const
+{
+	return m_currDisplacement;
+}
+
 int shift_action::shifted() const
 {
     return m_shift;
@@ -43,6 +52,7 @@ bool operator!=(const random_access_action& i_lhs, const random_access_action& i
     return i_lhs.which() != i_rhs.which();
 }
 
+const iter::filter_action filter_iteration = iter::filter_action();
 const iter::stop_action stop_iteration = iter::stop_action();
 const iter::erase_action erase_value = iter::erase_action();
 const iter::add_action add_value = iter::add_action();

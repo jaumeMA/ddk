@@ -11,20 +11,36 @@ namespace iter
 namespace detail
 {
 
-template<typename Iterable>
-action_visitor<Iterable,input_action>::action_visitor(Iterable& i_iterable, iterable_iterator<Iterable> i_currIterator, const iter::iterable_state& i_iterableState)
+template<typename Iterable, typename Action>
+action_visitor_base<Iterable,Action>::action_visitor_base(Iterable& i_iterable, iterable_iterator<Iterable> i_currIterator, const iter::iterable_state& i_iterableState)
 : m_iterable(i_iterable)
 , m_currIterator(i_currIterator)
 , m_iterableState(i_iterableState)
 {
 }
-template<typename Iterable>
-iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const stop_action&)
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,input_action,AAction>::visit(const filter_action&)
+{
+	if (m_lastAction.template is<add_action>())
+	{
+		m_iterableState.forward_result(make_error<action_result>(iter::ActionError::AdditionError, AddActionError::AddedItemFiltered));
+
+		return m_currIterator;
+	}
+	else if(m_lastAction.empty() == false)
+	{
+		//reapply last action
+
+		return reapply_action(m_lastAction);
+	}
+}
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable, input_action, AAction>::visit(const stop_action&)
 {
     return std::end(m_iterable);
 }
-template<typename Iterable>
-iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const erase_action&)
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable, input_action, AAction>::visit(const erase_action&)
 {
     if constexpr (std::is_const<Iterable>::value == false)
     {
@@ -37,14 +53,16 @@ iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const e
         return m_currIterator;
     }
 }
-template<typename Iterable>
-iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const add_action& i_action)
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,input_action,AAction>::visit(const add_action& i_action)
 {
     if constexpr (std::is_const<Iterable>::value == false)
     {
         typedef typename Iterable::value_type value_type;
 
-        return m_iterable.insert(m_currIterator,i_action.template get<value_type>());
+		m_lastAction = i_action;
+		
+		return m_iterable.insert(m_currIterator,i_action.template get<value_type>());
     }
     else
     {
@@ -53,20 +71,41 @@ iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const a
         return m_currIterator;
     }
 }
-template<typename Iterable>
-iterable_iterator<Iterable> action_visitor<Iterable,input_action>::visit(const go_forward_action&)
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,input_action,AAction>::visit(const go_forward_action& i_action)
 {
+	m_lastAction = i_action;
+
     return ++(this->m_currIterator);
 }
-template<typename Iterable>
-iterable_iterator<Iterable> action_visitor<Iterable,bidirectional_action>::visit(const go_backward_action&)
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,input_action,AAction>::reapply_action(const input_action& i_action)
 {
-    return --(this->m_currIterator);
+	return i_action.visit(*this);
 }
-template<typename Iterable>
-iterable_iterator<Iterable> action_visitor<Iterable,random_access_action>::visit(const shift_action& i_action)
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,bidirectional_action,AAction>::visit(const go_backward_action& i_action)
 {
-    return (this->m_currIterator + i_action.shifted());
+	m_lastAction = i_action;
+	
+	return --(this->m_currIterator);
+}
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,bidirectional_action,AAction>::reapply_action(const bidirectional_action& i_action)
+{
+	return i_action.visit(*this);
+}
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,random_access_action,AAction>::visit(const shift_action& i_action)
+{
+	m_lastAction = i_action;
+	
+	return (this->m_currIterator + i_action.shifted());
+}
+template<typename Iterable, typename AAction>
+iterable_iterator<Iterable> action_visitor<Iterable,random_access_action,AAction>::reapply_action(const random_access_action& i_action)
+{
+	return i_action.visit(*this);
 }
 
 }

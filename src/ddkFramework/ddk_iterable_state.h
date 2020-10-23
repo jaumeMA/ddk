@@ -15,6 +15,7 @@ class action_state
 {
 public:
     action_state() = default;
+	~action_state();
 
     void set(action_result i_result);
     action_result get() const;
@@ -66,7 +67,11 @@ public:
     state_visitor(size_t i_currPos)
     : m_currPos(i_currPos)
     {}
-    size_t visit(const stop_action&)
+	size_t visit(const filter_action&)
+	{
+		return m_currPos;
+	}
+	size_t visit(const stop_action&)
     {
         return m_currPos;
     }

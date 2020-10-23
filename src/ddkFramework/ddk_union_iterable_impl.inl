@@ -44,6 +44,13 @@ union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::union_iterab
 {
 }
 template<size_t ... Indexs, typename ... Iterables>
+std::pair<size_t, size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>, Iterables...>::visit(const iter::filter_action& i_action) const
+{
+	//what in earth
+
+	return crash_on_return<std::pair<size_t, size_t>>::value();
+}
+template<size_t ... Indexs, typename ... Iterables>
 std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::stop_action& i_action) const
 {
     suspend();

@@ -11,6 +11,10 @@ namespace ddk
 namespace iter
 {
 
+struct filter_action
+{
+};
+
 struct erase_action
 {
 };
@@ -46,26 +50,40 @@ private:
     any_value m_value;
 };
 SCOPED_ENUM_DECL(AddActionError,
-                 NonConvertibleType,
-                 AddingToConstantIterable);
+                NonConvertibleType,
+				AddingToConstantIterable,
+				AddedItemFiltered);
 typedef ddk::result<void,AddActionError> add_result;
 
 struct stop_action
 {
 };
 
-struct go_forward_action
-{
-};
-
-struct go_backward_action
-{
-};
-
-struct shift_action
+struct displacement_action
 {
 public:
-    shift_action() = default;
+	displacement_action(size_t i_currDisplacement = 0);
+
+	size_t get_displacement() const;
+
+private:
+	size_t m_currDisplacement;
+};
+
+struct go_forward_action : displacement_action
+{
+	using displacement_action::displacement_action;
+};
+
+struct go_backward_action : displacement_action
+{
+	using displacement_action::displacement_action;
+};
+
+struct shift_action : displacement_action
+{
+public:
+	using displacement_action::displacement_action;
 
     int shifted() const;
     shift_action operator()(int i_shift) const;
@@ -85,11 +103,11 @@ SCOPED_ENUM_DECL(ActionError,
 typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
 typedef result<void,action_error> action_result;
 
-typedef variant<stop_action,erase_action,add_action,go_forward_action> input_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action> output_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action> forward_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
+typedef variant<filter_action,stop_action,erase_action,add_action,go_forward_action> input_action;
+typedef variant<filter_action,stop_action,erase_action,add_action,go_forward_action> output_action;
+typedef variant<filter_action,stop_action,erase_action,add_action,go_forward_action> forward_action;
+typedef variant<filter_action,stop_action,erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
+typedef variant<filter_action,stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
 
 bool operator==(const forward_action& i_lhs, const forward_action& i_rhs);
 bool operator==(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs);
@@ -98,6 +116,7 @@ bool operator!=(const forward_action& i_lhs, const forward_action& i_rhs);
 bool operator!=(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs);
 bool operator!=(const random_access_action& i_lhs, const random_access_action& i_rhs);
 
+const extern iter::filter_action filter_iteration;
 const extern iter::stop_action stop_iteration;
 const extern iter::erase_action erase_value;
 const extern iter::add_action add_value;

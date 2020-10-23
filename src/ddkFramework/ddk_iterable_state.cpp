@@ -8,6 +8,10 @@ namespace iter
 namespace detail
 {
 
+action_state::~action_state()
+{
+	m_actionResult.clear();
+}
 void action_state::set(action_result i_result)
 {
     m_actionResult = i_result;

@@ -22,7 +22,8 @@ struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : publ
 public:
     union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
 
-    std::pair<size_t,size_t> visit(const iter::stop_action& i_action) const;
+	std::pair<size_t, size_t> visit(const iter::filter_action& i_action) const;
+	std::pair<size_t,size_t> visit(const iter::stop_action& i_action) const;
     std::pair<size_t,size_t> visit(const iter::erase_action& i_action) const;
     std::pair<size_t,size_t> visit(const iter::add_action& i_action) const;
     std::pair<size_t,size_t> visit(const iter::go_forward_action& i_action) const;
