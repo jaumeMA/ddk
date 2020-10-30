@@ -385,6 +385,38 @@ bool variant_impl<Types...>::is() const
 	return m_currentType == isPos;
 }
 template<typename ... Types>
+template<typename TType>
+typename embedded_type<TType>::cref_type variant_impl<Types...>::get_as() const
+{
+	typedef typename std::add_const<TType>::type ret_type;
+
+	const val_retriever_visitor<ret_type,Types...> getter;
+
+	CREATE_INNER_VISITOR(getter,Types);
+
+	return CALL_INNER_VISITOR(getter,*this);
+}
+template<typename ... Types>
+template<typename TType>
+typename embedded_type<TType>::ref_type variant_impl<Types...>::get_as()
+{
+	val_retriever_visitor<TType,Types...> getter;
+
+	CREATE_INNER_VISITOR(getter,Types);
+
+	return CALL_INNER_VISITOR(getter,*this);
+}
+template<typename ... Types>
+template<typename TType>
+bool variant_impl<Types...>::is_base_of() const
+{
+	const is_base_of_visitor<TType,Types...> isBaseOf;
+
+	CREATE_INNER_VISITOR(isBaseOf,Types);
+
+	return CALL_INNER_VISITOR(isBaseOf,*this);
+}
+template<typename ... Types>
 template<size_t Pos>
 typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type variant_impl<Types...>::get() const
 {

@@ -19,8 +19,8 @@ public:
     iterable_impl(Iterable& i_iterable);
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const override;
     size_t size() const override;
     bool empty() const override;
 

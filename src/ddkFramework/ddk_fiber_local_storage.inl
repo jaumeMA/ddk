@@ -7,15 +7,7 @@ namespace ddk
 template<typename T>
 bool fiber_local_storage<T>::empty(const fiber_id& i_id) const
 {
-	typename std::unordered_map<fiber_id,T>::const_iterator itFiber = m_fiberStorage.find(i_id);
-	if(itFiber != m_fiberStorage.end())
-	{
-		return itFiber->second.empty();
-	}
-	else
-	{
-		return true;
-	}
+	return m_fiberStorage.find(i_id) == m_fiberStorage.end();
 }
 template<typename T>
 template<typename ... Args>
@@ -83,6 +75,25 @@ T& fiber_local_storage<T>::get(const fiber_id& i_id)
 	else
 	{
 		return crash_on_return<T&>::value();
+	}
+}
+template<typename T>
+T fiber_local_storage<T>::extract(const fiber_id& i_id)
+{
+	typedef typename std::unordered_map<fiber_id,T>::iterator iterator;
+
+	iterator itFiber = m_fiberStorage.find(i_id);
+	if(itFiber != m_fiberStorage.end())
+	{
+		T res = std::move(itFiber->second);
+
+		m_fiberStorage.erase(itFiber);
+
+		return std::move(res);
+	}
+	else
+	{
+		return crash_on_return<T>::value();
 	}
 }
 template<typename T>

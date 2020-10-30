@@ -35,9 +35,9 @@ iterable<Traits>::iterable(iterable<TTraits>&& other)
 {
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::iterable_state& i_initState)
+void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
 {
-    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initState));
+    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction));
 
     while(true)
     {
@@ -68,12 +68,12 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
     }
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::iterable_state& i_initState) const
+void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction) const
 {
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
     static func_ptr privateIteratorFunc = &iterable<Traits>::private_iterate;
 
-    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initState));
+    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction));
 
     while(true)
     {
@@ -136,20 +136,48 @@ const iter::iterable_state& iterable<Traits>::get_state() const
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
 {
-    m_iterableValueContainer.template construct<reference>(i_value);
+	iter::action_result actionResult = m_iterableState.forward_result();
 
-    ddk::yield();
+	if(actionResult != iter::ActionError::ShiftError && m_currAction.is_base_of<iter::shift_action>())
+	{
+		const iter::any_action currAction = actionResult.extract();
 
-    return m_currAction;
+		//in case of shift action consolidate it against result
+		const iter::consolidate_visitor consolidateVisitor(currAction.get_as<iter::shift_action>());
+
+		if(m_currAction.visit(consolidateVisitor))
+		{
+			//if consolidation has been completed just pass to the another context
+			m_iterableValueContainer.template construct<const_reference>(i_value);
+
+			ddk::yield();
+		}
+	}
+
+	return m_currAction;
 }
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(const_reference i_value) const
 {
-    m_iterableValueContainer.template construct<const_reference>(i_value);
+	iter::action_result actionResult = m_iterableState.forward_result();
 
-    ddk::yield();
+	if(actionResult != iter::ActionError::ShiftError && m_currAction.is_base_of<iter::shift_action>())
+	{
+		const iter::any_action currAction = actionResult.extract();
 
-    return m_currAction;
+		//in case of shift action consolidate it against result
+		const iter::consolidate_visitor consolidateVisitor(currAction.get_as<iter::shift_action>());
+
+		if(m_currAction.visit(consolidateVisitor))
+		{
+			//if consolidation has been completed just pass to the another context
+			m_iterableValueContainer.template construct<const_reference>(i_value);
+
+			ddk::yield();
+		}
+	}
+
+	return m_currAction;
 }
 template<typename Traits>
 typename iterable<Traits>::reference iterable<Traits>::resolve_action(const action& i_action)

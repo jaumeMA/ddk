@@ -88,11 +88,11 @@ struct random_accessed_value<T> : public iterable_value<detail::random_access_it
 		
 		return { eval(i_value.m_resolver,iter::go_backward_action(currState.position())),i_value.m_resolver };
     }
-    friend inline random_accessed_value shift_value(random_accessed_value i_value)
+    friend inline random_accessed_value shift_value(random_accessed_value i_value, int i_shift)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
 		
-		return { eval(i_value.m_resolver,iter::shift_action(currState.position())),i_value.m_resolver };
+		return { eval(i_value.m_resolver,iter::shift_action(currState.position(),i_shift)),i_value.m_resolver };
     }
 
 public:
@@ -136,11 +136,11 @@ struct const_random_accessed_value<T> : public iterable_value<detail::random_acc
 		
 		return { eval(i_value.m_resolver,iter::go_backward_action(currState.position())),i_value.m_resolver };
     }
-    friend inline const_random_accessed_value shift_value(const_random_accessed_value i_value)
+    friend inline const_random_accessed_value shift_value(const_random_accessed_value i_value, int i_shift)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
 		
-		return { eval(i_value.m_resolver,iter::shift_action(currState.position())),i_value.m_resolver };
+		return { eval(i_value.m_resolver,iter::shift_action(currState.position(),i_shift)),i_value.m_resolver };
     }
 
 public:

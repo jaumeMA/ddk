@@ -11,16 +11,20 @@ class error_impl;
 template<typename Error>
 class error_impl<Error>
 {
+	ASSERT_CONTAINS_SYMBOL(Error,scoped_enum_tag,"Your error type shall be a scoped enum");
+
 public:
     error_impl(const Error& i_errorCode);
-    error_impl(const Error& i_errorCode, const std::string& i_errorDesc);
-    error_impl(const error_impl&) = default;
+	error_impl(const typename Error::__val__& i_errorCode);
+	error_impl(const Error& i_errorCode, const std::string& i_errorDesc);
+	error_impl(const typename Error::__val__& i_errorCode,const std::string& i_errorDesc);
+	error_impl(const error_impl&) = default;
     error_impl& operator=(const error_impl&) = default;
     Error get_code() const;
     std::string get_description() const;
-    bool operator==(const Error& i_error) const;
-    bool operator!=(const Error& i_error) const;
-
+	bool operator==(const error_impl<Error>& i_error) const;
+	bool operator!=(const error_impl<Error>& i_error) const;
+	
 private:
     Error m_errorCode;
     std::string m_errorDesc;
@@ -30,7 +34,11 @@ template<typename Error, typename ... NestedErrors>
 class error_impl : public error_impl<Error>
 {
 public:
-    error_impl(const error_impl&) = default;
+	using error_impl<Error>::error_impl;
+	using error_impl<Error>::operator==;
+	using error_impl<Error>::operator!=;
+
+	error_impl(const error_impl&) = default;
     error_impl& operator=(const error_impl&) = default;
     template<typename NestedError>
     error_impl(const Error& i_errorCode, NestedError&& i_nestedError);
@@ -51,9 +59,14 @@ template<typename Error, typename ... NestedErrors>
 class error : public detail::error_impl<Error,NestedErrors...>
 {
 public:
-    using detail::error_impl<Error,NestedErrors...>::error_impl;
-    error(const error&) = default;
+	typedef Error error_code;
+	using detail::error_impl<Error,NestedErrors...>::error_impl;
+	using detail::error_impl<Error,NestedErrors...>::operator==;
+	using detail::error_impl<Error,NestedErrors...>::operator!=;
+
+	error(const error&) = default;
     error& operator=(const error&) = default;
+
 };
 
 template<typename Result, typename ... Args>

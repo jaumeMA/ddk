@@ -11,14 +11,14 @@ transformed_iterable_action_impl<PublicTraits,PrivateTraits>::transformed_iterab
 {
 }
 template<typename PublicTraits, typename PrivateTraits>
-void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
+void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction)
 {
-    m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initState);
+    m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initialAction);
 }
 template<typename PublicTraits, typename PrivateTraits>
-void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
+void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
 {
-    m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initState);
+    m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initialAction);
 }
 template<typename PublicTraits, typename PrivateTraits>
 size_t transformed_iterable_action_impl<PublicTraits,PrivateTraits>::size() const

@@ -35,6 +35,17 @@ this_fiber_t::this_fiber_t()
 	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
 	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
 }
+this_fiber_t::this_fiber_t(const this_fiber_t& other)
+: m_stackAllocImpl(other.m_stackAllocImpl)
+,m_numMaxPages(other.m_numMaxPages)
+{
+	//recover cpu context
+	ddk::get_context(&m_context);
+
+	//recover stack shape
+	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
+	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
+}
 this_fiber_t::this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages)
 : m_stackAllocImpl(i_stackAlloc)
 , m_numMaxPages(i_maxNumPages)

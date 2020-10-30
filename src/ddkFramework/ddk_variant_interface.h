@@ -28,7 +28,8 @@ public:
     using variant_base_t::extract;
     using variant_base_t::empty;
     using variant_base_t::is;
-    using variant_base_t::which;
+	using variant_base_t::is_base_of;
+	using variant_base_t::which;
     using variant_base_t::reset;
     using variant_base_t::swap;
     using variant_base_t::visit;
@@ -54,7 +55,8 @@ public:
     using Variant::extract;
     using Variant::empty;
     using Variant::is;
-    using Variant::which;
+	using Variant::is_base_of;
+	using Variant::which;
     using Variant::reset;
     using Variant::swap;
     using Variant::visit;
@@ -77,7 +79,8 @@ public:
     using variant_base_t::extract;
     using variant_base_t::empty;
     using variant_base_t::is;
-    using variant_base_t::which;
+	using variant_base_t::is_base_of;
+	using variant_base_t::which;
     using variant_base_t::reset;
     using variant_base_t::swap;
     using variant_base_t::visit;

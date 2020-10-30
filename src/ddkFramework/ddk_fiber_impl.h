@@ -18,6 +18,7 @@ struct this_fiber_t
 {
 public:
 	this_fiber_t();
+	this_fiber_t(const this_fiber_t& other);
 	this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages);
 
 	ucontext_t* get_context();

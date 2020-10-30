@@ -20,18 +20,6 @@ struct is_co_iterator \
 	static const bool value = false; \
 };
 
-#define ITERATOR_CATEGORY(_ITERABLE,_CATEGORY) \
-namespace std \
-{ \
- \
-template<> \
-struct iterator_traits<_ITERABLE> \
-{ \
-	typedef _CATEGORY iterator_category; \
-}; \
- \
-}
-
 namespace ddk
 {
 
@@ -67,7 +55,7 @@ private:
     iter::forward_action acquire_iterable_value(reference i_value);
 
 	async_execute_shared_ptr<T> m_executor;
-	ddk::function<reference(const iter::iterable_state&, const function<iter::forward_action(reference)>&)> m_function;
+	ddk::function<reference(const iter::shift_action&, const function<iter::forward_action(reference)>&)> m_function;
     iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
     threadlocal<iter::forward_action,co_forward_iterator<T>> m_currAction;
@@ -107,7 +95,7 @@ private:
     iter::bidirectional_action acquire_iterable_value(reference i_value);
 
 	async_execute_shared_ptr<T> m_executor;
-	ddk::function<reference(const iter::iterable_state&, const function<iter::bidirectional_action(reference)>&)> m_function;
+	ddk::function<reference(const iter::shift_action&, const function<iter::bidirectional_action(reference)>&)> m_function;
     iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
     threadlocal<iter::bidirectional_action,co_bidirectional_iterator<T>> m_currAction;
@@ -136,8 +124,8 @@ public:
 	co_random_access_iterator<T> operator++(int);
 	co_random_access_iterator<T>& operator--();
 	co_random_access_iterator<T> operator--(int);
-	co_random_access_iterator<T> operator+(int i_shift);
-	co_random_access_iterator<T>& operator[](size_t i_absPos);
+	co_random_access_iterator<T> operator+(int i_shift) const;
+	co_random_access_iterator<T> operator[](size_t i_absPos) const;
 	co_random_access_iterator<T>& operator=(const co_random_access_iterator& other);
 	bool operator!=(const co_random_access_iterator<T>& other) const;
 	bool operator==(const co_random_access_iterator<T>& other) const;
@@ -147,7 +135,7 @@ private:
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
     iter::random_access_action acquire_iterable_value(reference i_value);
 
-	ddk::function<reference(const iter::iterable_state&, const function<iter::random_access_action(reference)>&)> m_function;
+	ddk::function<reference(const iter::shift_action&, const function<iter::random_access_action(reference)>&)> m_function;
     iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
 	async_execute_shared_ptr<T> m_executor;
@@ -164,19 +152,26 @@ template<typename T>
 struct co_iterator_type_correspondence<T,std::forward_iterator_tag>
 {
 	typedef co_forward_iterator<T> type;
+	typedef iter::input_action action;
 };
 template<typename T>
 struct co_iterator_type_correspondence<T,std::bidirectional_iterator_tag>
 {
 	typedef co_bidirectional_iterator<T> type;
+	typedef iter::bidirectional_action action;
 };
 template<typename T>
 struct co_iterator_type_correspondence<T, std::random_access_iterator_tag>
 {
 	typedef co_random_access_iterator<T> type;
+	typedef iter::random_access_action action;
 };
 
 }
+
+template<typename Iterable>
+typename std::iterator_traits<typename Iterable::iterator>::iterator_category iterable_tag_resolver(const Iterable&);
+
 }
 
 #include "ddk_co_iterator.inl"

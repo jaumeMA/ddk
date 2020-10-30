@@ -3,11 +3,11 @@
 namespace ddk
 {
 
-iterable_operation_forbidden::iterable_operation_forbidden(const char* i_reason)
+iterable_operation_forbidden_exception::iterable_operation_forbidden_exception(const char* i_reason)
 : m_reason(i_reason)
 {
 }
-const char* iterable_operation_forbidden::what() const noexcept
+const char* iterable_operation_forbidden_exception::what() const noexcept
 {
     return m_reason.c_str();
 }

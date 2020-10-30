@@ -48,6 +48,13 @@ T* fiberlocal<T,Tag>::get_ptr()
 
 	return address.get_ptr(get_current_fiber_id());
 }
+template<typename T,typename Tag>
+T fiberlocal<T,Tag>::extract()
+{
+	fiber_local_storage<T>& address = get_address();
+
+	return address.extract(get_current_fiber_id());
+}
 template<typename T, typename Tag>
 void fiberlocal<T,Tag>::clear()
 {

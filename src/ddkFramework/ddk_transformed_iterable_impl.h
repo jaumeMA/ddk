@@ -40,8 +40,8 @@ public:
     transformed_iterable_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<Return(Type)>& i_transform);
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const override;
     size_t size() const override;
     bool empty() const override;
 

@@ -11,6 +11,17 @@ reversable_action_resolver::reversable_action_resolver(bool i_reversed)
 : m_reversed(i_reversed)
 {
 }
+shift_action reversable_action_resolver::resolve(const shift_action& i_action) const
+{
+	if(i_action.shifted() == 0)
+	{
+		return (m_reversed) ? go_prev_place : go_no_place;
+	}
+	else
+	{
+		return i_action;
+	}
+}
 
 }
 

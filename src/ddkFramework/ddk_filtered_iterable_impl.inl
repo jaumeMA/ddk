@@ -1,4 +1,6 @@
 
+#include "ddk_iterable_exceptions.h"
+
 namespace ddk
 {
 namespace detail
@@ -22,14 +24,14 @@ filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_shared_ref<
 {
 }
 template<typename Traits>
-void filtered_iterable_impl<Traits>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
+void filtered_iterable_impl<Traits>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction)
 {
-    m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { return (m_filter(i_value)) ? eval(i_try,i_value) : iter::filter_iteration; }),i_initState);
+	m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { if((iter::iterable_state::is_success()) && (eval(m_filter,i_value) == false)) iter::iterable_state::forward_result(make_error<iter::action_result>(iter::ActionError::ShiftError,iter::ShiftActionError::ItemFiltered)); return eval(i_try, i_value); }),i_initialAction);
 }
 template<typename Traits>
-void filtered_iterable_impl<Traits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
+void filtered_iterable_impl<Traits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
 {
-    m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { return (m_filter(i_value)) ? eval(i_try,i_value) : iter::filter_iteration; }),i_initState);
+    m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { if((iter::iterable_state::is_success()) && (eval(m_filter,i_value) == false)) iter::iterable_state::forward_result(make_error<iter::action_result>(iter::ActionError::ShiftError, iter::ShiftActionError::ItemFiltered)); return eval(i_try, i_value); }),i_initialAction);
 }
 template<typename Traits>
 size_t filtered_iterable_impl<Traits>::size() const

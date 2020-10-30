@@ -54,7 +54,13 @@ public:
     TType extract();
     template<typename TType>
     bool is() const;
-    template<size_t Pos>
+	template<typename TType>
+	typename embedded_type<TType>::cref_type get_as() const;
+	template<typename TType>
+	typename embedded_type<TType>::ref_type get_as();
+	template<typename TType>
+	bool is_base_of() const;
+	template<size_t Pos>
     typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type get() const;
     template<size_t Pos>
     typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type get();

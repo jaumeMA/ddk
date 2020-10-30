@@ -10,9 +10,20 @@ error_impl<Error>::error_impl(const Error& i_errorCode)
 {
 }
 template<typename Error>
+error_impl<Error>::error_impl(const typename Error::__val__& i_errorCode)
+: m_errorCode(i_errorCode)
+{
+}
+template<typename Error>
 error_impl<Error>::error_impl(const Error& i_errorCode, const std::string& i_errorDesc)
 : m_errorCode(i_errorCode)
 , m_errorDesc(i_errorDesc)
+{
+}
+template<typename Error>
+error_impl<Error>::error_impl(const typename Error::__val__& i_errorCode,const std::string& i_errorDesc)
+: m_errorCode(i_errorCode)
+,m_errorDesc(i_errorDesc)
 {
 }
 template<typename Error>
@@ -26,14 +37,14 @@ std::string error_impl<Error>::get_description() const
     return m_errorDesc;
 }
 template<typename Error>
-bool error_impl<Error>::operator==(const Error& i_error) const
+bool error_impl<Error>::operator==(const error_impl<Error>& i_error) const
 {
-    return m_errorCode == i_error;
+    return m_errorCode == i_error.m_errorCode;
 }
 template<typename Error>
-bool error_impl<Error>::operator!=(const Error& i_error) const
+bool error_impl<Error>::operator!=(const error_impl<Error>& i_error) const
 {
-    return m_errorCode == i_error;
+    return m_errorCode == i_error.m_errorCode;
 }
 
 template<typename Error, typename ... NestedErrors>

@@ -88,7 +88,7 @@ result<void,Error>::operator bool() const
 {
     SET_CHECK_RESULT(true)
 
-    return m_nestedRes.empty() == false;
+    return m_nestedRes.empty();
 }
 template<typename Error>
 bool result<void,Error>::operator==(const result_success_t&) const
@@ -103,6 +103,16 @@ bool result<void,Error>::operator!=(const result_success_t&) const
     SET_CHECK_RESULT(true)
 
     return m_nestedRes.empty() == false;
+}
+template<typename Error>
+bool result<void,Error>::operator==(const Error& i_error) const
+{
+	return (m_nestedRes.empty() == false) ? *m_nestedRes == i_error : false;
+}
+template<typename Error>
+bool result<void,Error>::operator!=(const Error& i_error) const
+{
+	return (m_nestedRes.empty() == false) ? *m_nestedRes != i_error : true;
 }
 
 template<typename T, typename Error>
@@ -163,9 +173,9 @@ result<T,Error>& result<T,Error>::operator=(const result& other)
 template<typename T, typename Error>
 result<T,Error>& result<T,Error>::operator=(result&& other)
 {
-    CHECK_RESULT
+	CHECK_RESULT
 #if defined(DDK_DEBUG)
-    m_checked = false;
+    m_checked = true;
     std::swap(m_checked,other.m_checked);
 #endif
 
@@ -197,14 +207,14 @@ T result<T,Error>::extract()
 template<typename T, typename Error>
 void result<T,Error>::clear()
 {
-    m_nestedRes.clear();
+    m_nestedRes.reset();
 }
 template<typename T, typename Error>
 result<T,Error>::operator bool() const
 {
     SET_CHECK_RESULT(true)
 
-    return m_nestedRes.template is<Error>();
+    return m_nestedRes.template is<Error>() == false;
 }
 template<typename T, typename Error>
 bool result<T,Error>::operator==(const result_success_t&) const
@@ -219,6 +229,16 @@ bool result<T,Error>::operator!=(const result_success_t&) const
     SET_CHECK_RESULT(true)
 
     return m_nestedRes.template is<Error>();
+}
+template<typename T,typename Error>
+bool result<T,Error>::operator==(const Error& i_error) const
+{
+	return (m_nestedRes.template is<Error>()) ? m_nestedRes.template get<Error>() == i_error : false;
+}
+template<typename T,typename Error>
+bool result<T,Error>::operator!=(const Error& i_error) const
+{
+	return (m_nestedRes.template is<Error>()) ? m_nestedRes.template get<Error>() != i_error : true;
 }
 
 }

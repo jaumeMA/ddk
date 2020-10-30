@@ -44,6 +44,10 @@ void suspend()
 	{
 		currYielder->suspend(nullptr);
 	}
+	else
+	{
+		throw suspend_exception{ get_current_fiber_id ()};
+	}
 }
 void yield()
 {

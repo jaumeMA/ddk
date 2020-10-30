@@ -5,26 +5,50 @@ namespace ddk
 namespace iter
 {
 
-displacement_action::displacement_action(size_t i_currDisplacement)
-: m_currDisplacement(i_currDisplacement)
+shift_action::shift_action(int i_shift)
+: m_targetShift(i_shift)
+, m_currShift(0)
 {
 }
-size_t displacement_action::get_displacement() const
-{
-	return m_currDisplacement;
-}
-
 int shift_action::shifted() const
 {
-    return m_shift;
+    return m_currShift;
+}
+int shift_action::shifting() const
+{
+	return m_targetShift;
+}
+int shift_action::incremental_shift() const
+{
+	return (m_targetShift > 0) ? 1 : -1;
 }
 shift_action shift_action::operator()(int i_shift) const
 {
-    shift_action res;
+    return shift_action(i_shift);
+}
+bool shift_action::apply(const shift_action& i_appliedAction)
+{
+	m_currShift += i_appliedAction.m_targetShift;
 
-    res.m_shift = i_shift;
+	return m_currShift == m_targetShift;
+}
 
-    return res;
+go_forward_action::go_forward_action()
+: shift_action(1)
+{
+}
+go_forward_action::go_forward_action(const shift_action& other)
+: shift_action(other)
+{
+}
+
+go_backward_action::go_backward_action()
+: shift_action(-1)
+{
+}
+go_backward_action::go_backward_action(const shift_action& other)
+: shift_action(other)
+{
 }
 
 bool operator==(const forward_action& i_lhs, const forward_action& i_rhs)
@@ -52,13 +76,14 @@ bool operator!=(const random_access_action& i_lhs, const random_access_action& i
     return i_lhs.which() != i_rhs.which();
 }
 
-const iter::filter_action filter_iteration = iter::filter_action();
+const iter::no_op_action no_op = iter::no_op_action();
 const iter::stop_action stop_iteration = iter::stop_action();
 const iter::erase_action erase_value = iter::erase_action();
 const iter::add_action add_value = iter::add_action();
 const iter::go_forward_action go_next_place = iter::go_forward_action();
 const iter::go_backward_action go_prev_place = iter::go_backward_action();
-const iter::shift_action go_shift_place = iter::shift_action();
+const iter::shift_action go_to_place = iter::shift_action(0);
+const iter::shift_action go_no_place = iter::shift_action(0);
 
 }
 }

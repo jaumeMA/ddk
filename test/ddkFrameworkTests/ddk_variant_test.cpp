@@ -147,6 +147,7 @@ TEST(DDKVariantTest,is)
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.is<DefaultType>(),true);
+	EXPECT_EQ(foo.is_base_of<DefaultType>(),true);
 
 	nonCopyAssignableType nestedFoo2(0xFF);
 	foo = std::move(nestedFoo2);

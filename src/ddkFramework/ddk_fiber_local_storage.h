@@ -20,6 +20,7 @@ public:
 	inline T* assign(const fiber_id& i_id, Args&& ... i_args);
 	void clear(const fiber_id& i_id);
 	T& get(const fiber_id& i_id);
+	T extract(const fiber_id& i_id);
 	bool empty(const fiber_id& i_id) const;
 
 private:

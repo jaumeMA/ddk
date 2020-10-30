@@ -63,6 +63,8 @@ public:
 	explicit operator bool() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;
+	bool operator==(const Error& i_error) const;
+	bool operator!=(const Error& i_error) const;
 
 private:
 	optional<Error> m_nestedRes;
@@ -123,6 +125,8 @@ public:
 	explicit operator bool() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;
+	bool operator==(const Error& i_error) const;
+	bool operator!=(const Error& i_error) const;
 
 private:
 	variant<T,Error> m_nestedRes;

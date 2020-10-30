@@ -11,29 +11,9 @@ class DDKCoIterableTest : public Test
 
 struct MyIterable
 {
-	typedef size_t& reference;
+public:
+	typedef const size_t& reference;
 	typedef const size_t& const_reference;
-	typedef MyIterable iterator;
-
-	//you shall provide an overload of forward_iterator_awaitable for your custom container
-	friend inline size_t& visit_iterator(MyIterable& i_iterable, const ddk::function<ddk::iter::random_access_action(size_t&)>& i_sink, const ddk::iter::iterable_state& i_initState = ddk::iter::iterable_state())
-	{
-		size_t value = i_iterable.m_init + i_initState.position();
-
-		while(value <= i_iterable.m_end)
-		{
-			const ddk::iter::random_access_action currAction = i_sink(value);
-
-            if(currAction.is<ddk::iter::go_forward_action>())
-            {
-                ++value;
-            }
-		}
-
-        ddk::suspend();
-
-		return ddk::crash_on_return<size_t&>::value();
-	}
 
 	MyIterable(size_t i_init, size_t i_end)
 	: m_init(i_init)
@@ -41,13 +21,57 @@ struct MyIterable
 	{
 		DDK_ASSERT(m_init < m_end, "you shall provide ordered extremes");
 	}
+	size_t get_min() const
+	{
+		return m_init;
+	}
+	size_t get_max() const
+	{
+		return m_end;
+	}
 
 private:
 	size_t m_init;
 	size_t m_end;
 };
 
-ITERATOR_CATEGORY(MyIterable, random_access_iterator_tag)
+struct MyIterableAdaptor
+{
+	DDK_ITERABLE_TYPE(MyIterable,const MyIterableAdaptor,std::forward_iterator_tag)
+
+public:
+	typedef typename MyIterable::reference reference;
+	typedef typename MyIterable::const_reference const_reference;
+
+	MyIterableAdaptor(const MyIterable& i_iterable,const ddk::iter::shift_action& i_initialAction);
+	const_reference get_value() const;
+	ddk::optional<const_reference> next_value() const;
+
+private:
+	const MyIterable& m_iterable;
+	mutable size_t m_currValue = 0;
+};
+
+MyIterableAdaptor::MyIterableAdaptor(const MyIterable& i_iterable,const ddk::iter::shift_action& i_initialAction)
+: m_iterable(i_iterable)
+,m_currValue(i_initialAction.shifted())
+{
+}
+typename MyIterableAdaptor::const_reference MyIterableAdaptor::get_value() const
+{
+	return m_currValue;
+}
+ddk::optional<typename MyIterableAdaptor::const_reference> MyIterableAdaptor::next_value() const
+{
+	if(m_currValue < m_iterable.get_max())
+	{
+		return ++m_currValue;
+	}
+	else
+	{
+		return none;
+	}
+}
 
 TEST(DDKCoIterableTest,stdVectorForwardIteration)
 {
@@ -201,7 +225,7 @@ TEST(DDKCoIterableTest,myIterableForwardIteration)
 {
 	const size_t initIndex = 0;
 	const size_t maxIndex = 100;
-	MyIterable foo(initIndex,maxIndex);
+	const MyIterable foo(initIndex,maxIndex);
 
 	size_t currIndex = initIndex;
 

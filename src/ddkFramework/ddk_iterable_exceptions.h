@@ -6,10 +6,16 @@
 namespace ddk
 {
 
-class iterable_operation_forbidden : public std::exception
+class iterable_filtered_out_exception : public std::exception
 {
 public:
-    iterable_operation_forbidden(const char* i_reason);
+	iterable_filtered_out_exception() = default;
+};
+
+class iterable_operation_forbidden_exception : public std::exception
+{
+public:
+	iterable_operation_forbidden_exception(const char* i_reason);
 
     const char* what() const noexcept;
 

@@ -6,28 +6,28 @@ namespace detail
 {
 
 template<size_t Index, typename ... Iterables>
-typename union_iterable_impl<Iterables...>::action navigate(union_iterable_impl<Iterables...>& i_iterable, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::reference)>& i_try, const ddk::iter::iterable_state& i_initState)
+typename union_iterable_impl<Iterables...>::action navigate(union_iterable_impl<Iterables...>& i_iterable, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::reference)>& i_try, const iter::shift_action& i_initialAction)
 {
     typedef typename mpl::nth_type_of<Index,Iterables...>::type curr_iterable_type;
     typedef typename curr_iterable_type::iterable_value iterable_value;
 
     typename union_iterable_impl<Iterables...>::action lastAction;
 
-    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction](iterable_value i_value){ lastAction = eval(i_try,*i_value); }),nullptr,i_initState);
+    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction](iterable_value i_value){ lastAction = eval(i_try,*i_value); }),nullptr,i_initialAction);
 
     i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
 
     return lastAction;
 }
 template<size_t Index, typename ... Iterables>
-typename union_iterable_impl<Iterables...>::action navigate(const union_iterable_impl<Iterables...>& i_iterable, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::const_reference)>& i_try, const ddk::iter::iterable_state& i_initState)
+typename union_iterable_impl<Iterables...>::action navigate(const union_iterable_impl<Iterables...>& i_iterable, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::const_reference)>& i_try, const iter::shift_action& i_initialAction)
 {
     typedef typename mpl::nth_type_of<Index,Iterables...>::type curr_iterable_type;
     typedef typename curr_iterable_type::iterable_const_value iterable_const_value;
 
     typename union_iterable_impl<Iterables...>::action lastAction;
 
-    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction](iterable_const_value i_value) { lastAction = eval(i_try,*i_value); }),nullptr,i_initState);
+    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction](iterable_const_value i_value) { lastAction = eval(i_try,*i_value); }),nullptr,i_initialAction);
 
     i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
 
@@ -44,67 +44,55 @@ union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::union_iterab
 {
 }
 template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t, size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>, Iterables...>::visit(const iter::filter_action& i_action) const
-{
-	//what in earth
-
-	return crash_on_return<std::pair<size_t, size_t>>::value();
-}
-template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::stop_action& i_action) const
+std::pair<size_t,iter::shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::stop_action& i_action) const
 {
     suspend();
 
-	return crash_on_return<std::pair<size_t, size_t>>::value();
+	return crash_on_return<std::pair<size_t,iter::shift_action>>::value();
 }
 template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::erase_action& i_action) const
+std::pair<size_t,iter::shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::erase_action& i_action) const
 {
-    if(m_currIterableIndex < s_num_iterables)
-    {
-        return std::make_pair(m_currIterableIndex+1,iter::iterable_state::npos);
-    }
-    else
-    {
-        return std::make_pair(iter::iterable_state::npos,iter::iterable_state::npos);
-    }
+	suspend();
+
+	return crash_on_return<std::pair<size_t,iter::shift_action>>::value();
 }
 template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::add_action& i_action) const
+std::pair<size_t,iter::shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::add_action& i_action) const
 {
     suspend();
 
-	return crash_on_return<std::pair<size_t, size_t>>::value();
+	return crash_on_return<std::pair<size_t,iter::shift_action>>::value();
 }
 template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::go_forward_action& i_action) const
+std::pair<size_t,iter::shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::go_forward_action& i_action) const
 {
     const size_t newIterableIndex = m_currIterableIndex + 1;
     if(newIterableIndex < s_num_iterables)
     {
-        return std::make_pair(newIterableIndex,iter::iterable_state::npos);
+        return std::make_pair(newIterableIndex,iter::go_to_place);
     }
     else
     {
-        return std::make_pair(iter::iterable_state::npos,iter::iterable_state::npos);
+        return std::make_pair(iter::iterable_state::npos,iter::go_to_place);
     }
 }
 template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::go_backward_action& i_action) const
+std::pair<size_t,iter::shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::go_backward_action& i_action) const
 {
     if(m_currIterableIndex > 0)
     {
-        return std::make_pair(m_currIterableIndex-1,(*s_size_funcs[m_currIterableIndex-1])(m_iterables));
+        return std::make_pair(m_currIterableIndex-1,iter::go_to_place(static_cast<int>((*s_size_funcs[m_currIterableIndex-1])(m_iterables))));
     }
     else
     {
-        return std::make_pair(iter::iterable_state::npos,iter::iterable_state::npos);
+        return std::make_pair(iter::iterable_state::npos,iter::go_to_place);
     }
 }
 template<size_t ... Indexs, typename ... Iterables>
-std::pair<size_t,size_t> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::shift_action& i_action) const
+std::pair<size_t,iter::shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const iter::shift_action& i_action) const
 {
-    return std::make_pair(iter::iterable_state::npos,iter::iterable_state::npos);
+    return std::make_pair(iter::iterable_state::npos,iter::go_to_place);
 }
 template<size_t ... Indexs, typename ... Iterables>
 template<size_t Index>
@@ -134,61 +122,61 @@ tuple<Iterables...>& union_iterable_impl<Iterables...>::get_iterables()
     return m_iterables;
 }
 template<typename ... Iterables>
-void union_iterable_impl<Iterables...>::iterate_impl(const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
+void union_iterable_impl<Iterables...>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction)
 {
-    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initState);
+    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction);
 }
 template<typename ... Iterables>
-void union_iterable_impl<Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
+void union_iterable_impl<Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
 {
-    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initState);
+    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction);
 }
 template<typename ... Iterables>
 template<size_t ... Indexs>
-void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::iterable_state& i_initState)
+void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::shift_action& i_initialAction)
 {
-    typedef action(*navigate_func)(union_iterable_impl<Iterables...>&, const function<action(reference)>&, const iter::iterable_state&);
+    typedef action(*navigate_func)(union_iterable_impl<Iterables...>&, const function<action(reference)>&,const iter::shift_action&);
 
     static const navigate_func s_navFuncs[s_num_iterables] = { navigate<Indexs,Iterables...> ...};
 
     size_t iterableIndex= 0;
-    iter::iterable_state iterableInitState = i_initState;
+	iter::shift_action initialAction = i_initialAction;
 
     while(iterableIndex != iter::iterable_state::npos)
     {
-        const action lastAction = (*s_navFuncs[iterableIndex])(*this,i_try,iterableInitState);
+        const action lastAction = (*s_navFuncs[iterableIndex])(*this,i_try,initialAction);
 
         union_iterable_visitor<Iterables...> unionVisitor(iterableIndex,m_iterables);
 
-        const std::pair<size_t,size_t> currIndexes = lastAction.visit(unionVisitor);
+        const std::pair<size_t,iter::shift_action> currIndexes = lastAction.visit(unionVisitor);
 
         iterableIndex = currIndexes.first;
-        iterableInitState = iter::iterable_state(currIndexes.second);
+		initialAction = currIndexes.second;
     }
 
     suspend();
 }
 template<typename ... Iterables>
 template<size_t ... Indexs>
-void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::iterable_state& i_initState) const
+void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
 {
-	typedef action(*navigate_func)(const union_iterable_impl<Iterables...>&, const function<action(const_reference)>&, const ddk::iter::iterable_state&);
+	typedef action(*navigate_func)(const union_iterable_impl<Iterables...>&, const function<action(const_reference)>&, const iter::shift_action&);
 
 	static const navigate_func s_navFuncs[s_num_iterables] = { &navigate<Indexs,Iterables...> ... };
 
     size_t iterableIndex= 0;
-    iter::iterable_state iterableInitState = i_initState;
+	iter::shift_action initialAction = i_initialAction;
 
     while(iterableIndex != iter::iterable_state::npos)
     {
-        const action lastAction = (*s_navFuncs[iterableIndex])(*this,i_try,iterableInitState);
+        const action lastAction = (*s_navFuncs[iterableIndex])(*this,i_try,initialAction);
 
         union_iterable_visitor<Iterables...> unionVisitor(iterableIndex,m_iterables);
 
-        const std::pair<size_t,size_t> currIndexes = lastAction.visit(unionVisitor);
+        const std::pair<size_t,iter::shift_action> currIndexes = lastAction.visit(unionVisitor);
 
         iterableIndex = currIndexes.first;
-        iterableInitState = iter::iterable_state(currIndexes.second);
+		initialAction = currIndexes.second;
     }
 
     suspend();

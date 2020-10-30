@@ -20,7 +20,8 @@ public:
     using variant_interface_base::extract;
     using variant_interface_base::empty;
     using variant_interface_base::is;
-    using variant_interface_base::which;
+	using variant_interface_base::is_base_of;
+	using variant_interface_base::which;
     using variant_interface_base::reset;
     using variant_interface_base::swap;
     using variant_interface_base::visit;

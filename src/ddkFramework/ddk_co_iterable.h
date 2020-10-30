@@ -11,10 +11,10 @@ template<typename Iterable>
 class co_iterable
 {
 public:
-	typedef typename mpl::which_type<std::is_const<Iterable>::value, typename Iterable::const_reference, typename Iterable::reference>::type reference;
+	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_reference,typename Iterable::reference>::type reference;
 	typedef typename Iterable::const_reference const_reference;
-	typedef typename std::iterator_traits<typename Iterable::iterator>::iterator_category tag;
-	typedef typename detail::co_iterator_type_correspondence<reference, tag>::type iterator;
+	typedef decltype(iterable_tag_resolver(std::declval<Iterable>())) tag;
+	typedef typename detail::co_iterator_type_correspondence<reference,tag>::type iterator;
 	typedef typename detail::co_iterator_type_correspondence<const_reference,tag>::type const_iterator;
 
 	friend inline iterator begin(co_iterable& i_co_iterable)

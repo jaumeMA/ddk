@@ -156,7 +156,6 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
 
 		return std::forward<ref_type>(val);
 	}
-
     //for the rest of unsused types
     template<size_t PosType, typename Type>
     typename embedded_type<retType>::cref_type visit(Type&& val, ...) const
@@ -166,6 +165,18 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
 		DDK_FAIL("You shouldnt reach this point!");
 
 		return ddk::crash_on_return<ref_type>::value();
+	}
+};
+
+template<typename T,typename ... Types>
+struct is_base_of_visitor : public static_visitor<bool>
+{
+	typedef is_base_of_visitor t_visitor;
+
+	template<size_t PosType,typename Type>
+	bool visit(Type&& val,...) const
+	{
+		return std::is_base_of<T,typename mpl::nth_type_of<PosType,Types...>::type>::value;
 	}
 };
 
