@@ -13,6 +13,8 @@ namespace detail
 template<typename T>
 struct private_async_state
 {
+	typedef typename mpl::static_if<std::is_reference<T>::value,T,const T&>::type sink_type;
+
 public:
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
@@ -20,7 +22,7 @@ public:
 
 	private_async_state();
 	~private_async_state();
-	void set_value(reference i_value);
+	void set_value(sink_type i_value);
 	void signal();
 	const_reference get_value() const;
 	reference get_value();

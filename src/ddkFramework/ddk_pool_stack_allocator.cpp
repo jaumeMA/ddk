@@ -292,6 +292,10 @@ void pool_stack_allocator::release(void* i_ref, size_t i_size) const
 		DDK_FAIL("Trying to remove unexistant stack allocation");
 	}
 }
+size_t pool_stack_allocator::get_num_guard_pages() const
+{
+	return m_nestedAllocator->get_num_guard_pages();
+}
 
 }
 }

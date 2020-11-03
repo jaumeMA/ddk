@@ -14,7 +14,7 @@ deferred_executor<Return>::deferred_executor()
 {
 }
 template<typename Return>
-typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
+typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -66,7 +66,7 @@ await_executor<Return>::~await_executor()
 	}
 }
 template<typename Return>
-typename await_executor<Return>::start_result await_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
+typename await_executor<Return>::start_result await_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -189,7 +189,7 @@ fiber_executor<Return>::fiber_executor(fiber i_fiber)
 {
 }
 template<typename Return>
-typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
+typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -201,7 +201,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 		{
 			m_fiber.start([=]()
 			{
-				const Return res = i_callable();
+				sink_reference res = i_callable();
 
 				while (m_state.get() == ExecutorState::Cancelling)
 				{
@@ -264,7 +264,7 @@ thread_executor<Return>::thread_executor(thread i_thread)
 {
 }
 template<typename Return>
-typename thread_executor<Return>::start_result thread_executor<Return>::execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable)
+typename thread_executor<Return>::start_result thread_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -276,7 +276,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 		{
 			m_thread.start([=]()
 			{
-				const Return res = i_callable();
+				sink_reference res = i_callable();
 
 				while (m_state.get() == ExecutorState::Cancelling)
 				{

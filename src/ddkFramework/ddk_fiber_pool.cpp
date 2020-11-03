@@ -40,10 +40,9 @@ fiber_pool::~fiber_pool()
 	m_fiberScheduler->stop();
 
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
-	for(;itFiber!=m_fiberCtr.end();)
+	for(;itFiber!=m_fiberCtr.end();++itFiber)
 	{
 		delete *itFiber;
-		itFiber = m_fiberCtr.erase(itFiber);
 	}
 }
 fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()

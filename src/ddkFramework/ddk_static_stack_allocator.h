@@ -21,6 +21,7 @@ private:
 	bool reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const override;
 	void deallocate(void*,size_t) const override;
 	void release(void*,size_t) const override;
+	size_t get_num_guard_pages() const override;
 
 	mutable arena<(Size+1) * 4096,1> m_arena;
 	mutable bool m_underUse = false;

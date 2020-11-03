@@ -50,6 +50,8 @@ public:
 	void* attach(fiber_id i_id);
 	void detach();
     void deallocate(fiber_id i_id) const;
+	size_t get_num_guard_pages() const;
+
 	stack_allocator& operator=(const stack_allocator&) = delete;
 	stack_allocator& operator=(stack_allocator&&) = delete;
 

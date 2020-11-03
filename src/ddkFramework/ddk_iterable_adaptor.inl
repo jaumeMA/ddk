@@ -11,9 +11,18 @@ template<typename Action>
 iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable, Action&& i_initialAction)
 : m_iterable(i_iterable)
 {
-	const size_t shifting = i_initialAction.shifting() % std::distance(m_iterable.begin(),m_iterable.end());
+	const size_t iterableSize = m_iterable.size();
 
-	m_currIterator = std::next(std::begin(m_iterable),shifting);
+	if(iterableSize > 0)
+	{
+		const size_t shifting = i_initialAction.shifting() % iterableSize;
+
+		m_currIterator = std::next(std::begin(m_iterable),shifting);
+	}
+	else
+	{
+		suspend();
+	}
 }
 template<typename Iterable>
 typename iterable_adaptor_base<Iterable>::reference iterable_adaptor_base<Iterable>::get_value()
@@ -46,9 +55,18 @@ template<typename Action>
 iterable_adaptor_base<const Iterable>::iterable_adaptor_base(const Iterable& i_iterable,Action&& i_initialAction)
 : m_iterable(i_iterable)
 {
-	const size_t shifting = i_initialAction.shifting() % std::distance(m_iterable.begin(),m_iterable.end());
+	const size_t iterableSize = m_iterable.size();
 
-	m_currIterator = std::next(std::begin(m_iterable),shifting);
+	if(iterableSize > 0)
+	{
+		const size_t shifting = i_initialAction.shifting() % iterableSize;
+
+		m_currIterator = std::next(std::begin(m_iterable),shifting);
+	}
+	else
+	{
+		suspend();
+	}
 }
 template<typename Iterable>
 typename iterable_adaptor_base<const Iterable>::const_reference iterable_adaptor_base<const Iterable>::get_value() const
@@ -81,12 +99,12 @@ optional<typename bidirectional_iterable_adaptor<Iterable>::const_reference> bid
 template<typename Iterable>
 optional<typename random_access_iterable_adaptor<Iterable>::reference> random_access_iterable_adaptor<Iterable>::shift_value(int i_shift)
 {
-	if((this->m_currIterator + i_shift) != m_iterable.end()) return *(this->m_currIterator); else return none;
+	if((this->m_currIterator + i_shift) != m_iterable.end()) return *(this->m_currIterator + i_shift); else return none;
 }
 template<typename Iterable>
 optional<typename random_access_iterable_adaptor<Iterable>::const_reference> random_access_iterable_adaptor<Iterable>::shift_value(int i_shift) const
 {
-	if((this->m_currIterator + i_shift) != m_iterable.end()) return *(this->m_currIterator); else return none;
+	if((this->m_currIterator + i_shift) != m_iterable.end()) return *(this->m_currIterator + i_shift); else return none;
 }
 
 }

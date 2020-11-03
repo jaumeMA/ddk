@@ -71,6 +71,7 @@ private:
 	bool reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const override;
 	void deallocate(void*,size_t) const override;
 	void release(void*,size_t) const override;
+	size_t get_num_guard_pages() const override;
 
 	stack_alloc_const_shared_ref m_nestedAllocator;
 	mutable std::set<Buddy> m_buddyAllocator;

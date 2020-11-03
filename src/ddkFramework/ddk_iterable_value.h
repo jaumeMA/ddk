@@ -23,6 +23,17 @@ struct iterable_value
     template<typename...>
     friend struct const_forwarded_value;
 
+	friend inline void stop(const iterable_value& i_value)
+	{
+		eval(i_value.m_resolver,iter::stop_iteration)
+	}
+	friend inline size_t value_position(const iterable_value& i_value)
+	{
+		iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+
+		return currState.position();
+	}
+
 public:
     typedef typename Traits::reference reference;
     typedef typename Traits::const_reference const_reference;
@@ -57,12 +68,6 @@ struct random_accessed_value;
 template<typename T>
 struct random_accessed_value<T> : public iterable_value<detail::random_access_iterable_traits<T>>
 {
-    friend inline size_t value_position(const random_accessed_value& i_value)
-    {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-
-        return currState.position();
-    }
     friend inline std::pair<random_accessed_value,iter::erase_result> erase_value(random_accessed_value i_value)
     {
         iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
@@ -118,12 +123,6 @@ struct const_random_accessed_value<T> : public iterable_value<detail::random_acc
 {
     template<typename...>
     friend struct const_random_accessed_value;
-    friend inline size_t value_position(const const_random_accessed_value& i_value)
-    {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-
-        return currState.position();
-    }
     friend inline const_random_accessed_value next_value(const_random_accessed_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
@@ -166,12 +165,6 @@ struct bidirectional_value;
 template<typename T>
 struct bidirectional_value<T> : public iterable_value<detail::bidirectional_iterable_traits<T>>
 {
-    friend inline size_t value_position(const bidirectional_value& i_value)
-    {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-
-        return currState.position();
-    }
     friend inline std::pair<bidirectional_value,iter::erase_result> erase_value(bidirectional_value i_value)
     {
         iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
@@ -224,12 +217,6 @@ struct const_bidirectional_value<T> : public iterable_value<detail::bidirectiona
 {
     template<typename...>
     friend struct const_bidirectional_value;
-    friend inline size_t value_position(const const_bidirectional_value& i_value)
-    {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-
-        return currState.position();
-    }
     friend inline const_bidirectional_value next_value(const_bidirectional_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
@@ -266,12 +253,6 @@ struct forwarded_value;
 template<typename T>
 struct forwarded_value<T> : public iterable_value<detail::forward_iterable_traits<T>>
 {
-    friend inline size_t value_position(const forwarded_value& i_value)
-    {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-
-        return currState.position();
-    }
     friend inline std::pair<forwarded_value,iter::erase_result> erase_value(forwarded_value i_value)
     {
         iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
@@ -322,12 +303,6 @@ struct const_forwarded_value<T> : public iterable_value<detail::forward_iterable
 {
     template<typename...>
     friend struct const_forwarded_value;
-    friend inline size_t value_position(const const_forwarded_value& i_value)
-    {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-
-        return currState.position();
-    }
     friend inline const_forwarded_value next_value(const_forwarded_value i_value)
     {
 		iter::iterable_state& currState = i_value.m_iterableInterface.get_state();

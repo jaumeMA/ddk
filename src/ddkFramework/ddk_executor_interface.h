@@ -11,15 +11,17 @@ namespace ddk
 namespace detail
 {
 
-template<typename RReturn>
-struct function_type
+template<typename T>
+struct sink_type_resolver
 {
-    typedef ddk::function<void(RReturn)> type;
+	typedef typename mpl::static_if<std::is_reference<T>::value,T,const T&>::type reference;
+	typedef function<void(reference)> type;
 };
 template<>
-struct function_type<void>
+struct sink_type_resolver<void>
 {
-    typedef ddk::function<void()> type;
+	typedef void reference;
+	typedef function<void()> type;
 };
 
 }
@@ -47,10 +49,12 @@ public:
 		StartNotAvailable
 	};
 	typedef result<ExecutorState,StartErrorCode> start_result;
+	typedef typename detail::sink_type_resolver<Return>::type sink_type;
+	typedef typename detail::sink_type_resolver<Return>::reference sink_reference;
 
 	virtual ~executor_interface() = default;
 	virtual ExecutorState get_state() const = 0;
-	virtual start_result execute(const typename detail::function_type<Return>::type&, const ddk::function<Return()>&) = 0;
+	virtual start_result execute(const sink_type&, const ddk::function<Return()>&) = 0;
 };
 
 template<typename Return, typename ... Args>

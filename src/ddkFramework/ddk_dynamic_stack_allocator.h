@@ -23,6 +23,7 @@ private:
 	bool reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const override;
 	void deallocate(void*,size_t) const override;
 	void release(void*,size_t) const override;
+	size_t get_num_guard_pages() const override;
 };
 
 typedef dynamic_stack_allocator<k_defaultGuardPages> default_dynamic_stack_allocator;

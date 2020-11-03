@@ -18,13 +18,14 @@ struct this_fiber_t
 {
 public:
 	this_fiber_t();
-	this_fiber_t(const this_fiber_t& other);
+	this_fiber_t(const this_fiber_t&) = default;
 	this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages);
 
 	ucontext_t* get_context();
 	const ucontext_t* get_context() const;
 	fiber_id get_id() const;
 	stack_allocator get_allocator() const;
+	void update_stack_shape();
 
 private:
 	mutable ucontext_t m_context;

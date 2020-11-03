@@ -11,7 +11,7 @@ thread_sheaf_executor::thread_sheaf_executor(thread_sheaf i_threadSheaf)
 , m_pendingThreads(m_threadSheaf.size())
 , m_state(ExecutorState::Idle)
 {}
-thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::function<void(detail::void_t)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
+thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -88,7 +88,7 @@ fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
 , m_state(ExecutorState::Idle)
 {
 }
-fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::function<void(detail::void_t)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
+fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{

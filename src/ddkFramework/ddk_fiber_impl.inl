@@ -19,6 +19,8 @@ namespace detail
 template<typename Return>
 inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
+	set_current_fiber_id(i_fiber->get_id());
+
 	const ddk::function<Return()> callable(*i_function);
 
 	i_fiber->set_state(FiberExecutionState::Executing);

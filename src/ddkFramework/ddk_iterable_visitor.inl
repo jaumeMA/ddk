@@ -84,7 +84,7 @@ typename Adaptor::reference action_visitor<Iterable,input_action,Adaptor>::visit
 {
 	if(optional<reference> nextValue = m_adaptor.next_value())
 	{
-		iterable_state::forward_result(make_result<action_result>(i_action));
+		iterable_state::forward_result(make_result<action_result>(go_to_place(1,1)));
 
 		return *nextValue;
 	}
@@ -102,7 +102,7 @@ typename Adaptor::reference action_visitor<Iterable,bidirectional_action,Adaptor
 {
 	if(optional<reference> nextValue = m_adaptor.next_value())
 	{
-		iterable_state::forward_result(make_result<action_result>(i_action));
+		iterable_state::forward_result(make_result<action_result>(go_to_place(-1,-1)));
 
 		return *nextValue;
 	}
@@ -120,11 +120,11 @@ typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor
 {
 	if(i_action.shifting() != 0)
 	{
-		const bool forward = i_action.shifting() > 0;
+		const int shiftingValue = i_action.shifting();
 
-		if(optional<reference> nextValue = m_adaptor.shift_value(forward ? 1 : -1))
+		if(optional<reference> nextValue = m_adaptor.shift_value(shiftingValue))
 		{
-			iterable_state::forward_result(make_result<action_result>(forward ? any_action(go_next_place) : any_action(go_prev_place)));
+			iterable_state::forward_result(make_result<action_result>(go_to_place(shiftingValue,shiftingValue)));
 
 			return *nextValue;
 		}

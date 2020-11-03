@@ -127,6 +127,11 @@ void dynamic_stack_allocator<NumGuardPages>::release(void* i_address,size_t i_si
 
 	DDK_ASSERT(freeRes, "Error freeing virtual memory");
 }
+template<size_t NumGuardPages>
+size_t dynamic_stack_allocator<NumGuardPages>::get_num_guard_pages() const
+{
+	return NumGuardPages;
+}
 
 }
 

@@ -44,6 +44,11 @@ void static_stack_allocator<Size>::release(void*,size_t) const
 {
 	DDK_ASSERT(m_underUse == false, "Trying to release in non used arena");
 }
+template<size_t Size>
+size_t static_stack_allocator<Size>::get_num_guard_pages() const
+{
+	return 0;
+}
 
 }
 

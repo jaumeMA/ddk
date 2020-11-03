@@ -90,19 +90,23 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 	kk1.push_back(2345);
 
 	{
-		iterable res1 = ddk::co_iterate(kk1);
+		unsigned __int64 init = 0;
+		unsigned __int64 end = 0;
+		GetCurrentThreadStackLimits(&init,&end);
 
+		iterable res1 = ddk::co_iterate(kk1);
 		iterator itRes1 = std::begin(res1);
 
 		for(size_t index=0;itRes1!=std::end(res1);itRes1++,++index)
 		{
 			int& res = *itRes1;
-
 			EXPECT_EQ(*itRes1, kk1[index]);
 		}
 
-		iterator itRes2 = itRes1;
-		for(size_t index=0;itRes2!=std::end(res1);++itRes2,++index)
+		iterable res2 = ddk::co_iterate(kk1);
+		iterator itRes2 = std::begin(res2);
+
+		for(size_t index=0;itRes2!=std::end(res2);++itRes2,++index)
 		{
 			int& res = *itRes2;
 
@@ -115,7 +119,9 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 		{
 			EXPECT_EQ(*(itRes3[index]),kk1[index]);
 		}
+	}
 
+	{
 		iterable res4 = ddk::co_iterate(kk1);
 		iterator itRes4 = std::begin(res4);
 		for (int index = 0; index < kk1.size(); ++index)

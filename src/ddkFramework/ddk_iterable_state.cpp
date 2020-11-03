@@ -7,7 +7,7 @@ namespace iter
 {
 
 action_state::action_state()
-: m_actionResult(make_result<action_result>(no_op))
+: m_actionResult(make_result<action_result>(go_no_place))
 {
 	DDK_ASSERT(m_actionResult == success,"forced check");
 }
@@ -84,6 +84,20 @@ bool iterable_state::is_success()
 
 	return actionResult.get() == success;
 }
+bool iterable_state::flush_result()
+{
+	fiberlocal<action_result,iterable_state>& actionResult = get_action_result();
+
+	if(actionResult.empty() == false)
+	{
+		if(const action_result actionRes = actionResult.extract())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 action_result iterable_state::forward_result()
 {
 	fiberlocal<action_result,iterable_state>& actionResult = get_action_result();
@@ -93,6 +107,8 @@ action_result iterable_state::forward_result()
 void iterable_state::forward_result(action_result i_result)
 {
 	fiberlocal<action_result,iterable_state>& actionResult = get_action_result();
+
+	flush_result();
 
 	actionResult.set(std::move(i_result));
 }

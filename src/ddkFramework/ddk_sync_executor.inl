@@ -120,6 +120,21 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::on_can
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
 template<typename Return>
+template<typename Reference>
+typename async_executor<Return>::async_shared_ref async_executor<Return>::on_completion(const ddk::function<void(Reference)>& i_completionFunc)
+{
+	if constexpr (std::is_same<Reference,reference>::value)
+	{
+		m_completionFunc = i_completionFunc;
+	}
+	else
+	{
+		m_completionFunc = make_function([i_completionFunc](Reference i_value) { eval(i_completionFunc,i_value); });
+	}
+
+	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
+}
+template<typename Return>
 typename async_executor<Return>::start_result async_executor<Return>::execute()
 {
     if(m_executor == nullptr)
@@ -148,8 +163,13 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 	}
 }
 template<typename Return>
-void async_executor<Return>::set_value(Return i_value)
+void async_executor<Return>::set_value(sink_reference i_value)
 {
+	if(m_completionFunc != nullptr)
+	{
+		eval(m_completionFunc,std::forward<sink_reference>(i_value));
+	}
+
 	m_sharedState->set_value(i_value);
 }
 template<typename Return>

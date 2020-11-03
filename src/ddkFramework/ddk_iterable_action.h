@@ -11,10 +11,6 @@ namespace ddk
 namespace iter
 {
 
-struct no_op_action
-{
-};
-
 struct erase_action
 {
 };
@@ -62,17 +58,19 @@ struct stop_action
 struct shift_action
 {
 public:
-	shift_action(int i_shift);
+	shift_action(int i_targetShift, int i_currShift = 0, bool i_stepByStep = false);
 
     int shifted() const;
 	int shifting() const;
-	int incremental_shift() const;
-	shift_action operator()(int i_shift) const;
+	shift_action operator()(int i_targetShift,int i_currShift = 0) const;
 	bool apply(const shift_action& i_appliedAction);
+	void set_step_by_step(bool i_cond);
+	bool step_by_step() const;
 
 private:
     int m_targetShift;
 	int m_currShift;
+	bool m_stepByStep;
 };
 SCOPED_ENUM_DECL(ShiftActionError,
 				 ShiftOutOfBounds,
@@ -101,7 +99,7 @@ typedef variant<stop_action,erase_action,add_action,go_forward_action> output_ac
 typedef variant<stop_action,erase_action,add_action,go_forward_action> forward_action;
 typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
 typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
-typedef variant<no_op_action,stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> any_action;
+typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> any_action;
 
 typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
 typedef result<any_action,action_error> action_result;
@@ -113,7 +111,6 @@ bool operator!=(const forward_action& i_lhs, const forward_action& i_rhs);
 bool operator!=(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs);
 bool operator!=(const random_access_action& i_lhs, const random_access_action& i_rhs);
 
-const extern iter::no_op_action no_op;
 const extern iter::stop_action stop_iteration;
 const extern iter::erase_action erase_value;
 const extern iter::add_action add_value;

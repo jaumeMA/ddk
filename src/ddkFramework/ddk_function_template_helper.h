@@ -97,6 +97,12 @@ struct aqcuire_callable_return_type<Return(T::*)(Args...) const>
 	typedef Return return_type;
 	typedef tuple<Args...> args_type;
 };
+template<typename Return,typename T,typename ... Args>
+struct aqcuire_callable_return_type<Return(T::*)(Args...)>
+{
+	typedef Return return_type;
+	typedef tuple<Args...> args_type;
+};
 template<typename Functor>
 struct aqcuire_callable_return_type
 {

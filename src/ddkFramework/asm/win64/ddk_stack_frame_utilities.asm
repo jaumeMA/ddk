@@ -54,11 +54,18 @@ set_curr_thread_stack_base ENDP
 set_curr_thread_stack_limit PROC
 
 	mov gs:[010h], rcx
-	mov gs:[01478h], rcx
 
 	ret
 
 set_curr_thread_stack_limit ENDP
+
+set_curr_thread_stack_dealloc PROC
+
+	mov gs:[01478h], rcx
+
+	ret
+
+set_curr_thread_stack_dealloc ENDP
 
 get_curr_thread_stack_base PROC
 
@@ -75,6 +82,14 @@ get_curr_thread_stack_limit PROC
 	ret
 
 get_curr_thread_stack_limit ENDP
+
+get_curr_thread_stack_dealloc PROC
+
+	mov rax, gs:[01478h]
+
+	ret
+
+get_curr_thread_stack_dealloc ENDP
 
 consolidate_frame PROC FRAME
 	push rbp

@@ -138,7 +138,7 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_
 {
 	iter::action_result actionResult = m_iterableState.forward_result();
 
-	if(actionResult != iter::ActionError::ShiftError && m_currAction.is_base_of<iter::shift_action>())
+	if(actionResult == success && m_currAction.is_base_of<iter::shift_action>())
 	{
 		const iter::any_action currAction = actionResult.extract();
 

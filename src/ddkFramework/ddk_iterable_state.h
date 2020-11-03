@@ -49,6 +49,7 @@ public:
 	template<typename ErrorCode>
 	static bool in_error(ErrorCode&&);
 	operator bool() const;
+	static bool flush_result();
 	static void forward_result(action_result i_result);
 	static action_result forward_result();
     template<typename Result>

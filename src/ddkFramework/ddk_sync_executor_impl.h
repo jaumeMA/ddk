@@ -17,10 +17,11 @@ public:
 	deferred_executor();
 
 private:
+	typedef typename executor_interface<Return()>::sink_reference sink_reference;
 	typedef typename executor_interface<Return()>::start_result start_result;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
 
-	start_result execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable) override;
+	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
@@ -36,12 +37,13 @@ public:
 	~await_executor();
 
 private:
+	typedef typename executor_interface<Return()>::sink_reference sink_reference;
 	using typename executor_interface<Return()>::StartErrorCode;
 	typedef typename executor_interface<Return()>::start_result start_result;
 	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
 
-	start_result execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable) override;
+	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
@@ -65,12 +67,13 @@ public:
 	fiber_executor(fiber i_fiber);
 
 private:
+	typedef typename executor_interface<Return()>::sink_reference sink_reference;
 	typedef typename executor_interface<Return()>::start_result start_result;
 	using typename executor_interface<Return()>::StartErrorCode;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
 	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
-	start_result execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable) override;
+	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
@@ -85,10 +88,11 @@ public:
 	~fiber_sheaf_executor() = default;
 
 private:
+	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
 	typedef typename executor_interface<detail::void_t()>::start_result start_result;
 	typedef typename cancellable_executor_interface<detail::void_t()>::cancel_result cancel_result;
 
-	start_result execute(const ddk::function<void(detail::void_t)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
+	start_result execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
@@ -108,12 +112,13 @@ public:
 	thread_executor(thread i_thread);
 
 private:
+	typedef typename executor_interface<Return()>::sink_reference sink_reference;
 	typedef typename executor_interface<Return()>::start_result start_result;
 	using typename executor_interface<Return()>::StartErrorCode;
 	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
 	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
-	start_result execute(const ddk::function<void(Return)>& i_sink, const ddk::function<Return()>& i_callable) override;
+	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 
@@ -127,10 +132,11 @@ public:
 	thread_sheaf_executor(thread_sheaf i_threadSheaf);
 
 private:
+	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
 	typedef typename executor_interface<detail::void_t()>::start_result start_result;
 	typedef typename cancellable_executor_interface<detail::void_t()>::cancel_result cancel_result;
 
-	start_result execute(const ddk::function<void(detail::void_t)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
+	start_result execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	ExecutorState get_state() const override;
 

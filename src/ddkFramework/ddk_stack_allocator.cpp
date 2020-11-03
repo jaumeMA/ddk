@@ -7,6 +7,15 @@
 #define CALL_LAST 0
 #define CALL_FIRST 1
 
+extern "C"
+{
+	void* get_curr_thread_stack_base();
+	void* get_curr_thread_stack_limit();
+	void* get_curr_thread_stack_dealloc();
+	void set_curr_thread_stack_limit(void*);
+	void set_curr_thread_stack_dealloc(void*);
+}
+
 namespace ddk
 {
 
@@ -23,6 +32,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 				{
 					//every time we receive an exception under a current fiber arena, reset stack limits
 					set_curr_thread_stack_limit(fiberArena->second);
+					set_curr_thread_stack_dealloc(fiberArena->second);
 
 					return EXCEPTION_CONTINUE_EXECUTION;
 				}
@@ -33,12 +43,12 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 			}
 			else
 			{
-				return EXCEPTION_EXECUTE_HANDLER;
+				return EXCEPTION_CONTINUE_SEARCH;
 			}
 		}
 		else
 		{
-			return EXCEPTION_EXECUTE_HANDLER;
+			return EXCEPTION_CONTINUE_SEARCH;
 		}
 	}
 	else
@@ -208,6 +218,10 @@ void stack_allocator::deallocate(fiber_id i_id) const
 	m_arena->erase(i_id);
 
 	m_arena = nullptr;
+}
+size_t stack_allocator::get_num_guard_pages() const
+{
+	return m_stackAllocImpl->get_num_guard_pages();
 }
 std::pair<void*,void*>*& stack_allocator::get_curr_arena()
 {

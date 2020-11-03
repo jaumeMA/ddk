@@ -22,11 +22,11 @@ private_async_state<T>::~private_async_state()
 	m_arena.template destroy<T>();
 }
 template<typename T>
-void private_async_state<T>::set_value(reference i_value)
+void private_async_state<T>::set_value(sink_type i_value)
 {
 	pthread_mutex_lock(&m_mutex);
 
-	m_arena.template set_value<T>(i_value);
+	m_arena.template set_value<T>(std::forward<sink_type>(i_value));
 
 	pthread_cond_broadcast(&m_condVar);
 

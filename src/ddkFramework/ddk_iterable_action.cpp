@@ -5,9 +5,10 @@ namespace ddk
 namespace iter
 {
 
-shift_action::shift_action(int i_shift)
-: m_targetShift(i_shift)
-, m_currShift(0)
+shift_action::shift_action(int i_targetShift,int i_currShift,bool i_stepByStep)
+: m_targetShift(i_targetShift)
+, m_currShift(i_currShift)
+, m_stepByStep(i_stepByStep)
 {
 }
 int shift_action::shifted() const
@@ -16,21 +17,32 @@ int shift_action::shifted() const
 }
 int shift_action::shifting() const
 {
-	return m_targetShift;
+	if(m_stepByStep && m_targetShift > 0)
+	{
+		return (m_targetShift > 0) ? 1 : -1;
+	}
+	else
+	{
+		return m_targetShift;
+	}
 }
-int shift_action::incremental_shift() const
+shift_action shift_action::operator()(int i_targetShift,int i_currShift) const
 {
-	return (m_targetShift > 0) ? 1 : -1;
-}
-shift_action shift_action::operator()(int i_shift) const
-{
-    return shift_action(i_shift);
+    return shift_action(i_targetShift,i_currShift);
 }
 bool shift_action::apply(const shift_action& i_appliedAction)
 {
-	m_currShift += i_appliedAction.m_targetShift;
+	m_currShift += i_appliedAction.m_currShift;
 
 	return m_currShift == m_targetShift;
+}
+void shift_action::set_step_by_step(bool i_cond)
+{
+	m_stepByStep = i_cond;
+}
+bool shift_action::step_by_step() const
+{
+	return m_stepByStep;
 }
 
 go_forward_action::go_forward_action()
@@ -76,7 +88,6 @@ bool operator!=(const random_access_action& i_lhs, const random_access_action& i
     return i_lhs.which() != i_rhs.which();
 }
 
-const iter::no_op_action no_op = iter::no_op_action();
 const iter::stop_action stop_iteration = iter::stop_action();
 const iter::erase_action erase_value = iter::erase_action();
 const iter::add_action add_value = iter::add_action();

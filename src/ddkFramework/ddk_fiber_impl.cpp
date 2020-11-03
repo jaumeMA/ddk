@@ -8,14 +8,17 @@ extern "C"
 {
 	void set_curr_thread_stack_base(void*);
 	void set_curr_thread_stack_limit(void*);
+	void set_curr_thread_stack_dealloc(void*);
 	void* get_curr_thread_stack_base();
 	void* get_curr_thread_stack_limit();
+	void* get_curr_thread_stack_dealloc();
 }
 
-void switch_stack(void* i_initStack, void* i_endStack)
+void switch_stack(void* i_initStack, void* i_endStack, void* i_deallocStack)
 {
 	set_curr_thread_stack_base(i_initStack);
 	set_curr_thread_stack_limit(i_endStack);
+	set_curr_thread_stack_dealloc(i_deallocStack);
 }
 
 namespace ddk
@@ -24,28 +27,6 @@ namespace ddk
 namespace detail
 {
 
-this_fiber_t::this_fiber_t()
-: m_stackAllocImpl(make_dynamic_stack_allocator())
-, m_numMaxPages(stack_allocator_interface::k_maxNumStackPages)
-{
-	//recover cpu context
-	ddk::get_context(&m_context);
-
-	//recover stack shape
-	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
-	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
-}
-this_fiber_t::this_fiber_t(const this_fiber_t& other)
-: m_stackAllocImpl(other.m_stackAllocImpl)
-,m_numMaxPages(other.m_numMaxPages)
-{
-	//recover cpu context
-	ddk::get_context(&m_context);
-
-	//recover stack shape
-	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
-	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
-}
 this_fiber_t::this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages)
 : m_stackAllocImpl(i_stackAlloc)
 , m_numMaxPages(i_maxNumPages)
@@ -53,9 +34,11 @@ this_fiber_t::this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumP
 	//recover cpu context
 	ddk::get_context(&m_context);
 
-	//recover stack shape
-	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
-	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
+	update_stack_shape();
+}
+this_fiber_t::this_fiber_t()
+: this_fiber_t(make_dynamic_stack_allocator(),stack_allocator_interface::k_maxNumStackPages)
+{
 }
 ucontext_t* this_fiber_t::get_context()
 {
@@ -72,6 +55,13 @@ fiber_id this_fiber_t::get_id() const
 stack_allocator this_fiber_t::get_allocator() const
 {
 	return stack_allocator(m_stackAllocImpl,m_numMaxPages);
+}
+void this_fiber_t::update_stack_shape()
+{
+	//recover stack shape
+	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
+	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
+	m_context.uc_stack.ss_flags = static_cast<int>(reinterpret_cast<size_t>(m_context.uc_stack.ss_sp) - reinterpret_cast<size_t>(get_curr_thread_stack_dealloc()));
 }
 
 fiber_impl::fiber_impl()
@@ -95,10 +85,12 @@ fiber_impl::fiber_impl(stack_allocator i_stackAlloc)
 fiber_impl::fiber_impl(fiber_impl&& other)
 : m_id(reinterpret_cast<size_t>(this))
 , m_executor(std::move(other.m_executor))
-, m_context(std::move(other.m_context))
 , m_state(other.m_state)
 , m_alloc(std::move(other.m_alloc))
 {
+	memset(&m_context,0,sizeof(ucontext_t));
+
+	ddk::get_context(&m_context);
 }
 fiber_impl::~fiber_impl()
 {
@@ -145,17 +137,17 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 {
 	if(m_context.uc_stack.ss_sp)
 	{
-		set_current_fiber_id(m_id);
-
 		void* stackLowAddr = m_alloc.attach(m_id);
 
-		switch_stack(reinterpret_cast<char*>(m_context.uc_stack.ss_sp) + m_context.uc_stack.ss_size,stackLowAddr);
+		other.update_stack_shape();
+
+		switch_stack(reinterpret_cast<char*>(m_context.uc_stack.ss_sp) + m_context.uc_stack.ss_size,stackLowAddr,stackLowAddr);
 
 		ddk::swap_context(other.get_context(),&m_context);
 
 		set_current_fiber_id(other.get_id());
 
-		switch_stack(reinterpret_cast<char*>(other.get_context()->uc_stack.ss_sp) + other.get_context()->uc_stack.ss_size,other.get_context()->uc_stack.ss_sp);
+		switch_stack(reinterpret_cast<char*>(other.get_context()->uc_stack.ss_sp) + other.get_context()->uc_stack.ss_size,other.get_context()->uc_stack.ss_sp,reinterpret_cast<char*>(other.get_context()->uc_stack.ss_sp) - other.get_context()->uc_stack.ss_flags);
 
 		m_alloc.detach();
 
@@ -176,6 +168,8 @@ void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 	m_context.uc_link = reinterpret_cast<ucontext_t*>(i_context);
 
 	ddk::swap_context(&m_context,other.get_context());
+
+	set_current_fiber_id(m_id);
 }
 fiber_id fiber_impl::get_id() const
 {

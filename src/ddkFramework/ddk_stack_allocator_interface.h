@@ -23,6 +23,7 @@ public:
 	virtual bool reallocate(std::pair<void*,void*>&, void*) const = 0;
 	virtual void deallocate(void*,size_t) const = 0;
 	virtual void release(void*,size_t) const = 0;
+	virtual size_t get_num_guard_pages() const = 0;
 
 	static size_t s_pageSize;
 };

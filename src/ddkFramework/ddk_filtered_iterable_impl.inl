@@ -26,12 +26,12 @@ filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_shared_ref<
 template<typename Traits>
 void filtered_iterable_impl<Traits>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction)
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { if((iter::iterable_state::is_success()) && (eval(m_filter,i_value) == false)) iter::iterable_state::forward_result(make_error<iter::action_result>(iter::ActionError::ShiftError,iter::ShiftActionError::ItemFiltered)); return eval(i_try, i_value); }),i_initialAction);
+	m_iterableRef->iterate_impl(make_function([i_try,this,actionResult=action(i_initialAction)](reference i_value) mutable -> action { if(eval(m_filter,i_value)) actionResult = eval(i_try,i_value); if(actionResult.is_base_of<iter::shift_action>()) actionResult.get<iter::shift_action>().set_step_by_step(true); return actionResult; }),i_initialAction);
 }
 template<typename Traits>
 void filtered_iterable_impl<Traits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
 {
-    m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { if((iter::iterable_state::is_success()) && (eval(m_filter,i_value) == false)) iter::iterable_state::forward_result(make_error<iter::action_result>(iter::ActionError::ShiftError, iter::ShiftActionError::ItemFiltered)); return eval(i_try, i_value); }),i_initialAction);
+	m_iterableRef->iterate_impl(make_function([i_try,this,actionResult=action(i_initialAction)](const_reference i_value) mutable -> action { if(eval(m_filter,i_value)) actionResult = eval(i_try, i_value); if(actionResult.is_base_of<iter::shift_action>()) actionResult.get<iter::shift_action>().set_step_by_step(true); return actionResult; }),i_initialAction);
 }
 template<typename Traits>
 size_t filtered_iterable_impl<Traits>::size() const

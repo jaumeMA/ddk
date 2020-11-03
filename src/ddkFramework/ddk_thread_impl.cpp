@@ -76,6 +76,7 @@ void one_shot_thread_impl::stop()
 		m_threadFunc = nullptr;
 
 		void *res = NULL;
+		thread_id_t prova = get_id();
 		pthread_join(m_thread,&res);
 	}
 }
