@@ -20,12 +20,8 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 {
 	m_executor = make_async_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_forward_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
-    if(m_executor->execute())
+    if(m_executor->execute() != success)
     {
-        m_currState.apply(m_currAction.get());
-    }
-	else
-	{
 		m_currState.reset();
 	}
 }
@@ -37,12 +33,8 @@ co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable, typename std::
 {
 	m_executor = make_async_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_forward_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
-    if (m_executor->execute())
+    if (m_executor->execute() != success)
     {
-        m_currState.apply(m_currAction.get());
-    }
-	else
-	{
 		m_currState.reset();
 	}
 }
@@ -77,12 +69,8 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator++()
 
     m_currAction.set(iter::go_next_place);
 
-	if (m_executor->execute())
+	if (m_executor->execute() != success)
 	{
-        m_currState.apply(m_currAction.get());
-    }
-    else
-    {
         m_currState.reset();
     }
 
@@ -97,12 +85,8 @@ co_forward_iterator<T> co_forward_iterator<T>::operator++(int)
 
     m_currAction.set(iter::go_next_place);
 
-	if (m_executor->execute())
+	if (m_executor->execute() != success)
 	{
-        m_currState.apply(m_currAction.get());
-    }
-    else
-    {
         m_currState.reset();
     }
 
@@ -163,12 +147,8 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(const co_bidirectional_i
 {
 	m_executor = make_async_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_bidirectional_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
-    if(m_executor->execute())
+    if(m_executor->execute() != success)
     {
-        m_currState.apply(m_currAction.get());
-    }
-	else
-	{
 		m_currState.reset();
 	}
 }
@@ -180,12 +160,8 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(Iterable& i_iterable, ty
 {
 	m_executor = make_async_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_bidirectional_iterator<T>::acquire_iterable_value))) -> attach(m_caller);
 
-    if (m_executor->execute())
+    if (m_executor->execute() != success)
     {
-        m_currState.apply(m_currAction.get());
-    }
-	else
-	{
 		m_currState.reset();
 	}
 }
@@ -220,12 +196,8 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator++()
 
     m_currAction.set(iter::go_next_place);
 
-	if (m_executor->execute())
+	if (m_executor->execute() != success)
 	{
-        m_currState.apply(m_currAction.get());
-	}
-    else
-    {
         m_currState.reset();
     }
 
@@ -240,12 +212,8 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator++(int)
 
     m_currAction.set(iter::go_next_place);
 
-	if (m_executor->execute())
+	if (m_executor->execute() != success)
 	{
-        m_currState.apply(m_currAction.get());
-	}
-    else
-    {
         m_currState.reset();
     }
 
@@ -258,12 +226,8 @@ co_bidirectional_iterator<T>& co_bidirectional_iterator<T>::operator--()
 
     m_currAction.set(iter::go_prev_place);
 
-	if (m_executor->execute())
+	if (m_executor->execute() != success)
 	{
-        m_currState.apply(m_currAction.get());
-	}
-    else
-    {
         m_currState.reset();
     }
 
@@ -278,12 +242,8 @@ co_bidirectional_iterator<T> co_bidirectional_iterator<T>::operator--(int)
 
     m_currAction.set(iter::go_prev_place);
 
-	if (m_executor->execute())
+	if (m_executor->execute() != success)
 	{
-        m_currState.apply(m_currAction.get());
-	}
-    else
-    {
         m_currState.reset();
     }
 

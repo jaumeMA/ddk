@@ -233,7 +233,7 @@ TEST(DDKCoIterableTest,myIterableForwardIteration)
 	const size_t maxIndex = 100;
 	const MyIterable foo(initIndex,maxIndex);
 
-	size_t currIndex = initIndex;
+	size_t currIndex = initIndex+1;
 
 	for(auto&& itKK : ddk::co_iterate(foo))
 	{
