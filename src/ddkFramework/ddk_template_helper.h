@@ -471,7 +471,13 @@ struct is_among_types
 template<typename Type, typename ... Types>
 struct is_among_convertible_types
 {
-    static const bool value = (nth_pos_of_predicate<std::is_constructible,Type,Types...>::value != -1);
+    static const bool value = (nth_pos_of_predicate<std::is_convertible,Type,Types...>::value != -1);
+};
+
+template<typename Type,typename ... Types>
+struct is_among_constructible_types
+{
+	static const bool value = (nth_pos_of_predicate<std::is_constructible,Type,Types...>::value != -1);
 };
 
 template<typename Type, typename ... Types>
@@ -491,6 +497,22 @@ struct get_first_convertible_type
 {
 private:
 	static const size_t typePos = nth_pos_of_predicate<std::is_convertible,Type,Types...>::value;
+
+public:
+	//placeholder
+	typedef typename nth_type_of<typePos,Types...>::type type;
+	static const size_t value = typePos;
+};
+
+template<typename Type,typename ... Types>
+struct get_type_match_pos
+{
+private:
+	typedef typename std::remove_const<typename std::remove_reference<Type>::type>::type raw_type;
+
+	static const size_t typePosSame = nth_pos_of_predicate<std::is_same,raw_type,Types...>::value;
+	static const size_t typePosCtr = nth_pos_of_predicate<std::is_constructible,Type,Types...>::value;
+	static const size_t typePos = (typePosSame != -1) ? typePosSame : typePosCtr;
 
 public:
 	//placeholder

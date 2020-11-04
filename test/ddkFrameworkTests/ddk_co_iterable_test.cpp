@@ -90,10 +90,6 @@ TEST(DDKCoIterableTest,stdVectorForwardIteration)
 	kk1.push_back(2345);
 
 	{
-		unsigned __int64 init = 0;
-		unsigned __int64 end = 0;
-		GetCurrentThreadStackLimits(&init,&end);
-
 		iterable res1 = ddk::co_iterate(kk1);
 		iterator itRes1 = std::begin(res1);
 
@@ -230,15 +226,28 @@ TEST(DDKCoIterableTest, assignIterator)
 TEST(DDKCoIterableTest,myIterableForwardIteration)
 {
 	const size_t initIndex = 0;
-	const size_t maxIndex = 100;
+	const size_t maxIndex = 1000000;
 	const MyIterable foo(initIndex,maxIndex);
+
+	std::vector<int> kk;
+	for(size_t index = 0;index < maxIndex;index++)
+	{
+		kk.push_back(index);
+	}
+	
+	std::vector<int>::const_iterator itQQ = kk.begin();
+	for(size_t index=0; itQQ !=kk.end();++itQQ,++index)
+	{
+		ddk::iter::any_action cucu = ddk::iter::go_no_place;
+
+		EXPECT_EQ(*itQQ,index);
+	}
+
 
 	size_t currIndex = initIndex+1;
 
-	for(auto&& itKK : ddk::co_iterate(foo))
+	for(auto&& itKK : ddk::co_iterate(kk))
 	{
-		EXPECT_EQ(itKK,currIndex);
 
-		++currIndex;
 	}
 }

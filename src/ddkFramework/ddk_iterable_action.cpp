@@ -5,6 +5,11 @@ namespace ddk
 namespace iter
 {
 
+template<typename T>
+void check(const T&, typename T::variant_tag* = nullptr)
+{
+}
+
 shift_action::shift_action(int i_targetShift,int i_currShift,bool i_stepByStep)
 : m_targetShift(i_targetShift)
 , m_currShift(i_currShift)
@@ -63,29 +68,13 @@ go_backward_action::go_backward_action(const shift_action& other)
 {
 }
 
-bool operator==(const forward_action& i_lhs, const forward_action& i_rhs)
+bool operator==(const base_action& i_lhs, const base_action& i_rhs)
 {
-    return i_lhs.which() == i_rhs.which();
+	return true;
 }
-bool operator==(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs)
+bool operator!=(const base_action& i_lhs, const base_action& i_rhs)
 {
-    return i_lhs.which() == i_rhs.which();
-}
-bool operator==(const random_access_action& i_lhs, const random_access_action& i_rhs)
-{
-    return i_lhs.which() == i_rhs.which();
-}
-bool operator!=(const forward_action& i_lhs, const forward_action& i_rhs)
-{
-    return i_lhs.which() != i_rhs.which();
-}
-bool operator!=(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs)
-{
-    return i_lhs.which() != i_rhs.which();
-}
-bool operator!=(const random_access_action& i_lhs, const random_access_action& i_rhs)
-{
-    return i_lhs.which() != i_rhs.which();
+    return false;
 }
 
 const iter::stop_action stop_iteration = iter::stop_action();

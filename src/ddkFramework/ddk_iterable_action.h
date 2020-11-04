@@ -11,15 +11,20 @@ namespace ddk
 namespace iter
 {
 
-struct erase_action
+struct base_action
 {
 };
+
+struct erase_action : base_action
+{
+};
+
 SCOPED_ENUM_DECL(EraseActionError,
                  NonExistingValue,
                  ErasingFromConstantIterable);
 typedef ddk::result<void,EraseActionError> erase_result;
 
-struct add_action
+struct add_action : base_action
 {
 public:
     add_action() = default;
@@ -51,11 +56,11 @@ SCOPED_ENUM_DECL(AddActionError,
 				AddedItemFiltered);
 typedef ddk::result<void,AddActionError> add_result;
 
-struct stop_action
+struct stop_action : base_action
 {
 };
 
-struct shift_action
+struct shift_action : base_action
 {
 public:
 	shift_action(int i_targetShift, int i_currShift = 0, bool i_stepByStep = false);
@@ -104,12 +109,8 @@ typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backwar
 typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
 typedef result<any_action,action_error> action_result;
 
-bool operator==(const forward_action& i_lhs, const forward_action& i_rhs);
-bool operator==(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs);
-bool operator==(const random_access_action& i_lhs, const random_access_action& i_rhs);
-bool operator!=(const forward_action& i_lhs, const forward_action& i_rhs);
-bool operator!=(const bidirectional_action& i_lhs, const bidirectional_action& i_rhs);
-bool operator!=(const random_access_action& i_lhs, const random_access_action& i_rhs);
+bool operator==(const base_action& i_lhs, const base_action& i_rhs);
+bool operator!=(const base_action& i_lhs, const base_action& i_rhs);
 
 const extern iter::stop_action stop_iteration;
 const extern iter::erase_action erase_value;

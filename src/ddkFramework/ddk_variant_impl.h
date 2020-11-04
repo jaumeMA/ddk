@@ -22,60 +22,60 @@ public:
 	static const size_t npos = _numTypes;
 
     variant_impl();
-    void construct(const variant_impl<Types...>& other);
-    void construct(variant_impl<Types...>&& other);
+    inline void construct(const variant_impl<Types...>& other);
+    inline void construct(variant_impl<Types...>&& other);
     template<typename ... TTypes>
-    void construct(const variant_impl<TTypes...>& other);
+    inline void construct(const variant_impl<TTypes...>& other);
     template<typename ... TTypes>
-    void construct(variant_impl<TTypes...>&& other);
+    inline void construct(variant_impl<TTypes...>&& other);
     template<size_t Index, typename TType>
-    void construct(TType&& other);
-    void destroy();
+    inline void construct(TType&& other);
+    inline void destroy();
     ~variant_impl();
-    variant_impl<Types...>& operator=(const variant_impl<Types...>& other);
-    variant_impl<Types...>& operator=(variant_impl<Types...>&& other);
+    inline variant_impl<Types...>& operator=(const variant_impl<Types...>& other);
+    inline variant_impl<Types...>& operator=(variant_impl<Types...>&& other);
     template<typename ... TTypes>
-    variant_impl<Types...>& operator=(const variant_impl<TTypes...>& other);
+    inline variant_impl<Types...>& operator=(const variant_impl<TTypes...>& other);
     template<typename ... TTypes>
-    variant_impl<Types...>& operator=(variant_impl<TTypes...>&& other);
+    inline variant_impl<Types...>& operator=(variant_impl<TTypes...>&& other);
     template<size_t Index, typename TType>
-    variant_impl<Types...>& assign(TType&& val);
-    bool operator==(const variant_impl<Types...>& other) const;
-    bool operator==(variant_impl<Types...>&& other) const;
-    bool operator!=(const variant_impl<Types...>& other) const;
-    bool operator!=(variant_impl<Types...>&& other) const;
+    inline variant_impl<Types...>& assign(TType&& val);
+    inline bool operator==(const variant_impl<Types...>& other) const;
+    inline bool operator==(variant_impl<Types...>&& other) const;
+    inline bool operator!=(const variant_impl<Types...>& other) const;
+    inline bool operator!=(variant_impl<Types...>&& other) const;
     template<size_t Index, typename TType>
-    bool compare(TType&& other) const;
+    inline bool compare(TType&& other) const;
     template<typename TType>
-    typename embedded_type<TType>::cref_type get() const;
+	inline typename embedded_type<TType>::cref_type get() const;
     template<typename TType>
-    typename embedded_type<TType>::ref_type get();
+	inline typename embedded_type<TType>::ref_type get();
     template<typename TType>
-    TType extract();
+	inline TType extract();
     template<typename TType>
-    bool is() const;
+	inline bool is() const;
 	template<typename TType>
-	typename embedded_type<TType>::cref_type get_as() const;
+	inline typename embedded_type<TType>::cref_type get_as() const;
 	template<typename TType>
-	typename embedded_type<TType>::ref_type get_as();
+	inline typename embedded_type<TType>::ref_type get_as();
 	template<typename TType>
-	bool is_base_of() const;
+	inline bool is_base_of() const;
 	template<size_t Pos>
-    typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type get() const;
+	inline typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type get() const;
     template<size_t Pos>
-    typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type get();
+	inline typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type get();
     template<size_t Pos>
-    embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract();
+	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract();
     template<size_t Pos>
-    bool is() const;
-    bool empty() const;
-    char which() const;
-    void reset();
-    void swap(variant_impl<Types...>& other);
+    inline bool is() const;
+    inline bool empty() const;
+    inline char which() const;
+    inline void reset();
+    inline void swap(variant_impl<Types...>& other);
     template<typename Visitor>
-    typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor);
+	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor);
     template<typename Visitor>
-    typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor) const;
+	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor) const;
 
 private:
     typedef typename mpl::max_type<embedded_type<Types>...>::type dominantType;
