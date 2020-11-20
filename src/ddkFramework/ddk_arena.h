@@ -1,7 +1,5 @@
 #pragma once
 
-#define _ENABLE_EXTENDED_ALIGNED_STORAGE
-
 #include <type_traits>
 #include <cstddef>
 #include "ddk_embedded_type.h"

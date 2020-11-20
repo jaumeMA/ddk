@@ -1,12 +1,18 @@
 #pragma once
 
-#include "ddk_arena.h"
+#if defined(WIN32)
+
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE
+
+#endif
+
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_function.h"
 #include "ddk_iterable_action.h"
 #include "ddk_iterable_valued_traits.h"
 #include "ddk_iterable_state.h"
 #include "ddk_sync_executor_impl.h"
+#include "ddk_arena.h"
 
 namespace ddk
 {
