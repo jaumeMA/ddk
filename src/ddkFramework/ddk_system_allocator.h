@@ -45,6 +45,13 @@ public:
 	{
 		return reallocate(ptr,numUnits,sizeof(T));
 	}
+	void deallocate(void *ptr) const
+	{
+		if(const T* typedObject = reinterpret_cast<const T*>(ptr))
+		{
+			delete typedObject;
+		}
+	}
 };
 
 }

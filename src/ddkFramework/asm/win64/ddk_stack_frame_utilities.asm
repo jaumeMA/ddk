@@ -116,7 +116,7 @@ consolidate_frame PROC FRAME
 	mov rdi, (Context PTR [r8]).reg_Rdi
 	mov rsi, (Context PTR [r8]).reg_Rsi
 	mov rax, (Context PTR [r8]).reg_Rax
-	mov r9, (Context PTR [rax]).reg_R9
+	mov r9, (Context PTR [r8]).reg_R9
 	mov r10, (Context PTR [r8]).reg_R10
 	mov r11, (Context PTR [r8]).reg_R11
 	mov r12, (Context PTR [r8]).reg_R12

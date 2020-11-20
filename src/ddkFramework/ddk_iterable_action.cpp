@@ -16,6 +16,13 @@ shift_action::shift_action(int i_targetShift,int i_currShift,bool i_stepByStep)
 , m_stepByStep(i_stepByStep)
 {
 }
+shift_action::shift_action(shift_action&& other)
+: m_targetShift(other.m_targetShift)
+, m_currShift(other.m_currShift)
+, m_stepByStep(other.m_stepByStep)
+{
+	other.m_currShift = other.m_targetShift;
+}
 int shift_action::shifted() const
 {
     return m_currShift;
@@ -28,7 +35,7 @@ int shift_action::shifting() const
 	}
 	else
 	{
-		return m_targetShift;
+		return m_targetShift - m_currShift;
 	}
 }
 shift_action shift_action::operator()(int i_targetShift,int i_currShift) const
@@ -48,6 +55,28 @@ void shift_action::set_step_by_step(bool i_cond)
 bool shift_action::step_by_step() const
 {
 	return m_stepByStep;
+}
+shift_action& shift_action::operator=(const shift_action& other)
+{
+	m_targetShift = other.m_targetShift;
+	m_currShift = other.m_currShift;
+	m_stepByStep = other.m_stepByStep;
+
+	return *this;
+}
+shift_action& shift_action::operator=(shift_action&& other)
+{
+	m_targetShift = other.m_targetShift;
+	m_currShift = other.m_currShift;
+	m_stepByStep = other.m_stepByStep;
+
+	other.m_currShift = other.m_targetShift;
+
+	return *this;
+}
+shift_action::operator bool() const
+{
+	return m_targetShift == m_currShift;
 }
 
 go_forward_action::go_forward_action()
@@ -75,6 +104,14 @@ bool operator==(const base_action& i_lhs, const base_action& i_rhs)
 bool operator!=(const base_action& i_lhs, const base_action& i_rhs)
 {
     return false;
+}
+bool operator==(const shift_action& i_lhs,const shift_action& i_rhs)
+{
+	return i_lhs.shifting() == i_rhs.shifting();
+}
+bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs)
+{
+	return i_lhs.shifting() != i_rhs.shifting();
 }
 
 const iter::stop_action stop_iteration = iter::stop_action();

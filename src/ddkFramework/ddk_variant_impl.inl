@@ -26,7 +26,7 @@ variant_impl<Types...>::variant_impl()
 template<typename ... Types>
 void variant_impl<Types...>::construct(const variant_impl<Types...>& other)
 {
-		m_currentType = other.m_currentType;
+	m_currentType = other.m_currentType;
 
 	if (other.m_currentType < _numTypes)
 	{
@@ -455,19 +455,9 @@ bool variant_impl<Types...>::is() const
 	return m_currentType == Pos;
 }
 template<typename ... Types>
-bool variant_impl<Types...>::empty() const
-{
-	return m_currentType == _numTypes;
-}
-template<typename ... Types>
 char variant_impl<Types...>::which() const
 {
 	return m_currentType;
-}
-template<typename ... Types>
-void variant_impl<Types...>::reset()
-{
-	destroy();
 }
 template<typename ... Types>
 void variant_impl<Types...>::swap(variant_impl<Types...>& other)

@@ -1,6 +1,8 @@
 #include "ddk_stack_allocator.h"
 #include "ddk_dynamic_stack_allocator.h"
 #include "ddk_reference_wrapper.h"
+#include "ddk_fiber_utils.h"
+#include "ddk_execution_context.h"
 
 #if defined(WIN32)
 
@@ -9,9 +11,6 @@
 
 extern "C"
 {
-	void* get_curr_thread_stack_base();
-	void* get_curr_thread_stack_limit();
-	void* get_curr_thread_stack_dealloc();
 	void set_curr_thread_stack_limit(void*);
 	void set_curr_thread_stack_dealloc(void*);
 }
@@ -23,27 +22,23 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
 	if(pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION)
 	{
-		if(std::pair<void*,void*>*& fiberArena = ddk::stack_allocator::get_curr_arena())
-		{
-			//check that stack pointer is inside our scope
-			if(const stack_allocator_interface* currAllocImpl = stack_allocator::get_curr_alloc_impl())
-			{
-				if(currAllocImpl->reallocate(*fiberArena,reinterpret_cast<void*>(pExceptionInfo->ContextRecord->Rsp)))
-				{
-					//every time we receive an exception under a current fiber arena, reset stack limits
-					set_curr_thread_stack_limit(fiberArena->second);
-					set_curr_thread_stack_dealloc(fiberArena->second);
+		detail::execution_context& currFiberContext = get_current_execution_context();
+		detail::execution_stack& currStack = currFiberContext.get_stack();
 
-					return EXCEPTION_CONTINUE_EXECUTION;
-				}
-				else
-				{
-					return EXCEPTION_EXECUTE_HANDLER;
-				}
+		//check that stack pointer is inside our scope
+		if(stack_alloc_const_shared_ptr& currAllocImpl = currStack.get_allocator())
+		{
+			if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ContextRecord->Rsp)))
+			{
+				//every time we receive an exception under a current fiber arena, reset stack limits
+				set_curr_thread_stack_limit(currStack.get_end());
+				set_curr_thread_stack_dealloc(currStack.get_dealloc());
+
+				return EXCEPTION_CONTINUE_EXECUTION;
 			}
 			else
 			{
-				return EXCEPTION_CONTINUE_SEARCH;
+				return EXCEPTION_EXECUTE_HANDLER;
 			}
 		}
 		else
@@ -141,12 +136,6 @@ bool initialize_thread_stack()
 
 	return true;
 }
-std::unordered_map<fiber_id,std::pair<void*,void*>>* initialize_thread_map()
-{
-	static thread_local std::unordered_map<fiber_id,std::pair<void*,void*>> fiberStackMap;
-
-	return &fiberStackMap;
-}
 
 #if defined(WIN32)
 
@@ -176,64 +165,31 @@ stack_allocator::stack_allocator(stack_allocator&& other)
 stack_allocator::~stack_allocator()
 {
 }
-std::pair<size_t,void*> stack_allocator::allocate(fiber_id i_id) const
+detail::execution_stack stack_allocator::allocate() const
 {
 	static const thread_local bool _ = initialize_thread_stack();
 
-	m_arena = initialize_thread_map();
+	void* initStack = m_stackAllocImpl->reserve(m_numMaxPages);
+	std::pair<void*,void*>& fiberAlloc = std::make_pair(initStack,m_stackAllocImpl->allocate(initStack,1));
 
-	std::pair<void*,void*>& fiberAlloc = (*m_arena)[i_id];
-	fiberAlloc.first = m_stackAllocImpl->reserve(m_numMaxPages);
-	fiberAlloc.second = m_stackAllocImpl->allocate(fiberAlloc.first,1);
-
-	return std::make_pair(reinterpret_cast<const char*>(fiberAlloc.first) - reinterpret_cast<const char*>(fiberAlloc.second),fiberAlloc.second);
+	return { fiberAlloc.first,fiberAlloc.second,fiberAlloc.second };
 }
-void* stack_allocator::attach(fiber_id i_id)
+void stack_allocator::deallocate(const detail::execution_stack& i_stack) const
 {
-	DDK_ASSERT(m_arena != nullptr, "Attaching with no fiber map set");
-
-	const stack_allocator_interface*& currAllocImpl = get_curr_alloc_impl();
-	currAllocImpl = m_stackAllocImpl.get();
-
-	std::pair<void*,void*>*& currArena = get_curr_arena();
-	currArena = &(*m_arena)[i_id];
-
-	return currArena->second;
+	m_stackAllocImpl->deallocate(i_stack.get_end(),i_stack.get_size() / stack_allocator_interface::s_pageSize);
+	m_stackAllocImpl->release(i_stack.get_init(),m_numMaxPages);
 }
-void stack_allocator::detach()
+size_t stack_allocator::get_num_max_pages() const
 {
-	std::pair<void*,void*>*& currArena = get_curr_arena();
-
-	currArena = nullptr;
-}
-void stack_allocator::deallocate(fiber_id i_id) const
-{
-	DDK_ASSERT(m_arena != nullptr, "Deallocating with no fiber map set");
-
-	std::pair<void*,void*>& fiberAlloc = (*m_arena)[i_id];
-
-	m_stackAllocImpl->deallocate(fiberAlloc.first,(reinterpret_cast<char*>(fiberAlloc.first) - reinterpret_cast<char*>(fiberAlloc.second)) / stack_allocator_interface::s_pageSize);
-	m_stackAllocImpl->release(fiberAlloc.first,m_numMaxPages);
-
-	m_arena->erase(i_id);
-
-	m_arena = nullptr;
+	return m_numMaxPages;
 }
 size_t stack_allocator::get_num_guard_pages() const
 {
 	return m_stackAllocImpl->get_num_guard_pages();
 }
-std::pair<void*,void*>*& stack_allocator::get_curr_arena()
+stack_alloc_const_shared_ref stack_allocator::get_alloc_impl() const
 {
-	static thread_local std::pair<void*,void*>* currArena = nullptr;
-
-	return currArena;
-}
-const stack_allocator_interface*& stack_allocator::get_curr_alloc_impl()
-{
-	static thread_local const stack_allocator_interface* currStackAllocImpl = nullptr;
-
-	return currStackAllocImpl;
+	return m_stackAllocImpl;
 }
 
 }

@@ -7,6 +7,14 @@
 namespace ddk
 {
 
+//impl
+template<typename Object,typename Return,typename ... Types>
+inline detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...));
+template<typename Object,typename Return,typename ... Types>
+inline detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const);
+template<typename Return,typename ... Types>
+inline detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...));
+
 //no allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types>
 inline function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...));
@@ -47,6 +55,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 template<typename Functor, typename Allocator, typename Arg, typename ... Args>
 inline resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>::type,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
+//safe version
 template<typename Return, typename ... Types, typename Allocator>
 inline function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>& i_function);
 template<typename Return, typename Allocator>
@@ -55,6 +64,15 @@ template<typename Return, typename ... Types, typename Allocator, typename Arg, 
 inline resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args);
 template<typename Return, typename ... Types, typename Allocator, typename ... Args>
 inline Return eval(const function<Return(Types...),Allocator>& i_function, const function_arguments<Args...>& i_args);
+
+//unsafe version
+template<typename Return,typename Allocator>
+inline Return eval_unsafe(const function<Return(),Allocator>& i_function);
+template<typename Return,typename ... Types,typename Allocator,typename Arg,typename ... Args>
+inline resolved_return_type<Arg,Return> eval_unsafe(const function<Return(Types...),Allocator>& i_function,Arg&& i_arg,Args&& ... i_args);
+template<typename Return,typename ... Types,typename Allocator,typename ... Args>
+inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
+
 
 template<typename ... Callables>
 inline detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables);

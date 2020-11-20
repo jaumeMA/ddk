@@ -96,11 +96,15 @@ class relative_function_impl : public function_impl_base<Return, tuple<Types...>
     using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
 
 public:
+	typedef Return return_type;
+
 	relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
 
+	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
-    Return apply(const tuple_args& i_tuple) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
+    Return apply(const tuple_args& i_tuple) const final;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 
@@ -117,11 +121,15 @@ class free_function_impl : public function_impl_base<Return, tuple<Types...>>
     using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
 
 public:
+	typedef Return return_type;
+
 	free_function_impl(FuncPointerType i_funcPointer);
 
+	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
-    Return apply(const tuple_args& i_tuple) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
+    Return apply(const tuple_args& i_tuple) const final;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 
@@ -136,12 +144,16 @@ class functor_impl : public function_impl_base<Return, tuple<Types...>>
     using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
 
 public:
+	typedef Return return_type;
+
 	functor_impl(const T& i_functor);
 	functor_impl(T&& i_functor);
 
+	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const override;
-    Return apply(const tuple_args& i_tuple) const override;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
+    Return apply(const tuple_args& i_tuple) const final;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 

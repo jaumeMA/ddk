@@ -11,6 +11,12 @@ extern "C"
 
 namespace ddk
 {
+namespace detail
+{
+
+struct execution_stack;
+
+}
 
 class stack_allocator_interface
 {
@@ -20,7 +26,7 @@ public:
 	virtual ~stack_allocator_interface() = default;
 	virtual void* reserve(size_t) const = 0;
 	virtual void* allocate(void*,size_t) const = 0;
-	virtual bool reallocate(std::pair<void*,void*>&, void*) const = 0;
+	virtual bool reallocate(detail::execution_stack&, void*) const = 0;
 	virtual void deallocate(void*,size_t) const = 0;
 	virtual void release(void*,size_t) const = 0;
 	virtual size_t get_num_guard_pages() const = 0;

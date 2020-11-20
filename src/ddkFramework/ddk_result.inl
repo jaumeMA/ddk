@@ -3,8 +3,8 @@
     #define SET_CHECK_RESULT(_VALUE) m_checked = _VALUE;
     #define CHECK_RESULT DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
 #else
-    #define SET_CHECK_RESULT(_VALUE) m_checked = _VALUE;
-    #define CHECK_RESULT DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
+    #define SET_CHECK_RESULT(_VALUE) 
+    #define CHECK_RESULT
 #endif
 
 
@@ -75,13 +75,6 @@ Error result<void,Error>::error() const
     SET_CHECK_RESULT(true)
 
     return *m_nestedRes;
-}
-template<typename Error>
-void result<void,Error>::clear()
-{
-	SET_CHECK_RESULT(true)
-		
-	m_nestedRes = none;
 }
 template<typename Error>
 result<void,Error>::operator bool() const
@@ -203,11 +196,6 @@ T result<T,Error>::extract()
     CHECK_RESULT
 
     return m_nestedRes.template extract<T>();
-}
-template<typename T, typename Error>
-void result<T,Error>::clear()
-{
-    m_nestedRes.reset();
 }
 template<typename T, typename Error>
 result<T,Error>::operator bool() const

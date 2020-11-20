@@ -63,15 +63,15 @@ public:
     tuple<Iterables...>& get_iterables();
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const override;
     size_t size() const override;
     bool empty() const override;
 
     template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::shift_action& i_initialAction);
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr);
     template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const;
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const;
 
     tuple<Iterables...> m_iterables;
 };

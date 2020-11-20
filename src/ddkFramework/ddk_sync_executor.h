@@ -33,9 +33,8 @@ public:
 	async_executor& operator=(const async_executor&) = delete;
 
 	async_shared_ref attach(thread i_thread);
-	async_shared_ref attach(const detail::this_thread_t&);
 	async_shared_ref attach(fiber i_fiber);
-	async_shared_ref attach(const detail::this_fiber_t&);
+	async_shared_ref attach(const detail::this_thread_t&);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(thread_sheaf i_threadSheaf);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(fiber_sheaf i_fiberSheaf);
 	async_shared_ref attach(attachable<Return> i_attachable);
@@ -53,7 +52,7 @@ private:
 	cancel_result cancel() override;
 	reference get_value() override;
 	const_reference get_value() const override;
-	rref_type extract_value() override;
+	embedded_type<Return> extract_value() override;
 	void wait() const override;
 	void wait_for(unsigned int i_period) const override;
 	bool ready() const override;

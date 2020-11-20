@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ddk_void.h"
 #include <type_traits>
 #include <cstring>
-#include "ddk_void.h"
 #include <functional>
 
 #define ASSERT_CONTAINS_SYMBOL(_CLASS,_SYMBOL,_MSG) \
@@ -304,6 +304,8 @@ struct acc_sequence<>
     {
         typedef sequence<otherRanks...> type;
     };
+
+	typedef sequence<> type;
 };
 
 template<size_t rank, size_t ... ranks>
@@ -337,20 +339,6 @@ template<size_t initRank, size_t endRank>
 struct create_range_rank
 {
     typedef typename _create_range_rank<endRank,initRank>::type type;
-};
-
-template<typename ...>
-struct get_total_size;
-
-template<typename T, typename ... Types>
-struct get_total_size<T,Types...>
-{
-    static const size_t value = size_of_qualified_type<T>::value + get_total_size<Types...>::value;
-};
-template<>
-struct get_total_size<>
-{
-    static const size_t value = 0;
 };
 
 template<typename ... Types>
@@ -554,20 +542,29 @@ struct is_same_rank
 };
 
 template<typename ...>
-struct get_total_alignment;
-
-template<>
-struct get_total_alignment<>
-{
-    static const size_t value = 1;
-};
+struct total_type;
 
 template<typename T, typename ... TT>
-struct get_total_alignment<T,TT...>
+struct total_type<T,TT...> : total_type<TT...>
 {
-    typedef uint8_t type[get_total_size<T,TT...>::value];
-    static const size_t value = std::alignment_of<type>::value;
-    //static const size_t value = std::alignment_of<T>::value * get_total_alignment<TT...>::value;
+	T _;
+};
+
+template<>
+struct total_type<>
+{
+};
+
+template<typename ... T>
+struct get_total_alignment
+{
+    static const size_t value = mpl::sequence<std::alignment_of<T>::value ...>::max;
+};
+
+template<typename ... T>
+struct get_total_size
+{
+	static const size_t value = sizeof(total_type<T...>);
 };
 
 template<typename>
@@ -580,11 +577,11 @@ struct _acc_sizeof<sequence<Indexs...>>
 
     constexpr _acc_sizeof() = default;
 
-    static constexpr size_t at(size_t i_index)
+    inline static size_t at(size_t i_index)
     {
         return (i_index == 0) ? 0 : value[i_index-1];
     }
-    static constexpr size_t index(size_t i_ptrDiff, size_t i_initialIndex = 0)
+	static constexpr size_t index(size_t i_ptrDiff, size_t i_initialIndex = 0)
     {
         return (i_ptrDiff == 0) ? 0 : (value[i_initialIndex] == i_ptrDiff) ? i_initialIndex + 1 : index(i_ptrDiff,i_initialIndex + 1);
     }

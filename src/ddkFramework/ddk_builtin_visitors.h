@@ -150,15 +150,15 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
 		return std::forward<ref_type>(val);
 	}
 	template<size_t PosType>
-    typename embedded_type<retType>::cref_type visit(typename embedded_type<retType>::cref_type val) const
+    typename embedded_type<retType>::ref_type visit(typename embedded_type<retType>::cref_type val) const
 	{
-		typedef typename embedded_type<retType>::cref_type ref_type;
+		typedef typename embedded_type<retType>::ref_type ref_type;
 
-		return std::forward<ref_type>(val);
+		return const_cast<ref_type>(val);
 	}
     //for the rest of unsused types
-    template<size_t PosType, typename Type>
-    typename embedded_type<retType>::cref_type visit(Type&& val, ...) const
+    template<size_t PosType, typename Type = void>
+    typename embedded_type<retType>::ref_type visit(...) const
 	{
 		typedef typename embedded_type<retType>::ref_type ref_type;
 

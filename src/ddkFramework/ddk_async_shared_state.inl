@@ -84,7 +84,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 	return value;
 }
 template<typename T>
-typename private_async_state<T>::rref_type private_async_state<T>::extract_value()
+embedded_type<T> private_async_state<T>::extract_value()
 {
 	pthread_mutex_lock(&m_mutex);
 
@@ -98,11 +98,11 @@ typename private_async_state<T>::rref_type private_async_state<T>::extract_value
 		throw async_exception("Accessing empty async shared state");
 	}
 
-	rref_type value = m_arena.template extract<T>();
+	embedded_type<T> value = m_arena.template extract<T>();
 
 	pthread_mutex_unlock(&m_mutex);
 
-	return std::forward<rref_type>(value);
+	return std::move(value);
 }
 template<typename T>
 void private_async_state<T>::wait() const

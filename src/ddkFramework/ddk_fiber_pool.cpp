@@ -16,7 +16,7 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, size_t i_maxNumPag
 	m_fiberCtr.reserve(i_initialSize);
 	for(size_t fiberIndex=0;fiberIndex<i_initialSize;++fiberIndex)
 	{
-		m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages }));
+		m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler));
 	}
 
 	m_fiberScheduler->start();
@@ -30,7 +30,7 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, stack_alloc_const_
 	m_fiberCtr.reserve(i_initialSize);
 	for(size_t fiberIndex=0;fiberIndex<i_initialSize;++fiberIndex)
 	{
-		m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages }));
+		m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler));
 	}
 
 	m_fiberScheduler->start();
@@ -52,7 +52,7 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 		//depending on the policy
 		if(m_policy == GrowsOnDemand)
 		{
-			m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages }));
+			m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler));
 		}
 		else
 		{
@@ -82,7 +82,7 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 			const size_t missingFibers = i_size - m_fiberCtr.size();
 			for(size_t fiberIndex=0;fiberIndex<missingFibers;++fiberIndex)
 			{
-				m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages }));
+				m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages }, *m_fiberScheduler));
 			}
 		}
 		else

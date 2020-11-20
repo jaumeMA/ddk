@@ -36,7 +36,7 @@ function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i
     {
         Functor* newFuncImpl = new(mem) Functor(i_functor);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -53,7 +53,7 @@ function<Return(Types...),Allocator>::function(Return(*i_call)(Types...), const 
     {
         Functor* newFuncImpl = new(mem) Functor(i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -71,7 +71,7 @@ function<Return(Types...),Allocator>::function(T *i_pRef, Return(T::*i_call)(Typ
     {
         Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -88,7 +88,7 @@ function<Return(Types...),Allocator>::function(const T *i_pRef, Return(T::*i_cal
     {
         Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -111,6 +111,26 @@ template<typename Return, typename ... Types, typename Allocator>
 bool function<Return(Types...),Allocator>::operator!=(std::nullptr_t) const
 {
     return m_functionImpl.empty() == false;
+}
+template<typename Return,typename ... Types,typename Allocator>
+template<typename ... Args>
+Return function<Return(Types...),Allocator>::inline_eval(Args&& ... i_args) const
+{
+	if(m_functionImpl)
+	{
+		if constexpr (std::is_same<Return,void>::value)
+		{
+			m_functionImpl->operator()(std::forward<Args>(i_args) ...);
+		}
+		else
+		{
+			return m_functionImpl->operator()(std::forward<Args>(i_args) ...);
+		}
+	}
+	else
+	{
+		throw call_function_exception{ "Trying to call empty function" };
+	}
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<typename ... Args>
@@ -182,7 +202,7 @@ function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocat
     {
         Functor* newFuncImpl = new Functor(i_functor);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -199,7 +219,7 @@ function<Return(),Allocator>::function(Return(*i_call)(), const Allocator& i_all
     {
         Functor* newFuncImpl = new Functor(i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -217,7 +237,7 @@ function<Return(),Allocator>::function(T *i_pRef, Return(T::*i_call)(), const Al
     {
         Functor* newFuncImpl = new Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -234,7 +254,7 @@ function<Return(),Allocator>::function(const T *i_pRef, Return(T::*i_call)()cons
     {
         Functor* newFuncImpl = new Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
+        m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -266,6 +286,25 @@ function<Return(),Allocator>::operator Return() const
     {
         throw call_function_exception{"Trying to call empty function"};
     }
+}
+template<typename Return,typename Allocator>
+Return function<Return(),Allocator>::inline_eval() const
+{
+	if(m_functionImpl)
+	{
+		if constexpr(std::is_same<Return,void>::value)
+		{
+			m_functionImpl->operator()();
+		}
+		else
+		{
+			return m_functionImpl->operator()();
+		}
+	}
+	else
+	{
+		throw call_function_exception{ "Trying to call empty function" };
+	}
 }
 template<typename Return, typename Allocator>
 Return function<Return(),Allocator>::operator()() const

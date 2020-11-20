@@ -3,10 +3,10 @@
 #include "ddk_reference_counter.h"
 #include "ddk_reference_wrapper_deleter.h"
 #include "ddk_lent_reference_wrapper.h"
-#include <type_traits>
-#include <utility>
 #include "ddk_tagged_pointer.h"
 #include "ddk_reference_tag.h"
+#include <type_traits>
+#include <utility>
 
 namespace ddk
 {

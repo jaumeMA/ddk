@@ -5,6 +5,7 @@
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_function.h"
 #include "ddk_iterable_state.h"
+#include "ddk_iterable_action_state.h"
 
 namespace ddk
 {
@@ -22,8 +23,8 @@ public:
 
     virtual ~iterable_impl_interface() = default;
 
-    virtual void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction = iter::go_to_place) = 0;
-    virtual void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction = iter::go_to_place) const = 0;
+    virtual void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr = nullptr) = 0;
+    virtual void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr = nullptr) const = 0;
     virtual size_t size() const = 0;
     virtual bool empty() const = 0;
 };

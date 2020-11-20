@@ -1,8 +1,8 @@
 #pragma once
 
-#include <type_traits>
 #include "ddk_template_helper.h"
 #include "ddk_scoped_enum_tag.h"
+#include <type_traits>
 
 namespace ddk
 {

@@ -341,18 +341,6 @@ unique_reference_wrapper<TT> static_unique_cast(unique_reference_wrapper<T> i_un
 }
 
 template<typename TT, typename T>
-lent_reference_wrapper<TT> static_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
-{
-	static_assert(std::is_base_of<T, TT>::value || std::is_base_of<TT, T>::value, "Trying to cast unrelated classes");
-
-#ifdef DDK_DEBUG
-	return __make_lent_reference(static_cast<TT*>(i_lentRef.m_data), i_lentRef.m_refCounter);
-#else
-    return static_cast<TT*>(i_lentRef);
-#endif
-}
-
-template<typename TT, typename T>
 shared_pointer_wrapper<TT> static_shared_cast(const shared_pointer_wrapper<T>& i_sharedRef)
 {
 	static_assert(std::is_base_of<T, TT>::value || std::is_base_of<TT, T>::value, "Trying to cast unrelated classes");
@@ -412,16 +400,6 @@ unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wrapper<T>
 	i_uniqueRef.clear();
 
 	return std::move(res);
-}
-
-template<typename TT, typename T>
-lent_reference_wrapper<TT> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
-{
-#ifdef DDK_DEBUG
-	return __make_lent_reference(reinterpret_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
-#else
-	return reinterpret_cast<TT*>(const_cast<T*>(i_lentRef));
-#endif
 }
 
 template<typename TT, typename T>

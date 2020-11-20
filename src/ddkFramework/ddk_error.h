@@ -19,8 +19,10 @@ public:
 	error_impl(const Error& i_errorCode, const std::string& i_errorDesc);
 	error_impl(const typename Error::__val__& i_errorCode,const std::string& i_errorDesc);
 	error_impl(const error_impl&) = default;
-    error_impl& operator=(const error_impl&) = default;
-    Error get_code() const;
+	error_impl(error_impl&&) = default;
+	error_impl& operator=(const error_impl&) = default;
+	error_impl& operator=(error_impl&&) = default;
+	Error get_code() const;
     std::string get_description() const;
 	bool operator==(const error_impl<Error>& i_error) const;
 	bool operator!=(const error_impl<Error>& i_error) const;
@@ -39,7 +41,9 @@ public:
 	using error_impl<Error>::operator!=;
 
 	error_impl(const error_impl&) = default;
-    error_impl& operator=(const error_impl&) = default;
+	error_impl(error_impl&&) = default;
+	error_impl& operator=(error_impl&&) = default;
+	error_impl& operator=(const error_impl&) = default;
     template<typename NestedError>
     error_impl(const Error& i_errorCode, NestedError&& i_nestedError);
     template<typename NestedError>

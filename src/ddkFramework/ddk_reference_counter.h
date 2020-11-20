@@ -29,8 +29,8 @@ SCOPED_ENUM_DECL(ReferenceAllocationType,
 class lent_reference_counter
 {
 #ifdef DDK_DEBUG
-	static const size_t k_maxNumberOfStacks = 4;
-	static const size_t k_maxNumOfChars = 32;
+	static const size_t k_maxNumberOfStacks = 16;
+	static const size_t k_maxNumOfChars = 64;
 	typedef void* stack_entry[k_maxNumberOfStacks];
 	typedef std::unordered_map<size_t, stack_entry> stack_container;
 #endif

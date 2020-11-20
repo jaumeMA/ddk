@@ -6,6 +6,17 @@
 #include "ddk_formatter.h"
 #include "ddk_error.h"
 
+#if defined(DDK_DEBUG)
+
+#define SET_CHECKED(_RESULT) \
+	set_checked(_RESULT);
+
+#else
+
+#define SET_CHECKED(_RESULT)
+
+#endif
+
 namespace ddk
 {
 
@@ -18,6 +29,13 @@ class result;
 template<typename Error>
 class result<void,Error>
 {
+#if defined(DDK_DEBUG)
+	friend inline void set_checked(const result& i_result)
+	{
+		i_result.m_checked = true;
+	}
+#endif
+
 	friend std::ostringstream& operator<<(std::ostringstream& o_stream, const result<void,Error>& i_result)
 	{
 		if (i_result.hasError())
@@ -59,7 +77,6 @@ public:
 	result& operator=(const result& other);
 	result& operator=(result&& other);
 	Error error() const;
-	void clear();
 	explicit operator bool() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;
@@ -77,6 +94,13 @@ private:
 template<typename T, typename Error>
 class result
 {
+#if defined(DDK_DEBUG)
+	friend inline void set_checked(const result& i_result)
+	{
+		i_result.m_checked = true;
+	}
+#endif
+
 	friend std::ostringstream& operator<<(std::ostringstream& o_stream, const result<T,Error>& i_result)
 	{
 		if (i_result.hasError())
@@ -121,7 +145,6 @@ public:
 	Error error() const;
 	T get() const;
 	T extract();
-	void clear();
 	explicit operator bool() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;

@@ -26,7 +26,7 @@ void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
 	return reinterpret_cast<char*>(i_ref) - Size * s_pageSize;
 }
 template<size_t Size>
-bool static_stack_allocator<Size>::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const
+bool static_stack_allocator<Size>::reallocate(execution_stack& i_stackAddr, void* i_reason) const
 {
 	DDK_FAIL("Static stack allocator do not offer reallocate facility");
 

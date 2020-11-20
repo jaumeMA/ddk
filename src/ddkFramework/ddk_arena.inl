@@ -37,11 +37,11 @@ void arena<ArenaSize,ArenaAlignment>::set_value(Args&& ... i_args)
 {
 	if(m_empty)
 	{
-		construct<T>(std::forward<Args>(i_args) ...);
+		embedded_type<T>::construct(&m_storage,std::forward<Args>(i_args) ...);
 	}
 	else
 	{
-		assign<T>(std::forward<Args>(i_args) ...);
+		embedded_type<T>::assign(&m_storage,std::forward<Args>(i_args) ...);
 	}
 
 	m_empty = false;

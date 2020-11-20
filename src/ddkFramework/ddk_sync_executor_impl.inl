@@ -40,30 +40,64 @@ ExecutorState deferred_executor<Return>::get_state() const
 
 template<typename Return>
 await_executor<Return>::await_executor()
-: m_yielder(*this)
-, m_state(ExecutorState::Idle)
+: m_state(ExecutorState::Idle)
+, m_callee(*this)
 {
-	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
+	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
 }
 template<typename Return>
 await_executor<Return>::await_executor(stack_allocator i_stackAlloc)
-: m_callee(std::move(i_stackAlloc))
-, m_yielder(*this)
+: m_callee(std::move(i_stackAlloc),*this)
 , m_state(ExecutorState::Idle)
 {
-	m_callee.set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
+	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+}
+template<typename Return>
+await_executor<Return>::await_executor(const await_executor& other)
+: await_executor({ other.get_stack_allocator().get_alloc_impl(), other.get_stack_allocator().get_num_max_pages() })
+{
+	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
 }
 template<typename Return>
 await_executor<Return>::~await_executor()
 {
-	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelled))
+	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
-
 		m_callee.stop();
 
-		thread_impl_interface::set_yielder(prevYielder);
+		m_state = ExecutorState::Cancelled;
 	}
+}
+template<typename Return>
+typename await_executor<Return>::execute_result await_executor<Return>::execute(const ddk::function<Return()>& i_callable)
+{
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
+	{
+		m_callee.start_from(m_caller,i_callable);
+	}
+
+	m_callee.resume_from(m_caller);
+
+	if(m_callee.get_state() == FiberExecutionState::Done)
+	{
+		m_state = ExecutorState::Executed;
+
+		return make_error<execute_result>(ExecuteErrorCode::AlreadyDone);
+	}
+	else
+	{
+		return success;
+	}
+}
+template<typename Return>
+const stack_allocator& await_executor<Return>::get_stack_allocator() const
+{
+	return m_callee.get_stack_allocator();
+}
+template<typename Return>
+void await_executor<Return>::yield()
+{
+	m_callee.resume_to(m_caller,nullptr);
 }
 template<typename Return>
 typename await_executor<Return>::start_result await_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
@@ -81,12 +115,7 @@ typename await_executor<Return>::start_result await_executor<Return>::execute(co
 
 		if (m_state.get() != ExecutorState::Cancelled)
 		{
-			//update current yielder
-			yielder_lent_ptr prevYielder = thread_impl_interface::set_yielder(ddk::lend(m_yielder));
-
 			yielder_context* i_context = m_callee.resume_from(m_caller);
-
-			thread_impl_interface::set_yielder(prevYielder);
 
 			if(m_callee.get_state() == FiberExecutionState::Done)
 			{
@@ -100,6 +129,10 @@ typename await_executor<Return>::start_result await_executor<Return>::execute(co
                 {
                     eval(i_sink,_void);
                 }
+				else if constexpr (std::is_same<Return,void>::value)
+				{
+					eval(i_sink);
+				}
                 else
                 {
                     if(typed_yielder_context<Return>* newContext = static_cast<typed_yielder_context<Return>*>(i_context))
@@ -151,7 +184,12 @@ void await_executor<Return>::yield(yielder_context* i_context)
 template<typename Return>
 void await_executor<Return>::suspend(yielder_context*)
 {
-	throw suspend_exception(m_callee.get_id());
+	const ExecutorState prevState = ddk::atomic_compare_exchange_val(m_state,ExecutorState::Executing,ExecutorState::Cancelling);
+
+	if(prevState == ExecutorState::Executing || prevState == ExecutorState::Cancelling)
+	{
+		throw suspend_exception(m_callee.get_id());
+	}
 }
 template<typename Return>
 bool await_executor<Return>::activate(fiber_id i_id, const ddk::function<void()>& i_callable)
@@ -163,7 +201,7 @@ bool await_executor<Return>::deactivate(fiber_id i_id)
 {
 	if (m_callee.get_id() == i_id)
 	{
-		if (m_callee.get_state() != FiberExecutionState::Done)
+		if (m_callee.get_state() == FiberExecutionState::Executing)
 		{
 			m_callee.resume_from(m_caller);
 		}

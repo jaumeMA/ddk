@@ -3,11 +3,11 @@
 #include "ddk_fiber_defs.h"
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
-#include "ddk_ucontext.h"
 #include "ddk_fiber_local.h"
 #include "ddk_stack_allocator.h"
 #include "ddk_thread_yielder.h"
 #include "ddk_fiber_scheduler_interface.h"
+#include "ddk_execution_context.h"
 
 namespace ddk
 {
@@ -18,29 +18,25 @@ struct this_fiber_t
 {
 public:
 	this_fiber_t();
-	this_fiber_t(const this_fiber_t&) = default;
-	this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages);
 
-	ucontext_t* get_context();
-	const ucontext_t* get_context() const;
 	fiber_id get_id() const;
-	stack_allocator get_allocator() const;
-	void update_stack_shape();
+	void attach_context();
+	execution_context& get_execution_context();
+	const execution_context& get_execution_context() const;
 
 private:
-	mutable ucontext_t m_context;
-	stack_alloc_shared_ref m_stackAllocImpl;
-	size_t m_numMaxPages = 0;
+	execution_context* m_execContext;
 };
 
 struct fiber_impl
 {
 public:
-	fiber_impl();
-	fiber_impl(stack_allocator i_stackAlloc);
+	fiber_impl(yielder_interface& i_yielder);
+	fiber_impl(stack_allocator i_stackAlloc, yielder_interface& i_yielder);
 	fiber_impl(const fiber_impl&) = delete;
 	fiber_impl(fiber_impl&& other);
 	~fiber_impl();
+	fiber_impl& operator=(const fiber_impl&) = delete;
 	template<typename Return>
 	void start_from(this_fiber_t& other, const ddk::function<Return()>& i_function);
 	void start(const ddk::function<void()>& i_function);
@@ -50,17 +46,17 @@ public:
 	fiber_id get_id() const;
 	void set_state(FiberExecutionState i_state);
 	FiberExecutionState get_state() const;
-	ucontext_t* get_context() const;
-	void set_executor(fiber_scheduler_interface_lent_ptr i_executor);
+	const stack_allocator& get_stack_allocator() const;
+	void set_executor(scheduler_interface_lent_ptr i_executor);
 	bool joinable() const;
 	bool operator==(const fiber_impl& other) const;
 
 private:
 	fiber_id m_id;
-	fiber_scheduler_interface_lent_ptr m_executor;
-	mutable ucontext_t m_context;
+	scheduler_interface_lent_ptr m_executor;
 	FiberExecutionState m_state;
 	stack_allocator m_alloc;
+	mutable execution_context m_fiberContext;
 };
 
 typedef unique_reference_wrapper<fiber_impl> fiber_impl_unique_ref;

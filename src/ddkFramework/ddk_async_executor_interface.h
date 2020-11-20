@@ -39,7 +39,7 @@ public:
 	virtual void wait_for(unsigned int i_period) const = 0;
 	virtual reference get_value() = 0;
 	virtual const_reference get_value() const = 0;
-	virtual rref_type extract_value() = 0;
+	virtual embedded_type<Return> extract_value() = 0;
 	virtual bool ready() const = 0;
 };
 

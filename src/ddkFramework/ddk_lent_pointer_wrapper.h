@@ -262,23 +262,23 @@ public:
 
 		return *this;
 	}
-	bool operator==(std::nullptr_t) const
+	inline bool operator==(std::nullptr_t) const
 	{
 		return m_data == NULL;
 	}
-	bool operator!=(std::nullptr_t) const
+	inline bool operator!=(std::nullptr_t) const
 	{
 		return m_data != NULL;
 	}
-	T* operator->()
+	inline T* operator->()
 	{
 		return m_data;
 	}
-	const T* operator->() const
+	inline const T* operator->() const
 	{
 		return m_data;
 	}
-	T& operator*()
+	inline T& operator*()
 	{
 		if(m_data == NULL)
 		{
@@ -287,7 +287,7 @@ public:
 
 		return *m_data;
 	}
-	const T& operator*() const
+	inline const T& operator*() const
 	{
 		if(m_data == NULL)
 		{
@@ -296,7 +296,7 @@ public:
 
 		return *m_data;
 	}
-	operator bool() const
+	inline operator bool() const
 	{
 		return m_data != NULL;
 	}
@@ -313,11 +313,11 @@ public:
 			m_refCounter = NULL;
 		}
 	}
-	T* get()
+	inline T* get()
 	{
 		return m_data;
 	}
-	const T* get() const
+	inline const T* get() const
 	{
 		return m_data;
 	}
@@ -343,7 +343,7 @@ public:
 			return nullptr;
 		}
 	}
-	tagged_reference_counter get_reference_counter() const
+	inline tagged_reference_counter get_reference_counter() const
 	{
 		return m_refCounter;
 	}

@@ -3,69 +3,69 @@
 #include "ddk_thread_impl.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_async_exceptions.h"
+#include "ddk_execution_context.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-fiber_id& __get_current_fiber_id()
+detail::execution_context*& __get_current_execution_context()
 {
-	static thread_local fiber_id s_fiberId(get_current_thread_id());
+	static thread_local execution_context* s_fiberContext = nullptr;
 
-	return s_fiberId;
-}
-fiber_id get_next_available_fiber_id()
-{
-	static size_t s_fiberId = 0;
-
-	return fiber_id(++s_fiberId);
+	return s_fiberContext;
 }
 
 }
 
-void set_current_fiber_id(const fiber_id& i_id)
+void set_current_execution_context(detail::execution_context& i_context)
 {
-	fiber_id& currFiberId = detail::__get_current_fiber_id();
+	detail::execution_context*& currFiberContext = detail::__get_current_execution_context();
 
-	currFiberId = i_id;
+	currFiberContext = &i_context;
+}
+detail::execution_context& get_current_execution_context()
+{
+	detail::execution_context* currFiberContext = detail::__get_current_execution_context();
+
+	return *currFiberContext;
 }
 fiber_id get_current_fiber_id()
 {
-	return detail::__get_current_fiber_id();
+	detail::execution_context* currFiberContext = detail::__get_current_execution_context();
+
+	return currFiberContext->get_id();
 }
-fiber_id get_thread_fiber_id()
-{
-	return fiber_id(get_current_thread_id());
-}
+
 void suspend()
 {
-	if(ddk::detail::yielder_lent_ptr currYielder = ddk::detail::thread_impl_interface::get_yielder())
+	ddk::detail::execution_context& currFiberContext = ddk::get_current_execution_context();
+
+	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
 	{
 		currYielder->suspend(nullptr);
 	}
 	else
 	{
-		throw suspend_exception{ get_current_fiber_id ()};
+		throw suspend_exception{ currFiberContext.get_id() };
 	}
 }
 void yield()
 {
-	if(ddk::detail::yielder_lent_ptr currYielder = ddk::detail::thread_impl_interface::get_yielder())
+	ddk::detail::execution_context& currFiberContext = ddk::get_current_execution_context();
+
+	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
 	{
 		ddk::detail::typed_yielder_context<detail::void_t> _yielder;
 
 		_yielder.insert_value(_void);
 
-		detail::yielder* _currYielder = extract_raw_ptr(currYielder);
+		currYielder->yield(&_yielder);
 
-		_currYielder->yield(&_yielder);
-
-		const fiber_id currFiber = get_current_fiber_id();
-
-		if(_yielder.is_stopped(currFiber))
+		if(currFiberContext.is_stopped())
 		{
-			throw suspend_exception(currFiber);
+			throw suspend_exception{ currFiberContext.get_id() };
 		}
 	}
 	else

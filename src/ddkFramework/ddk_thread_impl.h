@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_execution_context.h"
 #include "ddk_function.h"
 #include <thread>
 #include "ddk_unique_reference_wrapper.h"
@@ -12,7 +13,6 @@
 
 namespace ddk
 {
-
 namespace detail
 {
 
@@ -20,7 +20,7 @@ class thread_impl_interface
 {
 public:
 	virtual ~thread_impl_interface() = default;
-	virtual void start(const ddk::function<void()>&, yielder_lent_ptr = nullptr) = 0;
+	virtual void start(const ddk::function<void()>&, yielder* = nullptr) = 0;
 	virtual void stop() = 0;
 	virtual bool joinable() const = 0;
 	virtual thread_id_t get_id() const = 0;
@@ -28,8 +28,8 @@ public:
 	virtual void execute() = 0;
 	virtual bool set_affinity(const cpu_set_t&) = 0;
 
-	static yielder_lent_ptr get_yielder();
-	static yielder_lent_ptr set_yielder(yielder_lent_ptr i_yielder);
+	static yielder* get_yielder();
+	static yielder* set_yielder(yielder* i_yielder);
 	static void clear_yielder();
 };
 
@@ -53,7 +53,7 @@ public:
 	one_shot_thread_impl() = default;
 
 private:
-	void start(const ddk::function<void()>&, yielder_lent_ptr i_yielder = nullptr) override;
+	void start(const ddk::function<void()>&, yielder* i_yielder = nullptr) override;
 	void stop() override;
 	bool joinable() const override;
 	thread_id_t get_id() const override;
@@ -63,20 +63,17 @@ private:
 
 	pthread_t				m_thread;
 	ddk::function<void()>	m_threadFunc;
-	yielder_lent_ptr		m_yielder;
+	yielder*				m_yielder;
 	bool					m_started = false;
 };
 
 struct this_thread_t
 {
 public:
-	typedef thread_id_t id;
-
 	this_thread_t();
-	id get_id() const;
 
 private:
-	pthread_t m_thread;
+	execution_context m_execContext;
 };
 
 }

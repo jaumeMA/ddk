@@ -6,19 +6,9 @@
 
 extern "C"
 {
-	void set_curr_thread_stack_base(void*);
-	void set_curr_thread_stack_limit(void*);
-	void set_curr_thread_stack_dealloc(void*);
 	void* get_curr_thread_stack_base();
 	void* get_curr_thread_stack_limit();
 	void* get_curr_thread_stack_dealloc();
-}
-
-void switch_stack(void* i_initStack, void* i_endStack, void* i_deallocStack)
-{
-	set_curr_thread_stack_base(i_initStack);
-	set_curr_thread_stack_limit(i_endStack);
-	set_curr_thread_stack_dealloc(i_deallocStack);
 }
 
 namespace ddk
@@ -27,70 +17,50 @@ namespace ddk
 namespace detail
 {
 
-this_fiber_t::this_fiber_t(stack_alloc_shared_ref i_stackAlloc, size_t i_maxNumPages)
-: m_stackAllocImpl(i_stackAlloc)
-, m_numMaxPages(i_maxNumPages)
-{
-	//recover cpu context
-	ddk::get_context(&m_context);
-
-	update_stack_shape();
-}
 this_fiber_t::this_fiber_t()
-: this_fiber_t(make_dynamic_stack_allocator(),stack_allocator_interface::k_maxNumStackPages)
+: m_execContext(nullptr)
 {
 }
-ucontext_t* this_fiber_t::get_context()
+void this_fiber_t::attach_context()
 {
-	return &m_context;
-}
-const ucontext_t* this_fiber_t::get_context() const
-{
-	return &m_context;
+	execution_context& currExecutionContext = get_current_execution_context();
+
+	m_execContext = &currExecutionContext;
 }
 fiber_id this_fiber_t::get_id() const
 {
-	return fiber_id(static_cast<size_t>(get_current_thread_id()));
+	return m_execContext->get_id();
 }
-stack_allocator this_fiber_t::get_allocator() const
+execution_context& this_fiber_t::get_execution_context()
 {
-	return stack_allocator(m_stackAllocImpl,m_numMaxPages);
+	return *m_execContext;
 }
-void this_fiber_t::update_stack_shape()
+const execution_context& this_fiber_t::get_execution_context() const
 {
-	//recover stack shape
-	m_context.uc_stack.ss_sp = get_curr_thread_stack_limit();
-	m_context.uc_stack.ss_size = reinterpret_cast<uint64_t>(get_curr_thread_stack_base()) - reinterpret_cast<uint64_t>(m_context.uc_stack.ss_sp);
-	m_context.uc_stack.ss_flags = static_cast<int>(reinterpret_cast<size_t>(m_context.uc_stack.ss_sp) - reinterpret_cast<size_t>(get_curr_thread_stack_dealloc()));
+	return *m_execContext;
 }
 
-fiber_impl::fiber_impl()
+fiber_impl::fiber_impl(yielder_interface& i_yielder)
 : m_id(reinterpret_cast<size_t>(this))
 , m_state(FiberExecutionState::Idle)
 , m_alloc(make_shared_reference<default_dynamic_stack_allocator>())
+, m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl())
 {
-	memset(&m_context,0,sizeof(ucontext_t));
-
-	ddk::get_context(&m_context);
 }
-fiber_impl::fiber_impl(stack_allocator i_stackAlloc)
+fiber_impl::fiber_impl(stack_allocator i_stackAlloc,yielder_interface& i_yielder)
 : m_id(reinterpret_cast<size_t>(this))
 , m_state(FiberExecutionState::Idle)
 , m_alloc(std::move(i_stackAlloc))
+, m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl())
 {
-	memset(&m_context,0,sizeof(ucontext_t));
-
-	ddk::get_context(&m_context);
 }
 fiber_impl::fiber_impl(fiber_impl&& other)
 : m_id(reinterpret_cast<size_t>(this))
 , m_executor(std::move(other.m_executor))
 , m_state(other.m_state)
 , m_alloc(std::move(other.m_alloc))
+, m_fiberContext(m_id,m_alloc.get_alloc_impl())
 {
-	memset(&m_context,0,sizeof(ucontext_t));
-
-	ddk::get_context(&m_context);
 }
 fiber_impl::~fiber_impl()
 {
@@ -103,6 +73,8 @@ void fiber_impl::start(const ddk::function<void()>& i_function)
 {
 	if(m_executor)
 	{
+		m_fiberContext.start();
+
 		m_executor->activate(m_id,i_function);
 	}
 	else
@@ -116,16 +88,9 @@ void fiber_impl::stop()
 	{
 		if(m_state != FiberExecutionState::Done)
 		{
-			if(yielder_context* yielderCtxt = reinterpret_cast<yielder_context*>(m_context.uc_link))
-			{
-				yielderCtxt->stop(m_id);
+			m_fiberContext.stop();
 
-				m_executor->deactivate(m_id);
-			}
-			else
-			{
-				DDK_FAIL("Error retrieving yielder context while querying stop");
-			}
+			m_executor->deactivate(m_id);
 		}
 	}
 	else
@@ -135,41 +100,37 @@ void fiber_impl::stop()
 }
 yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 {
-	if(m_context.uc_stack.ss_sp)
+	switch_execution_context(other.get_execution_context(),m_fiberContext,true);
+
+	if(m_state != FiberExecutionState::Done)
 	{
-		void* stackLowAddr = m_alloc.attach(m_id);
-
-		other.update_stack_shape();
-
-		switch_stack(reinterpret_cast<char*>(m_context.uc_stack.ss_sp) + m_context.uc_stack.ss_size,stackLowAddr,stackLowAddr);
-
-		ddk::swap_context(other.get_context(),&m_context);
-
-		set_current_fiber_id(other.get_id());
-
-		switch_stack(reinterpret_cast<char*>(other.get_context()->uc_stack.ss_sp) + other.get_context()->uc_stack.ss_size,other.get_context()->uc_stack.ss_sp,reinterpret_cast<char*>(other.get_context()->uc_stack.ss_sp) - other.get_context()->uc_stack.ss_flags);
-
-		m_alloc.detach();
-
-		if(m_state != FiberExecutionState::Done)
-		{
-			return reinterpret_cast<yielder_context*>(m_context.uc_link);
-		}
-		else
-		{
-			m_alloc.deallocate(m_id);
-		}
+		return m_fiberContext.get_typed_context<yielder_context>();
 	}
+	else
+	{
+		switch_fiber(m_fiberContext,other.get_execution_context());
 
-	return nullptr;
+		m_alloc.deallocate(m_fiberContext.get_stack());
+
+		return nullptr;
+	}
 }
 void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 {
-	m_context.uc_link = reinterpret_cast<ucontext_t*>(i_context);
+	if(i_context)
+	{
+		m_fiberContext.set_typed_context(i_context);
+	}
 
-	ddk::swap_context(&m_context,other.get_context());
+	switch_execution_context(m_fiberContext,other.get_execution_context(),false);
 
-	set_current_fiber_id(m_id);
+	if(m_fiberContext.is_stopped())
+	{
+		if(yielder_interface* currYielder = m_fiberContext.get_yielder())
+		{
+			currYielder->suspend(i_context);
+		}
+	}
 }
 fiber_id fiber_impl::get_id() const
 {
@@ -183,11 +144,11 @@ FiberExecutionState fiber_impl::get_state() const
 {
 	return m_state;
 }
-ucontext_t* fiber_impl::get_context() const
+const stack_allocator& fiber_impl::get_stack_allocator() const
 {
-	return &m_context;
+	return m_alloc;
 }
-void fiber_impl::set_executor(fiber_scheduler_interface_lent_ptr i_executor)
+void fiber_impl::set_executor(scheduler_interface_lent_ptr i_executor)
 {
 	m_executor = i_executor;
 }

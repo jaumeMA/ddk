@@ -2,13 +2,13 @@
 
 #include "ddk_macros.h"
 #include <cstdlib>
-#include <type_traits>
 #include "ddk_critical_section_context.h"
 #include "ddk_critical_section_defs.h"
 #include "ddk_iaccess_critical_call_context.h"
 #include "ddk_intrusive_node.h"
 #include "ddk_lendable.h"
 #include "ddk_reference_wrapper.h"
+#include <type_traits>
 
 namespace ddk
 {

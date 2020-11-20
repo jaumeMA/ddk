@@ -7,27 +7,25 @@ namespace ddk
 namespace detail
 {
 
-yielder_lent_ptr thread_impl_interface::get_yielder()
+yielder* thread_impl_interface::get_yielder()
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
+	static threadlocal<yielder*,thread_impl_interface> s_yielder;
 
-	yielder_lent_ptr* yielderPtr = yielder.get_ptr();
-
-	return (yielderPtr) ? *yielderPtr : nullptr;
+	return s_yielder.get();
 }
-yielder_lent_ptr thread_impl_interface::set_yielder(yielder_lent_ptr i_yielder)
+yielder* thread_impl_interface::set_yielder(yielder* i_yielder)
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
+	static threadlocal<yielder*,thread_impl_interface> s_yielder;
 
-	yielder_lent_ptr prevYielder = (yielder.empty() == false) ? yielder.extract() : nullptr;
+	yielder* prevYielder = (s_yielder.empty() == false) ? s_yielder.extract() : nullptr;
 
-	yielder.set(i_yielder);
+	s_yielder.set(i_yielder);
 
 	return prevYielder;
 }
 void thread_impl_interface::clear_yielder()
 {
-	threadlocal<yielder_lent_ptr,thread_impl_interface> yielder;
+	static threadlocal<yielder*,thread_impl_interface> yielder;
 
 	yielder.clear();
 }
@@ -49,7 +47,7 @@ void threadExiting(void* ptr)
 	}
 }
 
-void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder_lent_ptr i_yielder)
+void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder* i_yielder)
 {
 	if(m_started == false)
 	{
@@ -115,12 +113,9 @@ bool one_shot_thread_impl::set_affinity(const cpu_set_t& i_set)
 }
 
 this_thread_t::this_thread_t()
-: m_thread(get_current_thread())
+: m_execContext(fiber_id(static_cast<size_t>(get_current_thread_id())))
 {
-}
-this_thread_t::id this_thread_t::get_id() const
-{
-	return get_current_thread_id();
+	set_current_execution_context(m_execContext);
 }
 
 }

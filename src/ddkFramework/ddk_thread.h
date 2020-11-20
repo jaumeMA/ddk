@@ -36,7 +36,7 @@ public:
 	thread& operator=(thread&&);
 
 	id get_id() const;	
-	void start(const ddk::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder = nullptr);
+	void start(const ddk::function<void()>& i_threadFunc, detail::yielder* i_yielder = nullptr);
 	void stop();
 	bool joinable() const;
 	bool set_affinity(const cpu_set_t& i_set);
@@ -45,6 +45,6 @@ private:
 	detail::thread_impl_unique_ref m_threadImpl;
 };
 
-extern const detail::this_thread_t this_thread;
+extern const thread_local detail::this_thread_t this_thread;
 
 }

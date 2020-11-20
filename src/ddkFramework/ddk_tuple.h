@@ -3,11 +3,32 @@
 #include "ddk_embedded_type.h"
 #include "ddk_template_helper.h"
 #include "ddk_arena.h"
+#include <array>
 
 namespace ddk
 {
 namespace detail
 {
+
+template<typename ... Types>
+struct aligned_tuple_storage
+{
+public:
+	aligned_tuple_storage() = default;
+	template<size_t Index>
+	inline void* at();
+	template<size_t Index>
+	inline const void* at() const;
+
+private:
+	static const size_t s_total_size = mpl::get_total_size<Types...>::value;
+	static const size_t s_total_alignment = mpl::get_total_alignment<Types...>::value;
+	static const std::array<size_t,mpl::get_num_types<Types...>::value> m_offset;
+
+	static inline std::array<size_t,mpl::get_num_types<Types...>::value> resolve_type_offset(size_t i_totalSize);
+
+	arena<s_total_size,s_total_alignment> m_arena;
+};
 
 template<typename,typename ...>
 class tuple_impl;
@@ -84,8 +105,6 @@ public:
     static constexpr size_t size();
 
 private:
-    typedef arena<s_total_size,mpl::get_total_alignment<Type1,Type2,Types...>::value> data_type;
-
     template<typename TType, typename Arg>
     inline bool construct(void* i_address, Arg&& i_val)
     {
@@ -127,8 +146,7 @@ private:
         return reinterpret_cast<embedded_type<TType> *>(i_address)->extract();
     }
 
-    data_type m_storage;
-    typedef typename mpl::acc_sizeof<Type1,Type2,Types...>::type data_offset;
+	aligned_tuple_storage<Type1,Type2,Types...> m_storage;
 };
 
 }

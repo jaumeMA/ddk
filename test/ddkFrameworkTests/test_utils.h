@@ -25,7 +25,7 @@ public:
 class DefaultType
 {
 public:
-	DefaultType(int i_value);
+	DefaultType(int i_value = 0);
 	virtual ~DefaultType() = default;
 	bool operator==(int i_value) const;
 	void setValue(int i_value);

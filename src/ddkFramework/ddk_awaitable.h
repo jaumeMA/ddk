@@ -47,7 +47,7 @@ public:
 	void set(T i_content);
 
 private:
-	arena<sizeof(T),alignof(T)> m_content;
+	typed_arena<T> m_content;
 };
 
 template<>
@@ -77,7 +77,7 @@ public:
 	typedef typename Result::const_reference const_reference;
 
     awaitable() = default;
-	awaitable(const ddk::function<T()>& i_function, const detail::this_fiber_t& i_fiber);
+	awaitable(const ddk::function<T()>& i_function, const detail::this_thread_t& i_thread);
 	awaitable(const awaitable& other);
 	awaitable(awaitable&& other);
 	continue_result resume();
@@ -95,7 +95,7 @@ class awaitable<void,Result> : public awaitable<detail::void_t,Result>
 {
 public:
     awaitable() = default;
-	awaitable(const ddk::function<void()>& i_function, const detail::this_fiber_t& i_fiber);
+	awaitable(const ddk::function<void()>& i_function, const detail::this_thread_t& i_thread);
 	awaitable(const awaitable& other) = default;
 	awaitable(awaitable&& other) = default;
 

@@ -14,7 +14,7 @@ public:
     virtual const iter::iterable_state& get_state() const = 0;
 
 protected:
-    ~iterable_interface() = default;
+    virtual ~iterable_interface() = default;
 };
 
 }

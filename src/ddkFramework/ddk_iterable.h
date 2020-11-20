@@ -1,12 +1,12 @@
 #pragma once
 
+#include "ddk_arena.h"
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_function.h"
 #include "ddk_iterable_action.h"
-#include "ddk_awaitable.h"
 #include "ddk_iterable_valued_traits.h"
-#include "ddk_arena.h"
 #include "ddk_iterable_state.h"
+#include "ddk_sync_executor_impl.h"
 
 namespace ddk
 {
@@ -39,11 +39,9 @@ public:
 
     iterable(iterable_impl_shared_ref<iterable_base_traits> i_iterableImpl);
     iterable(const iterable&);
-    iterable(iterable&&);
     template<typename TTraits>
     iterable(const iterable<TTraits>& other);
-    template<typename TTraits>
-    iterable(iterable<TTraits>&& other);
+	~iterable();
 
     void iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::shift_action& i_initialAction = iter::go_to_place);
     void iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::shift_action& i_initialAction = iter::go_to_place) const;
@@ -62,10 +60,12 @@ private:
     reference resolve_action(const action&);
     const_reference resolve_action(const action&) const;
 
+	mutable lendable<iter::action_state> m_actionState;
     iterable_impl_shared_ref<iterable_base_traits> m_iterableImpl;
     mutable iter::iterable_state m_iterableState;
-    mutable awaitable<void> m_awaitable;
-    mutable typed_arena<reference> m_iterableValueContainer;
+	mutable ddk::function<void()> m_callable;
+	mutable detail::await_executor<void> m_executor;
+	mutable typed_arena<reference> m_iterableValueContainer;
     mutable action m_currAction = iterable_base_traits::default_action();
 };
 

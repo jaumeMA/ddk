@@ -64,25 +64,26 @@ void* dynamic_stack_allocator<NumGuardPages>::allocate(void* i_ref, size_t i_siz
 #endif
 }
 template<size_t NumGuardPages>
-bool dynamic_stack_allocator<NumGuardPages>::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const
+bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack& i_stackAddr, void* i_reason) const
 {
-	if(reinterpret_cast<char*>(i_stackAddr.first) > i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.first) - k_maxNumStackPages * s_pageSize))
+	if(reinterpret_cast<char*>(i_stackAddr.get_init()) > i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.get_init()) - k_maxNumStackPages * s_pageSize))
 	{
 
 #if defined(WIN32)
 
-		if(VirtualAlloc(reinterpret_cast<char*>(i_stackAddr.second) - ((s_numGuardPages + 1) * s_pageSize),s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD))
+		if(VirtualAlloc(reinterpret_cast<char*>(i_stackAddr.get_end()) - ((s_numGuardPages + 1) * s_pageSize),s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD))
 		{
-			i_stackAddr.second = reinterpret_cast<char*>(i_stackAddr.second) - s_pageSize;
+			i_stackAddr.set_end(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_pageSize);
+			i_stackAddr.set_dealloc(i_stackAddr.get_end());
 
 			return true;
 		}
 
 #elif defined(__LINUX__) or defined(__APPLE__)
 
-        if(mprotect(reinterpret_cast<char*>(i_stackAddr.second) - s_pageSize,s_pageSize,PROT_READ|PROT_WRITE) == 0)
+        if(mprotect(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_pageSize,s_pageSize,PROT_READ|PROT_WRITE) == 0)
         {
-			i_stackAddr.second = reinterpret_cast<char*>(i_stackAddr.second) - s_pageSize;
+			i_stackAddr.set_end(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_pageSize);
 
 			return true;
         }
@@ -100,11 +101,11 @@ void dynamic_stack_allocator<NumGuardPages>::deallocate(void* i_address,size_t i
 
 #if defined(WIN32)
 
-	freeRes = (VirtualFree(reinterpret_cast<char*>(i_address) - i_size * s_pageSize,i_size * s_pageSize,MEM_DECOMMIT) != 0);
+	freeRes = (VirtualFree(i_address,i_size * s_pageSize,MEM_DECOMMIT) != 0);
 
 #elif defined(__LINUX__) || defined(__APPLE__)
 
-	freeRes = (munmap(reinterpret_cast<char*>(i_address) - i_size * s_pageSize,i_size * s_pageSize) == 0);
+	freeRes = (munmap(reinterpret_cast<char*>(i_address),i_size * s_pageSize) == 0);
 
 #endif
 
@@ -117,11 +118,11 @@ void dynamic_stack_allocator<NumGuardPages>::release(void* i_address,size_t i_si
 
 #if defined(WIN32)
 
-	freeRes = (VirtualFree(reinterpret_cast<char*>(i_address) - i_size * s_pageSize,0,MEM_RELEASE) != 0);
+	freeRes = (VirtualFree(reinterpret_cast<char*>(i_address) - i_size * stack_allocator_interface::s_pageSize,0,MEM_RELEASE) != 0);
 
 #elif defined(__LINUX__) || defined(__APPLE__)
 
-	freeRes = (munmap(reinterpret_cast<char*>(i_address) - i_size * s_pageSize,i_size * s_pageSize) == 0);
+	freeRes = (munmap(reinterpret_cast<char*>(i_address),i_size * s_pageSize) == 0);
 
 #endif
 

@@ -63,6 +63,9 @@ struct stop_action : base_action
 struct shift_action : base_action
 {
 public:
+	shift_action() = default;
+	shift_action(const shift_action&) = default;
+	shift_action(shift_action&& other);
 	shift_action(int i_targetShift, int i_currShift = 0, bool i_stepByStep = false);
 
     int shifted() const;
@@ -71,11 +74,14 @@ public:
 	bool apply(const shift_action& i_appliedAction);
 	void set_step_by_step(bool i_cond);
 	bool step_by_step() const;
+	shift_action& operator=(const shift_action& other);
+	shift_action& operator=(shift_action&& other);
+	operator bool() const;
 
 private:
-    int m_targetShift;
-	int m_currShift;
-	bool m_stepByStep;
+    int m_targetShift = 0;
+	int m_currShift = 0;
+	bool m_stepByStep = false;
 };
 SCOPED_ENUM_DECL(ShiftActionError,
 				 ShiftOutOfBounds,
@@ -104,13 +110,17 @@ typedef variant<stop_action,erase_action,add_action,go_forward_action> output_ac
 typedef variant<stop_action,erase_action,add_action,go_forward_action> forward_action;
 typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
 typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> any_action;
 
-typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
-typedef result<any_action,action_error> action_result;
+typedef variant<go_forward_action> const_input_action;
+typedef variant<go_forward_action> const_output_action;
+typedef variant<go_forward_action> const_forward_action;
+typedef variant<go_forward_action,go_backward_action> const_bidirectional_action;
+typedef variant<shift_action> const_random_access_action;
 
 bool operator==(const base_action& i_lhs, const base_action& i_rhs);
 bool operator!=(const base_action& i_lhs, const base_action& i_rhs);
+bool operator==(const shift_action& i_lhs,const shift_action& i_rhs);
+bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs);
 
 const extern iter::stop_action stop_iteration;
 const extern iter::erase_action erase_value;

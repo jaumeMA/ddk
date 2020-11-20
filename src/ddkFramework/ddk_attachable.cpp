@@ -7,17 +7,13 @@ attachable<void> attach(thread i_thread)
 {
     return attachable<void>(make_executor<detail::thread_executor<detail::void_t>>(std::move(i_thread)));
 }
-attachable<void> attach(const detail::this_thread_t&)
-{
-    return attachable<void>(make_executor<detail::deferred_executor<detail::void_t>>());
-}
 attachable<void> attach(fiber i_fiber)
 {
     return attachable<void>(make_executor<detail::fiber_executor<detail::void_t>>(std::move(i_fiber)));
 }
-attachable<void> attach(const detail::this_fiber_t& i_fiber)
+attachable<void> attach(const detail::this_thread_t& i_thread)
 {
-    return attachable<void>(make_executor<detail::await_executor<detail::void_t>>(i_fiber.get_allocator()));
+    return attachable<void>(make_executor<detail::await_executor<detail::void_t>>());
 }
 attachable<void> attach(thread_sheaf i_threadSheaf)
 {

@@ -37,7 +37,6 @@ public:
 };
 
 attachable<void> attach(thread i_thread);
-attachable<void> attach(const detail::this_thread_t&);
 attachable<void> attach(fiber i_fiber);
 attachable<void> attach(const detail::this_fiber_t&);
 attachable<void> attach(thread_sheaf i_threadSheaf);

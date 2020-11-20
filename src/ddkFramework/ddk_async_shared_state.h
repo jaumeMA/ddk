@@ -26,7 +26,7 @@ public:
 	void signal();
 	const_reference get_value() const;
 	reference get_value();
-	rref_type extract_value();
+	embedded_type<T> extract_value();
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;

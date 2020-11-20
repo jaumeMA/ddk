@@ -245,9 +245,9 @@ void* pool_stack_allocator::allocate(void* i_ref, size_t i_size) const
 		return nullptr;
 	}
 }
-bool pool_stack_allocator::reallocate(std::pair<void*,void*>& i_stackAddr, void* i_reason) const
+bool pool_stack_allocator::reallocate(execution_stack& i_stackAddr, void* i_reason) const
 {
-	std::set<Buddy>::const_iterator itBuddy = m_buddyAllocator.find(i_stackAddr.first);
+	std::set<Buddy>::const_iterator itBuddy = m_buddyAllocator.find(i_stackAddr.get_init());
 
 	if(itBuddy != m_buddyAllocator.end())
 	{

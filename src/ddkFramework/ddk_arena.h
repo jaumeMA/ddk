@@ -1,5 +1,7 @@
 #pragma once
 
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE
+
 #include <type_traits>
 #include <cstddef>
 #include "ddk_embedded_type.h"
@@ -19,31 +21,31 @@ public:
 	~arena();
 	arena& operator=(const arena&) = delete;
 	template<typename T, typename ... Args>
-	void construct(Args&& ... i_args);
+	inline void construct(Args&& ... i_args);
 	template<typename T, typename ... Args>
-	void assign(Args&& ... i_args);
+	inline void assign(Args&& ... i_args);
 	template<typename T, typename ... Args>
-	void set_value(Args&& ... i_args);
+	inline void set_value(Args&& ... i_args);
 	template<typename T>
-	void destroy();
+	inline void destroy();
 	template<typename T>
-	typename embedded_type<T>::cref_type get() const;
+	inline typename embedded_type<T>::cref_type get() const;
 	template<typename T>
-	typename embedded_type<T>::ref_type get();
+	inline typename embedded_type<T>::ref_type get();
 	template<typename T>
-	embedded_type<T> extract();
+	inline embedded_type<T> extract();
 	template<typename T>
-	typename embedded_type<T>::cpointer_type get_ptr() const;
+	inline typename embedded_type<T>::cpointer_type get_ptr() const;
 	template<typename T>
-	typename embedded_type<T>::pointer_type get_ptr();
-    char* get_arena();
-    const char* get_arena() const;
+	inline typename embedded_type<T>::pointer_type get_ptr();
+	inline char* get_arena();
+	inline const char* get_arena() const;
 	inline bool empty() const;
 	template<typename T, typename Arg>
-	bool compare(Arg&& i_arg) const;
+	inline bool compare(Arg&& i_arg) const;
 
 private:
-    typename std::aligned_storage<ArenaSize,s_actualAlignment>::type m_storage;
+	typename std::aligned_storage<ArenaSize,s_actualAlignment>::type m_storage;
 	bool m_empty;
 };
 

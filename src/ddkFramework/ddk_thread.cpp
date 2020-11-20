@@ -5,7 +5,7 @@
 namespace ddk
 {
 
-const detail::this_thread_t this_thread = detail::this_thread_t();
+const thread_local detail::this_thread_t this_thread = detail::this_thread_t();
 
 thread::thread()
 : m_threadImpl(make_unique_reference<detail::one_shot_thread_impl>())
@@ -34,7 +34,7 @@ thread& thread::operator=(thread&& other)
 
 	return *this;
 }
-void thread::start(const ddk::function<void()>& i_threadFunc, detail::yielder_lent_ptr i_yielder)
+void thread::start(const ddk::function<void()>& i_threadFunc, detail::yielder* i_yielder)
 {
 	if(m_threadImpl.get() != nullptr)
 	{

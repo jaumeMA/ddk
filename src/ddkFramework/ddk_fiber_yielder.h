@@ -8,15 +8,21 @@ namespace ddk
 namespace detail
 {
 
-struct fiber_yielder : yielder
+struct yielder
 {
 public:
-	explicit fiber_yielder(fiber_yielder_interface& i_executor);
-	void yield(yielder_context*) override;
-	void suspend(yielder_context* = nullptr) override;
+	explicit yielder(yielder_interface& i_executor);
+	inline void yield(yielder_context* i_context)
+	{
+		m_executor.yield(i_context);
+	}
+	inline void suspend(yielder_context* i_context)
+	{
+		m_executor.suspend(i_context);
+	}
 
 private:
-	fiber_yielder_interface& m_executor;
+	yielder_interface& m_executor;
 };
 
 }

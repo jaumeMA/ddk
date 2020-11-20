@@ -7,16 +7,17 @@ namespace ddk
 namespace detail
 {
 
-fiber_id& __get_current_fiber_id();
-fiber_id get_next_available_fiber_id();
+struct execution_context;
+
+execution_context*& __get_current_execution_context();
 
 }
 
-void set_current_fiber_id(const fiber_id&);
-
 fiber_id get_current_fiber_id();
 
-fiber_id get_thread_fiber_id();
+void set_current_execution_context(detail::execution_context& i_ctxt);
+
+detail::execution_context& get_current_execution_context();
 
 void suspend();
 

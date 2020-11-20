@@ -90,10 +90,11 @@ public:
     function& operator=(const function& other) = default;
     function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
-    operator Return() const;
-    Return operator()() const;
-    bool operator==(std::nullptr_t) const;
-    bool operator!=(std::nullptr_t) const;
+    inline operator Return() const;
+	inline Return inline_eval() const;
+	inline Return operator()() const;
+    inline bool operator==(std::nullptr_t) const;
+    inline bool operator!=(std::nullptr_t) const;
 
 private:
     inline Return eval_tuple(const mpl::sequence<>&) const;
@@ -115,6 +116,10 @@ class function<Return(Types...),Allocator>
     friend inline resolved_return_type<Arg,RReturn> eval(const function<RReturn(TTypes...),AAllocator>& i_function, Arg&& i_arg, Args&& ... i_args);
     template<typename RReturn, typename ... TTypes, typename AAllocator, typename ... Args>
     friend inline RReturn eval(const function<RReturn(TTypes...),AAllocator>& i_function, const function_arguments<Args...>& i_args);
+	template<typename RReturn,typename ... TTypes,typename AAllocator,typename Arg,typename ... Args>
+	friend inline resolved_return_type<Arg,RReturn> eval_unsafe(const function<RReturn(TTypes...),AAllocator>& i_function,Arg&& i_arg,Args&& ... i_args);
+	template<typename RReturn,typename ... TTypes,typename AAllocator,typename ... Args>
+	friend inline RReturn eval_unsafe(const function<RReturn(TTypes...),AAllocator>& i_function,const function_arguments<Args...>& i_args);
 
 public:
 	typedef Return return_type;
@@ -137,10 +142,12 @@ public:
     function& operator=(const function& other) = default;
     function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
-    bool operator==(std::nullptr_t) const;
-    bool operator!=(std::nullptr_t) const;
-    template<typename ... Args>
-    resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
+    inline bool operator==(std::nullptr_t) const;
+    inline bool operator!=(std::nullptr_t) const;
+	template<typename ... Args>
+	inline Return inline_eval(Args&& ... args) const;
+	template<typename ... Args>
+    inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
 
 private:
     template<size_t ... Indexs, typename ... Args>

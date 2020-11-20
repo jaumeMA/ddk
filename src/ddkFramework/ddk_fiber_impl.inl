@@ -19,19 +19,16 @@ namespace detail
 template<typename Return>
 inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
-	set_current_fiber_id(i_fiber->get_id());
-
-	const ddk::function<Return()> callable(*i_function);
+	const ddk::function<Return()> localCallable = *i_function;
 
 	i_fiber->set_state(FiberExecutionState::Executing);
 
 	try
 	{
-		yield(callable());
+		yield(eval(localCallable));
 	}
-	catch(const suspend_exception& i_excp)
+	catch(const suspend_exception&)
 	{
-		DDK_ASSERT(i_excp.get_id() == i_fiber->get_id(), "Suspending fiber from the wrong context");
 	}
 
 	i_fiber->set_state(FiberExecutionState::Done);
@@ -39,17 +36,16 @@ inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* 
 template<>
 inline void launch_fiber<void>(const ddk::function<void()>* i_function, fiber_impl* i_fiber)
 {
-	const ddk::function<void()> callable(*i_function);
+	const ddk::function<void()> localCallable = *i_function;
 
 	i_fiber->set_state(FiberExecutionState::Executing);
 
 	try
 	{
-		callable();
+		eval(localCallable);
 	}
-	catch(const suspend_exception& i_excp)
+	catch(const suspend_exception&)
 	{
-		DDK_ASSERT(i_excp.get_id() == i_fiber->get_id(), "Suspending fiber from the wrong context");
 	}
 
 	i_fiber->set_state(FiberExecutionState::Done);
@@ -57,20 +53,11 @@ inline void launch_fiber<void>(const ddk::function<void()>* i_function, fiber_im
 template<typename Return>
 void fiber_impl::start_from(this_fiber_t& other, const ddk::function<Return()>& i_function)
 {
-	const std::pair<size_t,void*> allocRes = m_alloc.allocate(m_id);
+	other.attach_context();
 
-	if(allocRes.second)
-	{
-		m_context.uc_stack.ss_sp = allocRes.second;
+	m_fiberContext.attach_stack(m_alloc.allocate());
 
-		m_context.uc_stack.ss_size = allocRes.first;
-
-		ddk::make_context(&m_context,other.get_context(),&consolidate_frame,&i_function,this,&launch_fiber<Return>);
-	}
-	else
-	{
-		DDK_FAIL("Could not allocate stack");
-	}
+	make_execution_context(m_fiberContext,other.get_execution_context(),&consolidate_frame,&i_function,this,&launch_fiber<Return>);
 }
 
 }

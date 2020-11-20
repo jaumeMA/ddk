@@ -68,9 +68,7 @@ public:
 	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract();
     template<size_t Pos>
     inline bool is() const;
-    inline bool empty() const;
     inline char which() const;
-    inline void reset();
     inline void swap(variant_impl<Types...>& other);
     template<typename Visitor>
 	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor);

@@ -93,11 +93,11 @@ void awaited_result<T>::set(T i_content)
 }
 
 template<typename T, typename Result>
-awaitable<T,Result>::awaitable(const function<T()>& i_function, const detail::this_fiber_t& i_fiber)
+awaitable<T,Result>::awaitable(const function<T()>& i_function, const detail::this_thread_t& i_thread)
 {
 	shared_reference_wrapper<async_executor<T>> asyncExecutor = make_async_executor(i_function);
 
-	m_executor = asyncExecutor->attach(i_fiber);
+	m_executor = asyncExecutor->attach(i_thread);
 }
 template<typename T, typename Result>
 awaitable<T,Result>::awaitable(const awaitable& other)
@@ -121,11 +121,11 @@ awaitable<T,Result>::operator bool() const
 }
 
 template<typename Result>
-awaitable<void,Result>::awaitable(const ddk::function<void()>& i_function, const detail::this_fiber_t& i_fiber)
+awaitable<void,Result>::awaitable(const ddk::function<void()>& i_function, const detail::this_thread_t& i_thread)
 {
 	shared_reference_wrapper<async_executor<detail::void_t>> asyncExecutor = make_async_executor(make_function([i_function](){ i_function(); return _void;}));
 
-	this->m_executor = asyncExecutor->attach(i_fiber);
+	this->m_executor = asyncExecutor->attach(i_thread);
 }
 
 }

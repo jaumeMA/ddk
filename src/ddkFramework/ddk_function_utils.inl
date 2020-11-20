@@ -4,6 +4,22 @@
 namespace ddk
 {
 
+template<typename Object,typename Return,typename ... Types>
+detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...))
+{
+	return detail::relative_function_impl<Object,Return,Types...>(i_object,i_funcPtr);
+}
+template<typename Object,typename Return,typename ... Types>
+detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const)
+{
+	return detail::relative_function_impl<const Object,Return,Types...>(i_object,i_funcPtr);
+}
+template<typename Return,typename ... Types>
+detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...))
+{
+	return detail::free_function_impl<Return,Types...>(i_funcPtr);
+}
+
 template<typename Object, typename Return, typename ... Types>
 function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...))
 {
@@ -179,6 +195,43 @@ Return eval(const function<Return(Types...),Allocator>& i_function, const functi
     {
         return i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
     }
+}
+
+template<typename Return,typename Allocator>
+Return eval_unsafe(const function<Return(),Allocator>& i_function)
+{
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		i_function.m_functionImpl->operator()();
+	}
+	else
+	{
+		return i_function.m_functionImpl->operator()();
+	}
+}
+template<typename Return,typename ... Types,typename Allocator,typename Arg,typename ... Args>
+resolved_return_type<Arg,Return> eval_unsafe(const function<Return(Types...),Allocator>& i_function,Arg&& i_arg,Args&& ... i_args)
+{
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+	}
+	else
+	{
+		return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+	}
+}
+template<typename Return,typename ... Types,typename Allocator,typename ... Args>
+Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args)
+{
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+	}
+	else
+	{
+		return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+	}
 }
 
 template<typename ... Callables>

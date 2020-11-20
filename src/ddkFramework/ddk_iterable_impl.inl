@@ -12,14 +12,14 @@ iterable_impl<Traits,Iterable>::iterable_impl(Iterable& i_iterable)
 {
 }
 template<typename Traits, typename Iterable>
-void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction)
+void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr)
 {
-    visit_iterator(m_iterable,i_try,i_initialAction);
+    visit_iterator(m_iterable,i_try,i_initialAction,i_actionStatePtr);
 }
 template<typename Traits, typename Iterable>
-void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
+void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const
 {
-    visit_iterator(m_iterable,i_try,i_initialAction);
+    visit_iterator(m_iterable,i_try,i_initialAction,i_actionStatePtr);
 }
 template<typename Traits, typename Iterable>
 size_t iterable_impl<Traits,Iterable>::size() const

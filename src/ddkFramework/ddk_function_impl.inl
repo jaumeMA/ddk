@@ -60,9 +60,9 @@ function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>>
 
     if(void* mem = i_allocator.allocate(1,sizeof(spec_func_type)))
     {
-        spec_func_type* newFuncImpl = new(mem) spec_func_type(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)),make_tuple(std::forward<Args>(args)...));
+        spec_func_type* newFuncImpl = new(mem) spec_func_type(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)),ddk::make_tuple(std::forward<Args>(args)...));
 
-        return as_shared_reference(newFuncImpl,tagged_pointer<shared_reference_counter>(&(newFuncImpl->m_refCounter),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(i_allocator));
+        return as_shared_reference(newFuncImpl,tagged_pointer<shared_reference_counter>(&(newFuncImpl->m_refCounter),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<spec_func_type>(i_allocator));
     }
     else
     {
@@ -75,6 +75,18 @@ relative_function_impl<ObjectType,Return,Types...>::relative_function_impl(Objec
 : m_object(i_object)
 , m_funcPointer(i_funcPointer)
 {
+}
+template<typename ObjectType,typename Return,typename ... Types>
+Return relative_function_impl<ObjectType,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+{
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		(m_object->*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+	}
+	else
+	{
+		return (m_object->*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+	}
 }
 template<typename ObjectType, typename Return, typename ... Types>
 Return relative_function_impl<ObjectType,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
@@ -120,6 +132,18 @@ template<typename Return, typename ... Types>
 free_function_impl<Return,Types...>::free_function_impl(FuncPointerType i_funcPointer)
 : m_funcPointer(i_funcPointer)
 {
+}
+template<typename Return,typename ... Types>
+Return free_function_impl<Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+{
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		(*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+	}
+	else
+	{
+		return (*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+	}
 }
 template<typename Return, typename ... Types>
 Return free_function_impl<Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
@@ -170,6 +194,18 @@ template<typename T, typename Return, typename ... Types>
 functor_impl<T,Return,Types...>::functor_impl(T&& i_functor)
 : m_functor(std::move(i_functor))
 {
+}
+template<typename T,typename Return,typename ... Types>
+Return functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+{
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		m_functor(std::forward<decltype(args)>(args)...);
+	}
+	else
+	{
+		return m_functor(std::forward<decltype(args)>(args)...);
+	}
 }
 template<typename T, typename Return, typename ... Types>
 Return functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const

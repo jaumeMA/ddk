@@ -46,21 +46,17 @@ public:
 	stack_allocator(const stack_allocator&) = delete;
 	stack_allocator(stack_allocator&& other);
 	~stack_allocator();
-    std::pair<size_t,void*> allocate(fiber_id i_id) const;
-	void* attach(fiber_id i_id);
-	void detach();
-    void deallocate(fiber_id i_id) const;
+    detail::execution_stack allocate() const;
+    void deallocate(const detail::execution_stack&) const;
+	size_t get_num_max_pages() const;
 	size_t get_num_guard_pages() const;
+	stack_alloc_const_shared_ref get_alloc_impl() const;
 
 	stack_allocator& operator=(const stack_allocator&) = delete;
 	stack_allocator& operator=(stack_allocator&&) = delete;
 
 private:
-	static std::pair<void*,void*>*& get_curr_arena();
-	static const stack_allocator_interface*& get_curr_alloc_impl();
-
 	stack_alloc_const_shared_ref m_stackAllocImpl;
-	mutable std::unordered_map<fiber_id,std::pair<void*,void*>>* m_arena;
 	const size_t m_numMaxPages;
 };
 

@@ -14,14 +14,47 @@ namespace detail
 
 template<typename Iterable,typename Adaptor>
 template<typename Action>
-action_visitor_base<Iterable,Adaptor>::action_visitor_base(Iterable& i_iterable, Action&& i_initialAction)
+action_visitor_base<Iterable,Adaptor>::action_visitor_base(Iterable& i_iterable, Action&& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 : m_adaptor(i_iterable,i_initialAction)
+, m_actionStatePtr(i_actionStatePtr)
 {
+}
+template<typename Iterable,typename Adaptor>
+bool action_visitor_base<Iterable,Adaptor>::valid() const noexcept
+{
+	return m_adaptor.valid();
+}
+template<typename Iterable,typename Adaptor>
+typename Adaptor::reference action_visitor<Iterable,const_input_action,Adaptor>::visit(const go_forward_action& i_action)
+{
+	if(auto nextValue = m_adaptor.next_value())
+	{
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(go_to_place(1,1));
+		}
+
+		return *nextValue;
+	}
+	else
+	{
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+		}
+
+		suspend();
+
+		return m_adaptor.get_value();
+	}
 }
 template<typename Iterable,typename Adaptor>
 typename Adaptor::reference action_visitor<Iterable,input_action,Adaptor>::visit(const stop_action& i_action)
 {
-	iterable_state::forward_result(make_result<action_result>(i_action));
+	if(m_actionStatePtr)
+	{
+		m_actionStatePtr->forward_result(i_action);
+	}
 
 	suspend();
 
@@ -32,24 +65,33 @@ typename Adaptor::reference action_visitor<Iterable,input_action,Adaptor>::visit
 {
     if constexpr (std::is_const<Iterable>::value == false)
     {
-		if(optional<reference> res = m_adaptor.remove_item())
+		if(auto res = m_adaptor.remove_item())
 		{
-			iterable_state::forward_result(make_result<action_result>(i_action));
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(i_action);
+			}
 
 			return *res;
 		}
 		else
 		{
-			iterable_state::forward_result(make_error<action_result>(iter::ActionError::RemovalError,EraseActionError::NonExistingValue));
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(action_error(iter::ActionError::RemovalError,EraseActionError::NonExistingValue));
+			}
 
 			return m_adaptor.get_value();
 		}
 	}
     else
     {
-		iterable_state::forward_result(make_error<action_result>(iter::ActionError::RemovalError,EraseActionError::ErasingFromConstantIterable));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::RemovalError,EraseActionError::ErasingFromConstantIterable));
+		}
 
-        return m_adaptor.get_value();
+		return m_adaptor.get_value();
     }
 }
 template<typename Iterable, typename Adaptor>
@@ -59,78 +101,103 @@ typename Adaptor::reference action_visitor<Iterable,input_action,Adaptor>::visit
     {
 		typedef typename Iterable::value_type value_type;
 
-		if(optional<reference> res = m_adaptor.add_item(i_action.template get<value_type>()))
+		if(auto res = m_adaptor.add_item(i_action.template get<value_type>()))
 		{
-			iterable_state::forward_result(make_result<action_result>(i_action));
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(i_action);
+			}
 
 			return *res;
 		}
 		else
 		{
-			iterable_state::forward_result(make_error<action_result>(iter::ActionError::AdditionError,AddActionError::NonConvertibleType));
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(action_error(iter::ActionError::AdditionError,AddActionError::NonConvertibleType));
+			}
 
 			return m_adaptor.get_value();
 		}
     }
     else
     {
-		iterable_state::forward_result(make_error<action_result>(iter::ActionError::AdditionError,AddActionError::AddingToConstantIterable));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::AdditionError,AddActionError::AddingToConstantIterable));
+		}
 
         return m_adaptor.get_value();
     }
 }
 template<typename Iterable, typename Adaptor>
-typename Adaptor::reference action_visitor<Iterable,input_action,Adaptor>::visit(const go_forward_action& i_action)
+typename Adaptor::reference action_visitor<Iterable,const_bidirectional_action,Adaptor>::visit(const go_backward_action& i_action)
 {
-	if(optional<reference> nextValue = m_adaptor.next_value())
+	if(auto nextValue = m_adaptor.prev_value())
 	{
-		iterable_state::forward_result(make_result<action_result>(go_to_place(1,1)));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(go_to_place(-1,-1));
+		}
 
 		return *nextValue;
 	}
 	else
 	{
-		iterable_state::forward_result(make_error<action_result>(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+		}
 
 		suspend();
 
 		return m_adaptor.get_value();
 	}
 }
-template<typename Iterable, typename Adaptor>
+template<typename Iterable,typename Adaptor>
 typename Adaptor::reference action_visitor<Iterable,bidirectional_action,Adaptor>::visit(const go_backward_action& i_action)
 {
-	if(optional<reference> nextValue = m_adaptor.next_value())
+	if(auto nextValue = m_adaptor.prev_value())
 	{
-		iterable_state::forward_result(make_result<action_result>(go_to_place(-1,-1)));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(go_to_place(-1,-1));
+		}
 
 		return *nextValue;
 	}
 	else
 	{
-		iterable_state::forward_result(make_error<action_result>(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+		}
 
 		suspend();
 
 		return m_adaptor.get_value();
 	}
 }
-template<typename Iterable, typename Adaptor>
-typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor>::visit(const shift_action& i_action)
+template<typename Iterable,typename Adaptor>
+typename Adaptor::reference action_visitor<Iterable,const_random_access_action,Adaptor>::visit(const shift_action& i_action)
 {
-	if(i_action.shifting() != 0)
+	if(const int shiftingValue = i_action.shifting())
 	{
-		const int shiftingValue = i_action.shifting();
-
-		if(optional<reference> nextValue = m_adaptor.shift_value(shiftingValue))
+		if(auto nextValue = m_adaptor.shift_value(shiftingValue))
 		{
-			iterable_state::forward_result(make_result<action_result>(go_to_place(shiftingValue,shiftingValue)));
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(go_to_place(shiftingValue,shiftingValue));
+			}
 
 			return *nextValue;
 		}
 		else
 		{
-			iterable_state::forward_result(make_error<action_result>(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError{ShiftActionError::ShiftOutOfBounds}));
+			}
 
 			suspend();
 
@@ -139,7 +206,46 @@ typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor
 	}
 	else
 	{
-		iterable_state::forward_result(make_result<action_result>(i_action));
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(i_action);
+		}
+
+		return m_adaptor.get_value();
+	}
+}
+template<typename Iterable, typename Adaptor>
+typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor>::visit(const shift_action& i_action)
+{
+	if(const int shiftingValue = i_action.shifting())
+	{
+		if(auto nextValue = m_adaptor.shift_value(shiftingValue))
+		{
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(go_to_place(shiftingValue,shiftingValue));
+			}
+
+			return *nextValue;
+		}
+		else
+		{
+			if(m_actionStatePtr)
+			{
+				m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			}
+
+			suspend();
+
+			return m_adaptor.get_value();
+		}
+	}
+	else
+	{
+		if(m_actionStatePtr)
+		{
+			m_actionStatePtr->forward_result(i_action);
+		}
 
 		return m_adaptor.get_value();
 	}
@@ -147,18 +253,27 @@ typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor
 
 }
 
-template<typename Iterable, typename Action, typename Reference>
-Reference visit_iterator(Iterable& i_iterable, const function<Action(Reference)>& i_sink, const iter::shift_action& i_initialAction)
+template<typename Iterable, typename Function>
+typename Iterable::reference visit_iterator(Iterable& i_iterable, const Function& i_sink, const iter::shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
-	detail::action_visitor<Iterable,Action,typename detail::iterable_adaptor<Iterable,Action>::type> actionVisitor(i_iterable,i_initialAction);
-	Action currAction(go_to_place(0));
+	typedef typename Function::return_type action_type;
+	detail::action_visitor<Iterable,action_type,typename detail::iterable_adaptor<Iterable,action_type>::type> actionVisitor(i_iterable,i_initialAction,i_actionStatePtr);
 
-	while(true)
+	if(actionVisitor.valid())
 	{
-        currAction = eval(i_sink,currAction.visit(actionVisitor));
+		action_type currAction(go_no_place);
+
+		while(true)
+		{
+			currAction = i_sink.inline_eval(currAction.visit(actionVisitor));
+		}
+	}
+	else
+	{
+		suspend();
 	}
 
-	return ddk::crash_on_return<Reference>::value();
+	return ddk::crash_on_return<typename Iterable::reference>::value();
 }
 
 }

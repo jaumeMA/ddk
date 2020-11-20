@@ -29,12 +29,25 @@ private:
 };
 
 template<typename Return>
-class await_executor : public cancellable_executor_interface<Return()>, public fiber_scheduler_interface, private fiber_yielder_interface, protected lend_from_this<await_executor<Return>,detail::fiber_scheduler_interface>
+class await_executor : public cancellable_executor_interface<Return()>, public scheduler_interface, private yielder_interface, protected lend_from_this<await_executor<Return>,detail::scheduler_interface>
 {
 public:
+	enum ExecuteErrorCode
+	{
+		NoCallable,
+		AlreadyDone
+	};
+	typedef result<void,ExecuteErrorCode> execute_result;
+
 	await_executor();
 	await_executor(stack_allocator i_stackAlloc);
+	await_executor(const await_executor& other);
 	~await_executor();
+
+	inline execute_result execute(const ddk::function<Return()>& i_callable);
+	inline const stack_allocator& get_stack_allocator() const;
+	inline void yield();
+	await_executor& operator=(const await_executor&) = delete;
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
@@ -56,7 +69,6 @@ private:
 
 	this_fiber_t m_caller;
 	fiber_impl m_callee;
-	detail::fiber_yielder m_yielder;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 

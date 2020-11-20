@@ -12,7 +12,7 @@ template<typename Predicate>
 class erase_any
 {
 	template<typename Iterable>
-	iteration operato <<= (const erase& i_lhs,const Iterable& i_iterable)
+	iteration operator<<=(const erase& i_lhs,const Iterable& i_iterable)
 	{
 		typedef typename Iterable::iterable_value iterable_value;
 
@@ -30,7 +30,7 @@ template<typename Predicate>
 class erase_any
 {
 	template<typename Iterable>
-	iteration operato<<=(const erase& i_lhs, const Iterable& i_iterable)
+	iteration operator<<=(const erase& i_lhs, const Iterable& i_iterable)
 	{
 		typedef typename Iterable::iterable_value iterable_value;
 

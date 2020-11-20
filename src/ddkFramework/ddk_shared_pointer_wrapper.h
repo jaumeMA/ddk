@@ -2,10 +2,10 @@
 
 #include "ddk_reference_counter.h"
 #include "ddk_reference_wrapper_deleter.h"
-#include <type_traits>
 #include <utility>
 #include "ddk_tagged_pointer.h"
 #include "ddk_lent_reference_wrapper.h"
+#include <type_traits>
 
 #define ENSURE_SCOPE_LIFETIME(_PTR) const auto ___##_PTR = _PTR;
 
@@ -231,23 +231,23 @@ public:
 
 		return *this;
 	}
-	bool operator==(std::nullptr_t) const
+	inline bool operator==(std::nullptr_t) const
 	{
 		return m_data == nullptr;
 	}
-	bool operator!=(std::nullptr_t) const
+	inline bool operator!=(std::nullptr_t) const
 	{
 		return m_data != nullptr;
 	}
-	T* operator->()
+	inline T* operator->()
 	{
 		return m_data;
 	}
-	const T* operator->() const
+	inline const T* operator->() const
 	{
 		return m_data;
 	}
-	T& operator*()
+	inline T& operator*()
 	{
 		if(m_data == nullptr)
 		{
@@ -256,7 +256,7 @@ public:
 
 		return *m_data;
 	}
-	const T& operator*() const
+	inline const T& operator*() const
 	{
 		if(m_data == nullptr)
 		{
@@ -265,7 +265,7 @@ public:
 
 		return *m_data;
 	}
-	operator bool() const
+	inline operator bool() const
 	{
 		return m_data != nullptr;
 	}
@@ -276,19 +276,19 @@ public:
 			clearIfCounterVoid(m_refCounter->decrementSharedReference());
 		}
 	}
-	T* get()
+	inline T* get()
 	{
 		return m_data;
 	}
-	const T* get() const
+	inline const T* get() const
 	{
 		return m_data;
 	}
-	const IReferenceWrapperDeleter* get_deleter() const
+	inline const IReferenceWrapperDeleter* get_deleter() const
 	{
 		return m_deleter;
 	}
-	bool empty() const
+	inline bool empty() const
 	{
 		return m_data == nullptr;
 	}

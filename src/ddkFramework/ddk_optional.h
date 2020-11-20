@@ -20,48 +20,48 @@ public:
     typedef typename embedded_type<T>::raw_type* pointer_type;
     typedef const typename embedded_type<T>::raw_type* pointer_const_type;
 
-    optional();
-    optional(detail::none_t);
-    optional(const optional<T>& other);
-    optional(optional<T>&& other);
-    optional(reference_type val);
-    optional(reference_const_type val);
-    optional(rreference_type val);
+    inline optional();
+    inline optional(detail::none_t);
+    inline optional(const optional<T>& other);
+    inline optional(optional<T>&& other);
+    inline optional(reference_type val);
+    inline optional(reference_const_type val);
+    inline optional(rreference_type val);
     template<typename TT>
-    optional(const optional<TT>& other);
+	inline optional(const optional<TT>& other);
     template<typename TT>
-    optional(optional<TT>&& other);
+	inline optional(optional<TT>&& other);
     template<typename Arg>
     explicit optional(Arg&& i_arg, typename std::enable_if<std::is_convertible<Arg,optional<T>>::value == false>::type* = NULL);
-    ~optional();
-    optional<T>& operator=(const optional<T>& other);
-    optional<T>& operator=(optional<T>&& other);
+    inline ~optional();
+    inline optional<T>& operator=(const optional<T>& other);
+    inline optional<T>& operator=(optional<T>&& other);
     template<typename TT>
-    optional<T>& operator=(const optional<TT>& other);
+	inline optional<T>& operator=(const optional<TT>& other);
     template<typename TT>
-    optional<T>& operator=(optional<TT>&& other);
-    optional<T>& operator=(detail::none_t);
-    optional<T>& operator=(reference_type val);
-    optional<T>& operator=(reference_const_type val);
-    optional<T>& operator=(rreference_type val);
+    inline optional<T>& operator=(optional<TT>&& other);
+    inline optional<T>& operator=(detail::none_t);
+    inline optional<T>& operator=(reference_type val);
+    inline optional<T>& operator=(reference_const_type val);
+    inline optional<T>& operator=(rreference_type val);
 	inline bool empty() const;
     inline explicit operator bool() const;
     inline bool operator!() const;
-    typename embedded_type<T>::cref_type get() const;
-    typename embedded_type<T>::ref_type get();
-    typename embedded_type<T>::cref_type get_value_or(typename embedded_type<T>::cref_type default_value) const;
-    typename embedded_type<T>::ref_type get_value_or(typename embedded_type<T>::ref_type default_value);
-    typename embedded_type<T>::cpointer_type get_ptr() const;
-    typename embedded_type<T>::pointer_type get_ptr();
-    T extract();
-    typename embedded_type<T>::cref_type operator*() const;
-    typename embedded_type<T>::ref_type operator*();
-    typename embedded_type<T>::cpointer_type operator->() const;
-    typename embedded_type<T>::pointer_type operator->();
-    void swap(const optional<T>& other);
+    inline typename embedded_type<T>::cref_type get() const;
+    inline typename embedded_type<T>::ref_type get();
+    inline typename embedded_type<T>::cref_type get_value_or(typename embedded_type<T>::cref_type default_value) const;
+    inline typename embedded_type<T>::ref_type get_value_or(typename embedded_type<T>::ref_type default_value);
+    inline typename embedded_type<T>::cpointer_type get_ptr() const;
+    inline typename embedded_type<T>::pointer_type get_ptr();
+    inline T extract();
+    inline typename embedded_type<T>::cref_type operator*() const;
+    inline typename embedded_type<T>::ref_type operator*();
+    inline typename embedded_type<T>::cpointer_type operator->() const;
+    inline typename embedded_type<T>::pointer_type operator->();
+    inline void swap(const optional<T>& other);
 
 private:
-	arena<sizeof(embedded_type<T>),std::alignment_of<embedded_type<T>>::value> m_storage;
+	typed_arena<embedded_type<T>> m_storage;
 };
 
 }

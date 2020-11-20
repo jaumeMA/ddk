@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <type_traits>
 #include <utility>
 #include "ddk_template_helper.h"
 #include "ddk_arena.h"
+#include <type_traits>
 
 #ifdef _WIN32
 

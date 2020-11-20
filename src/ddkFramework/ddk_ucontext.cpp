@@ -48,8 +48,8 @@ void return_function()
 int get_context(ucontext_t* i_context)
 {
 #if defined(WIN32)
-	/* Retrieve the full machine context */
-	RtlZeroMemory(&(i_context->uc_mcontext),sizeof(mcontext_t));
+
+	memset(&(i_context->uc_mcontext),0,sizeof(mcontext_t));
 
     i_context->uc_mcontext.ContextFlags = CONTEXT_ALL;
 
@@ -88,15 +88,22 @@ int swap_context (ucontext_t* i_oldContext, ucontext_t* i_newContext)
 {
 #if defined(WIN32)
 
-	RtlZeroMemory(&(i_oldContext->uc_mcontext),sizeof(mcontext_t));
+	bool done = false;
 
 	i_oldContext->uc_mcontext.ContextFlags = CONTEXT_ALL;
 
 	RtlCaptureContext(&i_oldContext->uc_mcontext);
 
-	detail::unwind_calling_context(&(i_oldContext->uc_mcontext));
+	if(done == false)
+	{
+		done = true;
 
-	return set_context(i_newContext);
+		return set_context(i_newContext);
+	}
+	else
+	{
+		return 0;
+	}
 
 #else
 

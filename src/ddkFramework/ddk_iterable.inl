@@ -15,11 +15,7 @@ iterable<Traits>::iterable(iterable_impl_shared_ref<iterable_base_traits> i_iter
 template<typename Traits>
 iterable<Traits>::iterable(const iterable& other)
 : m_iterableImpl(other.m_iterableImpl)
-{
-}
-template<typename Traits>
-iterable<Traits>::iterable(iterable&& other)
-: m_iterableImpl(std::move(other.m_iterableImpl))
+, m_iterableState(other.m_iterableState)
 {
 }
 template<typename Traits>
@@ -29,23 +25,21 @@ iterable<Traits>::iterable(const iterable<TTraits>& other)
 {
 }
 template<typename Traits>
-template<typename TTraits>
-iterable<Traits>::iterable(iterable<TTraits>&& other)
-: m_iterableImpl(make_iterable_impl<transformed_iterable_action_impl<Traits,TTraits>>(std::move(other.m_iterableImpl),[](const typename TTraits::action& i_action) -> typename Traits::action { return typename Traits::action(i_action); }))
+iterable<Traits>::~iterable()
 {
 }
 template<typename Traits>
 void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
 {
-    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction));
+	m_callable = make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState));
 
     while(true)
     {
-        m_currAction = iterable_base_traits::default_action();
-
-        if(awaited_result<void> res = resume(m_awaitable))
+        if(m_executor.execute(m_callable) == success)
         {
-            try
+			m_currAction = iterable_base_traits::default_action();
+
+			try
             {
                 m_iterableState.apply(m_currAction);
 
@@ -64,7 +58,7 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
 
     if(i_finally != nullptr)
     {
-        eval(i_finally,m_iterableState.forward_result());
+        eval(i_finally,m_actionState->get());
     }
 }
 template<typename Traits>
@@ -73,15 +67,15 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
     static func_ptr privateIteratorFunc = &iterable<Traits>::private_iterate;
 
-    m_awaitable = await(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction));
+	m_callable = make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState));
 
     while(true)
     {
-        m_currAction = iterable_base_traits::default_action();
-
-        if(awaited_result<void> res = resume(m_awaitable))
+        if(m_executor.execute(m_callable) == success)
         {
-            try
+			m_currAction = iterable_base_traits::default_action();
+
+			try
             {
                 m_iterableState.apply(m_currAction);
 
@@ -100,7 +94,7 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
 
     if(i_finally != nullptr)
     {
-        eval(i_finally,m_iterableState.forward_result());
+        eval(i_finally,m_actionState->get());
     }
 }
 template<typename Traits>
@@ -136,21 +130,29 @@ const iter::iterable_state& iterable<Traits>::get_state() const
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
 {
-	iter::action_result actionResult = m_iterableState.forward_result();
+	iter::action_result actionResult = m_actionState->get();
 
-	if(actionResult == success && m_currAction.is_base_of<iter::shift_action>())
+	if(actionResult == success)
 	{
-		const iter::any_action currAction = actionResult.extract();
-
-		//in case of shift action consolidate it against result
-		const iter::consolidate_visitor consolidateVisitor(currAction.get_as<iter::shift_action>());
-
-		if(m_currAction.visit(consolidateVisitor))
+		if(actionResult.is_base_of<iter::shift_action>())
 		{
-			//if consolidation has been completed just pass to the another context
+			//in case of shift action consolidate it against result
+			const iter::shift_action& currReturnedAction = actionResult.get_as<iter::shift_action>();
+			const iter::consolidate_visitor consolidateVisitor(currReturnedAction);
+
+			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
+			{
+				//if consolidation has been completed just pass to the another context
+				m_iterableValueContainer.template construct<const_reference>(i_value);
+
+				m_executor.yield();
+			}
+		}
+		else
+		{
 			m_iterableValueContainer.template construct<const_reference>(i_value);
 
-			ddk::yield();
+			m_executor.yield();
 		}
 	}
 
@@ -159,21 +161,29 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(const_reference i_value) const
 {
-	iter::action_result actionResult = m_iterableState.forward_result();
+	const iter::action_result actionResult = m_actionState->get();
 
-	if(actionResult != iter::ActionError::ShiftError && m_currAction.is_base_of<iter::shift_action>())
+	if(actionResult == success)
 	{
-		const iter::any_action currAction = actionResult.extract();
-
-		//in case of shift action consolidate it against result
-		const iter::consolidate_visitor consolidateVisitor(currAction.get_as<iter::shift_action>());
-
-		if(m_currAction.visit(consolidateVisitor))
+		if(actionResult.is_base_of<iter::shift_action>())
 		{
-			//if consolidation has been completed just pass to the another context
+			//in case of shift action consolidate it against result
+			const iter::shift_action& currReturnedAction = actionResult.get_as<iter::shift_action>();
+			const iter::consolidate_visitor consolidateVisitor(currReturnedAction);
+
+			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
+			{
+				//if consolidation has been completed just pass to the another context
+				m_iterableValueContainer.template construct<const_reference>(i_value);
+
+				m_executor.yield();
+			}
+		}
+		else
+		{
 			m_iterableValueContainer.template construct<const_reference>(i_value);
 
-			ddk::yield();
+			m_executor.yield();
 		}
 	}
 
@@ -184,7 +194,7 @@ typename iterable<Traits>::reference iterable<Traits>::resolve_action(const acti
 {
     m_currAction = i_action;
 
-    if (awaited_result<void> res = resume(m_awaitable))
+    if (m_executor.execute(m_callable) == success)
     {
         m_iterableState.apply(m_currAction);
 
@@ -200,7 +210,7 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
 {
     m_currAction = i_action;
 
-    if (awaited_result<void> res = resume(m_awaitable))
+    if (m_executor.execute(m_callable) == success)
     {
         m_iterableState.apply(m_currAction);
 
@@ -214,16 +224,9 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
 template<typename Traits>
 bool iterable<Traits>::forward_action(action i_action) const
 {
-    if(m_currAction != i_action)
-    {
-        m_currAction = i_action;
+	m_currAction = i_action;
 
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+	return true;
 }
 
 }

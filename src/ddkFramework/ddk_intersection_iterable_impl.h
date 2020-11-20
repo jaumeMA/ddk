@@ -18,9 +18,9 @@ class intersection_iterable_impl : public iterable_impl_interface<intersection_i
     typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_value iterable_value;
     typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_const_value iterable_const_value;
 	template<size_t Index, typename ... IIterables>
-	friend typename mpl::nth_type_of<Index, IIterables...>::type::reference intersection_navigate(intersection_iterable_impl<IIterables...>& i_iterable, const iter::shift_action& i_initialAction);
+	friend typename mpl::nth_type_of<Index, IIterables...>::type::reference intersection_navigate(intersection_iterable_impl<IIterables...>* i_iterable, const iter::shift_action& i_initialAction);
 	template<size_t Index, typename ... IIterables>
-	friend typename mpl::nth_type_of<Index, IIterables...>::type::const_reference const_intersection_navigate(const intersection_iterable_impl<IIterables...>& i_iterable, const iter::shift_action& i_initialAction);
+	friend typename mpl::nth_type_of<Index, IIterables...>::type::const_reference const_intersection_navigate(const intersection_iterable_impl<IIterables...>* i_iterable, const iter::shift_action& i_initialAction);
 
 public:
     using typename base_t::reference;
@@ -36,19 +36,15 @@ public:
     tuple<Iterables...>& get_iterables();
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const override;
     size_t size() const override;
     bool empty() const override;
 
     template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::shift_action& i_initialAction);
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr);
     template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction) const;
-    template<size_t Index>
-    typename mpl::nth_type_of<Index,Iterables...>::type::reference private_iterate_impl(typename mpl::nth_type_of<Index,Iterables...>::type& i_iterable, const iter::shift_action& i_initialAction);
-    template<size_t Index>
-    typename mpl::nth_type_of<Index,Iterables...>::type::const_reference private_iterate_impl(const typename mpl::nth_type_of<Index,Iterables...>::type& i_iterable, const iter::shift_action& i_initialAction) const;
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const;
 
     tuple<Iterables...> m_iterables;
 };

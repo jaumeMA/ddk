@@ -20,8 +20,7 @@ bool priority_queue<Comparator>::has_item(const fiber_id& i_id) const
 
 template<typename Comparator>
 fiber_scheduler<Comparator>::fiber_scheduler()
-: m_yielder(static_cast<detail::fiber_yielder_interface&>(*this))
-, m_stop(false)
+: m_stop(false)
 {
 	pthread_mutex_init(&m_fiberMutex, NULL);
 	pthread_cond_init(&m_fiberCondVar, NULL);
@@ -45,7 +44,7 @@ typename fiber_scheduler<Comparator>::register_fiber_result fiber_scheduler<Comp
 
 	if(itFiber == m_fibers.end())
 	{
-		i_fiber.m_impl->set_executor(this->template ref_from_this<detail::fiber_scheduler_interface>(*this));
+		i_fiber.m_impl->set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
 
 		std::pair<fiber_container::const_iterator,bool> insertRes = m_fibers.insert(std::make_pair(i_fiber.get_id(),i_fiber.m_impl.get()));
 
@@ -129,7 +128,7 @@ size_t fiber_scheduler<Comparator>::size() const
 template<typename Comparator>
 void fiber_scheduler<Comparator>::start()
 {
-	m_fiberThread.start(ddk::make_function(this,&fiber_scheduler<Comparator>::run),ddk::lend(m_yielder));
+	m_fiberThread.start(ddk::make_function(this,&fiber_scheduler<Comparator>::run));
 }
 template<typename Comparator>
 void fiber_scheduler<Comparator>::stop()
@@ -249,9 +248,6 @@ void fiber_scheduler<Comparator>::unregister(fiber_id i_id)
 template<typename Comparator>
 void fiber_scheduler<Comparator>::run()
 {
-	//update current yielder
-	detail::yielder_lent_ptr prevYielder = detail::thread_impl_interface::set_yielder(ddk::lend(m_yielder));
-
 	while(m_stop == false)
 	{
 		ddk::function<void()> callableObject;
@@ -301,9 +297,6 @@ void fiber_scheduler<Comparator>::run()
 			pthread_mutex_unlock(&m_fiberMutex);
 		}
 	}
-
-	//recover previous yielder
-	detail::thread_impl_interface::set_yielder(prevYielder);
 }
 
 }
