@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_none.h"
-#include "ddk_sync_executor.h"
+#include "ddk_await_executor.h"
 #include "ddk_iterable_action.h"
 #include "ddk_iterable_state.h"
 #include "ddk_iterable_action_state.h"
@@ -37,8 +37,8 @@ struct co_forward_iterator
 
 public:
 	static const size_t npos = -1;
-	typedef typename async_state_interface<T>::reference reference;
-	typedef typename async_state_interface<T>::const_reference const_reference;
+	typedef typename embedded_type<T>::ref_type reference;
+	typedef typename embedded_type<T>::cref_type const_reference;
 
 	co_forward_iterator(const detail::none_t&);
 	co_forward_iterator(const co_forward_iterator& other);
@@ -49,7 +49,6 @@ public:
 	const_reference operator*() const;
 	co_forward_iterator<T>& operator++();
 	co_forward_iterator<T> operator++(int);
-	co_forward_iterator<T>& operator=(const co_forward_iterator& other);
 	bool operator!=(const co_forward_iterator<T>& other) const;
 	bool operator==(const co_forward_iterator<T>& other) const;
 
@@ -59,53 +58,51 @@ private:
     iter::const_forward_action acquire_iterable_value(reference i_value);
 
 	ddk::function<reference(const iter::shift_action&,const function<iter::const_forward_action(reference)>&)> m_function;
-	ddk::function<reference()> m_callable;
 	iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
 	iter::go_forward_action m_currAction = iter::go_no_place;
 	mutable typed_arena<reference> m_iteratorValueContainer;
-	ddk::unique_pointer_wrapper<detail::await_executor<T>> m_executor;
+	detail::await_executor<T> m_executor;
 };
 
-template<typename T>
-struct co_bidirectional_iterator
-{
-	IS_CO_ITERATOR(co_bidirectional_iterator)
-
-	template<typename>
-	friend class co_iterable;
-	template<typename>
-	friend struct co_bidirectional_iterator;
-
-public:
-	static const size_t npos = -1;
-	typedef typename async_state_interface<T>::reference reference;
-	typedef typename async_state_interface<T>::const_reference const_reference;
-
-	co_bidirectional_iterator(const detail::none_t&);
-	co_bidirectional_iterator(const co_bidirectional_iterator& other);
-
-	reference operator*();
-	const_reference operator*() const;
-	co_bidirectional_iterator<T>& operator++();
-	co_bidirectional_iterator<T> operator++(int);
-	co_bidirectional_iterator<T>& operator--();
-	co_bidirectional_iterator<T> operator--(int);
-	co_bidirectional_iterator<T>& operator=(const co_bidirectional_iterator& other);
-	bool operator!=(const co_bidirectional_iterator<T>& other) const;
-	bool operator==(const co_bidirectional_iterator<T>& other) const;
-
-private:
-	template<typename Iterable>
-	co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
-    iter::bidirectional_action acquire_iterable_value(reference i_value);
-
-	async_execute_shared_ptr<T> m_executor;
-	ddk::function<reference(const iter::shift_action&, const function<iter::bidirectional_action(reference)>&)> m_function;
-    iter::iterable_state m_currState;
-	detail::this_fiber_t m_caller;
-    iter::bidirectional_action m_currAction = iter::go_no_place;
-};
+//template<typename T>
+//struct co_bidirectional_iterator
+//{
+//	IS_CO_ITERATOR(co_bidirectional_iterator)
+//
+//	template<typename>
+//	friend class co_iterable;
+//	template<typename>
+//	friend struct co_bidirectional_iterator;
+//
+//public:
+//	static const size_t npos = -1;
+//	typedef typename embedded_type<T>::reference reference;
+//	typedef typename embedded_type<T>::const_reference const_reference;
+//
+//	co_bidirectional_iterator(const detail::none_t&);
+//	co_bidirectional_iterator(const co_bidirectional_iterator& other);
+//
+//	reference operator*();
+//	const_reference operator*() const;
+//	co_bidirectional_iterator<T>& operator++();
+//	co_bidirectional_iterator<T> operator++(int);
+//	co_bidirectional_iterator<T>& operator--();
+//	co_bidirectional_iterator<T> operator--(int);
+//	bool operator!=(const co_bidirectional_iterator<T>& other) const;
+//	bool operator==(const co_bidirectional_iterator<T>& other) const;
+//
+//private:
+//	template<typename Iterable>
+//	co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
+//    iter::bidirectional_action acquire_iterable_value(reference i_value);
+//
+//	async_execute_shared_ptr<T> m_executor;
+//	ddk::function<reference(const iter::shift_action&, const function<iter::bidirectional_action(reference)>&)> m_function;
+//    iter::iterable_state m_currState;
+//	detail::this_fiber_t m_caller;
+//    iter::bidirectional_action m_currAction = iter::go_no_place;
+//};
 
 template<typename T>
 struct co_random_access_iterator
@@ -118,8 +115,8 @@ struct co_random_access_iterator
 	friend struct co_random_access_iterator;
 
 public:
-	typedef typename async_state_interface<T>::reference reference;
-	typedef typename async_state_interface<T>::const_reference const_reference;
+	typedef typename embedded_type<T>::ref_type reference;
+	typedef typename embedded_type<T>::cref_type const_reference;
 
 	co_random_access_iterator(const detail::none_t&);
 	co_random_access_iterator(const co_random_access_iterator& other);
@@ -142,12 +139,11 @@ private:
     iter::const_random_access_action acquire_iterable_value(reference i_value);
 
 	ddk::function<reference(const iter::shift_action&, const detail::relative_function_impl<co_random_access_iterator<T>,iter::const_random_access_action,reference>&)> m_function;
-	ddk::function<reference()> m_callable;
 	iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
 	iter::shift_action m_currAction;
 	detail::await_executor<T> m_executor;
-	mutable arena<mpl::size_of_qualified_type<reference>::value,alignof(reference)> m_iteratorValueContainer;
+	mutable typed_arena<reference> m_iteratorValueContainer;
 };
 
 namespace detail
@@ -162,12 +158,12 @@ struct co_iterator_type_correspondence<T,std::forward_iterator_tag>
 	typedef co_forward_iterator<T> type;
 	typedef iter::const_input_action action;
 };
-template<typename T>
-struct co_iterator_type_correspondence<T,std::bidirectional_iterator_tag>
-{
-	typedef co_bidirectional_iterator<T> type;
-	typedef iter::const_bidirectional_action action;
-};
+//template<typename T>
+//struct co_iterator_type_correspondence<T,std::bidirectional_iterator_tag>
+//{
+//	typedef co_bidirectional_iterator<T> type;
+//	typedef iter::const_bidirectional_action action;
+//};
 template<typename T>
 struct co_iterator_type_correspondence<T, std::random_access_iterator_tag>
 {

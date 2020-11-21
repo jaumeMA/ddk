@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_sync_executor.h"
+#include "ddk_await_executor.h"
 #include "ddk_none.h"
 
 namespace ddk
@@ -44,7 +44,7 @@ public:
 	explicit operator bool() const;
 	explicit operator const_reference() const;
 	explicit operator reference();
-	void set(T i_content);
+	void set(reference i_content);
 
 private:
 	typed_arena<T> m_content;
@@ -66,28 +66,23 @@ class awaitable
 	friend Result;
 	friend inline Result resume(awaitable<T,Result>& i_awaitable)
 	{
-		typename awaitable<T,Result>::continue_result res = i_awaitable.resume();
-
-		return (res == success) ? Result{ i_awaitable.m_executor->extract_value() } : Result{ none };
+		return i_awaitable.resume();
 	}
 
 public:
-	typedef typename async_executor<T>::start_result continue_result;
 	typedef typename Result::reference reference;
 	typedef typename Result::const_reference const_reference;
 
-    awaitable() = default;
 	awaitable(const ddk::function<T()>& i_function, const detail::this_thread_t& i_thread);
 	awaitable(const awaitable& other);
 	awaitable(awaitable&& other);
-	continue_result resume();
-	operator bool() const;
+	Result resume();
 
-    awaitable& operator=(const awaitable&) = default;
-    awaitable& operator=(awaitable&&) = default;
+    awaitable& operator=(const awaitable&) = delete;
+    awaitable& operator=(awaitable&&) = delete;
 
 protected:
-	async_execute_shared_ptr<T> m_executor;
+	detail::await_executor<T> m_executor;
 };
 
 template<typename Result>

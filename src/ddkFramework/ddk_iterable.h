@@ -11,7 +11,7 @@
 #include "ddk_iterable_action.h"
 #include "ddk_iterable_valued_traits.h"
 #include "ddk_iterable_state.h"
-#include "ddk_sync_executor_impl.h"
+#include "ddk_await_executor.h"
 #include "ddk_arena.h"
 
 namespace ddk
@@ -69,7 +69,6 @@ private:
 	mutable lendable<iter::action_state> m_actionState;
     iterable_impl_shared_ref<iterable_base_traits> m_iterableImpl;
     mutable iter::iterable_state m_iterableState;
-	mutable ddk::function<void()> m_callable;
 	mutable detail::await_executor<void> m_executor;
 	mutable typed_arena<reference> m_iterableValueContainer;
     mutable action m_currAction = iterable_base_traits::default_action();

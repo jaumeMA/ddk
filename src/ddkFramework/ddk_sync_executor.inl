@@ -54,13 +54,6 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(const detail::this_thread_t& i_thread)
-{
-	m_executor = make_executor<detail::await_executor<Return>>();
-
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
-}
-template<typename Return>
 shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
 	const ddk::function<Return()> thisFunction(m_function);

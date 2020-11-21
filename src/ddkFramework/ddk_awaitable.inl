@@ -87,17 +87,15 @@ awaited_result<T>::operator reference()
 	return m_content.template get<T>();
 }
 template<typename T>
-void awaited_result<T>::set(T i_content)
+void awaited_result<T>::set(reference i_content)
 {
-	m_content.template assign<T>();
+	m_content.template assign<T>(std::forward<reference>(i_content));
 }
 
 template<typename T, typename Result>
 awaitable<T,Result>::awaitable(const function<T()>& i_function, const detail::this_thread_t& i_thread)
+: m_executor(i_function)
 {
-	shared_reference_wrapper<async_executor<T>> asyncExecutor = make_async_executor(i_function);
-
-	m_executor = asyncExecutor->attach(i_thread);
 }
 template<typename T, typename Result>
 awaitable<T,Result>::awaitable(const awaitable& other)
@@ -110,22 +108,19 @@ awaitable<T,Result>::awaitable(awaitable&& other)
 {
 }
 template<typename T, typename Result>
-typename awaitable<T,Result>::continue_result awaitable<T,Result>::resume()
+Result awaitable<T,Result>::resume()
 {
-	return m_executor->execute();
-}
-template<typename T, typename Result>
-awaitable<T,Result>::operator bool() const
-{
-	return m_executor != nullptr;
+	Result res;
+
+	m_executor.execute(make_function(&res,&Result::set));
+
+	return res;
 }
 
 template<typename Result>
 awaitable<void,Result>::awaitable(const ddk::function<void()>& i_function, const detail::this_thread_t& i_thread)
+: m_executor(make_function([i_function]() { i_function(); return _void; }))
 {
-	shared_reference_wrapper<async_executor<detail::void_t>> asyncExecutor = make_async_executor(make_function([i_function](){ i_function(); return _void;}));
-
-	this->m_executor = asyncExecutor->attach(i_thread);
 }
 
 }

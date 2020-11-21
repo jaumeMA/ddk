@@ -31,11 +31,11 @@ iterable<Traits>::~iterable()
 template<typename Traits>
 void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
 {
-	m_callable = make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState));
+	m_executor.reassign(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
 
     while(true)
     {
-        if(m_executor.execute(m_callable) == success)
+        if(m_executor.execute())
         {
 			m_currAction = iterable_base_traits::default_action();
 
@@ -67,11 +67,11 @@ void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
     static func_ptr privateIteratorFunc = &iterable<Traits>::private_iterate;
 
-	m_callable = make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState));
+	m_executor.reassign(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
 
     while(true)
     {
-        if(m_executor.execute(m_callable) == success)
+        if(m_executor.execute())
         {
 			m_currAction = iterable_base_traits::default_action();
 
@@ -194,7 +194,7 @@ typename iterable<Traits>::reference iterable<Traits>::resolve_action(const acti
 {
     m_currAction = i_action;
 
-    if (m_executor.execute(m_callable) == success)
+    if (m_executor.execute())
     {
         m_iterableState.apply(m_currAction);
 
@@ -210,7 +210,7 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
 {
     m_currAction = i_action;
 
-    if (m_executor.execute(m_callable) == success)
+    if (m_executor.execute())
     {
         m_iterableState.apply(m_currAction);
 

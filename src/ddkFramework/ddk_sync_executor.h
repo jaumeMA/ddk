@@ -34,7 +34,6 @@ public:
 
 	async_shared_ref attach(thread i_thread);
 	async_shared_ref attach(fiber i_fiber);
-	async_shared_ref attach(const detail::this_thread_t&);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(thread_sheaf i_threadSheaf);
 	shared_reference_wrapper<async_executor<detail::void_t>> attach(fiber_sheaf i_fiberSheaf);
 	async_shared_ref attach(attachable<Return> i_attachable);

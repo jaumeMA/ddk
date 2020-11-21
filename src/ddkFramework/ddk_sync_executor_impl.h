@@ -29,50 +29,6 @@ private:
 };
 
 template<typename Return>
-class await_executor : public cancellable_executor_interface<Return()>, public scheduler_interface, private yielder_interface, protected lend_from_this<await_executor<Return>,detail::scheduler_interface>
-{
-public:
-	enum ExecuteErrorCode
-	{
-		NoCallable,
-		AlreadyDone
-	};
-	typedef result<void,ExecuteErrorCode> execute_result;
-
-	await_executor();
-	await_executor(stack_allocator i_stackAlloc);
-	await_executor(const await_executor& other);
-	~await_executor();
-
-	inline execute_result execute(const ddk::function<Return()>& i_callable);
-	inline const stack_allocator& get_stack_allocator() const;
-	inline void yield();
-	await_executor& operator=(const await_executor&) = delete;
-
-private:
-	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-	using typename executor_interface<Return()>::StartErrorCode;
-	typedef typename executor_interface<Return()>::start_result start_result;
-	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
-	typedef typename cancellable_executor_interface<Return()>::cancel_result cancel_result;
-
-	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	ExecutorState get_state() const override;
-
-	void yield(yielder_context* i_context) override;
-	void suspend(yielder_context* = nullptr) override;
-
-	bool activate(fiber_id, const ddk::function<void()>&) override;
-	bool deactivate(fiber_id) override;
-	void unregister(fiber_id) override;
-
-	this_fiber_t m_caller;
-	fiber_impl m_callee;
-	atomic<ExecutorState::underlying_type> m_state;
-};
-
-template<typename Return>
 class fiber_executor : public cancellable_executor_interface<Return()>
 {
 public:
