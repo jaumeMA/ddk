@@ -41,7 +41,7 @@ int get_context(ucontext_t* i_context)
 
 	RtlZeroMemory(&(i_context->uc_mcontext),sizeof(mcontext_t));
 
-    i_context->uc_mcontext.ContextFlags = CONTEXT_AMD64;
+    i_context->uc_mcontext.ContextFlags = CONTEXT_CONTROL;
 
 	RtlCaptureContext(&(i_context->uc_mcontext));
 
@@ -73,40 +73,5 @@ int set_context(ucontext_t* i_context)
 
 #endif
 }
-
-#ifndef DDK_DEBUG
-
-#pragma optimize( "", off )
-
-#endif
-
-int swap_context(ucontext_t* i_oldContext,ucontext_t* i_newContext)
-{
-#if defined(WIN32)
-
-	bool done = false;
-	RtlCaptureContext(&(i_oldContext->uc_mcontext));
-
-	if(done == false)
-	{
-		done = true;
-		RtlRestoreContext(&(i_newContext->uc_mcontext),nullptr);
-	}
-
-
-	return 0;
-
-#else
-
-	return swapcontext(i_oldContext,i_newContext);
-
-#endif
-}
-
-#ifndef DDK_DEBUG
-
-#pragma optimize( "", on )
-
-#endif
 
 }

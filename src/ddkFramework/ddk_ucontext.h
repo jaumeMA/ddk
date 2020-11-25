@@ -76,7 +76,6 @@ namespace ddk
 
 int get_context(ucontext_t* i_context);
 int set_context(ucontext_t* i_context);
-int swap_context(ucontext_t* i_oldContext,ucontext_t* i_newContext);
 
 template<typename ... Args>
 void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_func) (void), Args* ... i_args)
