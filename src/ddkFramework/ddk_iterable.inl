@@ -29,13 +29,59 @@ iterable<Traits>::~iterable()
 {
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
+void iterable<Traits>::iterate(const function<void(reference)>& i_try,const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
 {
-	m_executor.reassign(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
+	try
+	{
+		m_iterableImpl->iterate_impl(make_function([&](reference i_value)
+		{
+			m_iterableState.apply(m_currAction);
+
+			eval(i_try,i_value);
+
+			return m_currAction;
+		}),i_initialAction,lend(m_actionState));
+	}
+	catch(const suspend_exception&)
+	{
+	}
+
+	if(i_finally != nullptr)
+	{
+		eval(i_finally,m_actionState->get());
+	}
+}
+template<typename Traits>
+void iterable<Traits>::iterate(const function<void(const_reference)>& i_try,const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction) const
+{
+	try
+	{
+		m_iterableImpl->iterate_impl(make_function([&](const_reference i_value)
+		{
+			m_iterableState.apply(m_currAction);
+
+			eval(i_try,i_value);
+
+			return m_currAction;
+		}),i_initialAction,lend(m_actionState));
+	}
+	catch(const suspend_exception&)
+	{
+	}
+
+	if(i_finally != nullptr)
+	{
+		eval(i_finally,m_actionState->get());
+	}
+}
+template<typename Traits>
+void iterable<Traits>::co_iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
+{
+	m_executor = detail::await_executor<void>(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
 
     while(true)
     {
-        if(m_executor.execute())
+        if(m_executor.resume())
         {
 			m_currAction = iterable_base_traits::default_action();
 
@@ -62,16 +108,15 @@ void iterable<Traits>::iterate(const function<void(iterable_value)>& i_try, cons
     }
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction) const
+void iterable<Traits>::co_iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction) const
 {
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
-    static func_ptr privateIteratorFunc = &iterable<Traits>::private_iterate;
 
-	m_executor.reassign(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
+	m_executor = detail::await_executor<void>(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
 
     while(true)
     {
-        if(m_executor.execute())
+        if(m_executor.resume())
         {
 			m_currAction = iterable_base_traits::default_action();
 
@@ -194,7 +239,7 @@ typename iterable<Traits>::reference iterable<Traits>::resolve_action(const acti
 {
     m_currAction = i_action;
 
-    if (m_executor.execute())
+    if (m_executor.resume())
     {
         m_iterableState.apply(m_currAction);
 
@@ -210,7 +255,7 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
 {
     m_currAction = i_action;
 
-    if (m_executor.execute())
+    if (m_executor.resume())
     {
         m_iterableState.apply(m_currAction);
 

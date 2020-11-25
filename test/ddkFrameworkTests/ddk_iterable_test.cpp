@@ -52,41 +52,6 @@ struct E : C
     using C::C;
 };
 
-void lololo()
-{
-}
-
-class foo_interface
-{
-public:
-	virtual ~foo_interface() = default;
-
-	virtual int hola() const = 0;
-	virtual int adeu() const = 0;
-};
-
-template<typename ... Iterables>
-class foo : public foo_interface
-{
-public:
-foo(const Iterables& ... i_iterables)
-: m_foo(i_iterables...)
-{
-}
-int hola() const
-{
-	return 0;
-}
-int adeu() const
-{
-	return 1;
-}
-
-private:
-	int a = 0;
-	ddk::tuple<Iterables...> m_foo;
-};
-
 TEST(DDKIterableTest, forwardIterableConstruction)
 {
 	std::vector<int> foo;
@@ -133,13 +98,7 @@ TEST(DDKIterableTest, iterableUnion)
     const ddk::const_random_access_iterable<D> fooIterable2 = ddk::make_iterable<ddk::random_access_iterable<D>>(foo2);
     const ddk::const_random_access_iterable<E> fooIterable3 = ddk::make_iterable<ddk::random_access_iterable<E>>(foo3);
 
-	const size_t size1 = sizeof(ddk::const_random_access_iterable<A>);
-	const size_t size2 = sizeof(ddk::const_random_access_iterable<D>);
-	const size_t align1 = std::alignment_of<ddk::const_random_access_iterable<A>>::value;
-	const size_t align2 = std::alignment_of<ddk::const_random_access_iterable<D>>::value;
-
 	ddk::tuple<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> fooIterable4(fooIterable1,fooIterable2);
-	foo<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> fooIterable(fooIterable1,fooIterable2);
 	ddk::detail::union_iterable_impl<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> unionIterable(fooIterable1,fooIterable2);
 
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %zd\n",**i_value,value_position(i_value)); }) <<=  (fooIterable1 | fooIterable2);

@@ -19,13 +19,14 @@ namespace detail
 template<typename Return>
 inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
-	const ddk::function<Return()> localCallable = *i_function;
-
-	i_fiber->set_state(FiberExecutionState::Executing);
-
 	try
 	{
-		yield(eval(localCallable));
+		if(i_fiber->get_state() == FiberExecutionState::Executing)
+		{
+			const ddk::function<Return()> localCallable = *i_function;
+
+			yield(eval(localCallable));
+		}
 	}
 	catch(const suspend_exception&)
 	{
@@ -36,13 +37,13 @@ inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* 
 template<>
 inline void launch_fiber<void>(const ddk::function<void()>* i_function, fiber_impl* i_fiber)
 {
-	const ddk::function<void()> localCallable = *i_function;
-
-	i_fiber->set_state(FiberExecutionState::Executing);
-
 	try
 	{
-		eval(localCallable);
+		if(i_fiber->get_state() == FiberExecutionState::Executing)
+		{
+			const ddk::function<void()> localCallable = *i_function;
+			eval(localCallable);
+		}
 	}
 	catch(const suspend_exception&)
 	{
@@ -53,6 +54,8 @@ inline void launch_fiber<void>(const ddk::function<void()>* i_function, fiber_im
 template<typename Return>
 void fiber_impl::start_from(this_fiber_t& other, const ddk::function<Return()>& i_function)
 {
+	m_state = FiberExecutionState::Executing;
+
 	other.attach_context();
 
 	m_fiberContext.attach_stack(m_alloc.allocate());

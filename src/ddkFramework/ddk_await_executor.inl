@@ -5,26 +5,36 @@ namespace detail
 {
 
 template<typename Return>
+await_executor<Return>::await_executor()
+: m_state(ExecutorState::Idle)
+, m_callee(*this)
+{
+	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+}
+template<typename Return>
 await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable)
 : m_callable(i_callable)
-, m_state(ExecutorState::Idle)
+, m_state(ExecutorState::Executing)
 ,m_callee(*this)
 {
 	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+
+	m_callee.start_from(m_caller,m_callable);
 }
 template<typename Return>
 await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable, stack_allocator i_stackAlloc)
 : m_callable(i_callable)
 , m_callee(std::move(i_stackAlloc),*this)
-, m_state(ExecutorState::Idle)
+, m_state(ExecutorState::Executing)
 {
 	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+
+	m_callee.start_from(m_caller,m_callable);
 }
 template<typename Return>
 await_executor<Return>::await_executor(const await_executor& other)
 : await_executor(other.m_callable, { other.get_stack_allocator().get_alloc_impl(), other.get_stack_allocator().get_num_max_pages() })
 {
-	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
 }
 template<typename Return>
 await_executor<Return>::~await_executor()
@@ -37,27 +47,26 @@ await_executor<Return>::~await_executor()
 	}
 }
 template<typename Return>
-bool await_executor<Return>::reassign(const ddk::function<Return()>& i_callable)
+await_executor<Return>& await_executor<Return>::operator=(const await_executor& other)
 {
-	if(m_state.get() == ExecutorState::Idle)
-	{
-		m_callable = i_callable;
+	m_callee.stop();
 
-		return true;
+	if(other.m_callable != nullptr)
+	{
+		m_state = ExecutorState::Executing;
+		m_callable = other.m_callable;
+		m_callee.start_from(m_caller,m_callable);
 	}
 	else
 	{
-		return false;
-	}
-}
-template<typename Return>
-bool await_executor<Return>::execute()
-{
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
-	{
-		m_callee.start_from(m_caller,m_callable);
+		m_state = ExecutorState::Idle;
 	}
 
+	return *this;
+}
+template<typename Return>
+bool await_executor<Return>::resume()
+{
 	m_callee.resume_from(m_caller);
 
 	if(m_callee.get_state() == FiberExecutionState::Done)
@@ -72,13 +81,8 @@ bool await_executor<Return>::execute()
 	}
 }
 template<typename Return>
-bool await_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink)
+bool await_executor<Return>::resume(const ddk::function<void(sink_reference)>& i_sink)
 {
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
-	{
-		m_callee.start_from(m_caller,m_callable);
-	}
-
 	yielder_context* i_context = m_callee.resume_from(m_caller);
 
 	if(m_callee.get_state() == FiberExecutionState::Done)
@@ -155,10 +159,7 @@ bool await_executor<Return>::deactivate(fiber_id i_id)
 {
 	if(m_callee.get_id() == i_id)
 	{
-		if(m_callee.get_state() == FiberExecutionState::Executing)
-		{
-			m_callee.resume_from(m_caller);
-		}
+		m_callee.resume_from(m_caller);
 
 		return true;
 	}

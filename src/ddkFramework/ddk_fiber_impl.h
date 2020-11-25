@@ -17,15 +17,16 @@ namespace detail
 struct this_fiber_t
 {
 public:
-	this_fiber_t();
+	this_fiber_t() = default;
 
 	fiber_id get_id() const;
 	void attach_context();
+	void detach_context();
 	execution_context& get_execution_context();
 	const execution_context& get_execution_context() const;
 
 private:
-	execution_context* m_execContext;
+	execution_context* m_execContext = nullptr;
 };
 
 struct fiber_impl
@@ -45,7 +46,10 @@ public:
 	void resume_to(this_fiber_t& other, yielder_context* i_context = nullptr);
 	fiber_id get_id() const;
 	void set_state(FiberExecutionState i_state);
-	FiberExecutionState get_state() const;
+	inline FiberExecutionState get_state() const
+	{
+		return m_state;
+	}
 	const stack_allocator& get_stack_allocator() const;
 	void set_executor(scheduler_interface_lent_ptr i_executor);
 	bool joinable() const;

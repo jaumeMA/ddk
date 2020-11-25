@@ -112,7 +112,7 @@ Result awaitable<T,Result>::resume()
 {
 	Result res;
 
-	m_executor.execute(make_function(&res,&Result::set));
+	m_executor.resume(make_function(&res,&Result::set));
 
 	return res;
 }

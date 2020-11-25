@@ -12,6 +12,7 @@ typedef Id<size_t,fiber_impl_t> fiber_id;
 SCOPED_ENUM_DECL(FiberExecutionState,
 	Idle,
 	Executing,
+	Cancelling,
 	Done);
 
 }

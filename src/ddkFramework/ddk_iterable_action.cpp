@@ -5,11 +5,6 @@ namespace ddk
 namespace iter
 {
 
-template<typename T>
-void check(const T&, typename T::variant_tag* = nullptr)
-{
-}
-
 shift_action::shift_action(int i_targetShift,int i_currShift,bool i_stepByStep)
 : m_targetShift(i_targetShift)
 , m_currShift(i_currShift)
@@ -73,10 +68,6 @@ shift_action& shift_action::operator=(shift_action&& other)
 	other.m_currShift = other.m_targetShift;
 
 	return *this;
-}
-shift_action::operator bool() const
-{
-	return m_targetShift == m_currShift;
 }
 
 go_forward_action::go_forward_action()

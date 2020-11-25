@@ -292,39 +292,47 @@ TEST(DDKCoIterableTest, assignIterator)
 	EXPECT_EQ(*itThird, 7);
 }
 
-TEST(DDKCoIterableTest,myIterableForwardIteration)
+std::vector<int> createLargeVector(size_t size)
 {
-	const size_t initIndex = 0;
-	const size_t maxIndex = 1000000;
-	const MyIterable foo(initIndex,maxIndex);
-
-	std::vector<int> kk;
-	for(size_t index = 0; index < maxIndex; index++)
+	std::vector<int> res;
+		
+	for(size_t index = 0; index < size; index++)
 	{
-		kk.push_back(index);
+		res.push_back(index);
 	}
 
-	int sum = 0;
-	std::vector<int>::const_iterator itQQ = kk.begin();
-	for(size_t index = 0; itQQ != kk.end(); ++itQQ,++index)
+	return std::move(res);
+}
+
+std::vector<int> myLargeVector = createLargeVector(1000000);
+
+TEST(DDKCoIterableTest,stdForwardIteration)
+{
+	//const size_t initIndex = 0;
+	//const size_t maxIndex = 1000000;
+	//const MyIterable foo(initIndex,maxIndex);
+
+
+	//int sum = 0;
+	std::vector<int>::const_iterator itQQ = myLargeVector.begin();
+	for(size_t index = 0; itQQ != myLargeVector.end(); ++itQQ,++index)
 	{
 		int a = *itQQ;
 		//printf("curr value: %d\n",*itQQ);
 	}
+}
 
-	size_t currIndex = initIndex + 1;
-
+TEST(DDKCoIterableTest,myIterableForwardIteration)
+{
 	typedef ddk::co_iterable<std::vector<int>> iterable;
 	typedef typename iterable::iterator iterator;
 
-	iterable res1 = ddk::co_iterate(kk);
+	iterable res1 = ddk::co_iterate(myLargeVector);
 	iterator itRes1 = std::begin(res1);
 	iterator itEnd = std::end(res1);
 	int a = 0;
 	for(; itRes1 != itEnd; ++itRes1)
 	{
-	//	//sum += itKK;
-	//	//printf("curr value: %d\n",*itRes1);
 	}
 
 	int b = a;

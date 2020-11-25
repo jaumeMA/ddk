@@ -17,7 +17,10 @@ fiber_id get_current_fiber_id();
 
 void set_current_execution_context(detail::execution_context& i_ctxt);
 
-detail::execution_context& get_current_execution_context();
+inline detail::execution_context& get_current_execution_context()
+{
+	return *detail::__get_current_execution_context();
+}
 
 void suspend();
 

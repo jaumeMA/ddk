@@ -77,7 +77,7 @@ relative_function_impl<ObjectType,Return,Types...>::relative_function_impl(Objec
 {
 }
 template<typename ObjectType,typename Return,typename ... Types>
-Return relative_function_impl<ObjectType,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return relative_function_impl<ObjectType,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
@@ -134,7 +134,7 @@ free_function_impl<Return,Types...>::free_function_impl(FuncPointerType i_funcPo
 {
 }
 template<typename Return,typename ... Types>
-Return free_function_impl<Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return free_function_impl<Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
@@ -196,7 +196,7 @@ functor_impl<T,Return,Types...>::functor_impl(T&& i_functor)
 {
 }
 template<typename T,typename Return,typename ... Types>
-Return functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{

@@ -7,7 +7,7 @@ namespace ddk
 template<typename Traits>
 void execute_iteration(iteration<Traits> i_iteration)
 {
-    i_iteration.m_iterable.iterate(i_iteration.m_try,i_iteration.m_finally);
+    i_iteration.m_iterable.co_iterate(i_iteration.m_try,i_iteration.m_finally);
 }
 
 template<typename Traits>
@@ -58,7 +58,7 @@ void iteration<Traits>::execute()
 {
     if(m_iterable != nullptr)
     {
-        m_iterable.iterate(m_try,m_finally);
+        m_iterable.co_iterate(m_try,m_finally);
     }
 }
 template<typename Traits>
@@ -66,7 +66,7 @@ void iteration<Traits>::execute() const
 {
     if(m_iterable != nullptr)
     {
-        m_iterable.iterate(m_try,m_finally);
+        m_iterable.co_iterate(m_try,m_finally);
     }
 }
 template<typename Traits>

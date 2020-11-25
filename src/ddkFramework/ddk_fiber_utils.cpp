@@ -25,12 +25,6 @@ void set_current_execution_context(detail::execution_context& i_context)
 
 	currFiberContext = &i_context;
 }
-detail::execution_context& get_current_execution_context()
-{
-	detail::execution_context* currFiberContext = detail::__get_current_execution_context();
-
-	return *currFiberContext;
-}
 fiber_id get_current_fiber_id()
 {
 	detail::execution_context* currFiberContext = detail::__get_current_execution_context();

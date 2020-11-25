@@ -18,15 +18,15 @@ class await_executor: public scheduler_interface, private yielder_interface,prot
 public:
 	typedef typename detail::sink_type_resolver<Return>::reference sink_reference;
 
-	await_executor(const ddk::function<Return()>& i_callable = nullptr);
+	await_executor();
+	await_executor(const ddk::function<Return()>& i_callable);
 	await_executor(const ddk::function<Return()>& i_callable, stack_allocator i_stackAlloc);
 	await_executor(const await_executor& other);
 	~await_executor();
-	await_executor& operator=(const await_executor&) = delete;
+	await_executor& operator=(const await_executor&);
 
-	inline bool reassign(const ddk::function<Return()>& i_callable);
-	inline bool execute();
-	inline bool execute(const ddk::function<void(sink_reference)>& i_sink);
+	inline bool resume();
+	inline bool resume(const ddk::function<void(sink_reference)>& i_sink);
 	inline const stack_allocator& get_stack_allocator() const;
 	inline void yield();
 	ExecutorState get_state() const;

@@ -29,11 +29,6 @@ void light_func()
 	{
         ++s_counter;
 
-		if(s_counter > 9)
-		{
-			int a = 0;
-		}
-
 		if(s_counter < 1000)
 		{
 			ddk::yield();

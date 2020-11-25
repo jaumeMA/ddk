@@ -28,7 +28,6 @@ namespace ddk
 namespace detail
 {
 
-void unwind_calling_context(mcontext_t* i_context);
 inline void dump_args(ucontext_t*, uintptr_t*, size_t)
 {
 	//empty impl
@@ -57,8 +56,6 @@ void dump_args(ucontext_t* i_context, uintptr_t* i_stackPointer, size_t i_index,
 
 	dump_args(i_context,i_stackPointer,i_index+1,i_args ...);
 }
-void return_function();
-ucontext_t* get_return_context();
 
 }
 }
@@ -79,7 +76,7 @@ namespace ddk
 
 int get_context(ucontext_t* i_context);
 int set_context(ucontext_t* i_context);
-int swap_context(ucontext_t* i_oldContext, ucontext_t* i_newContext);
+int swap_context(ucontext_t* i_oldContext,ucontext_t* i_newContext);
 
 template<typename ... Args>
 void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_func) (void), Args* ... i_args)

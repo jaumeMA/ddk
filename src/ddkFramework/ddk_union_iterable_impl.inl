@@ -9,13 +9,13 @@ template<size_t Index, typename ... Iterables>
 typename union_iterable_impl<Iterables...>::action navigate(union_iterable_impl<Iterables...>& i_iterable, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::reference)>& i_try, const iter::shift_action& i_initialAction)
 {
     typedef typename mpl::nth_type_of<Index,Iterables...>::type curr_iterable_type;
-    typedef typename curr_iterable_type::iterable_value iterable_value;
+    typedef typename curr_iterable_type::reference reference;
 
     typename union_iterable_impl<Iterables...>::action lastAction;
 
-    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction,&i_iterable](iterable_value i_value)
+    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction,&i_iterable](reference i_value)
 	{ 
-		lastAction = eval(i_try,*i_value); 	
+		lastAction = eval(i_try,i_value); 	
 		i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
 	}),nullptr,i_initialAction);
 
@@ -26,13 +26,13 @@ template<size_t Index, typename ... Iterables>
 typename union_iterable_impl<Iterables...>::action navigate(const union_iterable_impl<Iterables...>& i_iterable, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::const_reference)>& i_try, const iter::shift_action& i_initialAction)
 {
     typedef typename mpl::nth_type_of<Index,Iterables...>::type curr_iterable_type;
-    typedef typename curr_iterable_type::iterable_const_value iterable_const_value;
+    typedef typename curr_iterable_type::const_reference const_reference;
 
     typename union_iterable_impl<Iterables...>::action lastAction;
 
-    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction,&i_iterable](iterable_const_value i_value)
+    i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction,&i_iterable](const_reference i_value)
 	{ 
-		lastAction = eval(i_try,*i_value); 
+		lastAction = eval(i_try,i_value); 
 		i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
 	}),nullptr,i_initialAction);
 

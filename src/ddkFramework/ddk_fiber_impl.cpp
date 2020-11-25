@@ -9,6 +9,7 @@ extern "C"
 	void* get_curr_thread_stack_base();
 	void* get_curr_thread_stack_limit();
 	void* get_curr_thread_stack_dealloc();
+	void swap_frame(mcontext_t* i_oldContext,mcontext_t* i_newContext);
 }
 
 namespace ddk
@@ -17,15 +18,15 @@ namespace ddk
 namespace detail
 {
 
-this_fiber_t::this_fiber_t()
-: m_execContext(nullptr)
-{
-}
 void this_fiber_t::attach_context()
 {
 	execution_context& currExecutionContext = get_current_execution_context();
 
 	m_execContext = &currExecutionContext;
+}
+void this_fiber_t::detach_context()
+{
+	m_execContext = nullptr;
 }
 fiber_id this_fiber_t::get_id() const
 {
@@ -86,8 +87,10 @@ void fiber_impl::stop()
 {
 	if(m_executor)
 	{
-		if(m_state != FiberExecutionState::Done)
+		if(m_state == FiberExecutionState::Executing)
 		{
+			m_state = FiberExecutionState::Cancelling;
+
 			m_fiberContext.stop();
 
 			m_executor->deactivate(m_id);
@@ -108,7 +111,7 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 	}
 	else
 	{
-		switch_fiber(m_fiberContext,other.get_execution_context());
+		switch_execution(m_fiberContext,other.get_execution_context());
 
 		m_alloc.deallocate(m_fiberContext.get_stack());
 
@@ -117,10 +120,7 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 }
 void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 {
-	if(i_context)
-	{
-		m_fiberContext.set_typed_context(i_context);
-	}
+	m_fiberContext.set_typed_context(i_context);
 
 	switch_execution_context(m_fiberContext,other.get_execution_context(),false);
 
@@ -139,10 +139,6 @@ fiber_id fiber_impl::get_id() const
 void fiber_impl::set_state(FiberExecutionState i_state)
 {
 	m_state = i_state;
-}
-FiberExecutionState fiber_impl::get_state() const
-{
-	return m_state;
 }
 const stack_allocator& fiber_impl::get_stack_allocator() const
 {

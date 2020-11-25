@@ -8,9 +8,9 @@ template<size_t Index, typename ... Iterables>
 typename mpl::nth_type_of<Index, Iterables...>::type::reference intersection_navigate(intersection_iterable_impl<Iterables...>* i_iterable, const iter::shift_action& i_initialAction)
 {
 	typedef typename mpl::nth_type_of<Index, Iterables...>::type::reference curr_reference;
-	typedef typename mpl::nth_type_of<Index, Iterables...>::type::iterable_value curr_iterable_value;
+	typedef typename mpl::nth_type_of<Index, Iterables...>::type::reference curr_reference;
 
-	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_iterable_value i_value){ yield<curr_reference>(*i_value); }),nullptr,i_initialAction);
+	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_reference i_value){ yield<curr_reference>(i_value); }),nullptr,i_initialAction);
 
 	suspend();
 
@@ -20,9 +20,9 @@ template<size_t Index, typename ... Iterables>
 typename mpl::nth_type_of<Index, Iterables...>::type::const_reference const_intersection_navigate(const intersection_iterable_impl<Iterables...>* i_iterable, const iter::shift_action& i_initialAction)
 {
 	typedef typename mpl::nth_type_of<Index, Iterables...>::type::const_reference curr_const_reference;
-	typedef typename mpl::nth_type_of<Index, Iterables...>::type::iterable_const_value curr_iterable_const_value;
+	typedef typename mpl::nth_type_of<Index, Iterables...>::type::const_reference curr_const_reference;
 
-	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_iterable_const_value i_value) { yield<curr_const_reference>(*i_value); }),nullptr,i_initialAction);
+	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_const_reference i_value) { yield<curr_const_reference>(i_value); }),nullptr,i_initialAction);
 
 	suspend();
 

@@ -42,7 +42,6 @@ public:
 
 	co_forward_iterator(const detail::none_t&);
 	co_forward_iterator(const co_forward_iterator& other);
-	co_forward_iterator(co_forward_iterator&& other);
 	~co_forward_iterator();
 
 	reference operator*();

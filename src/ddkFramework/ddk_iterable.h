@@ -49,9 +49,11 @@ public:
     iterable(const iterable<TTraits>& other);
 	~iterable();
 
-    void iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::shift_action& i_initialAction = iter::go_to_place);
-    void iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::shift_action& i_initialAction = iter::go_to_place) const;
-    bool inline forward_action(action i_action) const;
+    void iterate(const function<void(reference)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::shift_action& i_initialAction = iter::go_to_place);
+    void iterate(const function<void(const_reference)>& i_try, const function<void(iter::action_result)>& i_finally = nullptr, const iter::shift_action& i_initialAction = iter::go_to_place) const;
+	void co_iterate(const function<void(iterable_value)>& i_try,const function<void(iter::action_result)>& i_finally = nullptr,const iter::shift_action& i_initialAction = iter::go_to_place);
+	void co_iterate(const function<void(iterable_const_value)>& i_try,const function<void(iter::action_result)>& i_finally = nullptr,const iter::shift_action& i_initialAction = iter::go_to_place) const;
+	bool inline forward_action(action i_action) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;
     size_t inline size() const;

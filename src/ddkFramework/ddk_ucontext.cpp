@@ -30,16 +30,6 @@ void unwind_calling_context(mcontext_t* i_context)
 		i_context->Rsp += 8;
 	}
 }
-ucontext_t* get_return_context()
-{
-	thread_local static ucontext_t s_return_context;
-
-	return &s_return_context;
-}
-void return_function()
-{
-	ddk::set_context(get_return_context());
-}
 
 }
 
@@ -49,9 +39,9 @@ int get_context(ucontext_t* i_context)
 {
 #if defined(WIN32)
 
-	memset(&(i_context->uc_mcontext),0,sizeof(mcontext_t));
+	RtlZeroMemory(&(i_context->uc_mcontext),sizeof(mcontext_t));
 
-    i_context->uc_mcontext.ContextFlags = CONTEXT_ALL;
+    i_context->uc_mcontext.ContextFlags = CONTEXT_AMD64;
 
 	RtlCaptureContext(&(i_context->uc_mcontext));
 
@@ -84,26 +74,27 @@ int set_context(ucontext_t* i_context)
 #endif
 }
 
-int swap_context (ucontext_t* i_oldContext, ucontext_t* i_newContext)
+#ifndef DDK_DEBUG
+
+#pragma optimize( "", off )
+
+#endif
+
+int swap_context(ucontext_t* i_oldContext,ucontext_t* i_newContext)
 {
 #if defined(WIN32)
 
 	bool done = false;
-
-	i_oldContext->uc_mcontext.ContextFlags = CONTEXT_ALL;
-
-	RtlCaptureContext(&i_oldContext->uc_mcontext);
+	RtlCaptureContext(&(i_oldContext->uc_mcontext));
 
 	if(done == false)
 	{
 		done = true;
+		RtlRestoreContext(&(i_newContext->uc_mcontext),nullptr);
+	}
 
-		return set_context(i_newContext);
-	}
-	else
-	{
-		return 0;
-	}
+
+	return 0;
 
 #else
 
@@ -111,5 +102,11 @@ int swap_context (ucontext_t* i_oldContext, ucontext_t* i_newContext)
 
 #endif
 }
+
+#ifndef DDK_DEBUG
+
+#pragma optimize( "", on )
+
+#endif
 
 }

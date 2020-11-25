@@ -10,7 +10,6 @@ namespace ddk
 template<typename T>
 co_forward_iterator<T>::co_forward_iterator(const detail::none_t&)
 : m_currState(iter::iterable_state::npos)
-,m_executor(nullptr)
 {
 }
 template<typename T>
@@ -26,25 +25,13 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 	}
 }
 template<typename T>
-co_forward_iterator<T>::co_forward_iterator(co_forward_iterator&& other)
-: m_function(std::move(other.m_function))
-,m_currState(std::move(other.m_currState))
-,m_caller(std::move(other.m_caller))
-,m_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_forward_iterator<T>::acquire_iterable_value)))
-{
-	if(other.m_iteratorValueContainer.empty() == false)
-	{
-		m_iteratorValueContainer.template construct<reference>(other.m_iteratorValueContainer.template get<reference>());
-	}
-}
-template<typename T>
 template<typename Iterable>
 co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable,typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
 : m_function([&i_iterable](const iter::shift_action& i_initialAction,const function<iter::const_forward_action(reference)>& i_sink) -> reference { return visit_iterator(i_iterable,i_sink,i_initialAction); })
 , m_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_forward_iterator<T>::acquire_iterable_value))
 			 ,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
-	if(m_executor.execute() == false)
+	if(m_executor.resume() == false)
 	{
 		m_currState.reset();
 	}
@@ -85,7 +72,7 @@ co_forward_iterator<T>& co_forward_iterator<T>::operator++()
 
     m_currAction = iter::go_next_place;
 
-	if (m_executor.execute() == false)
+	if (m_executor.resume() == false)
 	{
         m_currState.reset();
     }
@@ -101,7 +88,7 @@ co_forward_iterator<T> co_forward_iterator<T>::operator++(int)
 
     m_currAction = iter::go_next_place;
 
-	if (m_executor.execute() == false)
+	if (m_executor.resume() == false)
 	{
         m_currState.reset();
     }
@@ -276,7 +263,6 @@ template<typename T>
 co_random_access_iterator<T>::co_random_access_iterator(const detail::none_t&)
 : m_currState(iter::iterable_state::npos)
 , m_currAction(iter::go_no_place)
-,m_executor(nullptr)
 {
 }
 template<typename T>
@@ -297,7 +283,7 @@ co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, ty
 , m_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_random_access_iterator<T>::acquire_iterable_value))
 			,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
-    if (m_executor.execute() == false)
+    if (m_executor.resume() == false)
     {
 		m_currState.reset();
 	}
@@ -336,9 +322,10 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++()
 {
     m_currAction = iter::go_next_place;
 
-	if (m_executor.execute() == false)
+	if (m_executor.resume() == false)
 	{
-        m_currState.reset();
+		printf("epp\n");
+		m_currState.reset();
     }
 
 	return *this;
@@ -350,7 +337,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator++(int)
 
     m_currAction = iter::go_next_place;
 
-	if (m_executor.execute() == false)
+	if (m_executor.resume() == false)
 	{
         m_currState.reset();
     }
@@ -362,7 +349,7 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator--()
 {
     m_currAction = iter::go_prev_place;
 
-	if (m_executor.execute() == false)
+	if (m_executor.resume() == false)
 	{
         m_currState.reset();
     }
@@ -376,7 +363,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator--(int)
 
     m_currAction = iter::go_prev_place;
 
-	if (m_executor.execute() == false)
+	if (m_executor.resume() == false)
 	{
         m_currState.reset();
     }
@@ -392,7 +379,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator+(int i_shift
 	{
 		res.m_currAction = iter::go_to_place(i_shift);
 
-        if (res.m_executor.execute() == false)
+        if (res.m_executor.resume() == false)
         {
             res.m_currState.reset();
         }
@@ -411,7 +398,7 @@ co_random_access_iterator<T> co_random_access_iterator<T>::operator[](size_t i_a
 	{
         res.m_currAction = iter::go_to_place(static_cast<int>(i_absPos) - static_cast<int>(currPos));
 
-		if (res.m_executor.execute())
+		if (res.m_executor.resume())
 		{
             res.m_currState.reset();
         }
