@@ -324,7 +324,6 @@ co_random_access_iterator<T>& co_random_access_iterator<T>::operator++()
 
 	if (m_executor.resume() == false)
 	{
-		printf("epp\n");
 		m_currState.reset();
     }
 

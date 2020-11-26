@@ -154,6 +154,9 @@ consolidate_frame PROC FRAME
 
 	pop r8
 
+	cmp (Context PTR [r8]).reg_Rip, 00h
+	je assert_point
+
 	mov rcx, (Context PTR [r8]).reg_Rcx
 	mov rdx, (Context PTR [r8]).reg_Rdx
 	mov rbx, (Context PTR [r8]).reg_Rbx
@@ -171,6 +174,9 @@ consolidate_frame PROC FRAME
 	mov r15, (Context PTR [r8]).reg_R15
 
 	jmp (Context PTR [r8]).reg_Rip
+
+assert_point:
+	int 3
 
 	ret
 

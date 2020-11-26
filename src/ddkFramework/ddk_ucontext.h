@@ -86,17 +86,17 @@ void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_
 
 	//align stack pointer to 16 bytes (ie 0xF)
 	stackPointer = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(stackPointer) & ~0xf);
-	uintptr_t* stackPointerEnd = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(i_context->uc_stack.ss_sp) & ~0xf);
 	//null return address
 	*stackPointer = 0;
 	--stackPointer;
+
 	//stack pointer on resume
 	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext));
 	--stackPointer;
 
+
 	i_context->uc_mcontext.Rip = reinterpret_cast<uint64_t>(i_func);
 	i_context->uc_mcontext.Rsp = reinterpret_cast<uint64_t>(stackPointer);
-	i_context->uc_mcontext.Rbx = reinterpret_cast<uint64_t>(stackPointerEnd);
 
 	detail::dump_args(i_context,stackPointer,0,reinterpret_cast<uintptr_t>(i_args) ...);
 

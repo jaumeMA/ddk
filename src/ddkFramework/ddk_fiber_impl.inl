@@ -19,17 +19,17 @@ namespace detail
 template<typename Return>
 inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
-	try
+	if(i_fiber->get_state() == FiberExecutionState::Executing)
 	{
-		if(i_fiber->get_state() == FiberExecutionState::Executing)
-		{
-			const ddk::function<Return()> localCallable = *i_function;
+		const ddk::function<Return()> localCallable = *i_function;
 
-			yield(eval(localCallable));
+		try
+		{
+			eval(localCallable);
 		}
-	}
-	catch(const suspend_exception&)
-	{
+		catch(const suspend_exception&)
+		{
+		}
 	}
 
 	i_fiber->set_state(FiberExecutionState::Done);
@@ -37,16 +37,17 @@ inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* 
 template<>
 inline void launch_fiber<void>(const ddk::function<void()>* i_function, fiber_impl* i_fiber)
 {
-	try
+	if(i_fiber->get_state() == FiberExecutionState::Executing)
 	{
-		if(i_fiber->get_state() == FiberExecutionState::Executing)
+		const ddk::function<void()> localCallable = *i_function;
+
+		try
 		{
-			const ddk::function<void()> localCallable = *i_function;
 			eval(localCallable);
 		}
-	}
-	catch(const suspend_exception&)
-	{
+		catch(const suspend_exception&)
+		{
+		}
 	}
 
 	i_fiber->set_state(FiberExecutionState::Done);
