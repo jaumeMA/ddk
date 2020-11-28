@@ -103,7 +103,7 @@ yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 	}
 	else
 	{
-		switch_execution(m_fiberContext,other.get_execution_context());
+		switch_execution(other.get_execution_context());
 
 		m_alloc.deallocate(m_fiberContext.get_stack());
 

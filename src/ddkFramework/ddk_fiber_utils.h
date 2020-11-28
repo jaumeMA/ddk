@@ -2,6 +2,12 @@
 
 #include "ddk_fiber_defs.h"
 
+#define set_current_execution_context(_CONTEXT) \
+	ddk::detail::__s_current_execution_context = &(_CONTEXT);
+
+#define get_current_execution_context() \
+	*ddk::detail::__s_current_execution_context;
+
 namespace ddk
 {
 namespace detail
@@ -14,17 +20,6 @@ extern thread_local execution_context* __s_current_execution_context;
 }
 
 fiber_id get_current_fiber_id();
-
-void set_current_execution_context(detail::execution_context& i_ctxt);
-
-inline void set_current_execution_context(detail::execution_context& i_context)
-{
-	detail::__s_current_execution_context = &i_context;
-}
-inline detail::execution_context& get_current_execution_context()
-{
-	return *detail::__s_current_execution_context;
-}
 
 void suspend();
 

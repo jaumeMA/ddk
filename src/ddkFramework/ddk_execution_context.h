@@ -22,13 +22,13 @@ extern "C"
 	\
 	set_current_execution_context(i_newCtxt); \
 	\
-	switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
+	switch_execution_stack(i_newCtxt.m_stack) \
 	\
 	switch_frame(&i_oldCtxt.m_context.uc_mcontext,&i_newCtxt.m_context.uc_mcontext);
 
-#define switch_execution(i_oldCtxt,i_newCtxt) \
+#define switch_execution(i_newCtxt) \
 	\
-	switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
+	switch_execution_stack(i_newCtxt.m_stack) \
 	\
 	set_current_execution_context(i_newCtxt);
 

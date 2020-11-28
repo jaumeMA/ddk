@@ -10,7 +10,7 @@ namespace ddk
 template<typename T>
 void yield(T&& i_value)
 {
-	ddk::detail::execution_context& currFiberContext = ddk::get_current_execution_context();
+	ddk::detail::execution_context& currFiberContext = get_current_execution_context();
 
 	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
 	{

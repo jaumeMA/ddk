@@ -23,7 +23,7 @@ fiber_id get_current_fiber_id()
 
 void suspend()
 {
-	ddk::detail::execution_context& currFiberContext = ddk::get_current_execution_context();
+	ddk::detail::execution_context& currFiberContext = get_current_execution_context();
 
 	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
 	{
@@ -36,7 +36,7 @@ void suspend()
 }
 void yield()
 {
-	ddk::detail::execution_context& currFiberContext = ddk::get_current_execution_context();
+	ddk::detail::execution_context& currFiberContext = get_current_execution_context();
 
 	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
 	{

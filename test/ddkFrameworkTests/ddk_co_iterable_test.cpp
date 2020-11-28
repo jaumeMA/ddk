@@ -317,7 +317,6 @@ TEST(DDKCoIterableTest,stdForwardIteration)
 	std::vector<int>::const_iterator itQQ = myLargeVector.begin();
 	for(size_t index = 0; itQQ != myLargeVector.end(); ++itQQ,++index)
 	{
-		int a = *itQQ;
 		//printf("curr value: %d\n",*itQQ);
 	}
 }
