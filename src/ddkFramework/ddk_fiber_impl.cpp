@@ -4,14 +4,6 @@
 #include "ddk_thread_impl.h"
 #include "ddk_dynamic_stack_allocator.h"
 
-extern "C"
-{
-	void* get_curr_thread_stack_base();
-	void* get_curr_thread_stack_limit();
-	void* get_curr_thread_stack_dealloc();
-	void swap_frame(mcontext_t* i_oldContext,mcontext_t* i_newContext);
-}
-
 namespace ddk
 {
 
@@ -45,14 +37,14 @@ fiber_impl::fiber_impl(yielder_interface& i_yielder)
 : m_id(reinterpret_cast<size_t>(this))
 , m_state(FiberExecutionState::Idle)
 , m_alloc(make_shared_reference<default_dynamic_stack_allocator>())
-, m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl())
+, m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl_ref())
 {
 }
 fiber_impl::fiber_impl(stack_allocator i_stackAlloc,yielder_interface& i_yielder)
 : m_id(reinterpret_cast<size_t>(this))
 , m_state(FiberExecutionState::Idle)
 , m_alloc(std::move(i_stackAlloc))
-, m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl())
+, m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl_ref())
 {
 }
 fiber_impl::fiber_impl(fiber_impl&& other)
@@ -60,7 +52,7 @@ fiber_impl::fiber_impl(fiber_impl&& other)
 , m_executor(std::move(other.m_executor))
 , m_state(other.m_state)
 , m_alloc(std::move(other.m_alloc))
-, m_fiberContext(m_id,m_alloc.get_alloc_impl())
+, m_fiberContext(m_id,m_alloc.get_alloc_impl_ref())
 {
 }
 fiber_impl::~fiber_impl()
@@ -103,7 +95,7 @@ void fiber_impl::stop()
 }
 yielder_context* fiber_impl::resume_from(this_fiber_t& other)
 {
-	switch_execution_context(other.get_execution_context(),m_fiberContext,true);
+	load_switch_execution_context(other.get_execution_context(),m_fiberContext);
 
 	if(m_state != FiberExecutionState::Done)
 	{
@@ -122,7 +114,7 @@ void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 {
 	m_fiberContext.set_typed_context(i_context);
 
-	switch_execution_context(m_fiberContext,other.get_execution_context(),false);
+	switch_execution_context(m_fiberContext,other.get_execution_context());
 
 	if(m_fiberContext.is_stopped())
 	{

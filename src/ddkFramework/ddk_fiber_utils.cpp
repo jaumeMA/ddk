@@ -10,24 +10,13 @@ namespace ddk
 namespace detail
 {
 
-detail::execution_context*& __get_current_execution_context()
-{
-	static thread_local execution_context* s_fiberContext = nullptr;
-
-	return s_fiberContext;
-}
+thread_local execution_context* __s_current_execution_context = nullptr;
 
 }
 
-void set_current_execution_context(detail::execution_context& i_context)
-{
-	detail::execution_context*& currFiberContext = detail::__get_current_execution_context();
-
-	currFiberContext = &i_context;
-}
 fiber_id get_current_fiber_id()
 {
-	detail::execution_context* currFiberContext = detail::__get_current_execution_context();
+	detail::execution_context* currFiberContext = detail::__s_current_execution_context;
 
 	return currFiberContext->get_id();
 }

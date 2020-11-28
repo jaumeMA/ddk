@@ -51,6 +51,7 @@ public:
 	size_t get_num_max_pages() const;
 	size_t get_num_guard_pages() const;
 	stack_alloc_const_shared_ref get_alloc_impl() const;
+	stack_alloc_const_lent_ref get_alloc_impl_ref() const;
 
 	stack_allocator& operator=(const stack_allocator&) = delete;
 	stack_allocator& operator=(stack_allocator&&) = delete;

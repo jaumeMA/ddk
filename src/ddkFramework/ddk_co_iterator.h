@@ -54,7 +54,7 @@ public:
 private:
 	template<typename Iterable>
 	co_forward_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value==false>::type* = nullptr);
-    iter::const_forward_action acquire_iterable_value(reference i_value);
+	iter::go_forward_action&& acquire_iterable_value(reference i_value);
 
 	ddk::function<reference(const iter::shift_action&,const function<iter::const_forward_action(reference)>&)> m_function;
 	iter::iterable_state m_currState;
@@ -135,9 +135,9 @@ public:
 private:
 	template<typename Iterable>
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
-    iter::const_random_access_action acquire_iterable_value(reference i_value);
+	iter::shift_action&& acquire_iterable_value(reference i_value);
 
-	ddk::function<reference(const iter::shift_action&, const detail::relative_function_impl<co_random_access_iterator<T>,iter::const_random_access_action,reference>&)> m_function;
+	ddk::function<reference(const iter::shift_action&, const detail::relative_function_impl<co_random_access_iterator<T>,iter::shift_action&&,reference>&)> m_function;
 	iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
 	iter::shift_action m_currAction;

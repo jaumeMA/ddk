@@ -17,14 +17,14 @@ execution_context::execution_context(fiber_id i_id,yielder_interface& i_yielder)
 {
 	ddk::get_context(&m_context);
 }
-execution_context::execution_context(fiber_id i_id,stack_alloc_const_shared_ref i_allocator)
+execution_context::execution_context(fiber_id i_id,stack_alloc_const_lent_ref i_allocator)
 : m_id(i_id)
 ,m_yielder(nullptr)
 , m_stack(i_allocator)
 {
 	ddk::get_context(&m_context);
 }
-execution_context::execution_context(fiber_id i_id,yielder_interface& i_yielder,stack_alloc_const_shared_ref i_allocator)
+execution_context::execution_context(fiber_id i_id,yielder_interface& i_yielder,stack_alloc_const_lent_ref i_allocator)
 : m_id(i_id)
 ,m_yielder(&i_yielder)
 ,m_stack(i_allocator)

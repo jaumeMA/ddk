@@ -10,17 +10,25 @@ extern "C"
 	void switch_frame(mcontext_t* i_oldContext,mcontext_t* i_newContext);
 }
 
-#define switch_execution_context(i_oldCtxt,i_newCtxt,i_loadOldStack) \
+#define load_switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
 	set_current_execution_context(i_newCtxt); \
 	\
-	switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack,i_loadOldStack) \
+	load_switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
+	\
+	switch_frame(&i_oldCtxt.m_context.uc_mcontext,&i_newCtxt.m_context.uc_mcontext);
+
+#define switch_execution_context(i_oldCtxt,i_newCtxt) \
+	\
+	set_current_execution_context(i_newCtxt); \
+	\
+	switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
 	\
 	switch_frame(&i_oldCtxt.m_context.uc_mcontext,&i_newCtxt.m_context.uc_mcontext);
 
 #define switch_execution(i_oldCtxt,i_newCtxt) \
 	\
-	switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack,false) \
+	switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
 	\
 	set_current_execution_context(i_newCtxt);
 
@@ -40,8 +48,8 @@ struct execution_context
 public:
 	execution_context(fiber_id i_id);
 	execution_context(fiber_id i_id,yielder_interface& i_yielder);
-	execution_context(fiber_id i_id,stack_alloc_const_shared_ref i_allocator);
-	execution_context(fiber_id i_id,yielder_interface& i_yielder,stack_alloc_const_shared_ref i_allocator);
+	execution_context(fiber_id i_id,stack_alloc_const_lent_ref i_allocator);
+	execution_context(fiber_id i_id,yielder_interface& i_yielder,stack_alloc_const_lent_ref i_allocator);
 
 	inline fiber_id get_id() const
 	{

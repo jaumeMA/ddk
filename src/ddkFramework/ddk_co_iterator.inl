@@ -27,7 +27,7 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other)
 template<typename T>
 template<typename Iterable>
 co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable,typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
-: m_function([&i_iterable](const iter::shift_action& i_initialAction,const function<iter::const_forward_action(reference)>& i_sink) -> reference { return visit_iterator(i_iterable,i_sink,i_initialAction); })
+: m_function([&i_iterable](const iter::shift_action& i_initialAction,const function<iter::const_forward_action(reference)>& i_sink) -> reference { return visit_iterator(i_iterable,i_sink,iter::const_forward_action{i_initialAction}); })
 , m_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_function(this,&co_forward_iterator<T>::acquire_iterable_value))
 			 ,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
@@ -106,7 +106,7 @@ bool co_forward_iterator<T>::operator==(const co_forward_iterator<T>& other) con
 	return m_currState == other.m_currState;
 }
 template<typename T>
-iter::const_forward_action co_forward_iterator<T>::acquire_iterable_value(reference i_value)
+iter::go_forward_action&& co_forward_iterator<T>::acquire_iterable_value(reference i_value)
 {
 	if(m_currAction == iter::go_no_place)
 	{
@@ -117,11 +117,7 @@ iter::const_forward_action co_forward_iterator<T>::acquire_iterable_value(refere
 		m_executor.yield();
 	}
 
-	const iter::go_forward_action outAction = m_currAction;
-
-	m_currAction = iter::go_no_place;
-
-	return outAction;
+	return std::move(m_currAction);
 }
 
 //co bidirectional iterator impl
@@ -279,7 +275,7 @@ co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_i
 template<typename T>
 template<typename Iterable>
 co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
-: m_function([&i_iterable](const iter::shift_action& i_initialAction, const detail::relative_function_impl<co_random_access_iterator<T>,iter::const_random_access_action,reference>& i_sink) -> reference { return visit_iterator(i_iterable,i_sink,i_initialAction); })
+	: m_function([&i_iterable](const iter::shift_action& i_initialAction, const detail::relative_function_impl<co_random_access_iterator<T>,iter::shift_action&&,reference>& i_sink) -> reference { return visit_iterator(i_iterable,i_sink,iter::const_random_access_action{i_initialAction}); })
 , m_executor(m_function(iter::go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_random_access_iterator<T>::acquire_iterable_value))
 			,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
@@ -416,7 +412,7 @@ bool co_random_access_iterator<T>::operator==(const co_random_access_iterator<T>
 	return m_currState == other.m_currState;
 }
 template<typename T>
-iter::const_random_access_action co_random_access_iterator<T>::acquire_iterable_value(reference i_value)
+iter::shift_action&& co_random_access_iterator<T>::acquire_iterable_value(reference i_value)
 {
 	if(m_currAction)
 	{

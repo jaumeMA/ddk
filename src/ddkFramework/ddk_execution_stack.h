@@ -4,23 +4,19 @@
 
 extern "C"
 {
-	void* get_curr_thread_stack_base();
-	void* get_curr_thread_stack_limit();
-	void* get_curr_thread_stack_dealloc();
+	void get_curr_thread_stack(void*);
+	void set_curr_thread_stack(void*);
 }
 
-void switch_stack(void* i_initStack,void* i_endStack,void* i_deallocStack);
+#define load_switch_execution_stack(i_oldStack,i_newStack) \
+	\
+	get_curr_thread_stack(&i_oldStack); \
+	\
+	set_curr_thread_stack(&i_newStack);
 
-#define switch_execution_stack(i_oldStack,i_newStack,i_loadOldStack) \
+#define switch_execution_stack(i_oldStack,i_newStack) \
 	\
-	if(i_loadOldStack) \
-	{ \
-		i_oldStack.m_initStack = get_curr_thread_stack_base(); \
-		i_oldStack.m_endStack = get_curr_thread_stack_limit(); \
-		i_oldStack.m_deallocStack = get_curr_thread_stack_dealloc(); \
-	} \
-	\
-	switch_stack(i_newStack.m_initStack,i_newStack.m_endStack,i_newStack.m_deallocStack);
+	set_curr_thread_stack(&i_newStack);
 
 namespace ddk
 {
@@ -32,7 +28,7 @@ struct execution_stack
 
 public:
 	execution_stack() = default;
-	execution_stack(stack_alloc_const_shared_ref i_allocator);
+	execution_stack(stack_alloc_const_lent_ref i_allocator);
 	execution_stack(void* i_init,void* i_end,void* i_dealloc);
 
 	void attach(void* i_init, void* i_end, void* i_dealloc);
@@ -59,16 +55,16 @@ public:
 	{
 		return reinterpret_cast<char*>(m_initStack) - reinterpret_cast<char*>(m_deallocStack);
 	}
-	inline stack_alloc_const_shared_ptr& get_allocator()
+	inline stack_alloc_const_lent_ptr& get_allocator()
 	{
 		return m_stackAllocImpl;
 	}
 
-//private:
-	stack_alloc_const_shared_ptr m_stackAllocImpl;
+private:
 	void* m_initStack = nullptr;
 	void* m_endStack = nullptr;
 	void* m_deallocStack = nullptr;
+	stack_alloc_const_lent_ptr m_stackAllocImpl;
 };
 
 }

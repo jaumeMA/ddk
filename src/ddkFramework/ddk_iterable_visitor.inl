@@ -253,15 +253,14 @@ typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor
 
 }
 
-template<typename Iterable, typename Function>
-typename Iterable::reference visit_iterator(Iterable& i_iterable, const Function& i_sink, const iter::shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename Iterable, typename Function, typename Action>
+typename Iterable::reference visit_iterator(Iterable& i_iterable, const Function& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
-	typedef typename Function::return_type action_type;
-	detail::action_visitor<Iterable,action_type,typename detail::iterable_adaptor<Iterable,action_type>::type> actionVisitor(i_iterable,i_initialAction,i_actionStatePtr);
+	detail::action_visitor<Iterable,Action,typename detail::iterable_adaptor<Iterable,Action>::type> actionVisitor(i_iterable,i_initialAction.get_as<iter::shift_action>(),i_actionStatePtr);
 
 	if(actionVisitor.valid())
 	{
-		action_type currAction(go_no_place);
+		Action currAction(go_no_place);
 
 		while(true)
 		{

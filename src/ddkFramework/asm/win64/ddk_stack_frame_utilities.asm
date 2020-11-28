@@ -1,4 +1,11 @@
 
+Stack			STRUCT
+init_s			QWORD	?
+end_s			QWORD	?
+dealloc_s		QWORD	?
+alloc_s			QWORD	?
+Stack			ENDS
+
 
 Context         STRUCT
 reg_P1Home		QWORD	?
@@ -42,6 +49,32 @@ reg_Rip			QWORD	?
 Context         ENDS
 
 .code
+
+set_curr_thread_stack PROC
+
+	mov rbx, (Stack PTR [rcx]).init_s
+	mov gs:[008h], rbx
+	mov rbx, (Stack PTR [rcx]).end_s
+	mov gs:[010h], rbx
+	mov rbx, (Stack PTR [rcx]).dealloc_s
+	mov gs:[01478h], rbx
+
+	ret
+
+set_curr_thread_stack ENDP
+
+get_curr_thread_stack PROC
+
+	mov rbx, gs:[008h]
+	mov (Stack PTR [rcx]).init_s, rbx
+	mov rbx, gs:[010h]
+	mov (Stack PTR [rcx]).end_s, rbx
+	mov rbx, gs:[01478h]
+	mov (Stack PTR [rcx]).dealloc_s, rbx
+
+	ret
+
+get_curr_thread_stack ENDP
 
 set_curr_thread_stack_base PROC
 
@@ -95,20 +128,10 @@ switch_frame PROC
 
 	mov (Context PTR [rcx]).reg_Rcx, rcx
 	mov (Context PTR [rcx]).reg_Rdx, rdx 
-	mov (Context PTR [rcx]).reg_Rbx, rbx 
+	mov (Context PTR [rcx]).reg_Rbp, rbp
 	mov (Context PTR [rcx]).reg_Rsp, rsp 
-	mov (Context PTR [rcx]).reg_Rbp, rbp 
-	mov (Context PTR [rcx]).reg_Rdi, rdi 
-	mov (Context PTR [rcx]).reg_Rsi, rsi 
-	mov (Context PTR [rcx]).reg_Rax, rax
 	mov (Context PTR [rcx]).reg_R8, r8
 	mov (Context PTR [rcx]).reg_R9, r9
-	mov (Context PTR [rcx]).reg_R10, r10 
-	mov (Context PTR [rcx]).reg_R11, r11 
-	mov (Context PTR [rcx]).reg_R12, r12 
-	mov (Context PTR [rcx]).reg_R13, r13 
-	mov (Context PTR [rcx]).reg_R14, r14
-	mov (Context PTR [rcx]).reg_R15, r15 
 	lea r10, [get_out]
 	mov (Context PTR [rcx]).reg_Rip, r10
 
@@ -116,19 +139,10 @@ switch_frame PROC
 
 	mov rcx, (Context PTR [r10]).reg_Rcx
 	mov rdx, (Context PTR [r10]).reg_Rdx
-	mov rbx, (Context PTR [r10]).reg_Rbx
-	mov rsp, (Context PTR [r10]).reg_Rsp
 	mov rbp, (Context PTR [r10]).reg_Rbp
-	mov rdi, (Context PTR [r10]).reg_Rdi
-	mov rsi, (Context PTR [r10]).reg_Rsi
-	mov rax, (Context PTR [r10]).reg_Rax
+	mov rsp, (Context PTR [r10]).reg_Rsp
 	mov r8, (Context PTR [r10]).reg_R8
 	mov r9, (Context PTR [r10]).reg_R9
-	mov r11, (Context PTR [r10]).reg_R11
-	mov r12, (Context PTR [r10]).reg_R12
-	mov r13, (Context PTR [r10]).reg_R13
-	mov r14, (Context PTR [r10]).reg_R14
-	mov r15, (Context PTR [r10]).reg_R15
 
 	jmp (Context PTR [r10]).reg_Rip
 
@@ -157,22 +171,8 @@ consolidate_frame PROC FRAME
 	cmp (Context PTR [r8]).reg_Rip, 00h
 	je assert_point
 
-	mov rcx, (Context PTR [r8]).reg_Rcx
-	mov rdx, (Context PTR [r8]).reg_Rdx
-	mov rbx, (Context PTR [r8]).reg_Rbx
-	mov rsp, (Context PTR [r8]).reg_Rsp
 	mov rbp, (Context PTR [r8]).reg_Rbp
-	mov rdi, (Context PTR [r8]).reg_Rdi
-	mov rsi, (Context PTR [r8]).reg_Rsi
-	mov rax, (Context PTR [r8]).reg_Rax
-	mov r9, (Context PTR [r8]).reg_R9
-	mov r10, (Context PTR [r8]).reg_R10
-	mov r11, (Context PTR [r8]).reg_R11
-	mov r12, (Context PTR [r8]).reg_R12
-	mov r13, (Context PTR [r8]).reg_R13
-	mov r14, (Context PTR [r8]).reg_R14
-	mov r15, (Context PTR [r8]).reg_R15
-
+	mov rsp, (Context PTR [r8]).reg_Rsp
 	jmp (Context PTR [r8]).reg_Rip
 
 assert_point:

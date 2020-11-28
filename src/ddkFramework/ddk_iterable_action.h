@@ -76,10 +76,7 @@ public:
 	bool step_by_step() const;
 	shift_action& operator=(const shift_action& other);
 	shift_action& operator=(shift_action&& other);
-	inline operator bool() const
-	{
-		return m_targetShift == m_currShift;
-	}
+	operator bool() const;
 
 private:
     int m_targetShift = 0;

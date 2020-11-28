@@ -69,6 +69,10 @@ shift_action& shift_action::operator=(shift_action&& other)
 
 	return *this;
 }
+shift_action::operator bool() const
+{
+	return m_targetShift == m_currShift;
+}
 
 go_forward_action::go_forward_action()
 : shift_action(1)

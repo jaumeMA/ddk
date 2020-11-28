@@ -11,8 +11,7 @@
 
 extern "C"
 {
-	void set_curr_thread_stack_limit(void*);
-	void set_curr_thread_stack_dealloc(void*);
+	void set_curr_thread_stack(void*);
 }
 
 namespace ddk
@@ -26,13 +25,12 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 		detail::execution_stack& currStack = currFiberContext.get_stack();
 
 		//check that stack pointer is inside our scope
-		if(stack_alloc_const_shared_ptr& currAllocImpl = currStack.get_allocator())
+		if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
 		{
 			if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ContextRecord->Rsp)))
 			{
 				//every time we receive an exception under a current fiber arena, reset stack limits
-				set_curr_thread_stack_limit(currStack.get_end());
-				set_curr_thread_stack_dealloc(currStack.get_dealloc());
+				set_curr_thread_stack(&currStack);
 
 				return EXCEPTION_CONTINUE_EXECUTION;
 			}
@@ -190,6 +188,10 @@ size_t stack_allocator::get_num_guard_pages() const
 stack_alloc_const_shared_ref stack_allocator::get_alloc_impl() const
 {
 	return m_stackAllocImpl;
+}
+stack_alloc_const_lent_ref stack_allocator::get_alloc_impl_ref() const
+{
+	return lend(m_stackAllocImpl);
 }
 
 }
