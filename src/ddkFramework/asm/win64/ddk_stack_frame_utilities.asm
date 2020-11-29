@@ -52,12 +52,12 @@ Context         ENDS
 
 set_curr_thread_stack PROC
 
-	mov rbx, (Stack PTR [rcx]).init_s
-	mov gs:[008h], rbx
-	mov rbx, (Stack PTR [rcx]).end_s
-	mov gs:[010h], rbx
-	mov rbx, (Stack PTR [rcx]).dealloc_s
-	mov gs:[01478h], rbx
+	mov r8, (Stack PTR [rcx]).init_s
+	mov gs:[008h], r8
+	mov r8, (Stack PTR [rcx]).end_s
+	mov gs:[010h], r8
+	mov r8, (Stack PTR [rcx]).dealloc_s
+	mov gs:[01478h], r8
 
 	ret
 
@@ -65,12 +65,12 @@ set_curr_thread_stack ENDP
 
 get_curr_thread_stack PROC
 
-	mov rbx, gs:[008h]
-	mov (Stack PTR [rcx]).init_s, rbx
-	mov rbx, gs:[010h]
-	mov (Stack PTR [rcx]).end_s, rbx
-	mov rbx, gs:[01478h]
-	mov (Stack PTR [rcx]).dealloc_s, rbx
+	mov r8, gs:[008h]
+	mov (Stack PTR [rcx]).init_s, r8
+	mov r8, gs:[010h]
+	mov (Stack PTR [rcx]).end_s, r8
+	mov r8, gs:[01478h]
+	mov (Stack PTR [rcx]).dealloc_s, r8
 
 	ret
 
