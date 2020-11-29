@@ -28,33 +28,16 @@ namespace ddk
 namespace detail
 {
 
-inline void dump_args(ucontext_t*, uintptr_t*, size_t)
+inline uintptr_t* dump_args(uintptr_t* i_stackPointer)
 {
-	//empty impl
+	return i_stackPointer+1;
 }
 template<typename Arg, typename ... Args>
-void dump_args(ucontext_t* i_context, uintptr_t* i_stackPointer, size_t i_index, Arg i_arg, Args ... i_args)
+uintptr_t* dump_args(uintptr_t* i_stackPointer, Arg i_arg, Args ... i_args)
 {
-	switch (i_index)
-	{
-		case 0:
-			i_context->uc_mcontext.Rcx = i_arg;
-			break;
-		case 1:
-			i_context->uc_mcontext.Rdx = i_arg;
-			break;
-		case 2:
-			i_context->uc_mcontext.R8 = i_arg;
-			break;
-		case 3:
-			i_context->uc_mcontext.R9 = i_arg;
-			break;
-		default:
-			i_stackPointer[i_index] = i_arg;
-			break;
-	}
+	*i_stackPointer = i_arg;
 
-	dump_args(i_context,i_stackPointer,i_index+1,i_args ...);
+	return dump_args(i_stackPointer-1,i_args ...);
 }
 
 }
@@ -78,7 +61,7 @@ int get_context(ucontext_t* i_context);
 int set_context(ucontext_t* i_context);
 
 template<typename ... Args>
-void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_func) (void), Args* ... i_args)
+void make_context(ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_func) (void), Args* ... i_args)
 {
 #if defined(WIN32)
 
@@ -90,15 +73,10 @@ void make_context (ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_
 	*stackPointer = 0;
 	--stackPointer;
 
-	//stack pointer on resume
-	*stackPointer = reinterpret_cast<uintptr_t>(&(i_resumeContext->uc_mcontext));
-	--stackPointer;
-
+	stackPointer = detail::dump_args(stackPointer,reinterpret_cast<uintptr_t>(&i_context->uc_mcontext),reinterpret_cast<uintptr_t>(&i_resumeContext->uc_mcontext),reinterpret_cast<uintptr_t>(i_args) ...);
 
 	i_context->uc_mcontext.Rip = reinterpret_cast<uint64_t>(i_func);
 	i_context->uc_mcontext.Rsp = reinterpret_cast<uint64_t>(stackPointer);
-
-	detail::dump_args(i_context,stackPointer,0,reinterpret_cast<uintptr_t>(i_args) ...);
 
 #else
 

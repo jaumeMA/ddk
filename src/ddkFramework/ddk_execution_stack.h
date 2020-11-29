@@ -12,7 +12,7 @@ extern "C"
 	\
 	get_curr_thread_stack(&(i_oldStack)); \
 	\
-	set_curr_thread_stack(&(i_newStack)); \
+	set_curr_thread_stack(&(i_newStack));
 
 #define switch_execution_stack(i_newStack) \
 	\
