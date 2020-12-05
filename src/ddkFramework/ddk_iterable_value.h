@@ -23,10 +23,6 @@ struct iterable_value
     template<typename...>
     friend struct const_forwarded_value;
 
-	friend inline void stop(const iterable_value& i_value)
-	{
-		eval(i_value.m_resolver,iter::stop_iteration)
-	}
 	friend inline size_t value_position(const iterable_value& i_value)
 	{
 		iter::iterable_state& currState = i_value.m_iterableInterface.get_state();

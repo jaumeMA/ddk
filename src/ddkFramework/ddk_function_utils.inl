@@ -40,7 +40,7 @@ resolved_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>
 {
     typedef resolved_callable<Functor> function_type;
 
-    return function_type(i_functor);
+    return function_type(std::forward<Functor>(i_functor));
 }
 template<typename Object, typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
@@ -62,7 +62,7 @@ resolved_callable<typename std::enable_if<std::is_class<Functor>::value,Functor>
 {
     typedef resolved_callable<Functor,Allocator> function_type;
 
-    return function_type(i_functor,i_allocator);
+    return function_type(std::forward<Functor>(i_functor),i_allocator);
 }
 template<typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args>
 resolved_function<Return,detail::unresolved_types<tuple<typename std::enable_if<mpl::is_allocator<Arg>::value == false,Arg>::type,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
@@ -98,7 +98,7 @@ resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Fun
 
     typedef resolved_callable<Functor> function_type;
 
-    const function_type res(i_functor);
+    const function_type res(std::forward<Functor>(i_functor));
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -136,7 +136,7 @@ resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Fun
 
     typedef resolved_callable<Functor> function_type;
 
-    const function_type res(i_functor);
+    const function_type res(std::forward<Functor>(i_functor));
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }

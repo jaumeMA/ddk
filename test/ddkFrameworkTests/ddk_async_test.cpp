@@ -139,11 +139,22 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
 	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
 
+	ddk::future<int> myFuture = ddk::async(ddk::make_function([](){ return 0; }));
+
+	ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
+	ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));
+
+	ddk::future<char> myOtherFuture = std::move(myFuture)
+											.then(ddk::make_function([](const int& i_value){ return std::string("hola"); }))
+											.then(ddk::make_function([](const std::string& i_value) { return i_value[0]; }));
+
+	char res = myOtherFuture.extract_value();
 	if(acquireRes == ddk::success)
 	{
 		ddk::fiber_sheaf fiberSheaf = acquireRes.extract();
 		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();
+		provaFuture.extract_value();
 	}
 }

@@ -34,7 +34,7 @@ function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i
 
     if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
     {
-        Functor* newFuncImpl = new(mem) Functor(i_functor);
+        Functor* newFuncImpl = new(mem) Functor(std::forward<T>(i_functor));
 
         m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }
@@ -200,7 +200,7 @@ function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocat
 
     if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
     {
-        Functor* newFuncImpl = new Functor(i_functor);
+        Functor* newFuncImpl = new Functor(std::forward<T>(i_functor));
 
         m_functionImpl = as_shared_reference(newFuncImpl,tagged_reference_counter(&newFuncImpl->m_refCounter,ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<Functor>(m_allocator));
     }

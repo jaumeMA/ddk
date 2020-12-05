@@ -4,7 +4,7 @@
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_reference_wrapper.h"
-#include "ddk_result.h"
+#include "ddk_async_executor_interface.h"
 
 namespace ddk
 {
@@ -28,7 +28,7 @@ struct sink_type_resolver<void>
 
 template<typename>
 class executor_interface;
-template<typename Return>
+template<typename>
 class cancellable_executor_interface;
 
 SCOPED_ENUM_DECL(ExecutorState,
@@ -70,24 +70,20 @@ template<typename Return>
 class cancellable_executor_interface<Return()> : public executor_interface<Return()>
 {
 public:
-	enum CancelErrorCode
-	{
-		CancelNoCallable,
-		CancelAlreadyExecuted
-	};
-	typedef result<void,CancelErrorCode> cancel_result;
+	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	typedef typename async_cancellable_interface::CancelErrorCode CancelErrorCode;
 
 	virtual cancel_result cancel(const ddk::function<bool()>&) = 0;
 };
 
 template<typename Return, typename ... Args>
-using cancellable_executor_unique_ref = unique_reference_wrapper<cancellable_executor_interface<Return(Args...)>>;
+using cancellable_executor_unique_ref = unique_reference_wrapper<cancellable_executor_interface<Return()>>;
 template<typename Return, typename ... Args>
-using cancellable_executor_const_unique_ref = unique_reference_wrapper<const cancellable_executor_interface<Return(Args...)>>;
+using cancellable_executor_const_unique_ref = unique_reference_wrapper<const cancellable_executor_interface<Return()>>;
 template<typename Return, typename ... Args>
-using cancellable_executor_unique_ptr = unique_pointer_wrapper<cancellable_executor_interface<Return(Args...)>>;
+using cancellable_executor_unique_ptr = unique_pointer_wrapper<cancellable_executor_interface<Return()>>;
 template<typename Return, typename ... Args>
-using cancellable_executor_const_unique_ptr = unique_pointer_wrapper<const cancellable_executor_interface<Return(Args...)>>;
+using cancellable_executor_const_unique_ptr = unique_pointer_wrapper<const cancellable_executor_interface<Return()>>;
 
 template<typename Executor, typename ... Args>
 unique_reference_wrapper<Executor> make_executor(Args&& ... i_args)

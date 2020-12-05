@@ -13,7 +13,6 @@ shared_reference_wrapper<async_executor<Return>> make_async_executor(const funct
 template<typename Return>
 async_executor<Return>::async_executor(const function<Return()>& i_function)
 : m_executor(make_executor<detail::deferred_executor<Return>>())
-, m_sharedState(make_shared_reference<detail::private_async_state<Return>>())
 , m_function(i_function)
 {
 }
@@ -21,18 +20,16 @@ template<typename Return>
 async_executor<Return>::async_executor(async_executor&& other)
 : m_function(std::move(other.m_function))
 , m_executor(std::move(other.m_executor))
-, m_sharedState(std::move(other.m_sharedState))
+, m_promise(std::move(other.m_promise))
 {
 }
 template<typename Return>
 async_executor<Return>::~async_executor()
 {
 	//if not executed, excute and wait for its result
-	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
+	if(notify())
 	{
-        execute();
-
-        m_sharedState->wait();
+        m_promise.wait();
 	}
 }
 template<typename Return>
@@ -56,14 +53,12 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 template<typename Return>
 shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
-	const ddk::function<Return()> thisFunction(m_function);
-
 	//at some point put a composed callable here
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(ddk::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction(); return _void; }));
+	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
-	m_sharedState.clear();
+	m_promise.detach();
 	m_executor.clear();
 
 	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&(newAsyncExecutor->m_refCounter),ReferenceAllocationType::Embedded));
@@ -71,13 +66,11 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 template<typename Return>
 shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 {
-	const ddk::function<Return()> thisFunction(m_function);
-
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(ddk::function<detail::void_t()>([thisFunction]() -> detail::void_t { thisFunction(); return _void; }));
+	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
-	m_sharedState.clear();
+	m_promise.detach();
 	m_executor.clear();
 
 	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&(newAsyncExecutor->m_refCounter),ReferenceAllocationType::Embedded));
@@ -92,31 +85,14 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::store(promise<Return>& i_promise)
 {
-	async_shared_ref thisRef = as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
+	m_promise = i_promise;
 
-	m_sharedState = i_promise = thisRef;
-
-	return thisRef;
+	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));;
 }
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	m_cancelFunc = i_cancelFunc;
-
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
-}
-template<typename Return>
-template<typename Reference>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::on_completion(const ddk::function<void(Reference)>& i_completionFunc)
-{
-	if constexpr (std::is_same<Reference,reference>::value)
-	{
-		m_completionFunc = i_completionFunc;
-	}
-	else
-	{
-		m_completionFunc = make_function([i_completionFunc](Reference i_value) { eval(i_completionFunc,i_value); });
-	}
 
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
 }
@@ -134,13 +110,13 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 	{
 		const ExecutorState currState = execRes.get();
 
-		if(currState == ExecutorState::Executed)
+		if(currState == ExecutorState::Executing)
 		{
-			return make_error<start_result>(StartErrorCode::AlreadyDone);
+			return success;
 		}
 		else
 		{
-			return success;
+			return make_error<start_result>(StartErrorCode::NotAvailable);
 		}
 	}
 	else
@@ -151,34 +127,20 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 template<typename Return>
 void async_executor<Return>::set_value(sink_reference i_value)
 {
-	if(m_completionFunc != nullptr)
-	{
-		eval(m_completionFunc,std::forward<sink_reference>(i_value));
-	}
+	m_executor = nullptr;
 
-	m_sharedState->set_value(i_value);
+	m_promise.set_value(i_value);
 }
 template<typename Return>
-void async_executor<Return>::bind()
+future<Return> async_executor<Return>::as_future()
 {
-	nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
+	m_promise.attach(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)));
 
-	DDK_ASSERT(execRes == success, "Error while binding async executor");
-}
-template<typename Return>
-typename async_executor<Return>::reference async_executor<Return>::get_value()
-{
-    if(m_executor == nullptr)
-    {
-        throw async_exception{"Trying to get value from empty executor"};
-    }
+	start_result execRes = execute();
 
-	if(m_executor->get_state() == ExecutorState::Idle)
-	{
-        throw async_exception{"Trying to get value from idled executor"};
-	}
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone, "Trying to execute an alerady executed async executor");
 
-	return m_sharedState->get_value();
+	return m_promise.get_future();
 }
 template<typename Return>
 typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
@@ -192,55 +154,29 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 
 	if (cancelRes == success)
 	{
-		m_sharedState->signal();
+		m_promise.signal();
 	}
 
 	return cancelRes;
 }
 template<typename Return>
-typename async_executor<Return>::const_reference async_executor<Return>::get_value() const
+bool async_executor<Return>::notify()
 {
-    if(m_executor == nullptr)
-    {
-        throw async_exception{"Trying to get value from empty executor"};
-    }
-
-	if(m_executor->get_state() == ExecutorState::Idle)
+	//if not executed, excute
+	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
 	{
-        throw async_exception{"Trying to get value from idled executor"};
+		if(execute() != success)
+		{
+			// if still not executed, force an execution from this very context
+			set_value(eval(m_function));
+		}
+
+		return true;
 	}
-
-	return m_sharedState->get_value();
-}
-template<typename Return>
-embedded_type<Return> async_executor<Return>::extract_value()
-{
-    if(m_executor == nullptr)
-    {
-        throw async_exception{"Trying to extract value from empty executor"};
-    }
-
-	if(m_executor->get_state() == ExecutorState::Idle)
+	else
 	{
-        throw async_exception{"Trying to extract value from idled executor"};
+		return false;
 	}
-
-	return m_sharedState->extract_value();
-}
-template<typename Return>
-bool async_executor<Return>::ready() const
-{
-	return m_sharedState->ready();
-}
-template<typename Return>
-void async_executor<Return>::wait() const
-{
-	m_sharedState->wait();
-}
-template<typename Return>
-void async_executor<Return>::wait_for(unsigned int i_period) const
-{
-	m_sharedState->wait_for(i_period);
 }
 
 }

@@ -15,6 +15,11 @@ struct base_action
 {
 };
 
+struct stop_action : base_action
+{
+	void operator()() const;
+};
+
 struct erase_action : base_action
 {
 };
@@ -55,10 +60,6 @@ SCOPED_ENUM_DECL(AddActionError,
 				AddingToConstantIterable,
 				AddedItemFiltered);
 typedef ddk::result<void,AddActionError> add_result;
-
-struct stop_action : base_action
-{
-};
 
 struct shift_action : base_action
 {
@@ -105,11 +106,11 @@ SCOPED_ENUM_DECL(ActionError,
                  AdditionError,
                  ShiftError);
 
-typedef variant<stop_action,erase_action,add_action,go_forward_action> input_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action> output_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action> forward_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
-typedef variant<stop_action,erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
+typedef variant<erase_action,add_action,go_forward_action> input_action;
+typedef variant<erase_action,add_action,go_forward_action> output_action;
+typedef variant<erase_action,add_action,go_forward_action> forward_action;
+typedef variant<erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
+typedef variant<erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
 
 typedef variant<go_forward_action> const_input_action;
 typedef variant<go_forward_action> const_output_action;

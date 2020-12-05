@@ -6,37 +6,49 @@ namespace ddk
 {
 
 template<typename T>
-template<typename TT>
-future<T>::future(shared_reference_wrapper<TT> i_executor)
-: m_valueRetriever(i_executor)
+future<T>::future(const future& other)
+: m_sharedState(other.m_sharedState)
 {
-	static_assert(std::is_base_of<async_state_interface<T>,TT>::value, "Provided executor type shall inherit from async_state_interface");
-
-	i_executor->bind();
 }
 template<typename T>
-future<T>::future(async_cancellable_shared_ref<T> i_executor)
-: m_valueRetriever(i_executor)
+future<T>::future(future&& other)
+: m_sharedState(std::move(other.m_sharedState))
+{
+}
+template<typename T>
+future<T>::future(detail::private_async_state_shared_ptr<T> i_sharedState)
+: m_sharedState(i_sharedState)
+{
+}
+template<typename T>
+template<typename TT>
+future<T>::future(shared_reference_wrapper<TT> i_executor,...)
+: future<T>(i_executor->as_future())
 {
 }
 template<typename T>
 bool future<T>::valid() const
 {
-	if (m_valueRetriever)
+	if (m_sharedState)
 	{
-		return m_valueRetriever->ready();
+		return m_sharedState->ready();
 	}
 	else
 	{
-		throw future_exception();
+		return false
 	}
 }
 template<typename T>
-const T& future<T>::get_value() const
+bool future<T>::empty() const
 {
-	if(m_valueRetriever)
+	return m_sharedState == nullptr;
+}
+template<typename T>
+typename future<T>::const_reference future<T>::get_value() const
+{
+	if(m_sharedState)
 	{
-		return m_valueRetriever->get_value();
+		return m_sharedState->get_value();
 	}
 	else
 	{
@@ -46,9 +58,11 @@ const T& future<T>::get_value() const
 template<typename T>
 T future<T>::extract_value()
 {
-	if(m_valueRetriever)
+	if(m_sharedState)
 	{
-		return m_valueRetriever->extract_value();
+		T res = m_sharedState->extract_value();
+
+		return std::move(res);
 	}
 	else
 	{
@@ -58,9 +72,9 @@ T future<T>::extract_value()
 template<typename T>
 typename future<T>::cancel_result future<T>::cancel()
 {
-	if (m_valueRetriever)
+	if (m_sharedState)
 	{
-		return m_valueRetriever->cancel();
+		return m_sharedState->cancel();
 	}
 	else
 	{
@@ -70,23 +84,52 @@ typename future<T>::cancel_result future<T>::cancel()
 template<typename T>
 void future<T>::wait() const
 {
-	if(m_valueRetriever)
+	if(m_sharedState)
 	{
-		return m_valueRetriever->wait();
+		return m_sharedState->wait();
 	}
 }
 template<typename T>
 void future<T>::wait_for(unsigned int i_period) const
 {
-	if(m_valueRetriever)
+	if(m_sharedState)
 	{
-		return m_valueRetriever->wait_for(i_period);
+		return m_sharedState->wait_for(i_period);
 	}
 }
 template<typename T>
-bool future<T>::is_attached() const
+template<typename TT>
+future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) &&
 {
-	return m_valueRetriever != nullptr;
+	if(detail::private_async_state_shared_ptr<T> thisSharedState = m_sharedState)
+	{
+		future<TT> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
+		{
+			if constexpr(std::is_same<TT,void>::value)
+			{
+				eval(i_continuation,acquiredFuture.extract_value());
+			}
+			else
+			{
+				return eval(i_continuation,acquiredFuture.extract_value());
+			}
+		}));
+
+		thisSharedState->link(*res.m_sharedState);
+
+		return std::move(res);
+	}
+	else
+	{
+		throw future_exception("Accessing empty future");
+	}
+}
+
+template<typename T>
+template<typename TT>
+shared_future<T>::shared_future(shared_reference_wrapper<TT> i_executor,...)
+: future<T>(i_executor)
+{
 }
 
 }

@@ -4,6 +4,7 @@
 #include "ddk_arena.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
+#include "ddk_async_executor_interface.h"
 
 namespace ddk
 {
@@ -13,17 +14,25 @@ namespace detail
 template<typename T>
 struct private_async_state
 {
-	typedef typename mpl::static_if<std::is_reference<T>::value,T,const T&>::type sink_type;
+	template<typename>
+	friend struct private_async_state;
 
 public:
+	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename embedded_type<T>::cref_type>::type sink_type;
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
 	typedef typename embedded_type<T>::rref_type rref_type;
+	typedef typename async_cancellable_interface::cancel_result cancel_result;
 
 	private_async_state();
 	~private_async_state();
+	cancel_result cancel();
+	void attach(async_cancellable_shared_ptr i_executor);
+	void detach();
+	template<typename TT>
+	void link(private_async_state<TT>& other);
 	void set_value(sink_type i_value);
-	void signal();
+	void signal() const;
 	const_reference get_value() const;
 	reference get_value();
 	embedded_type<T> extract_value();
@@ -35,6 +44,7 @@ private:
 	mutable pthread_mutex_t m_mutex;
 	mutable pthread_cond_t m_condVar;
 	typed_arena<T> m_arena;
+	async_cancellable_shared_ptr m_asyncExecutor;
 };
 
 template<typename T>

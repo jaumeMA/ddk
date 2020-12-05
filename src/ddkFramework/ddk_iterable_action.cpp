@@ -1,9 +1,15 @@
 #include "ddk_iterable_action.h"
+#include "ddk_fiber_utils.h"
 
 namespace ddk
 {
 namespace iter
 {
+
+void stop_action::operator()() const
+{
+	suspend();
+}
 
 shift_action::shift_action(int i_targetShift,int i_currShift,bool i_stepByStep)
 : m_targetShift(i_targetShift)

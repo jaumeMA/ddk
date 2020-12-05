@@ -9,7 +9,7 @@ namespace ddk
 {
 
 template<typename Return>
-class async_executor : public async_execute_interface<Return>
+class async_executor : public async_execute_interface<Return>, public async_cancellable_interface
 {
 	template<typename RReturn>
 	friend shared_reference_wrapper<async_executor<RReturn>> make_async_executor(const ddk::function<RReturn()>& i_function);
@@ -22,7 +22,7 @@ public:
 	typedef shared_reference_wrapper<async_executor<Return>> async_shared_ref;
 	typedef shared_reference_wrapper<const async_executor<Return>> async_const_shared_ref;
 	using typename async_execute_interface<Return>::start_result;
-	using typename async_cancellable_interface<Return>::cancel_result;
+	using typename async_cancellable_interface::cancel_result;
 	typedef typename detail::private_async_state<Return>::reference reference;
 	typedef typename detail::private_async_state<Return>::const_reference const_reference;
 	typedef typename detail::private_async_state<Return>::rref_type rref_type;
@@ -39,31 +39,23 @@ public:
 	async_shared_ref attach(attachable<Return> i_attachable);
 	async_shared_ref store(promise<Return>& i_promise);
 	async_shared_ref on_cancel(const ddk::function<bool()>& i_cancelFunc);
-	template<typename Reference>
-	async_shared_ref on_completion(const ddk::function<void(Reference)>& i_completionFunc);
-	void bind();
+	future<Return> as_future();
 
 protected:
 	async_executor() = default;
     async_executor(const function<Return()>& i_function);
 
 private:
-	cancel_result cancel() override;
-	reference get_value() override;
-	const_reference get_value() const override;
-	embedded_type<Return> extract_value() override;
-	void wait() const override;
-	void wait_for(unsigned int i_period) const override;
-	bool ready() const override;
+	bool notify() override;
 	start_result execute() override;
+	cancel_result cancel() override;
 
 	void set_value(sink_reference i_value);
 
 	ddk::function<Return()> m_function;
 	ddk::function<bool()> m_cancelFunc;
-	ddk::function<void(Return)> m_completionFunc;
 	cancellable_executor_unique_ptr<Return> m_executor;
-	mutable detail::private_async_state_shared_ptr<Return> m_sharedState;
+	mutable promise<Return> m_promise;
 	shared_reference_counter m_refCounter;
 };
 

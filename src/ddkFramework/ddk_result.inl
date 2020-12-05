@@ -100,11 +100,15 @@ bool result<void,Error>::operator!=(const result_success_t&) const
 template<typename Error>
 bool result<void,Error>::operator==(const Error& i_error) const
 {
+	SET_CHECK_RESULT(true)
+		
 	return (m_nestedRes.empty() == false) ? *m_nestedRes == i_error : false;
 }
 template<typename Error>
 bool result<void,Error>::operator!=(const Error& i_error) const
 {
+	SET_CHECK_RESULT(true)
+		
 	return (m_nestedRes.empty() == false) ? *m_nestedRes != i_error : true;
 }
 
@@ -221,11 +225,15 @@ bool result<T,Error>::operator!=(const result_success_t&) const
 template<typename T,typename Error>
 bool result<T,Error>::operator==(const Error& i_error) const
 {
+	SET_CHECK_RESULT(true)
+		
 	return (m_nestedRes.template is<Error>()) ? m_nestedRes.template get<Error>() == i_error : false;
 }
 template<typename T,typename Error>
 bool result<T,Error>::operator!=(const Error& i_error) const
 {
+	SET_CHECK_RESULT(true)
+		
 	return (m_nestedRes.template is<Error>()) ? m_nestedRes.template get<Error>() != i_error : true;
 }
 

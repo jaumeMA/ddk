@@ -70,7 +70,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 				}
 			});
 
-			return make_result<start_result>(ExecutorState::Executed);
+			return make_result<start_result>(ExecutorState::Executing);
 		}
 		else
 		{
@@ -145,7 +145,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 				}
 			});
 
-			return make_result<start_result>(ExecutorState::Executed);
+			return make_result<start_result>(ExecutorState::Executing);
 		}
 		else
 		{

@@ -41,7 +41,7 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 				}
 			});
 
-			return make_result<start_result>(ExecutorState::Executed);
+			return make_result<start_result>(ExecutorState::Executing);
 		}
 		else
 		{
@@ -124,7 +124,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 				}
 			});
 
-			return make_result<start_result>(ExecutorState::Executed);
+			return make_result<start_result>(ExecutorState::Executing);
 		}
 		else
 		{

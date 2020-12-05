@@ -64,12 +64,10 @@ bool filtered_iterable_impl<Traits>::empty() const
                             {
                                 res = false;
 
-                                return iter::stop_iteration;
+                                iter::stop_iteration();
                             }
-                            else
-                            {
-                                return iter::go_next_place;
-                            }
+
+							return iter::go_next_place;
                         };
 
 	lendable<iter::action_state> actionState;
