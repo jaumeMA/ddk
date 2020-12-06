@@ -23,7 +23,7 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 		{
 			m_threadSheaf.start([this,i_sink,i_callable]()
 			{
-				i_callable();
+				eval(i_callable);
 
 				--m_pendingThreads;
 
@@ -57,7 +57,7 @@ thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const ddk::fu
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc != nullptr && i_cancelFunc())
+		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 
@@ -102,7 +102,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 			{
 				try
 				{
-					i_callable();
+					eval(i_callable);
 				}
 				catch(const suspend_exception&)
 				{
@@ -140,7 +140,7 @@ fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const ddk::func
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc != nullptr && i_cancelFunc())
+		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 

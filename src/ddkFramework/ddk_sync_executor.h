@@ -72,7 +72,7 @@ public:
 
 private:
     async_executor(const function<void()>& i_function)
-    : async_executor<detail::void_t>([i_function]() -> detail::void_t { i_function(); return _void; })
+    : async_executor<detail::void_t>([i_function]() -> detail::void_t { eval(i_function); return _void; })
     {}
 };
 

@@ -35,8 +35,6 @@ async_executor<Return>::~async_executor()
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(thread i_thread)
 {
-	DDK_ASSERT(i_thread.get_id() != ddk::get_current_thread_id(), "Trying to launch async over operation over calle thread");
-
 	m_executor = make_executor<detail::thread_executor<Return>>(std::move(i_thread));
 
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
@@ -44,8 +42,6 @@ typename async_executor<Return>::async_shared_ref async_executor<Return>::attach
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(fiber i_fiber)
 {
-	DDK_ASSERT(i_fiber.get_id() == ddk::get_current_fiber_id(), "Trying to launch async over operation over calle fiber");
-
 	m_executor = make_executor<detail::fiber_executor<Return>>(std::move(i_fiber));
 
 	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));

@@ -86,7 +86,7 @@ void fiber_polling_executor::update()
 {
 	while(m_stopped == false)
 	{
-		m_executor();
+		eval(m_executor);
 
 		ddk::sleep(m_sleepTimeInMS);
 	}
@@ -202,7 +202,7 @@ void fiber_event_driven_executor::update()
 
         if(m_executor != nullptr)
         {
-            m_executor();
+            eval(m_executor);
         }
 
 		pthread_mutex_lock(&m_condVarMutex);
@@ -210,7 +210,7 @@ void fiber_event_driven_executor::update()
 		const double refreshPeriod = m_sleepTimeInMS - std::fmod((double)(clock()-start), (double) m_sleepTimeInMS);
 		const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
 
-		if (m_stopped == false && m_testFunc() == false)
+		if (m_stopped == false && eval(m_testFunc) == false)
 		{
 			pthread_cond_timedwait(&m_condVar,&m_condVarMutex,&time_to_wait);
 		}

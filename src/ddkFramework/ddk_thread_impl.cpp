@@ -98,7 +98,7 @@ void one_shot_thread_impl::execute()
 
 		pthread_cleanup_push(&threadExiting,this);
 
-		m_threadFunc();
+		eval(m_threadFunc);
 
 		thread_impl_interface::clear_yielder();
 

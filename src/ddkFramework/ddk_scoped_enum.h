@@ -27,32 +27,32 @@ struct ClassName \
 		__VA_ARGS__, \
 		Count \
 	}; \
-	friend ddk::flag_set<ClassName> operator|(const ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend inline ddk::flag_set<ClassName> operator|(const ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
 		ddk::flag_set<ClassName> res(i_flags); \
 		res |= ClassName(i_value); \
 		return res; \
 	} \
-	friend ddk::detail::scoped_enum_op_or<ClassName> operator|(__val__ i_lhs, __val__ i_rhs) \
+	friend inline ddk::detail::scoped_enum_op_or<ClassName> operator|(__val__ i_lhs, __val__ i_rhs) \
 	{ \
 		return ddk::detail::scoped_enum_op_or<ClassName>(i_lhs,i_rhs); \
 	} \
-	friend ddk::detail::scoped_enum_op_and<ClassName> operator&(__val__ i_lhs, __val__ i_rhs) \
+	friend inline ddk::detail::scoped_enum_op_and<ClassName> operator&(__val__ i_lhs, __val__ i_rhs) \
 	{ \
 		return ddk::detail::scoped_enum_op_and<ClassName>(i_lhs,i_rhs); \
 	} \
-	friend ddk::flag_set<ClassName>& operator|=(ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend inline ddk::flag_set<ClassName>& operator|=(ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
 		i_flags |= ClassName(i_value); \
 		return i_flags; \
 	} \
-	friend ddk::flag_set<ClassName> operator&(const ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend inline ddk::flag_set<ClassName> operator&(const ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
 		ddk::flag_set<ClassName> res(i_flags); \
 		res &= ClassName(i_value); \
 		return res; \
 	} \
-	friend ddk::flag_set<ClassName>& operator&=(ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
+	friend inline ddk::flag_set<ClassName>& operator&=(ddk::flag_set<ClassName>& i_flags, __val__ i_value) \
 	{ \
 		i_flags &= ClassName(i_value); \
 		return i_flags; \
@@ -70,31 +70,31 @@ public: \
 	ClassName(const ClassName::__val__& i_val) \
 	: internalVal(i_val) \
 	{} \
-	bool operator==(const ClassName& other) const \
+	inline bool operator==(const ClassName& other) const \
 	{ \
 		return internalVal == other.internalVal; \
 	} \
-	bool operator!=(const ClassName& other) const \
+	inline bool operator!=(const ClassName& other) const \
 	{ \
 		return internalVal != other.internalVal; \
 	} \
-	bool operator==(const ClassName::__val__& i_val) const \
+	inline bool operator==(const ClassName::__val__& i_val) const \
 	{ \
 		return internalVal == i_val; \
 	} \
-	bool operator!=(const ClassName::__val__& i_val) const \
+	inline bool operator!=(const ClassName::__val__& i_val) const \
 	{ \
 		return internalVal != i_val; \
 	} \
-	bool operator<(const ClassName& other) const \
+	inline bool operator<(const ClassName& other) const \
 	{ \
 		return internalVal < other.internalVal; \
 	} \
-	operator underlying_type() const \
+	inline operator underlying_type() const \
 	{ \
 		return internalVal; \
 	} \
-	int getValue() const \
+	inline int getValue() const \
 	{ \
 		return static_cast<int>(internalVal); \
 	} \

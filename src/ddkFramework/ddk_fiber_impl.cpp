@@ -93,28 +93,28 @@ void fiber_impl::stop()
 		DDK_FAIL("Trying to stop unbound fiber");
 	}
 }
-yielder_context* fiber_impl::resume_from(this_fiber_t& other)
+FiberExecutionState fiber_impl::resume_from(this_fiber_t& other)
 {
-	load_switch_execution_context(other.get_execution_context(),m_fiberContext);
+	execution_context& otherContext = other.get_execution_context();
 
-	if(m_state != FiberExecutionState::Done)
+	load_switch_execution_context(otherContext,m_fiberContext);
+
+	if(m_state == FiberExecutionState::Done)
 	{
-		return m_fiberContext.get_typed_context<yielder_context>();
-	}
-	else
-	{
-		switch_execution(other.get_execution_context());
+		switch_execution(otherContext);
 
 		m_alloc.deallocate(m_fiberContext.get_stack());
-
-		return nullptr;
 	}
+
+	return m_state;
 }
 void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 {
 	m_fiberContext.set_typed_context(i_context);
 
-	switch_execution_context(m_fiberContext,other.get_execution_context());
+	execution_context& otherContext = other.get_execution_context();
+
+	switch_execution_context(m_fiberContext,otherContext);
 
 	if(m_fiberContext.is_stopped())
 	{
@@ -127,6 +127,10 @@ void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 fiber_id fiber_impl::get_id() const
 {
 	return m_id;
+}
+yielder_context* fiber_impl::get_context() const
+{
+	return m_fiberContext.get_typed_context<yielder_context>();
 }
 void fiber_impl::set_state(FiberExecutionState i_state)
 {

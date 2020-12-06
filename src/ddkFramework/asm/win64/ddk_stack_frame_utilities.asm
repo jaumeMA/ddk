@@ -179,11 +179,10 @@ consolidate_frame PROC FRAME
 
 	call r8
 
-	add rsp, 08h
+	add rsp, 10h
 
 	pop rbp
 
-	pop r8
 	pop r8
 
 	cmp (Context PTR [r8]).reg_Rip, 00h

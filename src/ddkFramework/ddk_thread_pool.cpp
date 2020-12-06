@@ -84,7 +84,7 @@ void worker_thread_impl::execute()
 
 			thread_impl_interface::set_yielder(m_yielder);
 
-			funcToExecute();
+			eval(funcToExecute);
 
 			thread_impl_interface::clear_yielder();
 

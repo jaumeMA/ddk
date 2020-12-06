@@ -42,7 +42,7 @@ public:
 	void start_from(this_fiber_t& other, const ddk::function<Return()>& i_function);
 	void start(const ddk::function<void()>& i_function);
 	void stop();
-	yielder_context* resume_from(this_fiber_t& other);
+	FiberExecutionState resume_from(this_fiber_t& other);
 	void resume_to(this_fiber_t& other, yielder_context* i_context = nullptr);
 	fiber_id get_id() const;
 	void set_state(FiberExecutionState i_state);
@@ -50,6 +50,9 @@ public:
 	{
 		return m_state;
 	}
+	yielder_context* get_context() const;
+	template<typename T>
+	typed_yielder_context<T>* get_typed_context() const;
 	const stack_allocator& get_stack_allocator() const;
 	void set_executor(scheduler_interface_lent_ptr i_executor);
 	bool joinable() const;

@@ -90,9 +90,7 @@ public:
     function& operator=(const function& other) = default;
     function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
-    inline operator Return() const;
 	inline Return inline_eval() const;
-	inline Return operator()() const;
     inline bool operator==(std::nullptr_t) const;
     inline bool operator!=(std::nullptr_t) const;
 

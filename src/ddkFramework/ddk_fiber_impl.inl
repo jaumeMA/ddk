@@ -63,6 +63,11 @@ void fiber_impl::start_from(this_fiber_t& other, const ddk::function<Return()>& 
 
 	make_execution_context(m_fiberContext,other.get_execution_context(),&consolidate_frame,&i_function,this,&launch_fiber<Return>);
 }
+template<typename T>
+typed_yielder_context<T>* fiber_impl::get_typed_context() const
+{
+	return m_fiberContext.get_typed_context<typed_yielder_context<T>>();
+}
 
 }
 }

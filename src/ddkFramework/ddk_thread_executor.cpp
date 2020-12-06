@@ -103,7 +103,7 @@ void thread_polling_executor::update() const
 {
 	while(m_stopped == false)
 	{
-		m_executor();
+		eval(m_executor);
 
 		ddk::sleep(static_cast<unsigned long>(m_sleepTimeInMS.count()));
 	}
@@ -268,12 +268,12 @@ void thread_event_driven_executor::update()
         {
 			pthread_mutex_unlock(&m_condVarMutex);
 
-            m_executor();
+            eval(m_executor);
 
 			pthread_mutex_lock(&m_condVarMutex);
         }
 
-		if (m_stopped == false && m_testFunc() == false)
+		if (m_stopped == false && eval(m_testFunc) == false)
 		{
 			const double refreshPeriod = m_sleepTimeInMS - fmod((double)(clock()-start), (double) m_sleepTimeInMS);
 			const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
@@ -324,7 +324,7 @@ void thread_fire_and_forget_executor::signal()
 }
 void thread_fire_and_forget_executor::update()
 {
-	m_executor();
+	eval(m_executor);
 }
 
 }

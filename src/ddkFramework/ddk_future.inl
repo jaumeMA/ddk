@@ -124,6 +124,33 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 		throw future_exception("Accessing empty future");
 	}
 }
+template<typename T>
+template<typename TT, typename TTT>
+future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&
+{
+	if(detail::private_async_state_shared_ptr<T> thisSharedState = m_sharedState)
+	{
+		future<TT> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
+		{
+			if constexpr(std::is_same<TT,void>::value)
+			{
+				eval(i_continuation,acquiredFuture.extract_value());
+			}
+			else
+			{
+				return eval(i_continuation,acquiredFuture.extract_value());
+			}
+		})) -> attach(std::forward<TTT>(i_execContext));
+
+		thisSharedState->link(*res.m_sharedState);
+
+		return std::move(res);
+	}
+	else
+	{
+		throw future_exception("Accessing empty future");
+	}
+}
 
 template<typename T>
 template<typename TT>

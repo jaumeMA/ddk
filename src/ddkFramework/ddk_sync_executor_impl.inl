@@ -57,7 +57,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 		{
 			m_fiber.start([=]()
 			{
-				sink_reference res = i_callable();
+				sink_reference res = eval(i_callable);
 
 				while (m_state.get() == ExecutorState::Cancelling)
 				{
@@ -87,7 +87,7 @@ typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(co
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc != nullptr && i_cancelFunc())
+		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 
@@ -132,7 +132,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 		{
 			m_thread.start([=]()
 			{
-				sink_reference res = i_callable();
+				sink_reference res = eval(i_callable);
 
 				while (m_state.get() == ExecutorState::Cancelling)
 				{
@@ -162,7 +162,7 @@ typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc != nullptr && i_cancelFunc())
+		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 

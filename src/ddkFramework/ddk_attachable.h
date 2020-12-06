@@ -7,23 +7,30 @@ namespace ddk
 
 template<typename>
 class attachable;
-template<typename RReturn>
+template<typename>
 class async_executor;
 
-template<typename Return>
+template<typename T>
 class attachable
 {
-    friend class async_executor<Return>;
+    friend class async_executor<T>;
 
 public:
-    attachable(cancellable_executor_unique_ref<Return> i_executorImpl);
+    attachable(cancellable_executor_unique_ref<T> i_executorImpl);
     attachable(const attachable&) = delete;
     attachable(attachable&&) = default;
 	~attachable() = default;
 
 private:
-    cancellable_executor_unique_ref<Return> m_executorImpl;
+    cancellable_executor_unique_ref<T> m_executorImpl;
 };
+
+template<typename T>
+inline attachable<void> attach(thread i_thread);
+template<typename T>
+inline attachable<void> attach(fiber i_fiber);
+template<typename T>
+inline attachable<void> attach(cancellable_executor_unique_ref<detail::void_t> i_attachable);
 
 template<>
 class attachable<void> : public attachable<detail::void_t>
@@ -40,6 +47,7 @@ attachable<void> attach(thread i_thread);
 attachable<void> attach(fiber i_fiber);
 attachable<void> attach(thread_sheaf i_threadSheaf);
 attachable<void> attach(fiber_sheaf i_fiberSheaf);
+attachable<void> attach(cancellable_executor_unique_ref<detail::void_t> i_attachable);
 
 }
 

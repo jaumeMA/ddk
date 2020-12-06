@@ -30,7 +30,7 @@ int shift_action::shifted() const
 }
 int shift_action::shifting() const
 {
-	if(m_stepByStep && m_targetShift > 0)
+	if(m_stepByStep && m_targetShift != m_currShift)
 	{
 		return (m_targetShift > 0) ? 1 : -1;
 	}

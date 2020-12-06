@@ -5,6 +5,7 @@
 #include "ddk_async_executor_interface.h"
 #include "ddk_variant.h"
 #include "ddk_function.h"
+#include "ddk_attachable.h"
 
 namespace ddk
 {
@@ -42,6 +43,8 @@ public:
 	cancel_result cancel();
 	template<typename TT>
 	future<TT> then(const function<TT(const_reference)>& i_continuation) &&;
+	template<typename TT, typename TTT>
+	future<TT> then(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
 
 protected:
 	future(const future&);

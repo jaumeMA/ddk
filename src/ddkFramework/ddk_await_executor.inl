@@ -67,9 +67,7 @@ await_executor<Return>& await_executor<Return>::operator=(const await_executor& 
 template<typename Return>
 bool await_executor<Return>::resume()
 {
-	m_callee.resume_from(m_caller);
-
-	if(m_callee.get_state() == FiberExecutionState::Done)
+	if(m_callee.resume_from(m_caller) == FiberExecutionState::Done)
 	{
 		m_state = ExecutorState::Executed;
 
@@ -83,9 +81,7 @@ bool await_executor<Return>::resume()
 template<typename Return>
 bool await_executor<Return>::resume(const ddk::function<void(sink_reference)>& i_sink)
 {
-	yielder_context* i_context = m_callee.resume_from(m_caller);
-
-	if(m_callee.get_state() == FiberExecutionState::Done)
+	if(m_callee.resume_from(m_caller) == FiberExecutionState::Done)
 	{
 		m_state = ExecutorState::Executed;
 
@@ -103,7 +99,7 @@ bool await_executor<Return>::resume(const ddk::function<void(sink_reference)>& i
 		}
 		else
 		{
-			if(typed_yielder_context<Return>* newContext = static_cast<typed_yielder_context<Return>*>(i_context))
+			if(typed_yielder_context<Return>* newContext = m_callee.get_typed_context<Return>())
 			{
 				eval(i_sink,newContext->get_value());
 			}

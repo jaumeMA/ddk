@@ -144,9 +144,10 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
 	ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));
 
+	ddk::thread myThread;
 	ddk::future<char> myOtherFuture = std::move(myFuture)
 											.then(ddk::make_function([](const int& i_value){ return std::string("hola"); }))
-											.then(ddk::make_function([](const std::string& i_value) { return i_value[0]; }));
+											.then(ddk::make_function([](const std::string& i_value) { return i_value[0]; }),std::move(myThread));
 
 	char res = myOtherFuture.extract_value();
 	if(acquireRes == ddk::success)

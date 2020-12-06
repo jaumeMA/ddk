@@ -6,9 +6,15 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+struct iterable_value_base{};
+
+}
 
 template<typename Traits>
-struct iterable_value
+struct iterable_value : public detail::iterable_value_base
 {
     template<typename...>
     friend struct random_accessed_value;

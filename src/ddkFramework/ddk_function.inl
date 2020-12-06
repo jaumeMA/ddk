@@ -268,25 +268,6 @@ function<Return(),Allocator>& function<Return(),Allocator>::operator=(std::nullp
 
     return *this;
 }
-template<typename Return, typename Allocator>
-function<Return(),Allocator>::operator Return() const
-{
-    if(m_functionImpl)
-    {
-        if constexpr (std::is_same<Return,void>::value)
-        {
-            m_functionImpl->operator()();
-        }
-        else
-        {
-            return m_functionImpl->operator()();
-        }
-    }
-    else
-    {
-        throw call_function_exception{"Trying to call empty function"};
-    }
-}
 template<typename Return,typename Allocator>
 Return function<Return(),Allocator>::inline_eval() const
 {
@@ -305,25 +286,6 @@ Return function<Return(),Allocator>::inline_eval() const
 	{
 		throw call_function_exception{ "Trying to call empty function" };
 	}
-}
-template<typename Return, typename Allocator>
-Return function<Return(),Allocator>::operator()() const
-{
-    if(m_functionImpl)
-    {
-        if constexpr (std::is_same<Return,void>::value)
-        {
-            m_functionImpl->operator()();
-        }
-        else
-        {
-            return m_functionImpl->operator()();
-        }
-    }
-    else
-    {
-        throw call_function_exception{"Trying to call empty function"};
-    }
 }
 template<typename Return, typename Allocator>
 bool function<Return(),Allocator>::operator==(std::nullptr_t) const
