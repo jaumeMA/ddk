@@ -50,20 +50,20 @@ void private_async_state<T>::detach()
 }
 template<typename T>
 template<typename TT>
-void private_async_state<T>::link(private_async_state<TT>& other)
+void private_async_state<T>::link(shared_reference_wrapper<private_async_state<TT>> other)
 {
 	pthread_mutex_lock(&m_mutex);
 
 	if(m_arena.empty())
 	{
-		m_asyncExecutor->_nextChainedAsyncOp = other.m_asyncExecutor;
+		m_nextChainedAsyncOp = other;
 
 		// just in case
 		m_asyncExecutor->notify();
 	}
 	else
 	{
-		other.m_asyncExecutor->notify();
+		other->m_asyncExecutor->notify();
 	}
 
 	pthread_cond_broadcast(&m_condVar);
@@ -81,11 +81,7 @@ void private_async_state<T>::set_value(sink_type i_value)
 
 	pthread_mutex_unlock(&m_mutex);
 
-	async_base_shared_ptr nextChain = m_asyncExecutor->_nextChainedAsyncOp;
-
-	m_asyncExecutor = nullptr;
-
-	if(nextChain)
+	if(shared_pointer_wrapper<async_state_base> nextChain = std::move(m_nextChainedAsyncOp))
 	{
 		nextChain->notify();
 	}
@@ -158,6 +154,11 @@ embedded_type<T> private_async_state<T>::extract_value()
 
 	if(m_arena.empty())
 	{
+		if(m_asyncExecutor)
+		{
+			m_asyncExecutor->notify();
+		}
+
 		pthread_cond_wait(&m_condVar,&m_mutex);
 	}
 
@@ -208,6 +209,14 @@ bool private_async_state<T>::ready() const
 	pthread_mutex_unlock(&m_mutex);
 
 	return res;
+}
+template<typename T>
+void private_async_state<T>::notify()
+{
+	if(m_asyncExecutor)
+	{
+		m_asyncExecutor->notify();
+	}
 }
 
 }

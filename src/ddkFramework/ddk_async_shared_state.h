@@ -11,8 +11,15 @@ namespace ddk
 namespace detail
 {
 
+struct async_state_base
+{
+	virtual ~async_state_base() = default;
+
+	virtual void notify() = 0;
+};
+
 template<typename T>
-struct private_async_state
+struct private_async_state : async_state_base
 {
 	template<typename>
 	friend struct private_async_state;
@@ -30,7 +37,7 @@ public:
 	void attach(async_cancellable_shared_ptr i_executor);
 	void detach();
 	template<typename TT>
-	void link(private_async_state<TT>& other);
+	void link(shared_reference_wrapper<private_async_state<TT>> other);
 	void set_value(sink_type i_value);
 	void signal() const;
 	const_reference get_value() const;
@@ -41,10 +48,13 @@ public:
 	bool ready() const;
 
 private:
+	void notify() override;
+
 	mutable pthread_mutex_t m_mutex;
 	mutable pthread_cond_t m_condVar;
 	typed_arena<T> m_arena;
 	async_cancellable_shared_ptr m_asyncExecutor;
+	shared_pointer_wrapper<async_state_base> m_nextChainedAsyncOp;
 };
 
 template<typename T>

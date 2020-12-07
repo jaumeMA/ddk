@@ -14,9 +14,6 @@ class async_interface_base
 {
 public:
 	virtual ~async_interface_base() = default;
-
-	shared_pointer_wrapper<async_interface_base> _nextChainedAsyncOp;
-
 	virtual bool notify() = 0;
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_async_exceptions.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -115,7 +116,7 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 			}
 		}));
 
-		thisSharedState->link(*res.m_sharedState);
+		thisSharedState->link(ddk::promote_to_ref(res.m_sharedState));
 
 		return std::move(res);
 	}
@@ -142,7 +143,7 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation, 
 			}
 		})) -> attach(std::forward<TTT>(i_execContext));
 
-		thisSharedState->link(*res.m_sharedState);
+		thisSharedState->link(ddk::promote_to_ref(res.m_sharedState));
 
 		return std::move(res);
 	}
