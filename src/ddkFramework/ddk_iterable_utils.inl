@@ -69,12 +69,12 @@ typename ddk::detail::union_iterable<Iterables...>::related_iterable operator<<=
 template<typename IterableValue, typename Allocator, typename ... Iterables>
 typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::union_iterable<Iterables...>& i_rhs)
 {
-	return { as_iterable(i_rhs),i_lhs,nullptr };
+	return { as_iterable(i_rhs),i_lhs };
 }
 template<typename IterableValue, typename Allocator, typename ... Iterables>
 typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs)
 {
-	return { as_iterable(i_rhs),i_lhs,nullptr };
+	return { as_iterable(i_rhs),i_lhs };
 }
 template<typename Return, typename Type, typename Allocator, typename ... Iterables>
 ddk::detail::iterable<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
@@ -108,24 +108,6 @@ template<typename IterableValue, typename Allocator, typename ... Iterables>
 typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs)
 {
 	return { as_iterable(i_rhs),i_lhs,nullptr };
-}
-template<typename Traits>
-ddk::future<void> operator<<=(ddk::attachable<void> i_attachable,ddk::iteration<Traits> i_iteration)
-{
-	ddk::shared_reference_wrapper<ddk::async_executor<void>> res = ddk::make_async_executor(ddk::make_function(&ddk::execute_iteration<Traits>,i_iteration));
-
-	res->attach(std::move(i_attachable));
-
-	return res;
-}
-template<typename Traits>
-ddk::future<void> operator<<=(ddk::attachable<void> i_attachable, ddk::co_iteration<Traits> i_co_iteration)
-{
-    ddk::shared_reference_wrapper<ddk::async_executor<void>> res = ddk::make_async_executor(ddk::make_function(&ddk::execute_co_iteration<Traits>,i_co_iteration));
-
-    res->attach(std::move(i_attachable));
-
-    return res;
 }
 template<typename Traits1, typename Traits2>
 ddk::detail::union_iterable<ddk::detail::iterable<Traits1>,ddk::detail::iterable<Traits2>> operator|(const ddk::detail::iterable<Traits1>& i_lhs, const ddk::detail::iterable<Traits2>& i_rhs)

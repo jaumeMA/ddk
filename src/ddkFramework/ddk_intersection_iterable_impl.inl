@@ -10,7 +10,7 @@ typename mpl::nth_type_of<Index, Iterables...>::type::reference intersection_nav
 	typedef typename mpl::nth_type_of<Index, Iterables...>::type::reference curr_reference;
 	typedef typename mpl::nth_type_of<Index, Iterables...>::type::reference curr_reference;
 
-	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_reference i_value){ yield<curr_reference>(i_value); }),nullptr,i_initialAction);
+	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_reference i_value){ yield<curr_reference>(i_value); }),i_initialAction);
 
 	suspend();
 
@@ -22,7 +22,7 @@ typename mpl::nth_type_of<Index, Iterables...>::type::const_reference const_inte
 	typedef typename mpl::nth_type_of<Index, Iterables...>::type::const_reference curr_const_reference;
 	typedef typename mpl::nth_type_of<Index, Iterables...>::type::const_reference curr_const_reference;
 
-	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_const_reference i_value) { yield<curr_const_reference>(i_value); }),nullptr,i_initialAction);
+	i_iterable->m_iterables.template get<Index>().iterate(make_function([](curr_const_reference i_value) { yield<curr_const_reference>(i_value); }),i_initialAction);
 
 	suspend();
 

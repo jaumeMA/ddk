@@ -78,12 +78,6 @@ inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_
 template<typename IterableValue, typename Allocator, typename ... Iterables>
 inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs);
 
-template<typename Traits>
-inline ddk::future<void> operator<<=(ddk::attachable<void> i_attachable,ddk::iteration<Traits> i_iteration);
-
-template<typename Traits>
-inline ddk::future<void> operator<<=(ddk::attachable<void> i_attachable, ddk::co_iteration<Traits> i_co_iteration);
-
 template<typename Traits1, typename Traits2>
 inline ddk::detail::union_iterable<ddk::detail::iterable<Traits1>,ddk::detail::iterable<Traits2>> operator|(const ddk::detail::iterable<Traits1>& i_lhs, const ddk::detail::iterable<Traits2>& i_rhs);
 

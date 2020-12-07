@@ -17,7 +17,7 @@ typename union_iterable_impl<Iterables...>::action navigate(union_iterable_impl<
 	{ 
 		lastAction = eval(i_try,i_value); 	
 		i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
-	}),nullptr,i_initialAction);
+	}),i_initialAction);
 
 
 	return lastAction;
@@ -34,8 +34,7 @@ typename union_iterable_impl<Iterables...>::action navigate(const union_iterable
 	{ 
 		lastAction = eval(i_try,i_value); 
 		i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
-	}),nullptr,i_initialAction);
-
+	}),i_initialAction);
 
 	return lastAction;
 }

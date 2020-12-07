@@ -29,7 +29,7 @@ iterable<Traits>::~iterable()
 {
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(reference)>& i_try,const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
+iter::action_result iterable<Traits>::iterate(const function<void(reference)>& i_try, const iter::shift_action& i_initialAction)
 {
 	try
 	{
@@ -46,13 +46,10 @@ void iterable<Traits>::iterate(const function<void(reference)>& i_try,const func
 	{
 	}
 
-	if(i_finally != nullptr)
-	{
-		eval(i_finally,m_actionState->get());
-	}
+	return m_actionState->get();
 }
 template<typename Traits>
-void iterable<Traits>::iterate(const function<void(const_reference)>& i_try,const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction) const
+iter::action_result iterable<Traits>::iterate(const function<void(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
 {
 	try
 	{
@@ -69,13 +66,10 @@ void iterable<Traits>::iterate(const function<void(const_reference)>& i_try,cons
 	{
 	}
 
-	if(i_finally != nullptr)
-	{
-		eval(i_finally,m_actionState->get());
-	}
+	return m_actionState->get();
 }
 template<typename Traits>
-void iterable<Traits>::co_iterate(const function<void(iterable_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction)
+iter::action_result iterable<Traits>::co_iterate(const function<void(iterable_value)>& i_try, const iter::shift_action& i_initialAction)
 {
 	m_executor = detail::await_executor<void>(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
 
@@ -102,13 +96,10 @@ void iterable<Traits>::co_iterate(const function<void(iterable_value)>& i_try, c
         }
     }
 
-    if(i_finally != nullptr)
-    {
-        eval(i_finally,m_actionState->get());
-    }
+	return m_actionState->get();
 }
 template<typename Traits>
-void iterable<Traits>::co_iterate(const function<void(iterable_const_value)>& i_try, const function<void(iter::action_result)>& i_finally, const iter::shift_action& i_initialAction) const
+iter::action_result iterable<Traits>::co_iterate(const function<void(iterable_const_value)>& i_try, const iter::shift_action& i_initialAction) const
 {
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
 
@@ -137,10 +128,7 @@ void iterable<Traits>::co_iterate(const function<void(iterable_const_value)>& i_
         }
     }
 
-    if(i_finally != nullptr)
-    {
-        eval(i_finally,m_actionState->get());
-    }
+	return m_actionState->get();
 }
 template<typename Traits>
 bool iterable<Traits>::operator==(const std::nullptr_t&) const

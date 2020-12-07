@@ -23,4 +23,15 @@ private:
     std::string m_reason;
 };
 
+class iteration_exception : public std::exception
+{
+public:
+	iteration_exception(const char* i_reason);
+
+	const char* what() const noexcept;
+
+private:
+	std::string m_reason;
+};
+
 }
