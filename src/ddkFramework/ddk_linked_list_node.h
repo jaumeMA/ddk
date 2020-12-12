@@ -5,6 +5,7 @@
 #include "ddk_shared_pointer_wrapper.h"
 #include "ddk_lent_pointer_wrapper.h"
 #include "ddk_reference_wrapper.h"
+#include "ddk_shared_from_this.h"
 
 namespace ddk
 {
@@ -16,7 +17,7 @@ namespace detail
 {
 
 template<typename T>
-struct linked_list_node
+struct linked_list_node : public share_from_this<linked_list_node<T>>
 {
 	template<typename,typename>
 	friend struct ::ddk::linked_list;
@@ -67,7 +68,7 @@ public:
 		if(i_node.get() != this)
 		{
 			m_prevNode = i_node;
-			m_prevNode->m_nextNode = as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded),*i_node.get_deleter());
+			m_prevNode->m_nextNode = this->ref_from_this();
 		}
 		else
 		{
@@ -81,7 +82,7 @@ public:
 		if(i_node.get() != this)
 		{
 			m_nextNode = i_node;
-			i_node->m_prevNode = as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded),*i_node.get_deleter());
+			i_node->m_prevNode = this->ref_from_this();
 		}
 		else
 		{
@@ -151,7 +152,6 @@ private:
 	typed_arena<T> m_content;
 	linked_node_shared_ptr m_prevNode;
 	linked_node_shared_ptr m_nextNode;
-	shared_reference_counter m_refCounter;
 };
 
 }

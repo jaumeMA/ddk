@@ -6,10 +6,10 @@
 namespace ddk
 {
 
-class bad_allocation_exception : public std::exception
+class bad_ptr_exception : public std::exception
 {
 public:
-	bad_allocation_exception(const std::string& i_reason);
+	bad_ptr_exception(const std::string& i_reason);
 
 	std::string reason() const;
 

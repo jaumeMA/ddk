@@ -19,15 +19,22 @@ private:
 	fiber_id m_id;
 };
 
+SCOPED_ENUM_DECL(AsyncExceptionCode,
+				 None);
+
 struct async_exception : public std::exception
 {
 public:
-    async_exception(const std::string& i_reason);
+    async_exception(const std::string& i_reason, AsyncExceptionCode i_code = AsyncExceptionCode::None, bool i_acquired = false);
 
     const char* what() const noexcept;
+	AsyncExceptionCode get_code() const;
+	bool acquired() const;
 
 private:
-    const std::string m_reason;
+    std::string m_reason;
+	AsyncExceptionCode m_code;
+	bool m_acquired;
 };
 
 struct future_exception : public async_exception

@@ -29,10 +29,10 @@ private:
 	typed_system_allocator<T> m_privateAlloc;
 };
 
-const IReferenceWrapperDeleter& get_reference_wrapper_deleter(const system_allocator& i_allocator);
+const IReferenceWrapperDeleter* get_reference_wrapper_deleter(const system_allocator&);
 
 template<typename T>
-const IReferenceWrapperDeleter& get_reference_wrapper_deleter(const system_allocator& i_allocator);
+const IReferenceWrapperDeleter* get_reference_wrapper_deleter(const system_allocator&);
 
 }
 

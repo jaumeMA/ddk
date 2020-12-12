@@ -83,6 +83,12 @@ typename embedded_type<Type>::ref_type tuple_impl<mpl::sequence<0>,Type>::get()
 	return std::forward<typename embedded_type<Type>::ref_type>(m_val);
 }
 template<typename Type>
+template<size_t IIndex>
+typename embedded_type<Type>::rref_type tuple_impl<mpl::sequence<0>,Type>::extract() &&
+{
+	return std::forward<typename embedded_type<Type>::rref_type>(m_val);
+}
+template<typename Type>
 template<size_t Index, typename Arg>
 typename embedded_type<Type>::ref_type tuple_impl<mpl::sequence<0>,Type>::set(Arg&& i_arg)
 {
@@ -197,6 +203,14 @@ typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::t
     typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
 
 	return get<nth_type>(m_storage.template at<IIndex>());
+}
+template<size_t Index1,size_t Index2,size_t ... Indexs,typename Type1,typename Type2,typename ... Types>
+template<size_t IIndex>
+typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::rref_type tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::extract() &&
+{
+	typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
+
+	return extract<nth_type>(m_storage.template at<IIndex>());
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t ... IIndexs, typename ... Args>

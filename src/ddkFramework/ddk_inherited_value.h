@@ -1,71 +1,63 @@
 #pragma once
 
-#include "type_id.h"
-#include "any_value.h"
+#include "ddk_shared_pointer_wrapper.h"
+#include "ddk_system_allocator.h"
+#include "ddk_rtti_defs.h"
+#include "ddk_any_value.h"
 
 namespace ddk
 {
 
-template<typename T>
-struct inherited_value
+template<typename T, typename Allocator = system_allocator>
+class inherited_value
 {
 	static_assert(std::is_polymorphic<T>::value, "You shall provide a polymorphic type since it relies on dynamic casts");
 
-private:
-
-template<typename TT>
-struct value_wrapper_interface
-{
-	virtual ~value_wrapper_interface(){};
-	virtual value_wrapper_interface<TT>* clone() const = 0;
-	virtual void destroy() = 0;
-	virtual const T& getValue() const = 0;
-	virtual T& getValue() = 0;
-};
-
-template<typename TT>
-struct value_wrapper : public value_wrapper_interface<T>
-{
-	static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
+	template<typename TT, typename ... Args>
+	friend inherited_value<TT> make_inherited_value(Args&& ... i_args);
+	template<typename,typename>
+	friend class inherited_value;
 
 public:
-	value_wrapper(const TT& i_value);
-	value_wrapper_interface<T>* clone() const override;
-	void destroy() override;
-	void setValue(const TT& i_value);
-	const T& getValue() const override;
-	T& getValue() override;
+	typedef T* pointer;
+	typedef const T* const_pointer;
+	typedef T& reference;
+	typedef const T& const_reference;
+	typedef T&& rreference;
 
-private:
-	TT m_value;
-};
-
-public:
-	inherited_value();
-	inherited_value(const inherited_value& other);
+	inherited_value() = default;
+	inherited_value(const inherited_value& other) = default;
+	inherited_value(inherited_value&& other) = default;
 	template<typename TT>
-	inherited_value(const TT& i_val, ...);
-	~inherited_value();
+	inherited_value(const inherited_value<TT,Allocator>& other);
+	template<typename TT>
+	inherited_value(inherited_value<TT,Allocator>&& other);
 	inherited_value& operator=(const inherited_value& other);
+	inherited_value& operator=(inherited_value&& other);
 	template<typename TT>
-	inline bool isOfType() const;
+	inherited_value& operator=(const inherited_value<TT,Allocator>& other);
 	template<typename TT>
-	inline void setValue(const TT& i_value);
+	inherited_value& operator=(inherited_value<TT,Allocator>&& other);
 	template<typename TT>
-	inline TT& getValue();
-	template<typename TT>
-	inline const TT& getValue() const;
-	operator bool() const;
-	size_t getCurrTypeId() const;
-
-	static const size_t k_invalidType = -1;
+	inline bool is() const;
+	inline operator bool() const;
+	inline const TypeInfo& get_type_info() const;
+	inline pointer operator->();
+	inline const_pointer operator->() const;
+	inline reference operator*();
+	inline const_reference operator*() const;
+	template<typename Visitor>
+	inline bool may_visit() const;
+	template<typename Visitor>
+	any_value visit(Visitor&& i_visitor) const;
 
 private:
-	void destroy();
-	void clone(const inherited_value& other):
+	template<typename ... Args>
+	inherited_value(Args&& ... i_args);
 
-	size_t m_currentAgnosticType;
-	value_wrapper_interface<T>* m_arena;
+	TypeInfo m_typeInfo;
+	shared_pointer_wrapper<T> m_value;
+	Allocator m_allocator;
 };
 
 }

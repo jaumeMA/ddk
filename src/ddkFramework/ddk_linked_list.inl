@@ -1,4 +1,7 @@
 
+#include "ddk_allocator_exceptions.h"
+#include "ddk_system_reference_wrapper_allocator.h"
+
 namespace ddk
 {
 
@@ -8,11 +11,16 @@ linked_list<T,Allocator>::linked_list(const linked_list<T>& other)
 	const_iterator itNode = other.m_firstNode;
 	for(;itNode!=NULL;++itNode)
 	{
-		void* __mem =  m_allocator.allocate(1,sizeof(detail::linked_list_node<T>));
+		if(void* __mem = m_allocator.allocate(1,sizeof(detail::linked_list_node<T>)))
+		{
+			detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(*itNode);
 
-		detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(*itNode);
-
-		_push(as_shared_reference(newNode,tagged_pointer<shared_reference_counter>(&newNode->m_refCounter,ReferenceAllocationType::Embedded),*this));
+			_push(as_shared_reference(newNode,tagged_pointer<shared_reference_counter>(newNode->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
+		}
+		else
+		{
+			throw bad_allocation_exception{ "Could not allocate linked list node" };
+		}
 	}
 }
 template<typename T, typename Allocator>
@@ -30,11 +38,16 @@ template<typename T, typename Allocator>
 template<typename ... Args>
 T& linked_list<T,Allocator>::push(Args&& ... i_args)
 {
-	void* __mem =  m_allocator.allocate(1,sizeof(detail::linked_list_node<T>));
+	if(void* __mem =  m_allocator.allocate(1,sizeof(detail::linked_list_node<T>)))
+	{
+		detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(std::forward<Args>(i_args) ...);
 
-	detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(std::forward<Args>(i_args) ...);
-
-	return _push(as_shared_reference(newNode,tagged_pointer<shared_reference_counter>(&newNode->m_refCounter,ReferenceAllocationType::Embedded),*this));
+		return _push(as_shared_reference(newNode,tagged_pointer<shared_reference_counter>(newNode->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
+	}
+	else
+	{
+		throw bad_allocation_exception{"Could not allocate linked list node"};
+	}
 }
 template<typename T, typename Allocator>
 optional<T> linked_list<T,Allocator>::pop()
@@ -144,11 +157,6 @@ T& linked_list<T,Allocator>::_push(linked_node_shared_ref i_node)
 	}
 
 	return m_lastNode->get_value();
-}
-template<typename T, typename Allocator>
-void linked_list<T,Allocator>::Deallocate(const void* i_object) const
-{
-	m_allocator.deallocate(const_cast<void*>(i_object));
 }
 
 }

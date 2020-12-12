@@ -6,13 +6,12 @@
 #include "ddk_list_iterator.h"
 #include "ddk_system_allocator.h"
 #include "ddk_optional.h"
-#include "ddk_reference_wrapper_deleter.h"
 
 namespace ddk
 {
 
 template<typename T, typename Allocator = typed_system_allocator<T>>
-struct linked_list : protected IReferenceWrapperDeleter
+struct linked_list
 {
 	typedef lent_pointer_wrapper<detail::linked_list_node<T>> linked_node_ptr;
 	typedef shared_reference_wrapper<detail::linked_list_node<T>> linked_node_shared_ref;
@@ -41,7 +40,6 @@ public:
 
 private:
 	T& _push(linked_node_shared_ref i_node);
-	void Deallocate(const void* i_object) const override;
 
 	linked_node_shared_ptr m_firstNode;
 	linked_node_shared_ptr m_lastNode;

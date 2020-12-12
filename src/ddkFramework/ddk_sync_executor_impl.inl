@@ -16,9 +16,21 @@ deferred_executor<Return>::deferred_executor()
 template<typename Return>
 typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
 {
-	if(i_callable == nullptr)
+	if(i_callable != nullptr)
 	{
-		return make_error<start_result>(executor_interface<Return()>::StartNoCallable);
+		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
+		{
+			try
+			{
+				eval(i_sink,eval(i_callable));
+			}
+			catch(...)
+			{
+				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
+			}
+		}
+
+		return make_result<start_result>(m_state.get());
 	}
 	else
 	{
@@ -28,9 +40,14 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 template<typename Return>
 typename deferred_executor<Return>::cancel_result deferred_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
-	m_state = ExecutorState::Cancelled;
-
-	return ddk::success;
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
+	{
+		return ddk::success;
+	}
+	else
+	{
+		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
+	}
 }
 template<typename Return>
 ExecutorState deferred_executor<Return>::get_state() const
@@ -41,7 +58,6 @@ ExecutorState deferred_executor<Return>::get_state() const
 template<typename Return>
 fiber_executor<Return>::fiber_executor(fiber i_fiber)
 : m_fiber(std::move(i_fiber))
-, m_state(ExecutorState::Idle)
 {
 }
 template<typename Return>
@@ -57,17 +73,24 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 		{
 			m_fiber.start([=]()
 			{
-				sink_reference res = eval(i_callable);
-
-				while (m_state.get() == ExecutorState::Cancelling)
+				try
 				{
-					std::this_thread::yield();
+					sink_reference res = eval(i_callable);
+
+					while (m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+					{
+						eval(i_sink,res);
+					}
+				}
+				catch(...)
+				{
+					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 				}
 
-				if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
-				{
-					eval(i_sink,res);
-				}
 			});
 
 			return make_result<start_result>(ExecutorState::Executing);
@@ -132,16 +155,22 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 		{
 			m_thread.start([=]()
 			{
-				sink_reference res = eval(i_callable);
-
-				while (m_state.get() == ExecutorState::Cancelling)
+				try
 				{
-					std::this_thread::yield();
+					sink_reference res = eval(i_callable);
+
+					while (m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+					{
+						eval(i_sink,res);
+					}
 				}
-
-				if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+				catch(...)
 				{
-					eval(i_sink,res);
+					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 				}
 			});
 

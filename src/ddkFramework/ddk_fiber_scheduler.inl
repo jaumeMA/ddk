@@ -44,7 +44,7 @@ typename fiber_scheduler<Comparator>::register_fiber_result fiber_scheduler<Comp
 
 	if(itFiber == m_fibers.end())
 	{
-		i_fiber.m_impl->set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+		i_fiber.m_impl->set_executor(this->ref_from_this());
 
 		std::pair<fiber_container::const_iterator,bool> insertRes = m_fibers.insert(std::make_pair(i_fiber.get_id(),i_fiber.m_impl.get()));
 

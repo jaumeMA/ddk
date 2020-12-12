@@ -28,24 +28,14 @@ void promise<T>::set_value(sink_type i_value)
 	m_sharedState->set_value(i_value);
 }
 template<typename T>
+void promise<T>::set_exception(const async_exception& i_exception)
+{
+	m_sharedState->set_exception(i_exception);
+}
+template<typename T>
 future<T> promise<T>::get_future() const
 {
 	return m_sharedState;
-}
-template<typename T>
-void promise<T>::attach(async_cancellable_shared_ref i_executor)
-{
-	m_sharedState->attach(i_executor);
-}
-template<typename T>
-bool promise<T>::is_attached() const
-{
-	return m_sharedState->is_attached();
-}
-template<typename T>
-void promise<T>::detach()
-{
-	m_sharedState->detach();
 }
 template<typename T>
 void promise<T>::wait() const

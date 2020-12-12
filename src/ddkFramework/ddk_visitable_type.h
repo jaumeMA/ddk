@@ -162,7 +162,7 @@ struct visitable_type : protected agnostic_visitable_type<typename Traits::type_
 
 		return true;
 	}
-	static const TypeInfo& s_type_info()
+	static inline const TypeInfo& s_type_info()
 	{
 		static const TypeInfo res = rtti<final_type>();
 
@@ -188,7 +188,7 @@ struct static_visitable_type : protected agnostic_static_visitable_type<typename
 
 		return true;
 	}
-	static const TypeInfo& s_type_info()
+	static inline const TypeInfo& s_type_info()
 	{
 		static const TypeInfo res = rtti<final_type>();
 

@@ -143,7 +143,7 @@ public:
 	}
 	bool removeStrongReference()
 	{
-		DDK_ASSERT(m_hasStrongReferences == true, "Unique reference already incremented");
+		DDK_ASSERT(m_hasStrongReferences == true, "Trying to decrement empty reference counter");
 
 		m_hasStrongReferences = false;
 

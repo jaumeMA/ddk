@@ -5,49 +5,94 @@ namespace ddk
 template<typename Return>
 shared_reference_wrapper<async_executor<Return>> make_async_executor(const function<Return()>& i_function)
 {
-	async_executor<Return>* newAsyncExecutor = new async_executor<Return>(i_function);
-
-	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&newAsyncExecutor->m_refCounter,ReferenceAllocationType::Embedded));
+	return make_shared_reference<async_executor<Return>>(i_function);
 }
 
 template<typename Return>
 async_executor<Return>::async_executor(const function<Return()>& i_function)
-: m_executor(make_executor<detail::deferred_executor<Return>>())
-, m_function(i_function)
+: m_function(make_function([i_function, self = this->unsafe_ref_from_this()]() mutable
+{
+	try
+	{
+		return eval(i_function);
+	}
+	catch(const async_exception& i_excp)
+	{
+		self->set_exception(i_excp);
+
+		throw;
+	}
+	catch(const std::exception& i_excp)
+	{
+		self->set_exception(async_exception{ i_excp.what() });
+
+		throw;
+	}
+	catch(...)
+	{
+		self->set_exception(async_exception{ "Unkwon exception" });
+
+		throw;
+	}
+}))
+, m_executor(make_executor<detail::deferred_executor<Return>>())
 {
 }
 template<typename Return>
 async_executor<Return>::async_executor(async_executor&& other)
-: m_function(std::move(other.m_function))
+: m_function(make_function([otherFunction = std::move(other.m_function),self = this->unsafe_ref_from_this()]() mutable
+{
+	try
+	{
+		return eval(otherFunction);
+	}
+	catch(const async_exception& i_excp)
+	{
+		self->set_exception(i_excp);
+
+		throw;
+	}
+	catch(const std::exception& i_excp)
+	{
+		self->set_exception(async_exception{ i_excp.what() });
+
+		throw;
+	}
+	catch(...)
+	{
+		self->set_exception(async_exception{ "Unkwon exception" });
+
+		throw;
+	}
+}))
 , m_executor(std::move(other.m_executor))
 , m_promise(std::move(other.m_promise))
 {
 }
 template<typename Return>
-async_executor<Return>::~async_executor()
-{
-	//if not executed, excute and wait for its result
-	if(notify())
-	{
-        m_promise.wait();
-	}
-}
-template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(thread i_thread)
+future<Return> async_executor<Return>::attach(thread i_thread)
 {
 	m_executor = make_executor<detail::thread_executor<Return>>(std::move(i_thread));
 
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
+	start_result execRes = execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return as_future();
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(fiber i_fiber)
+future<Return> async_executor<Return>::attach(fiber i_fiber)
 {
 	m_executor = make_executor<detail::fiber_executor<Return>>(std::move(i_fiber));
 
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
+	start_result execRes = execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return as_future();
 }
 template<typename Return>
-shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
+future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
 	//at some point put a composed callable here
 	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
@@ -57,10 +102,14 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 	m_promise.detach();
 	m_executor.clear();
 
-	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&(newAsyncExecutor->m_refCounter),ReferenceAllocationType::Embedded));
+	start_result execRes = newAsyncExecutor->execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return newAsyncExecutor->as_future();
 }
 template<typename Return>
-shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
+future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 {
 	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
@@ -69,28 +118,36 @@ shared_reference_wrapper<async_executor<detail::void_t>> async_executor<Return>:
 	m_promise.detach();
 	m_executor.clear();
 
-	return as_shared_reference(newAsyncExecutor,tagged_pointer<shared_reference_counter>(&(newAsyncExecutor->m_refCounter),ReferenceAllocationType::Embedded));
+	start_result execRes = newAsyncExecutor->execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return newAsyncExecutor->as_future();
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::attach(attachable<Return> i_attachable)
+future<Return> async_executor<Return>::attach(attachable<Return> i_attachable)
 {
 	m_executor = std::move(i_attachable.m_executorImpl);
 
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
+	start_result execRes = execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return as_future();
 }
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::store(promise<Return>& i_promise)
 {
 	m_promise = i_promise;
 
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));;
+	return this->ref_from_this();
 }
 template<typename Return>
 typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	m_cancelFunc = i_cancelFunc;
 
-	return as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded));
+	return this->ref_from_this();
 }
 template<typename Return>
 typename async_executor<Return>::start_result async_executor<Return>::execute()
@@ -100,13 +157,13 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
         throw async_exception{"Trying to execute empty executor"};
     }
 
-	const nested_start_result execRes = m_executor->execute(ddk::make_function(this,&async_executor<Return>::set_value),m_function);
+	const nested_start_result execRes = m_executor->execute(make_function(this,&async_executor<Return>::set_value),std::move(m_function));
 
 	if(execRes == success)
 	{
 		const ExecutorState currState = execRes.get();
 
-		if(currState == ExecutorState::Executing)
+		if(currState != ExecutorState::Idle)
 		{
 			return success;
 		}
@@ -123,20 +180,19 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 template<typename Return>
 void async_executor<Return>::set_value(sink_reference i_value)
 {
-	m_executor = nullptr;
-
 	m_promise.set_value(i_value);
+}
+template<typename Return>
+void async_executor<Return>::set_exception(const async_exception& i_excp)
+{
+	m_promise.set_exception(i_excp);
 }
 template<typename Return>
 future<Return> async_executor<Return>::as_future()
 {
-	m_promise.attach(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)));
+	m_promise.attach(this->ref_from_this());
 
-	start_result execRes = execute();
-
-	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone, "Trying to execute an alerady executed async executor");
-
-	return m_promise.get_future();
+	return m_promise.transfer_ownership();
 }
 template<typename Return>
 typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
@@ -161,11 +217,9 @@ bool async_executor<Return>::notify()
 	//if not executed, excute
 	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
 	{
-		if(execute() != success)
-		{
-			// if still not executed, force an execution from this very context
-			set_value(eval(m_function));
-		}
+		start_result execRes = execute();
+
+		DDK_ASSERT(execRes == success,"Error while trying to execute async executor");
 
 		return true;
 	}

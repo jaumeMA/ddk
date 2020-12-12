@@ -10,7 +10,8 @@ thread_sheaf_executor::thread_sheaf_executor(thread_sheaf i_threadSheaf)
 : m_threadSheaf(std::move(i_threadSheaf))
 , m_pendingThreads(m_threadSheaf.size())
 , m_state(ExecutorState::Idle)
-{}
+{
+}
 thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
@@ -23,7 +24,14 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 		{
 			m_threadSheaf.start([this,i_sink,i_callable]()
 			{
-				eval(i_callable);
+				try
+				{
+					eval(i_callable);
+				}
+				catch(...)
+				{
+					m_failedThreads++;
+				}
 
 				--m_pendingThreads;
 
@@ -36,7 +44,10 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						eval(i_sink,_void);
+						if(m_failedThreads == 0)
+						{
+							eval(i_sink,_void);
+						}
 					}
 				}
 			});
@@ -104,14 +115,17 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 				{
 					eval(i_callable);
 				}
-				catch(const suspend_exception&)
+				catch(...)
 				{
+					m_failedFibers++;
 				}
 
 				--m_pendingFibers;
 
 				if(m_pendingFibers == 0)
 				{
+					m_fiberSheaf.clear();
+
 					while (m_state.get() == ExecutorState::Cancelling)
 					{
 						std::this_thread::yield();
@@ -119,7 +133,10 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						eval(i_sink,_void);
+						if(m_failedFibers == 0)
+						{
+							eval(i_sink,_void);
+						}
 					}
 				}
 			});

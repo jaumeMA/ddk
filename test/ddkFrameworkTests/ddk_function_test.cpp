@@ -55,6 +55,7 @@ TEST(DDKFunctionTest,funcMakeConstruction)
 	ddk::function<size_t(char,const std::string&)> res5 = ddk::make_function(&thisFoo,&Foo::member_func,ddk::system_allocator{});
 	ddk::function<bool(const std::string&)> res6 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },ddk::system_allocator{});
 }
+
 TEST(DDKFunctionTest,funcMakeSpecialization)
 {
 	Foo thisFoo;

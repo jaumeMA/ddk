@@ -144,7 +144,7 @@ public:
 	result& operator=(result&& other);
 	Error error() const;
 	T get() const;
-	T extract();
+	T extract() &&;
 	explicit operator bool() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;

@@ -332,6 +332,7 @@ TEST(DDKCoIterableTest,myIterableForwardIteration)
 	int a = 0;
 	for(; itRes1 != itEnd; ++itRes1)
 	{
+		//printf("curr value %d\n",*itRes1);
 	}
 
 	int b = a;

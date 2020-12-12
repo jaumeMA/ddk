@@ -16,7 +16,7 @@ class DDKUniquePtrtTest : public Test
 
 TEST(DDKLentPtrTest,defaultConstruction)
 {
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	EXPECT_EQ(foo==nullptr,true);
 }

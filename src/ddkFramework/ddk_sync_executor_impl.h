@@ -53,7 +53,6 @@ class fiber_sheaf_executor : public cancellable_executor_interface<detail::void_
 {
 public:
 	fiber_sheaf_executor(fiber_sheaf i_fiberSheaf);
-	~fiber_sheaf_executor() = default;
 
 private:
 	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
@@ -65,7 +64,8 @@ private:
 	ExecutorState get_state() const override;
 
 	mutable fiber_sheaf m_fiberSheaf;
-	size_t m_pendingFibers;
+	size_t m_pendingFibers = 0;
+	size_t m_failedFibers = 0;
 	atomic32<ExecutorState::underlying_type> m_state;
 };
 
@@ -76,7 +76,6 @@ template<typename Return>
 class thread_executor : public cancellable_executor_interface<Return()>
 {
 public:
-	thread_executor() = default;
 	thread_executor(thread i_thread);
 
 private:
@@ -109,7 +108,8 @@ private:
 	ExecutorState get_state() const override;
 
 	mutable thread_sheaf m_threadSheaf;
-	size_t m_pendingThreads;
+	size_t m_pendingThreads = 0;
+	size_t m_failedThreads = 0;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 

@@ -9,6 +9,7 @@ namespace detail
 
 template<typename T>
 private_async_state<T>::private_async_state()
+: m_arena(none)
 {
 	pthread_mutexattr_t mutexAttr;
 
@@ -23,8 +24,6 @@ private_async_state<T>::~private_async_state()
 {
 	pthread_cond_destroy(&m_condVar);
 	pthread_mutex_destroy(&m_mutex);
-
-	m_arena.template destroy<T>();
 }
 template<typename T>
 typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
@@ -49,42 +48,26 @@ void private_async_state<T>::detach()
 	m_asyncExecutor = nullptr;
 }
 template<typename T>
-template<typename TT>
-void private_async_state<T>::link(shared_reference_wrapper<private_async_state<TT>> other)
+void private_async_state<T>::set_value(sink_type i_value)
 {
 	pthread_mutex_lock(&m_mutex);
 
-	if(m_arena.empty())
-	{
-		m_nextChainedAsyncOp = other;
-
-		// just in case
-		m_asyncExecutor->notify();
-	}
-	else
-	{
-		other->m_asyncExecutor->notify();
-	}
+	m_arena = std::forward<sink_type>(i_value);
 
 	pthread_cond_broadcast(&m_condVar);
 
 	pthread_mutex_unlock(&m_mutex);
 }
 template<typename T>
-void private_async_state<T>::set_value(sink_type i_value)
+void private_async_state<T>::set_exception(const async_exception& i_exception)
 {
 	pthread_mutex_lock(&m_mutex);
 
-	m_arena.template set_value<T>(std::forward<sink_type>(i_value));
+	m_arena = i_exception;
 
 	pthread_cond_broadcast(&m_condVar);
 
 	pthread_mutex_unlock(&m_mutex);
-
-	if(shared_pointer_wrapper<async_state_base> nextChain = std::move(m_nextChainedAsyncOp))
-	{
-		nextChain->notify();
-	}
 }
 template<typename T>
 void private_async_state<T>::signal() const
@@ -100,85 +83,108 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 {
 	pthread_mutex_lock(&m_mutex);
 
-	if(m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
-		if(m_asyncExecutor)
-		{
-			m_asyncExecutor->notify();
-		}
-
-		pthread_cond_wait(&m_condVar,&m_mutex);
+		notify();
 	}
 
-	if (m_arena.empty())
+	if (m_arena.template is<detail::none_t>())
 	{
+		pthread_cond_wait(&m_condVar,&m_mutex);
+
+		pthread_mutex_unlock(&m_mutex);
+
 		throw async_exception("Accessing empty async shared state");
 	}
+	else if(m_arena.template is<T>())
+	{
+		const_reference value = m_arena.template get<T>();
 
-	const_reference value = m_arena.template get<T>();
+		pthread_mutex_unlock(&m_mutex);
 
-	pthread_mutex_unlock(&m_mutex);
+		return value;
+	}
+	else
+	{
+		pthread_mutex_unlock(&m_mutex);
 
-	return value;
+		throw m_arena.template get<async_exception>();
+	}
 }
 template<typename T>
 typename private_async_state<T>::reference private_async_state<T>::get_value()
 {
 	pthread_mutex_lock(&m_mutex);
 
-	if(m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
-		if(m_asyncExecutor)
-		{
-			m_asyncExecutor->notify();
-		}
-
-		pthread_cond_wait(&m_condVar,&m_mutex);
+		notify();
 	}
 
-	if (m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
+		pthread_cond_wait(&m_condVar,&m_mutex);
+
+		pthread_mutex_unlock(&m_mutex);
+
 		throw async_exception("Accessing empty async shared state");
 	}
+	else if(m_arena.template is<T>())
+	{
+		const_reference value = m_arena.template get<T>();
 
-	reference value = m_arena.template get<T>();
+		pthread_mutex_unlock(&m_mutex);
 
-	pthread_mutex_unlock(&m_mutex);
+		return value;
+	}
+	else
+	{
+		pthread_mutex_unlock(&m_mutex);
 
-	return value;
+		throw m_arena.template get<async_exception>();
+	}
 }
 template<typename T>
 embedded_type<T> private_async_state<T>::extract_value()
 {
 	pthread_mutex_lock(&m_mutex);
 
-	if(m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
-		if(m_asyncExecutor)
-		{
-			m_asyncExecutor->notify();
-		}
-
-		pthread_cond_wait(&m_condVar,&m_mutex);
+		notify();
 	}
 
-	if (m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
+		pthread_cond_wait(&m_condVar,&m_mutex);
+
+		pthread_mutex_unlock(&m_mutex);
+
 		throw async_exception("Accessing empty async shared state");
 	}
+	else if(m_arena.template is<T>())
+	{
+		const_reference value = std::move(m_arena).template extract<T>();
 
-	embedded_type<T> value = m_arena.template extract<T>();
+		m_arena = none;
 
-	pthread_mutex_unlock(&m_mutex);
+		pthread_mutex_unlock(&m_mutex);
 
-	return std::move(value);
+		return value;
+	}
+	else
+	{
+		pthread_mutex_unlock(&m_mutex);
+
+		throw m_arena.template get<async_exception>();
+	}
 }
 template<typename T>
 void private_async_state<T>::wait() const
 {
 	pthread_mutex_lock(&m_mutex);
 
-	if(m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
 		pthread_cond_wait(&m_condVar,&m_mutex);
 	}
@@ -190,7 +196,7 @@ void private_async_state<T>::wait_for(unsigned int i_period) const
 {
 	pthread_mutex_lock(&m_mutex);
 
-	if(m_arena.empty())
+	if(m_arena.template is<detail::none_t>())
 	{
 		const struct timespec time_to_wait = {time(NULL) + (int) (i_period/1000), 0};
 
@@ -204,7 +210,7 @@ bool private_async_state<T>::ready() const
 {
 	pthread_mutex_lock(&m_mutex);
 
-	const bool res = (m_arena.empty() == false);
+	const bool res = (m_arena.template is<detail::none_t>() == false);
 
 	pthread_mutex_unlock(&m_mutex);
 
@@ -216,6 +222,8 @@ void private_async_state<T>::notify()
 	if(m_asyncExecutor)
 	{
 		m_asyncExecutor->notify();
+
+		m_asyncExecutor = nullptr;
 	}
 }
 

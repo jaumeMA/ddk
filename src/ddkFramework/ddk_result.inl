@@ -195,11 +195,11 @@ T result<T,Error>::get() const
     return m_nestedRes.template get<T>();
 }
 template<typename T, typename Error>
-T result<T,Error>::extract()
+T result<T,Error>::extract() &&
 {
     CHECK_RESULT
 
-    return m_nestedRes.template extract<T>();
+    return std::move(m_nestedRes).template extract<T>();
 }
 template<typename T, typename Error>
 result<T,Error>::operator bool() const

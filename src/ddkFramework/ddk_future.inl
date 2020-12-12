@@ -28,6 +28,14 @@ future<T>::future(shared_reference_wrapper<TT> i_executor,...)
 {
 }
 template<typename T>
+future<T>::~future()
+{
+	if(m_sharedState)
+	{
+		m_sharedState->notify();
+	}
+}
+template<typename T>
 bool future<T>::valid() const
 {
 	if (m_sharedState)
@@ -102,7 +110,7 @@ template<typename T>
 template<typename TT>
 future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) &&
 {
-	if(detail::private_async_state_shared_ptr<T> thisSharedState = m_sharedState)
+	if(m_sharedState)
 	{
 		future<TT> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
@@ -116,8 +124,6 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 			}
 		}));
 
-		thisSharedState->link(ddk::promote_to_ref(res.m_sharedState));
-
 		return std::move(res);
 	}
 	else
@@ -127,9 +133,9 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 }
 template<typename T>
 template<typename TT, typename TTT>
-future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&
+future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&
 {
-	if(detail::private_async_state_shared_ptr<T> thisSharedState = m_sharedState)
+	if(m_sharedState)
 	{
 		future<TT> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
@@ -143,7 +149,41 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation, 
 			}
 		})) -> attach(std::forward<TTT>(i_execContext));
 
-		thisSharedState->link(ddk::promote_to_ref(res.m_sharedState));
+		return std::move(res);
+	}
+	else
+	{
+		throw future_exception("Accessing empty future");
+	}
+}
+template<typename T>
+future<T> future<T>::on_error(const function<void(const async_exception&)>& i_onError) &&
+{
+	if(m_sharedState)
+	{
+		future<T> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_onError]() mutable
+		{
+			try
+			{
+				if constexpr(std::is_same<T,void>::value)
+				{
+					acquiredFuture.extract_value();
+				}
+				else
+				{
+					return acquiredFuture.extract_value();
+				}
+			}
+			catch(const async_exception& i_excp)
+			{
+				if(i_excp.acquired() == false)
+				{
+					eval(i_onError,i_excp);
+				}
+
+				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
+			}
+		}));
 
 		return std::move(res);
 	}

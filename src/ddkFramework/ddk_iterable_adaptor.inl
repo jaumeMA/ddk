@@ -17,7 +17,7 @@ iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable, Act
 	if(iterableSize > 0)
 	{
 		const int targetShift = i_initialAction.shifting();
-		const int shifting = (targetShift < 0) ? iterableSize + targetShift : targetShift;
+		const int shifting = (targetShift < 0) ? static_cast<int>(iterableSize) + targetShift : targetShift;
 
 		m_currIterator = std::next(std::begin(m_iterable),shifting);
 	}
@@ -68,7 +68,7 @@ iterable_adaptor_base<const Iterable>::iterable_adaptor_base(const Iterable& i_i
 	if(iterableSize > 0)
 	{
 		const int targetShift = i_initialAction.shifting();
-		const int shifting = (targetShift < 0) ? iterableSize + targetShift : targetShift;
+		const int shifting = (targetShift < 0) ? static_cast<int>(iterableSize) + targetShift : targetShift;
 
 		m_currIterator = std::next(std::begin(m_iterable),shifting);
 	}

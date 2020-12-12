@@ -47,12 +47,12 @@ class variant_visitor_invoker
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(visitor& _visitor, variant_impl<Types...>&& var)
 	{
-		return _visitor.template visit<TypePos>(var.template extract<TypePos>());
+		return _visitor.template visit<TypePos>(std::move(var).template extract<TypePos>());
 	}
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
 	{
-		return _visitor.template visit<TypePos>(var.template extract<TypePos>());
+		return _visitor.template visit<TypePos>(std::move(var).template extract<TypePos>());
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(visitor& _visitor, const variant_impl<Types...>& var)

@@ -44,6 +44,10 @@ optional<fiber> fiber_sheaf::extract()
 
 	return none;
 }
+void fiber_sheaf::clear()
+{
+	m_fiberCtr.clear();
+}
 bool fiber_sheaf::empty() const
 {
 	return m_fiberCtr.empty();

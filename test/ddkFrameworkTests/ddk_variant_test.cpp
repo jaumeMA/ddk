@@ -194,7 +194,7 @@ TEST(DDKVariantTest,extract)
 
 	EXPECT_EQ(foo.is<nonCopyAssignableType>(),true);
 
-	nonCopyAssignableType nestedFooRef = foo.extract<nonCopyAssignableType>();
+	nonCopyAssignableType nestedFooRef = std::move(foo).extract<nonCopyAssignableType>();
 
 	EXPECT_EQ(nestedFooRef,0xFF);
 }

@@ -23,6 +23,7 @@ public:
 	void stop();
 	void insert(fiber i_fiber);
 	optional<fiber> extract();
+	void clear();
 	bool empty() const;
 	size_t size() const;
 

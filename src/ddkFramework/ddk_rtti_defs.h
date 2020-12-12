@@ -30,17 +30,20 @@ public:
 struct TypeInfo
 {
 public:
-	TypeInfo();
+	static const size_t s_invalid = -1;
+
+	TypeInfo() = default;
 	TypeInfo(const std::string& i_name);
 	TypeInfo(const char* i_name);
 	TypeInfo(size_t i_nameHash);
 	std::string get_name() const;
 	size_t get_name_hash() const;
 	bool operator==(const TypeInfo& other) const;
+	bool empty() const;
 
 private:
 	std::string m_name;
-	size_t m_nameHash;
+	size_t m_nameHash = s_invalid;
 };
 
 }

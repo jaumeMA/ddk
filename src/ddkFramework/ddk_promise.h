@@ -2,7 +2,6 @@
 
 #include "ddk_future.h"
 #include "ddk_async_shared_state.h"
-#include "ddk_async_executor_interface.h"
 
 namespace ddk
 {
@@ -10,8 +9,8 @@ namespace ddk
 template<typename T>
 class promise
 {
-	template<typename Return>
-	friend class async_executor;
+	template<typename>
+	friend class executor_promise;
 
 public:
 	typedef typename detail::private_async_state<T>::sink_type sink_type;
@@ -23,10 +22,8 @@ public:
 	promise(const promise<T>&);
 	promise& operator=(const promise<T>& other);
 	void set_value(sink_type i_value);
+	void set_exception(const async_exception& i_exception);
 	future<T> get_future() const;
-	void attach(async_cancellable_shared_ref i_executor);
-	void detach();
-	bool is_attached() const;
 
 protected:
 	void signal() const;
@@ -34,8 +31,7 @@ protected:
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;
 
-	// although it could really be a ref, by convinience for future construction leave it like ptr
-	detail::private_async_state_shared_ptr<T> m_sharedState;
+	detail::private_async_state_shared_ref<T> m_sharedState;
 };
 
 template<>

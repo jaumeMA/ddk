@@ -215,8 +215,6 @@ public:
 	template<typename TT>
 	lent_pointer_wrapper& operator=(const lent_pointer_wrapper<TT>& other)
 	{
-		static_assert(std::is_base_of<TT,T>::value, "You shall provide inherited classes");
-
 		if (m_data != static_cast<const T*>(other.m_data))
 		{
 			UNREGISTER_STACK_TRACE(THIS_OBJECT)
@@ -241,8 +239,6 @@ public:
 	template<typename TT>
 	lent_pointer_wrapper& operator=(lent_pointer_wrapper<TT>&& other)
 	{
-		static_assert(std::is_base_of<T,TT>::value, "You shall provide inherited classes");
-
 		if (m_data != static_cast<const T*>(other.m_data))
 		{
 			UNREGISTER_STACK_TRACE(THIS_OBJECT)
@@ -253,9 +249,9 @@ public:
 			}
 
 			m_data = other.m_data;
-			other.m_data = NULL;
+			other.m_data = nullptr;
 			m_refCounter = other.m_refCounter;
-			other.m_refCounter = NULL;
+			other.m_refCounter = nullptr;
 
 			MOVE_STACCK_TRACE(other,THIS_OBJECT)
 		}

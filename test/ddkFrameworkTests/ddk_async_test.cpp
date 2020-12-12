@@ -35,7 +35,7 @@ void light_func()
 		}
 		else
 		{
-			ddk::suspend();
+			break;
 		}
 	}
 }
@@ -50,10 +50,6 @@ void _recursive_func(int i)
 
 		_recursive_func(i - 1);
 	}
-    else
-    {
-        ddk::suspend();
-    }
 }
 void recursive_func()
 {
@@ -78,7 +74,7 @@ void heavy_func()
 		}
 		else
 		{
-			ddk::suspend();
+			break;
 		}
 
 		++s_counter;
@@ -93,7 +89,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 
 		if(acquireRes == ddk::success)
 		{
-			ddk::fiber_sheaf fiberSheaf = acquireRes.extract();
+			ddk::fiber_sheaf fiberSheaf = std::move(acquireRes).extract();
 			ddk::future<void> provaFuture = ddk::async(light_func)->attach(std::move(fiberSheaf));
 
 			provaFuture.wait();
@@ -108,8 +104,8 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
 	if(acquireRes == ddk::success)
 	{
 		ddk::promise<void> prom;
-		ddk::fiber_sheaf fiberSheaf = acquireRes.extract();
-		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf)) -> store(prom);
+		ddk::fiber_sheaf fiberSheaf = std::move(acquireRes).extract();
+		ddk::future<void> provaFuture = ddk::async(recursive_func) -> store(prom)-> attach(std::move(fiberSheaf));
 
 		const ddk::future<void>::cancel_result cancelRes = provaFuture.cancel();
 
@@ -126,7 +122,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 
 	if(acquireRes == ddk::success)
 	{
-		ddk::fiber_sheaf fiberSheaf = acquireRes.extract();
+		ddk::fiber_sheaf fiberSheaf = std::move(acquireRes).extract();
 		ddk::future<void> provaFuture = ddk::async(heavy_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();
@@ -136,23 +132,49 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 }
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 {
-	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
-	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
+	ddk::future<int> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 0; }));
 
-	ddk::future<int> myFuture = ddk::async(ddk::make_function([](){ return 0; }));
-
-	ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
-	ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));
+	//ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
+	//ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));
 
 	ddk::thread myThread;
 	ddk::future<char> myOtherFuture = std::move(myFuture)
-											.then(ddk::make_function([](const int& i_value){ return std::string("hola"); }))
-											.then(ddk::make_function([](const std::string& i_value) { return i_value[0]; }),std::move(myThread));
+	.then(ddk::make_function([](const int& i_value)
+	{ 
+		printf("executada la primera part: %d\n", i_value);
 
-	char res = myOtherFuture.extract_value();
+		return std::string("hola");
+	}))
+	.on_error(ddk::make_function([](const ddk::async_exception&)
+	{ 
+		printf("ep, exception\n"); 
+	}))
+	.then_on(ddk::make_function([](const std::string& i_value) 
+	{
+		printf("executada la segon part: %s\n",i_value.c_str());
+
+		throw std::exception{ "hola nens, aixo es una excepcio" };
+												
+		return i_value[0]; 
+	}),std::move(myThread))
+	.on_error(ddk::make_function([](const ddk::async_exception&) 
+	{ 
+		printf("ep, segona exception\n"); 
+	}));
+
+	try
+	{
+		char res = myOtherFuture.extract_value();
+	}
+	catch(...)
+	{
+	}
+
+	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
+	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
 	if(acquireRes == ddk::success)
 	{
-		ddk::fiber_sheaf fiberSheaf = acquireRes.extract();
+		ddk::fiber_sheaf fiberSheaf = std::move(acquireRes).extract();
 		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();

@@ -51,7 +51,7 @@ public:
     template<typename TType>
 	inline typename embedded_type<TType>::ref_type get();
     template<typename TType>
-	inline TType extract();
+	inline TType extract() &&;
     template<typename TType>
 	inline bool is() const;
 	template<typename TType>
@@ -65,7 +65,7 @@ public:
     template<size_t Pos>
 	inline typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type get();
     template<size_t Pos>
-	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract();
+	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract() &&;
     template<size_t Pos>
     inline bool is() const;
     inline char which() const;

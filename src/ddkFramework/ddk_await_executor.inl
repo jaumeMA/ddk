@@ -9,7 +9,7 @@ await_executor<Return>::await_executor()
 : m_state(ExecutorState::Idle)
 , m_callee(*this)
 {
-	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+	m_callee.set_executor(this->ref_from_this());
 }
 template<typename Return>
 await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable)
@@ -17,7 +17,7 @@ await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable
 , m_state(ExecutorState::Executing)
 ,m_callee(*this)
 {
-	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+	m_callee.set_executor(this->ref_from_this());
 
 	m_callee.start_from(m_caller,m_callable);
 }
@@ -27,7 +27,7 @@ await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable
 , m_callee(std::move(i_stackAlloc),*this)
 , m_state(ExecutorState::Executing)
 {
-	m_callee.set_executor(this->template ref_from_this<detail::scheduler_interface>(*this));
+	m_callee.set_executor(this->ref_from_this());
 
 	m_callee.start_from(m_caller,m_callable);
 }

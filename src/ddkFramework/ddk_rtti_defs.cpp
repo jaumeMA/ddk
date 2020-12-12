@@ -4,10 +4,6 @@
 namespace ddk
 {
 
-TypeInfo::TypeInfo()
-: m_nameHash(0)
-{
-}
 TypeInfo::TypeInfo(const char* i_name)
 : m_name(i_name)
 {
@@ -33,6 +29,10 @@ size_t TypeInfo::get_name_hash() const
 bool TypeInfo::operator==(const TypeInfo& other) const
 {
 	return m_nameHash == other.m_nameHash;
+}
+bool TypeInfo::empty() const
+{
+	return m_nameHash == s_invalid;
 }
 
 }

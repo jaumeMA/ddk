@@ -10,21 +10,21 @@
 PUBLISH_TYPE_INFO(_Type_Name) \
 typedef _Type_Name type_interface; \
 typedef void visitable_type_base_tag; \
-virtual ddk::visitable_type_info get_visitable_type_info() const = 0; \
 template<typename Visitor> \
 friend inline bool __may_visit(const type_interface& i_value, const Visitor*) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    return i_value.get_visitable_type_info()->first == ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
+	static const TypeInfo s_catInfo = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
+	\
+	return s_catInfo == ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
 } \
 template<typename Visitor> \
-friend inline ddk::any_value __visit(const type_interface& i_value, const Visitor& i_visitor) \
+friend inline ddk::any_value __visit(const TypeInfo& i_typeInfo, const type_interface& i_value, const Visitor& i_visitor) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    const ddk::TypeInfo typeInfo = i_value.get_visitable_type_info()->second; \
     const visitor_interface* typedVisitor = &i_visitor; \
     \
-    if (typename ddk::agnostic_visitable_type<type_interface,visitor_interface>::const_visitor_func funcPtr = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_const_visitor_funcs()[typeInfo.get_name_hash()]) \
+    if (typename ddk::agnostic_visitable_type<type_interface,visitor_interface>::const_visitor_func funcPtr = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_const_visitor_funcs()[i_typeInfo.get_name_hash()]) \
     { \
         return (*funcPtr)(&i_value, *typedVisitor); \
     } \
@@ -36,13 +36,12 @@ friend inline ddk::any_value __visit(const type_interface& i_value, const Visito
     } \
 } \
 template<typename Visitor> \
-friend inline ddk::any_value __visit(const type_interface& i_value, Visitor& i_visitor) \
+friend inline ddk::any_value __visit(const TypeInfo& i_typeInfo, const type_interface& i_value, Visitor& i_visitor) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-    const ddk::TypeInfo typeInfo = i_value.get_visitable_type_info()->second; \
     visitor_interface* typedVisitor = &i_visitor; \
     \
-    if (typename ddk::agnostic_visitable_type<type_interface,visitor_interface>::visitor_func funcPtr = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_visitor_funcs()[typeInfo.get_name_hash()]) \
+    if (typename ddk::agnostic_visitable_type<type_interface,visitor_interface>::visitor_func funcPtr = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_visitor_funcs()[i_typeInfo.get_name_hash()]) \
     { \
         return (*funcPtr)(&i_value, *typedVisitor); \
     } \

@@ -21,7 +21,7 @@ public:
 };
 
 template<typename T>
-class typed_system_allocator : protected system_allocator
+class typed_system_allocator : public system_allocator
 {
 public:
     typedef typed_system_allocator allocator;

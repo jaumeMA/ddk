@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_reference_wrapper_deleter.h"
+#include "ddk_rtti.h"
 #include <utility>
 #include <stddef.h>
 
@@ -24,6 +25,8 @@ public:
 
 class DefaultType
 {
+	PUBLISH_TYPE_INFO_BASE(DefaultType)
+
 public:
 	DefaultType(int i_value = 0);
 	virtual ~DefaultType() = default;
@@ -40,6 +43,8 @@ private:
 };
 class DerivedDefaultType : public DefaultType
 {
+	PUBLISH_TYPE_INFO(DerivedDefaultType)
+
 public:
 	using DefaultType::DefaultType;
 	using DefaultType::operator==;

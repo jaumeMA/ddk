@@ -6,6 +6,7 @@
 #include "ddk_tagged_pointer.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_pointer_wrapper.h"
+#include "ddk_shared_from_this.h"
 
 namespace ddk
 {
@@ -37,7 +38,7 @@ template<typename TTypes, typename Types>
 using unresolved_tuple = typename mpl::make_tuple<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 
 template<typename Return, typename ... Types>
-struct function_impl_base<Return, tuple<Types...>>
+struct function_impl_base<Return, tuple<Types...>> : public share_from_this<function_impl_base<Return,tuple<Types...>>>
 {
     static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
 
@@ -59,7 +60,7 @@ struct function_impl_base<Return, tuple<Types...>>
 
         specialized_impl() = default;
         template<typename ... Args>
-		specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, const tuple<Args...>& i_args);
+		specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args);
 
     private:
 		Return operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const override;
@@ -72,14 +73,14 @@ struct function_impl_base<Return, tuple<Types...>>
     typedef tuple<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> tuple_args;
 
 	function_impl_base() = default;
+	function_impl_base(const function_impl_base&) = delete;
+	function_impl_base(function_impl_base&&) = default;
 	virtual ~function_impl_base() = default;
 
 	template<typename Allocator, typename ... Args>
 	function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
 	virtual Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const = 0;
-
-    mutable shared_reference_counter m_refCounter;
 
 private:
     virtual Return apply(const tuple_args& i_tuple) const = 0;
@@ -99,11 +100,13 @@ public:
 	typedef Return return_type;
 
 	relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
+	relative_function_impl(const relative_function_impl&) = delete;
+	relative_function_impl(relative_function_impl&&) = default;
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
 
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
     Return apply(const tuple_args& i_tuple) const final;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
@@ -126,9 +129,9 @@ public:
 	free_function_impl(FuncPointerType i_funcPointer);
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
 
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
     Return apply(const tuple_args& i_tuple) const final;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
@@ -150,9 +153,9 @@ public:
 	functor_impl(T&& i_functor);
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
 
 private:
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
     Return apply(const tuple_args& i_tuple) const final;
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;

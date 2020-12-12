@@ -8,6 +8,8 @@
 namespace ddk
 {
 
+const size_t k_maxNumberOfPivotChangeRetries = 10;
+
 template<typename T, typename Allocator = typed_system_allocator<lock_free_stack_node<T>>>
 struct lock_free_stack
 {
@@ -77,7 +79,9 @@ public:
 private:
 	void _push(lock_free_stack_node<T>* i_newNode)
 	{
+		static const int s_sleepTime = 5;
 		lock_free_stack_node<T>* lastNode = nullptr;
+		size_t numOfRetries = 0;
 
 		do
 		{
@@ -88,6 +92,12 @@ private:
 		while(lastNode->is_divider() == false)
 		{
 			std::this_thread::yield();
+
+			if(++numOfRetries > k_maxNumberOfPivotChangeRetries)
+			{
+				numOfRetries = 0;
+				sleep(s_sleepTime);
+			}
 		}
 
 		lastNode->set_value(i_newNode->extract_value());

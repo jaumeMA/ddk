@@ -60,7 +60,9 @@ public:
     typename embedded_type<Type>::cref_type get() const;
     template<size_t IIndex>
     typename embedded_type<Type>::ref_type get();
-    template<size_t IIndex, typename Arg>
+	template<size_t IIndex>
+	typename embedded_type<Type>::rref_type extract() &&;
+	template<size_t IIndex, typename Arg>
     typename embedded_type<Type>::ref_type set(Arg&& i_arg);
     tuple_impl<mpl::sequence<0>,Type>* operator->();
     const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
@@ -96,7 +98,9 @@ public:
     typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::cref_type get() const;
     template<size_t IIndex>
     typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::ref_type get();
-    template<size_t ... IIndexs, typename ... Args>
+	template<size_t IIndex>
+	typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::rref_type extract() &&;
+	template<size_t ... IIndexs, typename ... Args>
     void set(const mpl::sequence<IIndexs...>&, Args&& ... i_args);
     template<size_t IIndex, typename Arg>
     typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::ref_type set(Arg&& i_val);
@@ -130,7 +134,12 @@ private:
     {
         return reinterpret_cast<embedded_type<TType> *>(const_cast<void*>(i_address))->get();
     }
-    template<typename TType>
+	template<typename TType>
+	inline typename embedded_type<TType>::rref_type extract(const void* i_address) &&
+	{
+		return reinterpret_cast<embedded_type<TType> *>(const_cast<void*>(i_address))->extract();
+	}
+	template<typename TType>
     inline typename embedded_type<TType>::pointer_type get_ptr(const void* i_address)
     {
         return reinterpret_cast<embedded_type<TType> *>(const_cast<void*>(i_address))->get_ptr();

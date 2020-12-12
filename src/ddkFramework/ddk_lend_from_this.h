@@ -9,15 +9,15 @@
 namespace ddk
 {
 
-template<typename T, typename TT>
+template<typename T, typename TT = T>
 class lend_from_this
 {
 	typedef TT interface_type;
 
-	template<typename TTT>
-	friend inline lent_reference_wrapper<typename TTT::interface_type> lend(TTT& i_lendable);
-	template<typename TTT>
-	friend inline lent_reference_wrapper<const typename TTT::interface_type> lend(const TTT& i_lendable);
+	template<typename TTT, typename TTTT>
+	friend inline lent_reference_wrapper<TTTT> lend(lend_from_this<TTT,TTTT>&);
+	template<typename TTT,typename TTTT>
+	friend inline lent_reference_wrapper<const TTTT> lend(const lend_from_this<TTT,TTTT>&);
 
 public:
 	lend_from_this()
@@ -45,26 +45,22 @@ public:
 
 protected:
 #ifdef DDK_DEBUG
-	template<typename TTT, typename TTTT>
-	inline ddk::lent_reference_wrapper<TTT> ref_from_this(TTTT& i_lendable)
+	inline ddk::lent_reference_wrapper<TT> ref_from_this()
 	{
-		return ddk::lent_reference_wrapper<TTT>(static_cast<TTT*>(&i_lendable),&m_counter);
+		return ddk::lent_reference_wrapper<TT>(static_cast<T*>(this),&m_counter);
 	}
-	template<typename TTT, typename TTTT>
-	inline ddk::lent_reference_wrapper<const TTT> ref_from_this(const TTTT& i_lendable) const
+	inline ddk::lent_reference_wrapper<const TT> ref_from_this() const
 	{
-		return ddk::lent_reference_wrapper<const TTT>(static_cast<typename std::add_const<TTT>::type*>(&i_lendable),&m_counter);
+		return ddk::lent_reference_wrapper<const TT>(static_cast<typename std::add_const<T>::type*>(this),&m_counter);
 	}
 #else
-	template<typename TTT, typename TTTT>
-	inline ddk::lent_reference_wrapper<TTT> ref_from_this(TTTT& i_lendable)
+	inline ddk::lent_reference_wrapper<TT> ref_from_this()
 	{
-		return ddk::lent_reference_wrapper<TTT>(static_cast<TTT*>(&i_lendable));
+		return ddk::lent_reference_wrapper<TT>(static_cast<T*>(this));
 	}
-	template<typename TTT, typename TTTT>
-	inline ddk::lent_reference_wrapper<const TTT> ref_from_this(const TTTT& i_lendable) const
+	inline ddk::lent_reference_wrapper<const TT> ref_from_this() const
 	{
-		return ddk::lent_reference_wrapper<const TTT>(static_cast<typename std::add_const<TTT>::type*>(&i_lendable));
+		return ddk::lent_reference_wrapper<const TT>(static_cast<typename std::add_const<T>::type*>(this));
 	}
 #endif
 

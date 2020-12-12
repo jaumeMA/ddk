@@ -33,6 +33,7 @@ public:
 	future(detail::private_async_state_shared_ptr<T> i_sharedState);
 	template<typename TT>
 	future(shared_reference_wrapper<TT> i_executor, ...);
+	~future();
 
 	future& operator=(const future&) = delete;
 	bool valid() const;
@@ -44,7 +45,8 @@ public:
 	template<typename TT>
 	future<TT> then(const function<TT(const_reference)>& i_continuation) &&;
 	template<typename TT, typename TTT>
-	future<TT> then(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
+	future<TT> then_on(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
+	future<T> on_error(const function<void(const async_exception&)>& i_onError) &&;
 
 protected:
 	future(const future&);
@@ -64,6 +66,10 @@ public:
 	using future<detail::void_t>::wait;
 	using future<detail::void_t>::wait_for;
 	future() = default;
+	future(const future<detail::void_t>& other)
+	: future<detail::void_t>(other)
+	{
+	}
 
 	void extract_value()
 	{
@@ -82,6 +88,8 @@ public:
 
 private:
 	using future<T>::then;
+	using future<T>::then_on;
+	using future<T>::on_error;
 };
 
 }

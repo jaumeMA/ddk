@@ -368,7 +368,7 @@ typename embedded_type<TType>::ref_type variant_impl<Types...>::get()
 }
 template<typename ... Types>
 template<typename TType>
-TType variant_impl<Types...>::extract()
+TType variant_impl<Types...>::extract() &&
 {
 	m_currentType = _numTypes;
 
@@ -440,7 +440,7 @@ typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type 
 }
 template<typename ... Types>
 template<size_t Pos>
-embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> variant_impl<Types...>::extract()
+embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> variant_impl<Types...>::extract() &&
 {
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 

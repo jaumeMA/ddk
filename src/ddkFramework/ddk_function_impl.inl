@@ -11,9 +11,9 @@ namespace detail
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
 template<typename ... Args>
-function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, const tuple<Args...>& i_args)
+function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args)
 : m_object(i_object)
-, m_specArgs(i_args.template get<specIndexs>() ...)
+, m_specArgs(std::move(i_args).template extract<specIndexs>() ...)
 {
 }
 template<typename Return, typename ... Types>
@@ -60,13 +60,13 @@ function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>>
 
     if(void* mem = i_allocator.allocate(1,sizeof(spec_func_type)))
     {
-        spec_func_type* newFuncImpl = new(mem) spec_func_type(as_shared_reference(this,tagged_pointer<shared_reference_counter>(&m_refCounter,ReferenceAllocationType::Embedded)),ddk::make_tuple(std::forward<Args>(args)...));
+        spec_func_type* newFuncImpl = new(mem) spec_func_type(this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
 
-        return as_shared_reference(newFuncImpl,tagged_pointer<shared_reference_counter>(&(newFuncImpl->m_refCounter),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<spec_func_type>(i_allocator));
+        return as_shared_reference(newFuncImpl,tagged_pointer<shared_reference_counter>(newFuncImpl->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<spec_func_type>(i_allocator));
     }
     else
     {
-        throw bad_allocation_exception{};
+        throw bad_allocation_exception{ "Could not allocate function specialization" };
     }
 }
 

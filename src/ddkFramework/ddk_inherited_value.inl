@@ -1,182 +1,135 @@
 
 #include "ddk_container_exceptions.h"
+#include "ddk_hash.h"
+#include "ddk_allocator_exceptions.h"
+#include "ddk_rtti.h"
+#include "ddk_reference_wrapper.h"
+#include "ddk_allocator_exceptions.h"
+#include "ddk_system_reference_wrapper_allocator.h"
 
 namespace ddk
 {
 
-template<typename T>
-template<typename TT>
-inherited_value<T>::value_wrapper<TT>::value_wrapper(const TT& i_value)
-: m_value(i_value)
-{}
-template<typename T>
-template<typename TT>
-inherited_value<T>::value_wrapper_interface<T>* inherited_value<T>::value_wrapper<TT>::clone() const
+template<typename TT,typename ... Args>
+inherited_value<TT> make_inherited_value(Args&& ... i_args)
 {
-    return new value_wrapper<TT>(m_value);
-}
-template<typename T>
-template<typename TT>
-void inherited_value<T>::value_wrapper<TT>::destroy()
-{
-    //if anybody access this data after destruction something  very bad will happen
-    m_value.~TT();
-}
-template<typename T>
-template<typename TT>
-void inherited_value<T>::value_wrapper<TT>::setValue(const TT& i_value)
-{
-    m_value = i_value;
-}
-template<typename T>
-template<typename TT>
-const T& inherited_value<T>::value_wrapper<TT>::getValue() const
-{
-    return m_value;
-}
-template<typename T>
-template<typename TT>
-T& inherited_value<T>::value_wrapper<TT>::getValue()
-{
-    return m_value;
+	return inherited_value<TT>(std::forward<Args>(i_args) ...);
 }
 
-template<typename T>
-inherited_value<T>::inherited_value()
-: m_currentAgnosticType(k_invalidType)
-{
-}
-template<typename T>
-inherited_value<T>::inherited_value(const inherited_value& other)
-{
-    clone(other);
-}
-template<typename T>
+
+template<typename T,typename Allocator>
 template<typename TT>
-inherited_value<T>::inherited_value(const TT& i_val, ...)
-: m_currentAgnosticType(k_invalidType)
+inherited_value<T,Allocator>::inherited_value(const inherited_value<TT,Allocator>& other)
+: m_typeInfo(other.m_typeInfo)
+, m_value(other.m_value)
+{
+}
+template<typename T,typename Allocator>
+template<typename TT>
+inherited_value<T,Allocator>::inherited_value(inherited_value<TT,Allocator>&& other)
+: m_typeInfo(std::move(other.m_typeInfo))
+, m_value(std::move(other.m_value))
+{
+}
+template<typename T, typename Allocator>
+template<typename ... Args>
+inherited_value<T,Allocator>::inherited_value(Args&& ... i_args)
+: m_typeInfo(rtti<T>())
+{
+	if(void* mem = m_allocator.allocate(1,sizeof(T)))
+	{
+		T* newValue = new(mem) T(std::forward<Args>(i_args) ...);
+
+		m_value = as_shared_reference(newValue,get_reference_wrapper_deleter<T>(m_allocator));
+	}
+	else
+	{
+		throw bad_allocation_exception{ "Could not allocate inherited value" };
+	}
+}
+template<typename T,typename Allocator>
+inherited_value<T,Allocator>& inherited_value<T,Allocator>::operator=(const inherited_value& other)
+{
+	m_typeInfo = other.m_typeInfo;
+	m_value = other.m_value;
+
+	return *this;
+}
+template<typename T,typename Allocator>
+inherited_value<T,Allocator>& inherited_value<T,Allocator>::operator=(inherited_value&& other)
+{
+	m_typeInfo = std::move(other.m_typeInfo);
+	m_value = std::move(other.m_value);
+
+	return *this;
+}
+template<typename T,typename Allocator>
+template<typename TT>
+inherited_value<T,Allocator>& inherited_value<T,Allocator>::operator=(const inherited_value<TT,Allocator>& other)
+{
+	m_typeInfo = other.m_typeInfo;
+	m_value = other.m_value;
+
+	return *this;
+}
+template<typename T,typename Allocator>
+template<typename TT>
+inherited_value<T,Allocator>& inherited_value<T,Allocator>::operator=(inherited_value<TT,Allocator>&& other)
+{
+	m_typeInfo = std::move(other.m_typeInfo);
+	m_value = std::move(other.m_value);
+
+	return *this;
+}
+template<typename T, typename Allocator>
+template<typename TT>
+bool inherited_value<T,Allocator>::is() const
 {
     static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
 
-    static const size_t s_TypeHashCode = ddk::getTypeId<T>();
-
-    m_currentAgnosticType = s_TypeHashCode;
-
-    m_arena = new value_wrapper<TT>(i_val);
+    return m_typeInfo == rtti<TT>();
 }
-template<typename T>
-inherited_value<T>::~inherited_value()
+template<typename T, typename Allocator>
+inherited_value<T,Allocator>::operator bool() const
 {
-    destroy();
+    return m_typeInfo.empty() == false;
 }
-template<typename T>
-inherited_value<T>& inherited_value<T>::operator=(const inherited_value& other)
+template<typename T, typename Allocator>
+const TypeInfo& inherited_value<T,Allocator>::get_type_info() const
 {
-    destroy();
-
-    clone(other);
-
-    return *this;
+    return m_typeInfo;
 }
-template<typename T>
-template<typename TT>
-bool inherited_value<T>::isOfType() const
+template<typename T, typename Allocator>
+typename inherited_value<T,Allocator>::pointer inherited_value<T,Allocator>::operator->()
 {
-    static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
-    static const size_t s_TypeHashCode = ddk::getTypeId<T>();
-
-    return m_currentAgnosticType == s_TypeHashCode;
+	return m_value.get();
 }
-template<typename T>
-template<typename TT>
-void inherited_value<T>::setValue(const TT& i_value)
+template<typename T, typename Allocator>
+typename inherited_value<T,Allocator>::const_pointer inherited_value<T,Allocator>::operator->() const
 {
-    static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
-
-    static const size_t s_TypeHashCode = ddk::getTypeId<T>();
-
-    if(m_currentAgnosticType == s_TypeHashCode)
-    {
-        value_wrapper<TT>* innerValue = dynamic_cast<value_wrapper<TT>*>(m_arena);
-
-        innerValue->setValue(i_value);
-    }
-    else
-    {
-        destroy();
-
-        m_currentAgnosticType = s_TypeHashCode;
-
-        m_arena = new value_wrapper<TT>(i_value);
-    }
+	return m_value.get();
 }
-template<typename T>
-template<typename TT>
-TT& inherited_value<T>::getValue()
+template<typename T, typename Allocator>
+typename inherited_value<T,Allocator>::reference inherited_value<T,Allocator>::operator*()
 {
-    static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
-
-    static const size_t s_TypeHashCode = ddk::getTypeId<T>();
-    static const size_t s_InterfaceHashCode = ddk::getTypeId<T>();
-
-    if(s_TypeHashCode == s_InterfaceHashCode || m_currentAgnosticType == s_TypeHashCode)
-    {
-        return dynamic_cast<TT&>(m_arena->getValue());
-    }
-    else
-    {
-        throw bad_access_exception{"Trying to access empty inherited value"};
-    }
+	return *m_value;
 }
-template<typename T>
-template<typename TT>
-const TT& inherited_value<T>::getValue() const
+template<typename T, typename Allocator>
+typename inherited_value<T,Allocator>::const_reference inherited_value<T,Allocator>::operator*() const
 {
-    static_assert(std::is_base_of<T,TT>::value, "You shall provide an inherited type from T");
-
-    static const size_t s_TypeHashCode = ddk::getTypeId<T>();
-    static const size_t s_InterfaceHashCode = ddk::getTypeId<T>();
-
-    if(s_TypeHashCode == s_InterfaceHashCode || m_currentAgnosticType == s_TypeHashCode)
-    {
-        return dynamic_cast<const TT&>(m_arena->getValue());
-    }
-    else
-    {
-        throw bad_access_exception{"Trying to access empty inherited value"};
-    }
+	return *m_value;
 }
-template<typename T>
-inherited_value<T>::operator bool() const
+template<typename T,typename Allocator>
+template<typename Visitor>
+bool inherited_value<T,Allocator>::may_visit() const
 {
-    return m_currentAgnosticType != k_invalidType;
+	return __may_visit(*m_value,reinterpret_cast<const Visitor*>(0xDEAD));
 }
-template<typename T>
-size_t inherited_value<T>::getCurrTypeId() const
+template<typename T,typename Allocator>
+template<typename Visitor>
+any_value inherited_value<T,Allocator>::visit(Visitor&& i_visitor) const
 {
-    return m_currentAgnosticType;
-}
-template<typename T>
-void inherited_value<T>::destroy()
-{
-    if(m_currentAgnosticType != k_invalidType)
-    {
-        delete m_arena;
-
-        m_arena = NULL;
-
-        m_currentAgnosticType = k_invalidType;
-    }
-}
-template<typename T>
-void inherited_value<T>::clone(const inherited_value& other)
-{
-    if(other.m_currentAgnosticType != k_invalidType)
-    {
-        m_arena = other.m_arena->clone();
-    }
-
-    m_currentAgnosticType = other.m_currentAgnosticType;
+	return __visit(*m_value,i_visitor);
 }
 
 }

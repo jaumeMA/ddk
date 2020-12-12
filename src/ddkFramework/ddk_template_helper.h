@@ -5,18 +5,22 @@
 #include <cstring>
 #include <functional>
 
-#define ASSERT_CONTAINS_SYMBOL(_CLASS,_SYMBOL,_MSG) \
-struct contains_symbol_##_CLASS##_##_SYMBOL \
+#define CONTAINS_SYMBOL(_SYMBOL) \
+template<typename T> \
+struct contains_symbol_##_SYMBOL \
 { \
 private: \
-	template<typename T> \
-	static std::true_type ewas_contains_symbol(const T*, const typename T::_SYMBOL* = NULL); \
-	static std::false_type ewas_contains_symbol(...); \
-	typedef decltype(ewas_contains_symbol(reinterpret_cast<_CLASS*>(NULL))) res_type; \
+	template<typename TT> \
+	static std::true_type _contains_symbol(TT&&, const typename TT::_SYMBOL* = nullptr); \
+	static std::false_type _contains_symbol(...); \
+	typedef decltype(_contains_symbol(std::declval<T>())) res_type; \
 public: \
 	static const bool value = res_type::value; \
-}; \
-static_assert(contains_symbol_##_CLASS##_##_SYMBOL::value, _MSG);
+};
+
+#define ASSERT_CONTAINS_SYMBOL(_CLASS,_SYMBOL,_MSG) \
+CONTAINS_SYMBOL(_SYMBOL) \
+static_assert(contains_symbol_##_SYMBOL<_CLASS>::value, _MSG);
 
 namespace ddk
 {

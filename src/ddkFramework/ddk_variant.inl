@@ -100,7 +100,7 @@ typename embedded_type<TType>::ref_type variant<Type>::get()
 }
 template<typename Type>
 template<typename TType>
-TType variant<Type>::extract()
+TType variant<Type>::extract() &&
 {
 	return std::move(m_value);
 }
@@ -146,7 +146,7 @@ typename embedded_type<Type>::ref_type variant<Type>::get()
 }
 template<typename Type>
 template<size_t Pos>
-Type variant<Type>::extract()
+Type variant<Type>::extract() &&
 {
 	static_assert(Pos == 0,"Index out of bounds");
 

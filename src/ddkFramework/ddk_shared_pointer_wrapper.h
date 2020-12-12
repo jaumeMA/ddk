@@ -104,7 +104,7 @@ public:
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide a base class of T");
 
-		if((m_data = dynamic_cast<T*>(other.m_data)))
+		if((m_data = other.m_data))
 		{
 			if((m_refCounter = other.m_refCounter))
 			{
@@ -120,7 +120,7 @@ public:
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provide a base class of T");
 
-		if((m_data = dynamic_cast<T*>(other.m_data)))
+		if((m_data = other.m_data))
 		{
 			std::swap(m_refCounter,other.m_refCounter);
 		}

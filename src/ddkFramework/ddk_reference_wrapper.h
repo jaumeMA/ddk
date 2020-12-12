@@ -7,7 +7,10 @@
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_pointer_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
+#include "ddk_lend_from_this.h"
+#include "ddk_shared_from_this.h"
 #include "ddk_lendable.h"
+#include "ddk_smart_ptr_template_helper.h"
 
 namespace ddk
 {
@@ -31,11 +34,6 @@ template<typename T>
 inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
 {
   return unique_reference_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
-}
-template<typename T>
-inline shared_pointer_wrapper<T> __make_shared_pointer(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-    return shared_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
 }
 template<typename T>
 inline shared_reference_wrapper<T> __make_shared_reference(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
@@ -140,47 +138,55 @@ shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 
 	T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
 
-	shared_reference_counter* refCounter = new (allocatedMemory + sizeof(T)) shared_reference_counter();
+	if constexpr (mpl::contains_symbol___shared_type_tag<T>::value)
+	{
+		tagged_reference_counter taggedRefCounter(allocatedObject->get_reference_counter(),ReferenceAllocationType::Embedded);
 
-	tagged_reference_counter taggedRefCounter(refCounter, ReferenceAllocationType::Contiguous);
+		return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+	}
+	else
+	{
+		shared_reference_counter* refCounter = new (allocatedMemory + sizeof(T)) shared_reference_counter();
 
-	return __make_shared_reference(allocatedObject, taggedRefCounter,NULL);
-}
+		tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
 
-template<typename T>
-shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrapperDeleter& i_refDeleter)
-{
-	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
-
-	shared_reference_counter* refCounter = new shared_reference_counter();
-
-	return __make_shared_reference(i_ptr, refCounter,&i_refDeleter);
+		return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+	}
 }
 
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr)
 {
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	if constexpr(mpl::contains_symbol___shared_type_tag<T>::value)
+	{
+		return __make_shared_reference(i_ptr,i_ptr->get_reference_counter(),i_ptr->get_deleter());
+	}
+	else
+	{
+		shared_reference_counter* refCounter = new shared_reference_counter();
+
+		return __make_shared_reference(i_ptr,refCounter,nullptr);
+	}
+}
+
+template<typename T>
+shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrapperDeleter* i_refDeleter, typename std::enable_if<mpl::contains_symbol___shared_type_tag<T>::value==false>::type* = nullptr)
+{
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
-	return __make_shared_reference(i_ptr, refCounter,nullptr);
+	return __make_shared_reference(i_ptr,refCounter,i_refDeleter);
 }
 
 template<typename T>
-shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter& i_refDeleter)
+shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr)
 {
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
-	return __make_shared_reference(i_ptr, i_refCounter,&i_refDeleter);
-}
-
-template<typename T>
-shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<shared_reference_counter>& i_refCounter)
-{
-	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
-
-	return __make_shared_reference(i_ptr, i_refCounter,nullptr);
+	return __make_shared_reference(i_ptr, i_refCounter,i_refDeleter);
 }
 
 template<typename T>
@@ -228,7 +234,7 @@ shared_pointer_wrapper<TT> dynamic_shared_cast(const shared_reference_wrapper<T>
 {
 	if (TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_sharedRef.m_data)))
 	{
-		return __make_shared_pointer(tData, i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
+		return __make_shared_reference(tData, i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
 	}
 	else
 	{
@@ -373,7 +379,7 @@ lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentR
 template<typename TT, typename T>
 shared_pointer_wrapper<TT> reinterpret_shared_cast(const shared_pointer_wrapper<T>& i_sharedPtr)
 {
-	return __make_shared_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_sharedPtr.m_data)), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
+	return __make_shared_reference(reinterpret_cast<TT*>(const_cast<T*>(i_sharedPtr.m_data)), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
 }
 
 template<typename TT, typename T>
@@ -439,7 +445,7 @@ shared_reference_wrapper<T> const_shared_cast(const shared_reference_wrapper<con
 template<typename T>
 shared_pointer_wrapper<T> const_shared_cast(const shared_pointer_wrapper<const T>& i_sharedPtr)
 {
-	return __make_shared_pointer(const_cast<T*>(i_sharedPtr.m_data), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
+	return __make_shared_reference(const_cast<T*>(i_sharedPtr.m_data), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
 }
 
 template<typename T>
@@ -538,19 +544,15 @@ lent_reference_wrapper<T> lend(const shared_reference_wrapper<T>& i_sharedRef)
 #endif
 }
 
-template<typename T>
-inline lent_reference_wrapper<typename T::interface_type> lend(T& i_lendable)
+template<typename T, typename TT>
+inline lent_reference_wrapper<TT> lend(lend_from_this<T,TT>& i_lendable)
 {
-	static_assert(sizeof(typename T::interface_type) != 0, "Invlid type T");
-
-	return i_lendable.template ref_from_this<typename T::interface_type>(i_lendable);
+	return i_lendable.template ref_from_this<TT>();
 }
-template<typename T>
-inline lent_reference_wrapper<const typename T::interface_type> lend(const T& i_lendable)
+template<typename T, typename TT>
+inline lent_reference_wrapper<const TT> lend(const lend_from_this<T,TT>& i_lendable)
 {
-	static_assert(sizeof(typename T::interface_type) != 0, "Invlid type T");
-
-	return i_lendable.template ref_from_this<const typename T::interface_type>(i_lendable);
+	return i_lendable.template ref_from_this<const TT>();
 }
 
 template<typename T>

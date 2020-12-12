@@ -9,11 +9,11 @@ void typed_system_reference_wrapper_allocator<T>::Deallocate(const void* i_objec
 }
 
 template<typename T>
-const IReferenceWrapperDeleter& get_reference_wrapper_deleter(const system_allocator& i_allocator)
+const IReferenceWrapperDeleter* get_reference_wrapper_deleter(const system_allocator&)
 {
 	static typed_system_reference_wrapper_allocator<T> s_allocator;
 
-	return s_allocator;
+	return &s_allocator;
 }
 
 }
