@@ -1,10 +1,7 @@
 #pragma once
 
 #include <map>
-#include "ddk_default_values.h"
-#include "DynamicVisitor.h"
-#include "ddk_rtti.h"
-#include "ddk_defs.h"
+#include "ddk_visitable_type_interface.h"
 #include "ddk_hash.h"
 #include "ddk_macros.h"
 
@@ -16,11 +13,8 @@ static void __expand_type_visitable_type() \
 	static const bool __s_static_visitable_type_expansion = ddk::visitable_type<_Traits>::s_initialized; \
     \
     UNUSED(__s_static_visitable_type_expansion); \
-} \
-ddk::visitable_type_info get_visitable_type_info() const override \
-{ \
-	return ddk::visitable_type_info(std::make_pair(ddk::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ddk::visitable_type<_Traits>::s_type_info())); \
 }
+
 #define DECLARE_TYPE_STATICALLY_VISITABLE(_Type_Name,_Traits) \
 PUBLISH_TYPE_INFO(_Type_Name) \
 typedef ddk::static_visitable_type<_Traits> _type_expansion; \
@@ -29,10 +23,6 @@ static void __expand_type_visitable_type() \
 	static const bool __s_static_visitable_type_expansion = ddk::static_visitable_type<_Traits>::s_initialized; \
     \
     UNUSED(__s_static_visitable_type_expansion); \
-} \
-ddk::visitable_type_info get_visitable_type_info() const override \
-{ \
-	return ddk::visitable_type_info(std::make_pair(ddk::agnostic_visitable_type<typename _Traits::type_interface,typename _Traits::visitor_interface>::s_categoryTypeInfo(),ddk::visitable_type<_Traits>::s_type_info())); \
 }
 
 namespace ddk

@@ -70,6 +70,11 @@ async_executor<Return>::async_executor(async_executor&& other)
 {
 }
 template<typename Return>
+async_executor<Return>::~async_executor()
+{
+	notify();
+}
+template<typename Return>
 future<Return> async_executor<Return>::attach(thread i_thread)
 {
 	m_executor = make_executor<detail::thread_executor<Return>>(std::move(i_thread));

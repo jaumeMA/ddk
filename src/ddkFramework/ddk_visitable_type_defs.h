@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type_id.h"
+#include "ddk_type_id.h"
 #include "ddk_rtti_defs.h"
 
 namespace ddk

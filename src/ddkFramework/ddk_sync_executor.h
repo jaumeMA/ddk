@@ -31,6 +31,7 @@ public:
 	async_executor(const function<Return()>& i_function);
 	async_executor(const async_executor&) = delete;
 	async_executor(async_executor&& other);
+	~async_executor();
 	async_executor& operator=(const async_executor&) = delete;
 
 	future<Return> attach(thread i_thread);

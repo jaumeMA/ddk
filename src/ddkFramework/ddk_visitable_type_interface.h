@@ -1,25 +1,25 @@
 #pragma once
 
-#include "any_value.h"
-#include "DynamicVisitor.h"
-#include "visitable_type.h"
-#include "visitable_type_defs.h"
+#include "ddk_any_value.h"
+#include "ddk_dynamic_visitor.h"
+#include "ddk_visitable_type.h"
+#include "ddk_visitable_type_defs.h"
 #include "ddk_rtti.h"
 
 #define DECLARE_TYPE_VISITABLE_BASE(_Type_Name) \
 PUBLISH_TYPE_INFO(_Type_Name) \
 typedef _Type_Name type_interface; \
-typedef void visitable_type_base_tag; \
+struct visitable_type_base_tag; \
 template<typename Visitor> \
 friend inline bool __may_visit(const type_interface& i_value, const Visitor*) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
-	static const TypeInfo s_catInfo = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
+	static const ddk::TypeInfo s_catInfo = ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
 	\
 	return s_catInfo == ddk::agnostic_visitable_type<type_interface,visitor_interface>::s_categoryTypeInfo(); \
 } \
 template<typename Visitor> \
-friend inline ddk::any_value __visit(const TypeInfo& i_typeInfo, const type_interface& i_value, const Visitor& i_visitor) \
+friend inline ddk::any_value __visit(const ddk::TypeInfo& i_typeInfo, const type_interface& i_value, const Visitor& i_visitor) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
     const visitor_interface* typedVisitor = &i_visitor; \
@@ -36,7 +36,7 @@ friend inline ddk::any_value __visit(const TypeInfo& i_typeInfo, const type_inte
     } \
 } \
 template<typename Visitor> \
-friend inline ddk::any_value __visit(const TypeInfo& i_typeInfo, const type_interface& i_value, Visitor& i_visitor) \
+friend inline ddk::any_value __visit(const ddk::TypeInfo& i_typeInfo, const type_interface& i_value, Visitor& i_visitor) \
 { \
     typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface; \
     visitor_interface* typedVisitor = &i_visitor; \
@@ -51,7 +51,7 @@ friend inline ddk::any_value __visit(const TypeInfo& i_typeInfo, const type_inte
     \
         return false; \
     } \
-} \
+}
 
 #define DECLARE_TYPE_VISITOR_BASE(_Type_Name,_Type_Interface) \
 PUBLISH_TYPE_INFO(_Type_Name) \
@@ -97,34 +97,4 @@ friend inline ddk::any_value __visit(const ddk::TypeInfo& i_typeInfo, Visitor& i
     \
         return false; \
     } \
-}
-
-namespace ddk
-{
-
-template<typename Visitor>
-bool may_visit(const TypeInfo& i_typeInfo)
-{
-    typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface;
-
-    return __may_visit(i_typeInfo,reinterpret_cast<const Visitor*>(0xDEAD),reinterpret_cast<const visitor_interface*>(0xDEAD));
-}
-template<typename Visitor, typename Interface>
-bool may_visit(const Interface& i_value)
-{
-    return __may_visit(i_value,reinterpret_cast<const Visitor*>(0xDEAD));
-}
-template<typename Visitor>
-any_value visit(const TypeInfo& i_typeInfo, Visitor&& i_visitor)
-{
-    typedef decltype(__get_visitor_type(std::declval<Visitor>())) visitor_interface;
-
-    return __visit(i_typeInfo,i_visitor,reinterpret_cast<const visitor_interface*>(0xDEAD));
-}
-template<typename Interface, typename Visitor>
-any_value visit(const Interface& i_value, Visitor&& i_visitor)
-{
-    return __visit(i_value,i_visitor);
-}
-
 }

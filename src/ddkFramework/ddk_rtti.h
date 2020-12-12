@@ -11,12 +11,6 @@ friend ddk::TypeInfo ddk::rtti(); \
 template<typename> \
 friend struct ddk::detail::is_rtti_available; \
 typedef ddk::detail::rtti_tag_t rtti_tag; \
-virtual const ddk::TypeInfo& __get_rtti_type_info() const \
-{ \
-	static const ddk::TypeInfo res(#_TYPE_NAME); \
-	\
-	return res; \
-} \
 static ddk::TypeInfo __get_static_rtti_type_info() \
 { \
 	return #_TYPE_NAME; \

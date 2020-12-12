@@ -129,7 +129,7 @@ template<typename T,typename Allocator>
 template<typename Visitor>
 any_value inherited_value<T,Allocator>::visit(Visitor&& i_visitor) const
 {
-	return __visit(*m_value,i_visitor);
+	return __visit(m_typeInfo,*m_value,i_visitor);
 }
 
 }
