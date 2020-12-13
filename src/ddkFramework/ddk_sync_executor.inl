@@ -10,61 +10,13 @@ shared_reference_wrapper<async_executor<Return>> make_async_executor(const funct
 
 template<typename Return>
 async_executor<Return>::async_executor(const function<Return()>& i_function)
-: m_function(make_function([i_function, self = this->unsafe_ref_from_this()]() mutable
-{
-	try
-	{
-		return eval(i_function);
-	}
-	catch(const async_exception& i_excp)
-	{
-		self->set_exception(i_excp);
-
-		throw;
-	}
-	catch(const std::exception& i_excp)
-	{
-		self->set_exception(async_exception{ i_excp.what() });
-
-		throw;
-	}
-	catch(...)
-	{
-		self->set_exception(async_exception{ "Unkwon exception" });
-
-		throw;
-	}
-}))
+: m_function(i_function)
 , m_executor(make_executor<detail::deferred_executor<Return>>())
 {
 }
 template<typename Return>
 async_executor<Return>::async_executor(async_executor&& other)
-: m_function(make_function([otherFunction = std::move(other.m_function),self = this->unsafe_ref_from_this()]() mutable
-{
-	try
-	{
-		return eval(otherFunction);
-	}
-	catch(const async_exception& i_excp)
-	{
-		self->set_exception(i_excp);
-
-		throw;
-	}
-	catch(const std::exception& i_excp)
-	{
-		self->set_exception(async_exception{ i_excp.what() });
-
-		throw;
-	}
-	catch(...)
-	{
-		self->set_exception(async_exception{ "Unkwon exception" });
-
-		throw;
-	}
-}))
+: m_function(std::move(other.m_function))
 , m_executor(std::move(other.m_executor))
 , m_promise(std::move(other.m_promise))
 {
@@ -162,7 +114,32 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
         throw async_exception{"Trying to execute empty executor"};
     }
 
-	const nested_start_result execRes = m_executor->execute(make_function(this,&async_executor<Return>::set_value),std::move(m_function));
+	const nested_start_result execRes = m_executor->execute(make_function(this,&async_executor<Return>::set_value),
+	make_function([self = this->unsafe_ref_from_this()]() mutable
+	{
+		try
+		{
+			return eval(self->m_function);
+		}
+		catch(const async_exception& i_excp)
+		{
+			self->set_exception(i_excp);
+
+			throw;
+		}
+		catch(const std::exception& i_excp)
+		{
+			self->set_exception(async_exception{ i_excp.what() });
+
+			throw;
+		}
+		catch(...)
+		{
+			self->set_exception(async_exception{ "Unkwon exception" });
+
+			throw;
+		}
+	}));
 
 	if(execRes == success)
 	{
@@ -197,7 +174,7 @@ future<Return> async_executor<Return>::as_future()
 {
 	m_promise.attach(this->ref_from_this());
 
-	return m_promise.transfer_ownership();
+	return m_promise.get_future();
 }
 template<typename Return>
 typename async_executor<Return>::cancel_result async_executor<Return>::cancel()

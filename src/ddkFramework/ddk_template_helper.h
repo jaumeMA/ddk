@@ -324,25 +324,19 @@ struct acc_sequence<rank,ranks...>
 typedef typename _partial<0>::type type;
 };
 
-template<size_t, size_t,size_t...>
-struct _create_range_rank;
-
-template<size_t endRank, size_t currRank, size_t ... ranks>
-struct _create_range_rank
+template<size_t...>
+struct prod_ranks;
+	
+template<>
+struct prod_ranks<>
 {
-    typedef typename _create_range_rank<endRank,currRank+1,ranks...,currRank>::type type;
+	static const size_t value = 1;
 };
 
-template<size_t endRank, size_t ... ranks>
-struct _create_range_rank<endRank,endRank,ranks...>
+template<size_t rank, size_t ... ranks>
+struct prod_ranks<rank,ranks...>
 {
-    typedef sequence<ranks...> type;
-};
-
-template<size_t initRank, size_t endRank>
-struct create_range_rank
-{
-    typedef typename _create_range_rank<endRank,initRank>::type type;
+	static const size_t value = rank * prod_ranks<ranks...>::value;
 };
 
 template<typename ... Types>

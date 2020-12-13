@@ -22,54 +22,52 @@ executor_promise<T>& executor_promise<T>::operator=(const promise<T>& other)
 template<typename T>
 void executor_promise<T>::set_value(sink_type i_value)
 {
-	access()->set_value(i_value);
+	m_sharedState->set_value(i_value);
 }
 template<typename T>
 void executor_promise<T>::set_exception(const async_exception& i_exception)
 {
-	access()->set_exception(i_exception);
+	m_sharedState->set_exception(i_exception);
 }
 template<typename T>
 void executor_promise<T>::wait() const
 {
-	return access()->wait();
+	return m_sharedState->wait();
 }
 template<typename T>
 void executor_promise<T>::wait_for(unsigned int i_period) const
 {
-	return access()->wait_for(i_period);
+	return m_sharedState->wait_for(i_period);
 }
 template<typename T>
 bool executor_promise<T>::ready() const
 {
-	return access()->ready();
+	return m_sharedState->ready();
 }
 template<typename T>
 void executor_promise<T>::signal() const
 {
-	return access()->signal();
+	return m_sharedState->signal();
 }
 template<typename T>
 void executor_promise<T>::attach(async_cancellable_shared_ref i_executor)
 {
-	access()->attach(i_executor);
+	m_sharedState->attach(i_executor);
 }
 template<typename T>
 bool executor_promise<T>::is_attached() const
 {
-	return access()->is_attached();
+	return m_sharedState->is_attached();
 }
 template<typename T>
 void executor_promise<T>::detach()
 {
-	access()->detach();
+	m_sharedState->detach();
 }
 template<typename T>
-detail::private_async_state_shared_ptr<T> executor_promise<T>::transfer_ownership()
+future<T> executor_promise<T>::get_future() const
 {
-	m_lendState = m_sharedState.get();
-
-	return std::move(m_sharedState);
+	return m_sharedState;
 }
 
 }

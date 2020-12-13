@@ -28,23 +28,14 @@ public:
 	void attach(async_cancellable_shared_ref i_executor);
 	void detach();
 	bool is_attached() const;
-	detail::private_async_state_shared_ptr<T> transfer_ownership();
+	future<T> get_future() const;
 
 protected:
-	inline detail::private_async_state<T>* access()
-	{
-		return (m_sharedState) ? m_sharedState.get() : m_lendState;
-	}
-	inline const detail::private_async_state<T>* access() const
-	{
-		return (m_sharedState) ? m_sharedState.get() : m_lendState;
-	}
 	void signal() const;
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;
 
-	detail::private_async_state<T>* m_lendState;
 	detail::private_async_state_shared_ptr<T> m_sharedState;
 };
 

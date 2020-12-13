@@ -73,17 +73,9 @@ struct DerivedTypeVisitor : public BaseTypeVisitor
 	}
 };
 
-template<typename T>
-struct DerivedBaseTypeTraits
-{
-	typedef BaseType type_interface;
-	typedef BaseTypeVisitor visitor_interface;
-	typedef T final_type;
-};
-
 class DerivedBaseType : public BaseType
 {
-	DECLARE_TYPE_VISITABLE(DerivedBaseType,DerivedBaseTypeTraits<DerivedBaseType>)
+	DECLARE_TYPE_VISITABLE(DerivedBaseType,BaseTypeVisitor)
 
 public:
 	using BaseType::BaseType;
