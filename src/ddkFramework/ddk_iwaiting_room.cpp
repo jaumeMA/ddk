@@ -1,6 +1,7 @@
 #include "ddk_iwaiting_room.h"
 #include <algorithm>
 #include "ddk_thread_utils.h"
+#include "ddk_lock_guard.h"
 
 #ifdef WIN32
 
@@ -14,24 +15,22 @@
 	{ \
 		const ddk::thread_id_t __currThreadId = ddk::get_current_thread_id(); \
 		const SharedState& thisSharedState = this->getSharedState(); \
-		pthread_mutex_lock(&thisSharedState.m_localDataMutex); \
+		lock_guard lg(thisSharedState.m_localDataMutex); \
 		std::vector<ddk::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ddk::thread_id_t i_threadId){ return ddk::thread_id_equal(i_threadId,__currThreadId); }); \
 		DDK_ASSERT(itThreadId == thisSharedState.m_mutexOwnerThreadId.end(), "It is forbidden reentrancy of the same thread against the same exclusion area"); \
 		thisSharedState.m_mutexOwnerThreadId.push_back(__currThreadId); \
-		pthread_mutex_unlock(&thisSharedState.m_localDataMutex); \
 	}
 #define POP_THREAD_ID \
 	{ \
 		const ddk::thread_id_t __currThreadId = ddk::get_current_thread_id(); \
 		const SharedState& thisSharedState = this->getSharedState(); \
-		pthread_mutex_lock(&thisSharedState.m_localDataMutex); \
+		lock_guard lg(thisSharedState.m_localDataMutex); \
 		std::vector<ddk::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ddk::thread_id_t i_threadId){ return ddk::thread_id_equal(i_threadId,__currThreadId); }); \
 		DDK_ASSERT(itThreadId != thisSharedState.m_mutexOwnerThreadId.end(), "Unexistent thread id!"); \
 		if (itThreadId != thisSharedState.m_mutexOwnerThreadId.end()) \
 		{ \
 			thisSharedState.m_mutexOwnerThreadId.erase(itThreadId); \
 		} \
-		pthread_mutex_unlock(&thisSharedState.m_localDataMutex); \
 	}
 
 #else
@@ -60,19 +59,6 @@ iwaiting_room::SharedState::SharedState()
 : m_currentState(None)
 , m_numWaitingWriters(0)
 {
-	pthread_mutex_init(&m_exclusiveMutex,NULL);
-
-#ifdef DDK_DEBUG
-	pthread_mutex_init(&m_localDataMutex,NULL);
-#endif
-}
-iwaiting_room::SharedState::~SharedState()
-{
-#ifdef DDK_DEBUG
-	pthread_mutex_destroy(&m_localDataMutex);
-#endif
-
-	pthread_mutex_destroy(&m_exclusiveMutex);
 }
 void iwaiting_room::enter(Reentrancy i_reentrancy)
 {
@@ -112,7 +98,7 @@ void iwaiting_room::SharedState::acquire_lock(Access i_access)
 		ddk::atomic_post_increment(m_numWaitingWriters);
 	}
 
-	pthread_mutex_lock(&m_exclusiveMutex);
+	m_exclusiveMutex.lock();
 
 	if(i_access == Writer)
 	{
@@ -121,11 +107,11 @@ void iwaiting_room::SharedState::acquire_lock(Access i_access)
 }
 void iwaiting_room::SharedState::release_lock(Access i_access)
 {
-	pthread_mutex_unlock(&m_exclusiveMutex);
+	m_exclusiveMutex.unlock();
 }
 int iwaiting_room::SharedState::try_acquire_lock(Access i_access)
 {
-	return pthread_mutex_trylock(&m_exclusiveMutex);
+	return m_exclusiveMutex.try_lock();
 }
 iwaiting_room::SharedState::Access iwaiting_room::SharedState::getCurrentState() const
 {

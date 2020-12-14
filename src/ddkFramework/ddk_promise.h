@@ -16,7 +16,7 @@ public:
 	typedef typename detail::private_async_state<T>::sink_type sink_type;
 	typedef typename detail::private_async_state<T>::reference reference;
 	typedef typename detail::private_async_state<T>::const_reference const_reference;
-	typedef typename detail::private_async_state<T>::rref_type rref_type;
+	typedef typename detail::private_async_state<T>::rreference rreference;
 
 	promise();
 	promise(const promise<T>&);

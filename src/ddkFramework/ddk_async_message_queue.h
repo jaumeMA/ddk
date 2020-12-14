@@ -7,7 +7,8 @@
 #include "ddk_optional.h"
 #include "ddk_thread_executor_interface.h"
 #include "ddk_async_defs.h"
-#include <pthread.h>
+#include "ddk_mutex.h"
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -56,15 +57,10 @@ public:
 	async_attachable_message_queue(thread_executor_unique_ref i_executor)
 	: m_executor(std::move(i_executor))
 	{
-		pthread_mutex_init(&m_mutex, NULL);
-	}
-	~async_attachable_message_queue()
-	{
-		pthread_mutex_destroy(&m_mutex);
 	}
 	void start(sender_id i_id, const ddk::function<void(const MessageType&)>& i_processor)
 	{
-		pthread_mutex_lock(&m_mutex);
+		lock_guard lg(m_mutex);
 
 		typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair){ return i_pair.first == i_id; });
 
@@ -81,12 +77,10 @@ public:
 
 			m_receivers.push(std::make_pair(i_id,i_processor));
 		}
-
-		pthread_mutex_unlock(&m_mutex);
 	}
 	void stop(sender_id i_id)
 	{
-		pthread_mutex_lock(&m_mutex);
+		lock_guard lg(m_mutex);
 
 		typename linked_list<std::pair<sender_id,this::function<void(const message_type&)>>>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair){ return i_pair.first == i_id; });
 
@@ -103,8 +97,6 @@ public:
 				DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 			}
 		}
-
-		pthread_mutex_unlock(&m_mutex);
 	}
 	virtual void push_message(const MessageType& i_msg)
 	{
@@ -116,7 +108,7 @@ public:
 private:
 	void dispatch_messages()
 	{
-		pthread_mutex_lock(&m_mutex);
+		lock_guard lg(m_mutex);
 
 		while(const optional<message_type> currMsgOpt = pop_message())
 		{
@@ -133,11 +125,9 @@ private:
 				}
 			}
 		}
-
-		pthread_mutex_unlock(&m_mutex);
 	}
 
-	pthread_mutex_t	m_mutex;
+	mutex	m_mutex;
 	linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>	m_receivers;
 	thread_executor_unique_ref m_executor;
 };

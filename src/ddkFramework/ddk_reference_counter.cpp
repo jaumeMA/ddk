@@ -1,4 +1,5 @@
 #include "ddk_reference_counter.h"
+#include "ddk_lock_guard.h"
 
 #include <sstream>
 
@@ -32,37 +33,24 @@ lent_reference_counter::lent_reference_counter()
 	: m_numWeakReferences(0)
 #endif
 {
-#ifdef TRACK_STACK
-	pthread_mutex_init(&m_refMutex, NULL);
-#endif
 }
 lent_reference_counter::lent_reference_counter(const lent_reference_counter& other)
 #ifdef DDK_DEBUG
 	: m_numWeakReferences(other.m_numWeakReferences)
 #endif
 {
-#ifdef TRACK_STACK
-	pthread_mutex_init(&m_refMutex, NULL);
-#endif
 }
 lent_reference_counter::lent_reference_counter(lent_reference_counter&& other)
 #ifdef DDK_DEBUG
-	: m_numWeakReferences(0)
+: m_numWeakReferences(0)
 #endif
 {
 #ifdef DDK_DEBUG
 	m_numWeakReferences.set(other.m_numWeakReferences.get());
 	other.m_numWeakReferences.set(0);
 #ifdef TRACK_STACK
-	pthread_mutex_init(&m_refMutex, NULL);
 	std::swap(m_stackTraces,other.m_stackTraces);
 #endif
-#endif
-}
-lent_reference_counter::~lent_reference_counter()
-{
-#ifdef TRACK_STACK
-	pthread_mutex_destroy(&m_refMutex);
 #endif
 }
 #ifdef DDK_DEBUG
@@ -102,7 +90,7 @@ void lent_reference_counter::registerStackTrace(size_t i_id)
 #error "Pending to be implemented for this platform"
 #endif
 
-	pthread_mutex_lock(&m_refMutex);
+	lock_guard lg(m_refMutex);
 
 	stack_entry& currStackTrace = m_stackTraces[i_id];
 
@@ -120,42 +108,36 @@ void lent_reference_counter::registerStackTrace(size_t i_id)
 		}
 	}
 
-	pthread_mutex_unlock(&m_refMutex);
-
 #endif
 }
 void lent_reference_counter::unregisterStackTrace(size_t i_id)
 {
 #ifdef TRACK_STACK
-	pthread_mutex_lock(&m_refMutex);
+	lock_guard lg(m_refMutex);
 
 	stack_container::iterator itStackTrace = m_stackTraces.find(i_id);
 	if (itStackTrace != m_stackTraces.end())
 	{
 		m_stackTraces.erase(itStackTrace);
 	}
-
-	pthread_mutex_unlock(&m_refMutex);
 #endif
 }
 void lent_reference_counter::copyStackTrace(size_t i_oldId, size_t i_newId)
 {
 #ifdef TRACK_STACK
-	pthread_mutex_lock(&m_refMutex);
+	lock_guard lg(m_refMutex);
 
 	stack_container::iterator itOldStackTrace = m_stackTraces.find(i_oldId);
 	if (itOldStackTrace != m_stackTraces.end())
 	{		
 		memcpy(m_stackTraces[i_newId],itOldStackTrace->second,sizeof(void*) * k_maxNumberOfStacks);
 	}
-
-	pthread_mutex_unlock(&m_refMutex);
 #endif
 }
 void lent_reference_counter::reassignStackTrace(size_t i_oldId, size_t i_newId)
 {
 #ifdef TRACK_STACK
-	pthread_mutex_lock(&m_refMutex);
+	lock_guard lg(m_refMutex);
 
 	stack_container::iterator itOldStackTrace = m_stackTraces.find(i_oldId);
 	if (itOldStackTrace != m_stackTraces.end())
@@ -163,15 +145,13 @@ void lent_reference_counter::reassignStackTrace(size_t i_oldId, size_t i_newId)
 		memcpy(m_stackTraces[i_newId],itOldStackTrace->second,sizeof(void*) * k_maxNumberOfStacks);
 		m_stackTraces.erase(itOldStackTrace);
 	}
-
-	pthread_mutex_unlock(&m_refMutex);
 #endif
 }
 lent_reference_counter::stack_contents lent_reference_counter::dumpStackTrace()
 {
 	stack_contents res;
 
-	pthread_mutex_lock(&m_refMutex);
+	lock_guard lg(m_refMutex);
 
 	stack_container::iterator itStackTrace = m_stackTraces.begin();
 	for(;itStackTrace!=m_stackTraces.end();++itStackTrace)
@@ -191,8 +171,6 @@ lent_reference_counter::stack_contents lent_reference_counter::dumpStackTrace()
 			}
 		}
 	}
-
-	pthread_mutex_unlock(&m_refMutex);
 
 	return res;
 }

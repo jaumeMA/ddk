@@ -7,6 +7,8 @@
 #include "ddk_thread_utils.h"
 #include "ddk_thread_executor_interface.h"
 #include <chrono>
+#include "ddk_mutex.h"
+#include "ddk_cond_var.h"
 
 namespace ddk
 {
@@ -72,9 +74,9 @@ private:
 	ddk::function<bool()> m_testFunc;
 	bool m_stopped;
 	ddk::thread m_updateThread;
-	pthread_cond_t		m_condVar;
-	pthread_mutex_t	m_condVarMutex;
 	bool m_pendingWork;
+	cond_var		m_condVar;
+	mutex	m_condVarMutex;
 };
 
 class thread_fire_and_forget_executor : public thread_executor_interface

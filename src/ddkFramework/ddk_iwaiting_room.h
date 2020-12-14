@@ -4,7 +4,7 @@
 #include "ddk_atomics.h"
 #include "ddk_critical_section.h"
 #include <vector>
-#include <pthread.h>
+#include "ddk_mutex.h"
 
 #undef THREAD_ACQUIRE_STACK_TRACE
 
@@ -35,7 +35,6 @@ public:
 		typedef iwaiting_room::Access Access;
 
 		SharedState();
-		~SharedState();
 
 		void acquire_lock(Access i_access);
 		void release_lock(Access i_access);
@@ -54,13 +53,13 @@ public:
 
 #ifdef DDK_DEBUG
 		mutable std::vector<ddk::thread_id_t> m_mutexOwnerThreadId;
-		mutable pthread_mutex_t m_localDataMutex;
+		mutable mutex m_localDataMutex;
 #endif
 
 	private:
 		int GetThreadId() const;
 
-		pthread_mutex_t m_exclusiveMutex;
+		mutex m_exclusiveMutex;
 		Access m_currentState;
 		ddk::atomic_size_t m_numWaitingWriters;
 #ifdef THREAD_ACQUIRE_STACK_TRACE

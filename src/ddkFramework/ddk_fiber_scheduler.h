@@ -1,6 +1,7 @@
 #pragma once
 
-#include <pthread.h>
+#include "ddk_mutex.h"
+#include "ddk_cond_var.h"
 #include "ddk_thread_utils.h"
 #include "ddk_executor_interface.h"
 #include <unordered_map>
@@ -109,8 +110,8 @@ private:
 	detail::this_fiber_t m_caller;
 	detail::running_fiber m_callee;
 	bool m_stop;
-	pthread_mutex_t m_fiberMutex;
-	pthread_cond_t m_fiberCondVar;
+	mutex m_fiberMutex;
+	cond_var m_fiberCondVar;
 };
 
 template<typename Comparator = void>

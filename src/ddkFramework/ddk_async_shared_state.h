@@ -1,6 +1,7 @@
 #pragma once
 
-#include <pthread.h>
+#include "ddk_mutex.h"
+#include "ddk_cond_var.h"
 #include "ddk_arena.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
@@ -29,11 +30,10 @@ public:
 	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename embedded_type<T>::cref_type>::type sink_type;
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
-	typedef typename embedded_type<T>::rref_type rref_type;
+	typedef typename embedded_type<T>::rref_type rreference;
 	typedef typename async_cancellable_interface::cancel_result cancel_result;
 
 	private_async_state();
-	~private_async_state();
 	cancel_result cancel();
 	void attach(async_cancellable_shared_ptr i_executor);
 	void detach();
@@ -49,8 +49,8 @@ public:
 	virtual void notify() override;
 
 private:
-	mutable pthread_mutex_t m_mutex;
-	mutable pthread_cond_t m_condVar;
+	mutable mutex m_mutex;
+	mutable cond_var m_condVar;
 	variant<detail::none_t,async_exception,T> m_arena;
 	async_cancellable_shared_ptr m_asyncExecutor;
 };

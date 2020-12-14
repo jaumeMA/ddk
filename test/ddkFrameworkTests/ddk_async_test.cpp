@@ -3,6 +3,7 @@
 #include "ddk_fiber_pool.h"
 #include "ddk_async.h"
 #include "test_utils.h"
+#include "ddk_high_order_array.h"
 
 using namespace testing;
 

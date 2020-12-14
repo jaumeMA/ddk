@@ -2,6 +2,7 @@
 #include <ctime>
 #include "ddk_thread_utils.h"
 #include <cmath>
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -99,8 +100,6 @@ fiber_event_driven_executor::fiber_event_driven_executor(ddk::fiber i_fiber, uns
 , m_executor(nullptr)
 , m_pendingWork(false)
 {
-	pthread_mutex_init(&m_condVarMutex, NULL);
-	pthread_cond_init(&m_condVar, NULL);
 }
 fiber_event_driven_executor::fiber_event_driven_executor(fiber_event_driven_executor&& other)
 : m_fiber(std::move(other.m_fiber))
@@ -110,8 +109,6 @@ fiber_event_driven_executor::fiber_event_driven_executor(fiber_event_driven_exec
 {
 	std::swap(m_stopped,other.m_stopped);
 	std::swap(m_pendingWork,other.m_pendingWork);
-	pthread_mutex_init(&m_condVarMutex, NULL);
-	pthread_cond_init(&m_condVar, NULL);
 }
 fiber_event_driven_executor::~fiber_event_driven_executor()
 {
@@ -122,9 +119,6 @@ fiber_event_driven_executor::~fiber_event_driven_executor()
 	}
 
 	DDK_ASSERT(m_pendingWork == false,"Leaving with pending work");
-
-	pthread_cond_destroy(&m_condVar);
-	pthread_mutex_destroy(&m_condVarMutex);
 }
 void fiber_event_driven_executor::set_update_time(unsigned int i_sleepInMs)
 {
@@ -186,37 +180,29 @@ fiber_event_driven_executor::resume_result fiber_event_driven_executor::resume()
 }
 void fiber_event_driven_executor::signal()
 {
-	pthread_mutex_lock(&m_condVarMutex);
-	pthread_cond_signal(&m_condVar);
-	pthread_mutex_unlock(&m_condVarMutex);
+	m_condVar.notify_one();
 }
 void fiber_event_driven_executor::update()
 {
-	pthread_mutex_lock(&m_condVarMutex);
+	m_condVarMutex.lock();
 
 	while(m_stopped == false)
 	{
 		time_t start = std::clock();
 
-		pthread_mutex_unlock(&m_condVarMutex);
+		m_condVarMutex.unlock();
 
         if(m_executor != nullptr)
         {
             eval(m_executor);
         }
 
-		pthread_mutex_lock(&m_condVarMutex);
+		m_condVarMutex.lock();
 
-		const double refreshPeriod = m_sleepTimeInMS - std::fmod((double)(clock()-start), (double) m_sleepTimeInMS);
-		const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
-
-		if (m_stopped == false && eval(m_testFunc) == false)
-		{
-			pthread_cond_timedwait(&m_condVar,&m_condVarMutex,&time_to_wait);
-		}
+		m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }),std::chrono::milliseconds(m_sleepTimeInMS));
 	}
 
-	pthread_mutex_unlock(&m_condVarMutex);
+	m_condVarMutex.unlock();
 }
 
 fiber_fire_and_forget_executor::fiber_fire_and_forget_executor(ddk::fiber i_fiber)

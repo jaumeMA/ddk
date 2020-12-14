@@ -114,14 +114,8 @@ thread_event_driven_executor::thread_event_driven_executor(unsigned int i_sleepI
 , m_executor(nullptr)
 , m_stopped(true)
 , m_pendingWork(false)
+, m_condVarMutex(MutexType::Recursive)
 {
-	pthread_mutexattr_t mutexAttr;
-
-	pthread_mutexattr_init(&mutexAttr);
-	pthread_mutexattr_settype(&mutexAttr,PTHREAD_MUTEX_RECURSIVE);
-
-	pthread_mutex_init(&m_condVarMutex, &mutexAttr);
-	pthread_cond_init(&m_condVar, NULL);
 }
 thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMS)
 : m_sleepTimeInMS(i_sleepInMS)
@@ -129,14 +123,8 @@ thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread,
 , m_stopped(true)
 , m_updateThread(std::move(i_thread))
 , m_pendingWork(false)
+, m_condVarMutex(MutexType::Recursive)
 {
-	pthread_mutexattr_t mutexAttr;
-
-	pthread_mutexattr_init(&mutexAttr);
-	pthread_mutexattr_settype(&mutexAttr,PTHREAD_MUTEX_RECURSIVE);
-
-	pthread_mutex_init(&m_condVarMutex, &mutexAttr);
-	pthread_cond_init(&m_condVar, NULL);
 }
 thread_event_driven_executor::thread_event_driven_executor(thread_event_driven_executor&& other)
 : m_sleepTimeInMS(other.m_sleepTimeInMS)
@@ -144,13 +132,11 @@ thread_event_driven_executor::thread_event_driven_executor(thread_event_driven_e
 , m_stopped(true)
 , m_updateThread(std::move(other.m_updateThread))
 , m_pendingWork(false)
+, m_condVarMutex(MutexType::Recursive)
 {
 	std::swap(m_executor,other.m_executor);
 	std::swap(m_stopped,other.m_stopped);
 	std::swap(m_pendingWork,other.m_pendingWork);
-
-	pthread_mutex_init(&m_condVarMutex, nullptr);
-	pthread_cond_init(&m_condVar, nullptr);
 }
 thread_event_driven_executor::~thread_event_driven_executor()
 {
@@ -161,9 +147,6 @@ thread_event_driven_executor::~thread_event_driven_executor()
 	}
 
 	DDK_ASSERT(m_pendingWork == false,"Leaving with pending work");
-
-	pthread_cond_destroy(&m_condVar);
-	pthread_mutex_destroy(&m_condVarMutex);
 }
 void thread_event_driven_executor::set_update_time(unsigned int i_sleepInMS)
 {
@@ -219,15 +202,15 @@ ExecutorState thread_event_driven_executor::get_state() const
 }
 thread_event_driven_executor::resume_result thread_event_driven_executor::resume()
 {
-	pthread_mutex_lock(&m_condVarMutex);
+	m_condVarMutex.lock();
 
 	if(m_stopped == false)
 	{
 		m_stopped = true;
 
-		pthread_cond_signal(&m_condVar);
+		m_condVar.notify_one();
 
-		pthread_mutex_unlock(&m_condVarMutex);
+		m_condVarMutex.unlock();
 
 		m_updateThread.stop();
 
@@ -235,20 +218,16 @@ thread_event_driven_executor::resume_result thread_event_driven_executor::resume
 	}
 	else
 	{
-		pthread_mutex_unlock(&m_condVarMutex);
+		m_condVarMutex.unlock();
 
 		return NotRunning;
 	}
 }
 void thread_event_driven_executor::signal()
 {
-	pthread_mutex_lock(&m_condVarMutex);
-
 	m_pendingWork = true;
 
-	pthread_cond_signal(&m_condVar);
-
-	pthread_mutex_unlock(&m_condVarMutex);
+	m_condVar.notify_one();
 }
 bool thread_event_driven_executor::is_stopped() const
 {
@@ -256,7 +235,7 @@ bool thread_event_driven_executor::is_stopped() const
 }
 void thread_event_driven_executor::update()
 {
-	pthread_mutex_lock(&m_condVarMutex);
+	m_condVarMutex.lock();
 
 	while(m_stopped == false)
 	{
@@ -266,23 +245,17 @@ void thread_event_driven_executor::update()
 
         if(m_executor != nullptr)
         {
-			pthread_mutex_unlock(&m_condVarMutex);
+			m_condVarMutex.unlock();
 
             eval(m_executor);
 
-			pthread_mutex_lock(&m_condVarMutex);
+			m_condVarMutex.lock();
         }
 
-		if (m_stopped == false && eval(m_testFunc) == false)
-		{
-			const double refreshPeriod = m_sleepTimeInMS - fmod((double)(clock()-start), (double) m_sleepTimeInMS);
-			const struct timespec time_to_wait = {time(NULL) + (int) (refreshPeriod/1000), 0};
-
-			pthread_cond_timedwait(&m_condVar,&m_condVarMutex,&time_to_wait);
-		}
+		m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }), std::chrono::milliseconds(m_sleepTimeInMS));
 	}
 
-	pthread_mutex_unlock(&m_condVarMutex);
+	m_condVarMutex.unlock();
 }
 
 thread_fire_and_forget_executor::thread_fire_and_forget_executor()

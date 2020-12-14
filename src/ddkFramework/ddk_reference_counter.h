@@ -5,6 +5,7 @@
 #include "ddk_scoped_enum.h"
 #include <map>
 #include <vector>
+#include "ddk_mutex.h"
 
 #ifdef DDK_DEBUG
 
@@ -41,7 +42,7 @@ public:
 	lent_reference_counter();
 	lent_reference_counter(const lent_reference_counter& other);
 	lent_reference_counter(lent_reference_counter&& other);
-	virtual ~lent_reference_counter();
+	virtual ~lent_reference_counter() = default;
 #ifdef DDK_DEBUG
 	size_t incrementWeakReference();
 	size_t decrementWeakReference();
@@ -58,7 +59,7 @@ private:
 #ifdef DDK_DEBUG
 	static detail::symbol_cache_table m_symbolInfoCache;
 	stack_container m_stackTraces;
-	pthread_mutex_t m_refMutex;
+	mutex m_refMutex;
 	atomic_size_t m_numWeakReferences;
 #endif
 };

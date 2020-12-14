@@ -47,6 +47,10 @@ public:
 	{
 		m_content.template construct<T>(std::forward<Args>(i_args) ...);
 	}
+	~linked_list_node()
+	{
+		m_content.template destroy<T>();
+	}
 	linked_node_ptr get_prev_node()
 	{
 		return lend(m_prevNode);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_iwaiting_room.h"
-#include <pthread.h>
+#include "ddk_mutex.h"
 
 namespace ddk
 {
@@ -10,7 +10,6 @@ class writer_waiting_room : public iwaiting_room
 {
 public:
 	writer_waiting_room(SharedState& i_sharedState);
-	~writer_waiting_room();
 
 private:
 	virtual void _enter_area(Reentrancy i_reentrancy) override;
@@ -20,7 +19,7 @@ private:
 
 	size_t				m_numParticipants;
 	SharedState&		m_sharedState;
-	pthread_mutex_t		m_stateRoomMutex;
+	mutex	m_stateRoomMutex;
 };
 
 }

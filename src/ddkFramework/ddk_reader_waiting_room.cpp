@@ -3,6 +3,7 @@
 #include <system_error>
 #include "ddk_thread_utils.h"
 #include <thread>
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -13,17 +14,10 @@ reader_waiting_room::reader_waiting_room(iwaiting_room::SharedState& i_sharedSta
 , m_numWaitingReaders(0)
 , m_sharedState(i_sharedState)
 {
-	pthread_mutex_init(&m_stateRoomMutex, NULL);
-	pthread_cond_init(&m_condVariable, NULL);
-}
-reader_waiting_room::~reader_waiting_room()
-{
-	pthread_cond_destroy(&m_condVariable);
-	pthread_mutex_destroy(&m_stateRoomMutex);
 }
 void reader_waiting_room::_enter_area(Reentrancy i_reentrancy)
 {
-	pthread_mutex_lock(&m_stateRoomMutex);
+	m_stateRoomMutex.lock();
 
 #ifdef THREAD_ACQUIRE_STACK_TRACE
 	m_sharedState.addStackTrace(Reader);
@@ -41,7 +35,7 @@ void reader_waiting_room::_enter_area(Reentrancy i_reentrancy)
 		{
 			m_blockedReader = true;
 
-			pthread_mutex_unlock(&m_stateRoomMutex);
+			m_stateRoomMutex.unlock();
 
 			m_sharedState.acquire_lock(Reader);
 
@@ -54,38 +48,38 @@ void reader_waiting_room::_enter_area(Reentrancy i_reentrancy)
 				m_sharedState.acquire_lock(Reader);
 			}
 
-			pthread_mutex_lock(&m_stateRoomMutex);
+			m_stateRoomMutex.lock();
 
 			m_blockedReader = false;
 
 			if (m_numWaitingReaders > 0)
 			{
-				pthread_cond_broadcast(&m_condVariable);
+				m_condVariable.notify_all();
 			}
 		}
 		else if(shallWait)
 		{
 			++m_numWaitingReaders;
 
-			pthread_cond_wait(&m_condVariable,&m_stateRoomMutex);
+			m_condVariable.wait(m_stateRoomMutex);
 
 			--m_numWaitingReaders;
 
 			//posix cannot garuantee the atomic operations between condition variable wake up, effective wake up of slept thread and any other entering thread, so:
 			if (m_numWaitingReaders > 0)
 			{
-				pthread_cond_broadcast(&m_condVariable);
+				m_condVariable.notify_all();
 			}
 		}
 	}
 
 	m_sharedState.setCurrentState(Reader);
 
-	pthread_mutex_unlock(&m_stateRoomMutex);
+	m_stateRoomMutex.unlock();
 }
 bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 {
-	pthread_mutex_lock(&m_stateRoomMutex);
+	lock_guard lg(m_stateRoomMutex);
 
 	bool res = false;
 
@@ -108,13 +102,11 @@ bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 #endif
 	}
 
-	pthread_mutex_unlock(&m_stateRoomMutex);
-
 	return res;
 }
 void reader_waiting_room::_leave_area()
 {
-	pthread_mutex_lock(&m_stateRoomMutex);
+	lock_guard lg(m_stateRoomMutex);
 
 	DDK_ASSERT(m_numParticipants > 0, "Trying to leave non occupied reader waiting room");
 
@@ -134,7 +126,6 @@ void reader_waiting_room::_leave_area()
 	m_sharedState.removeStackTrace();
 #endif
 
-	pthread_mutex_unlock(&m_stateRoomMutex);
 }
 const iwaiting_room::SharedState& reader_waiting_room::getSharedState() const
 {

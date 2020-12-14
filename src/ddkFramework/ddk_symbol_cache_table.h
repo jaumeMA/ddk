@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <pthread.h>
+#include "ddk_mutex.h"
 #include <string>
 
 #if defined(WIN32)
@@ -25,8 +25,8 @@ public:
 	typedef symbol_info& reference;
 	typedef const symbol_info& const_reference;
 
-	symbol_cache_table();
-	~symbol_cache_table();
+	symbol_cache_table() = default;
+	~symbol_cache_table() = default;
 	const_reference symbolicate(void* i_address);
 
 private:
@@ -34,7 +34,7 @@ private:
 	typedef std::unordered_map<size_t,symbol_info>::const_iterator const_iterator;
 
 	std::unordered_map<size_t,symbol_info> m_symbolInfo;
-	mutable pthread_mutex_t m_refMutex;
+	mutable mutex m_refMutex;
 };
 
 }

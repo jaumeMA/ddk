@@ -8,6 +8,8 @@
 #include "ddk_reference_wrapper_deleter.h"
 #include "ddk_thread_sheaf.h"
 #include "ddk_result.h"
+#include "ddk_mutex.h"
+#include "ddk_cond_var.h"
 
 namespace ddk
 {
@@ -37,8 +39,8 @@ private:
 	thread_id_t get_id() const override;
 
 	pthread_t m_thread;
-	pthread_mutex_t m_mutex;
-	pthread_cond_t m_condVar;
+	mutex m_mutex;
+	cond_var m_condVar;
 	optional<ddk::function<void()>> m_funcToExecute;
 	State m_state;
 	detail::yielder* m_yielder;

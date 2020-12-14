@@ -2,6 +2,7 @@
 #include "ddk_reference_wrapper.h"
 #include "ddk_fiber_impl.h"
 #include "ddk_reference_wrapper.h"
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -12,9 +13,6 @@ worker_thread_impl::worker_thread_impl()
 : m_funcToExecute(none)
 , m_state(Idle)
 {
-	pthread_mutex_init(&m_mutex, NULL);
-	pthread_cond_init(&m_condVar, NULL);
-
 	pthread_attr_t	attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -29,15 +27,12 @@ worker_thread_impl::~worker_thread_impl()
 
 	void *res = NULL;
 	pthread_join(m_thread,&res);
-
-	pthread_cond_destroy(&m_condVar);
-	pthread_mutex_destroy(&m_mutex);
 }
 void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder* i_yielder)
 {
 	if (m_state != Running)
 	{
-		pthread_mutex_lock(&m_mutex);
+		lock_guard lg(m_mutex);
 
 		m_funcToExecute = i_callable;
 
@@ -46,9 +41,7 @@ void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder*
 			m_yielder = i_yielder;
 		}
 
-		pthread_cond_signal(&m_condVar);
-
-		pthread_mutex_unlock(&m_mutex);
+		m_condVar.notify_one();
 	}
 }
 void worker_thread_impl::stop()
@@ -57,9 +50,7 @@ void worker_thread_impl::stop()
 	{
 		//we are using lock/unlock operations just t owait until current function execution ends, s_yielder is thread local theres no need to protect it with mutexes
 		//we set it there just to avoid compiler applies some kind of optimization
-		pthread_mutex_lock(&m_mutex);
-
-		pthread_mutex_unlock(&m_mutex);
+		lock_guard lg(m_mutex);
 	}
 }
 bool worker_thread_impl::joinable() const
@@ -74,7 +65,7 @@ void worker_thread_impl::execute()
 {
 	while(m_state != Stopped)
 	{
-		pthread_mutex_lock(&m_mutex);
+		lock_guard lg(m_mutex);
 
 		if (m_funcToExecute)
 		{
@@ -92,10 +83,8 @@ void worker_thread_impl::execute()
 		}
 		else
 		{
-			pthread_cond_wait(&m_condVar,&m_mutex);
+			m_condVar.wait(m_mutex);
 		}
-
-		pthread_mutex_unlock(&m_mutex);
 	}
 }
 bool worker_thread_impl::set_affinity(const cpu_set_t& i_set)

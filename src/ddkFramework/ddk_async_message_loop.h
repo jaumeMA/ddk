@@ -8,6 +8,8 @@
 #include "ddk_async_message_queue.h"
 #include "ddk_async_message_exchange_room.h"
 #include "ddk_reference_wrapper.h"
+#include "ddk_mutex.h"
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -24,18 +26,13 @@ public:
 	async_message_loop(sender_id i_id)
 	: m_senderId(i_id)
 	{
-		pthread_mutex_init(&m_receiverMutex,NULL);
-	}
-	~async_message_loop()
-	{
-		pthread_mutex_destroy(&m_receiverMutex);
 	}
 	template<typename Callable, typename MessageType>
 	detail::connection_base& connect(detail::intrusive_node<signal_functor<Callable>>& i_caller, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue)
 	{
 		detail::connection_base& res = *i_caller;
 
-		pthread_mutex_lock(&m_receiverMutex);
+		lock_guard lg(m_receiverMutex);
 
 		typename linked_list<msg_exchange_room_unique_ref>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_messageQueue](const msg_exchange_room_unique_ref& i_receiver){ return *i_receiver == i_messageQueue->get_id(); });
 
@@ -47,8 +44,6 @@ public:
 		{
 			room->addCaller(i_caller);
 		}
-
-		pthread_mutex_unlock(&m_receiverMutex);
 
 		return res;
 	}
@@ -67,7 +62,7 @@ public:
 	}
 	void clear(receiver_id i_id)
 	{
-		pthread_mutex_lock(&m_receiverMutex);
+		lock_guard lg(m_receiverMutex);
 
 		typename linked_list<msg_exchange_room_unique_ref>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const msg_exchange_room_unique_ref& i_receiver){ i_receiver->get_id() == i_id; });
 
@@ -75,20 +70,16 @@ public:
 		{
 			m_receivers.erase(itReceiver);
 		}
-
-		pthread_mutex_unlock(&m_receiverMutex);
 	}
 	void clear()
 	{
-		pthread_mutex_lock(&m_receiverMutex);
+		lock_guard lg(m_receiverMutex);
 
 		m_receivers.clear();
-
-		pthread_mutex_unlock(&m_receiverMutex);
 	}
 	void push_message(const BuiltInMessageType& i_msg)
 	{
-		pthread_mutex_lock(&m_receiverMutex);
+		lock_guard lg(m_receiverMutex);
 
 		typename linked_list<msg_exchange_room_unique_ref>::iterator itReceiver =  m_receivers.begin();
 		for(;itReceiver!=m_receivers.end();++itReceiver)
@@ -97,14 +88,12 @@ public:
 
 			room->push_message(i_msg);
 		}
-
-		pthread_mutex_unlock(&m_receiverMutex);
 	}
 
 private:
 	const sender_id m_senderId;
 	linked_list<msg_exchange_room_unique_ref> m_receivers;
-	mutable pthread_mutex_t m_receiverMutex;
+	mutable mutex m_receiverMutex;
 };
 
 }

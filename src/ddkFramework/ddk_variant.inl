@@ -269,7 +269,7 @@ bool variant<Types...>::operator==(T&& other) const
 	{
 		static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
 
-		static const size_t converted_type_pos = mpl::nth_pos_of_predicate<std::is_constructible,T,Types...>::value;
+		static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
 
 		return detail::variant_impl<Types...>::compare<converted_type_pos>(std::forward<T>(other));
 	}
@@ -286,7 +286,7 @@ bool variant<Types...>::operator!=(T&& other) const
 	{
 		static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
 
-		static const size_t converted_type_pos = mpl::nth_pos_of_predicate<std::is_constructible,T,Types...>::value;
+		static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
 
 		return detail::variant_impl<Types...>::compare<converted_type_pos>(std::forward<T>(other)) == false;
 	}

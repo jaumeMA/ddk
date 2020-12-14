@@ -1,4 +1,5 @@
 #include "ddk_symbol_cache_table.h"
+#include "ddk_lock_guard.h"
 
 #ifdef WIN32
 
@@ -12,19 +13,11 @@ namespace ddk
 namespace detail
 {
 
-symbol_cache_table::symbol_cache_table()
-{
-	pthread_mutex_init(&m_refMutex,NULL);
-}
-symbol_cache_table::~symbol_cache_table()
-{
-	pthread_mutex_destroy(&m_refMutex);
-}
 symbol_cache_table::const_reference symbol_cache_table::symbolicate(void* i_address)
 {
 	const size_t symbolKey = reinterpret_cast<size_t>(i_address);
 
-	pthread_mutex_lock(&m_refMutex);
+	lock_guard lg(m_refMutex);
 
 	iterator itSymbol = m_symbolInfo.find(symbolKey);
 
@@ -61,14 +54,10 @@ symbol_cache_table::const_reference symbol_cache_table::symbolicate(void* i_addr
 
 		std::pair<iterator,bool> res = m_symbolInfo.insert(std::make_pair(symbolKey,symbolicatedSymbol));
 
-		pthread_mutex_unlock(&m_refMutex);
-
 		return res.first->second;
 	}
 	else
 	{
-		pthread_mutex_unlock(&m_refMutex);
-
 		return itSymbol->second;
 	}
 }

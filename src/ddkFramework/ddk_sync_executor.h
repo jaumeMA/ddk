@@ -26,7 +26,7 @@ public:
 	using typename async_cancellable_interface::cancel_result;
 	typedef typename detail::private_async_state<Return>::reference reference;
 	typedef typename detail::private_async_state<Return>::const_reference const_reference;
-	typedef typename detail::private_async_state<Return>::rref_type rref_type;
+	typedef typename detail::private_async_state<Return>::rreference rreference;
 
 	async_executor(const function<Return()>& i_function);
 	async_executor(const async_executor&) = delete;
