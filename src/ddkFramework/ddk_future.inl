@@ -184,7 +184,7 @@ future<TT> future<T>::get_async(const function<TT(const_reference)>& i_continuat
 	}
 }
 template<typename T>
-future<T> future<T>::on_error(const function<void(const async_exception&)>& i_onError) &&
+future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
 {
 	if(m_sharedState)
 	{
@@ -205,7 +205,7 @@ future<T> future<T>::on_error(const function<void(const async_exception&)>& i_on
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp);
+					eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
@@ -304,7 +304,7 @@ shared_future<TT> shared_future<T>::get_async(const function<TT(const_reference)
 	}
 }
 template<typename T>
-shared_future<T> shared_future<T>::on_error(const function<void(const async_exception&)>& i_onError) &&
+shared_future<T> shared_future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
 {
 	if(m_sharedState)
 	{
@@ -325,7 +325,7 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_exce
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp);
+					eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };

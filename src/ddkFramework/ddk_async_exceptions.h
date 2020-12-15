@@ -22,6 +22,19 @@ private:
 SCOPED_ENUM_DECL(AsyncExceptionCode,
 				 None);
 
+struct async_error
+{
+public:
+	async_error(AsyncExceptionCode i_code, const std::string& i_reason);
+
+	const std::string& what() const;
+	AsyncExceptionCode get_code() const;
+
+private:
+	AsyncExceptionCode m_code;
+	std::string m_reason;
+};
+
 struct async_exception : public std::exception
 {
 public:
@@ -30,6 +43,7 @@ public:
     const char* what() const noexcept;
 	AsyncExceptionCode get_code() const;
 	bool acquired() const;
+	async_error as_error() const;
 
 private:
     std::string m_reason;

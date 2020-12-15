@@ -147,7 +147,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 
 		return std::string("hola");
 	}))
-	.on_error(ddk::make_function([](const ddk::async_exception&)
+	.on_error(ddk::make_function([](const ddk::async_error&)
 	{ 
 		printf("ep, exception\n"); 
 	}))
@@ -159,7 +159,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 												
 		return i_value[0]; 
 	}),std::move(myThread))
-	.on_error(ddk::make_function([](const ddk::async_exception&) 
+	.on_error(ddk::make_function([](const ddk::async_error&)
 	{ 
 		printf("ep, segona exception\n"); 
 	}))
