@@ -46,6 +46,8 @@ public:
 	future<TT> then(const function<TT(const_reference)>& i_continuation) &&;
 	template<typename TT, typename TTT>
 	future<TT> then_on(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
+	template<typename TT,typename TTT>
+	future<TT> get_async(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
 	future<T> on_error(const function<void(const async_exception&)>& i_onError) &&;
 
 protected:
@@ -86,10 +88,13 @@ public:
 	template<typename TT>
 	shared_future(shared_reference_wrapper<TT> i_executor,...);
 
-private:
-	using future<T>::then;
-	using future<T>::then_on;
-	using future<T>::on_error;
+	template<typename TT>
+	shared_future<TT> then(const function<TT(const_reference)>& i_continuation) && ;
+	template<typename TT,typename TTT>
+	shared_future<TT> then_on(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) && ;
+	template<typename TT,typename TTT>
+	shared_future<TT> get_async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) && ;
+	shared_future<T> on_error(const function<void(const async_exception&)>& i_onError) && ;
 };
 
 }

@@ -34,11 +34,20 @@ public:
 	~async_executor();
 	async_executor& operator=(const async_executor&) = delete;
 
+	// immediat attach
 	future<Return> attach(thread i_thread);
 	future<Return> attach(fiber i_fiber);
 	future<Return> attach(thread_sheaf i_threadSheaf);
 	future<Return> attach(fiber_sheaf i_fiberSheaf);
 	future<Return> attach(attachable<Return> i_attachable);
+
+	// delayed attach
+	future<Return> deferred_attach(thread i_thread);
+	future<Return> deferred_attach(fiber i_fiber);
+	future<Return> deferred_attach(thread_sheaf i_threadSheaf);
+	future<Return> deferred_attach(fiber_sheaf i_fiberSheaf);
+	future<Return> deferred_attach(attachable<Return> i_attachable);
+
 	async_shared_ref store(promise<Return>& i_promise);
 	async_shared_ref on_cancel(const ddk::function<bool()>& i_cancelFunc);
 	future<Return> as_future();

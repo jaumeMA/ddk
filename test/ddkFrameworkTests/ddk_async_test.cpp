@@ -139,7 +139,8 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	//ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));
 
 	ddk::thread myThread;
-	ddk::future<char> myOtherFuture = std::move(myFuture)
+	ddk::thread myOtherThread;
+	ddk::future<const char*> myOtherFuture = std::move(myFuture)
 	.then(ddk::make_function([](const int& i_value)
 	{ 
 		printf("executada la primera part: %d\n", i_value);
@@ -161,11 +162,19 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	.on_error(ddk::make_function([](const ddk::async_exception&) 
 	{ 
 		printf("ep, segona exception\n"); 
+	}))
+	.get_async(ddk::make_function([](const char& i_value)
+	{
+		return 10;	
+	}),std::move(myOtherThread))
+	.then(ddk::make_function([](const int& i_value)
+	{
+		return "hola";
 	}));
 
 	try
 	{
-		char res = myOtherFuture.extract_value();
+		const char* res = myOtherFuture.extract_value();
 	}
 	catch(...)
 	{
