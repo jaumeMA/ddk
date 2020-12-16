@@ -107,7 +107,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
-    const function<Return(Type,Types...)> res(i_object, i_funcPtr);
+    const function<Return(Type,Types...),Allocator> res(i_object, i_funcPtr, i_allocator);
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -116,7 +116,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
-    const function<Return(Type,Types...)> res(i_object,i_funcPtr);
+    const function<Return(Type,Types...),Allocator> res(i_object,i_funcPtr,i_allocator);
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -125,7 +125,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
-    const function<Return(Type,Types...)> res(i_funcPtr);
+    const function<Return(Type,Types...),Allocator> res(i_funcPtr,i_allocator);
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
@@ -134,9 +134,9 @@ resolved_spec_callable<typename std::enable_if<std::is_class<Functor>::value,Fun
 {
 	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
 
-    typedef resolved_callable<Functor> function_type;
+    typedef resolved_callable<Functor,Allocator> function_type;
 
-    const function_type res(std::forward<Functor>(i_functor));
+    const function_type res(std::forward<Functor>(i_functor),i_allocator);
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
