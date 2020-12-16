@@ -163,7 +163,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	{ 
 		printf("ep, segona exception\n"); 
 	}))
-	.get_async(ddk::make_function([](const char& i_value)
+	.async(ddk::make_function([](const char& i_value)
 	{
 		return 10;	
 	}),std::move(myOtherThread))

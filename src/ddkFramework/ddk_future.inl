@@ -141,13 +141,13 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 		{
 			if constexpr(std::is_same<TT,void>::value)
 			{
-				future<TT> nestedFuture = async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
 
 				nestedFuture.wait();
 			}
 			else
 			{
-				future<TT> nestedFuture = async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
 
 				return nestedFuture.extract_value();
 			}
@@ -162,7 +162,7 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 }
 template<typename T>
 template<typename TT, typename TTT>
-future<TT> future<T>::get_async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) &&
+future<TT> future<T>::async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) &&
 {
 	if(m_sharedState)
 	{
@@ -261,13 +261,13 @@ shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>&
 		{
 			if constexpr(std::is_same<TT,void>::value)
 			{
-				future<TT> nestedFuture = async(i_continuation(acquiredFuture.get_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.get_value())) -> attach(std::forward<TTT>(acquiredExecContext));
 
 				nestedFuture.wait();
 			}
 			else
 			{
-				future<TT> nestedFuture = async(i_continuation(acquiredFuture.get_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.get_value())) -> attach(std::forward<TTT>(acquiredExecContext));
 
 				return nestedFuture.extract_value();
 			}
@@ -282,7 +282,7 @@ shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>&
 }
 template<typename T>
 template<typename TT,typename TTT>
-shared_future<TT> shared_future<T>::get_async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) &&
+shared_future<TT> shared_future<T>::async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) &&
 {
 	if(m_sharedState)
 	{
