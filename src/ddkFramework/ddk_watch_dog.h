@@ -13,7 +13,7 @@ friend inline ddk::watch_dog make_watcher(const _TYPE& i_watchable) \
 { \
 	return ddk::watch_dog(i_watchable.__watch_dog); \
 } \
-friend inline ddk::watch_dog watch(const _TYPE& i_watchable) \
+friend inline void watch(const _TYPE& i_watchable) \
 { \
 	ddk::watch_dog watcher(i_watchable.__watch_dog); \
 	\
