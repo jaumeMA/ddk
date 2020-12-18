@@ -8,10 +8,16 @@
 #include "ddk_weak_pointer_wrapper.h"
 
 #define WATCHABLE_TYPE(_TYPE) \
-mutable ddk::watch_dog_waiter_weak_ptr __next_watch_dog; \
+mutable ddk::watch_dog_waiter_weak_ptr __watch_dog; \
+friend inline ddk::watch_dog make_watcher(const _TYPE& i_watchable) \
+{ \
+	return ddk::watch_dog(i_watchable.__watch_dog); \
+} \
 friend inline ddk::watch_dog watch(const _TYPE& i_watchable) \
 { \
-	return ddk::watch_dog(i_watchable.__next_watch_dog); \
+	ddk::watch_dog watcher(i_watchable.__watch_dog); \
+	\
+	watcher.wait(); \
 } \
 friend inline bool is_watchable(const _TYPE&) \
 { \
@@ -19,7 +25,21 @@ friend inline bool is_watchable(const _TYPE&) \
 } \
 friend inline bool is_watched(const _TYPE& i_watchable) \
 { \
-	return i_watchable.__next_watch_dog != nullptr; \
+	return i_watchable.__watch_dog != nullptr; \
+} \
+inline void notify_watcher() \
+{ \
+	if(ddk::watch_dog_waiter_shared_ptr waiterSharedPtr = share(__watch_dog)) \
+	{ \
+		waiterSharedPtr->notify_one(); \
+	} \
+} \
+inline void notify_watchers() \
+{ \
+	if(ddk::watch_dog_waiter_shared_ptr waiterSharedPtr = share(__watch_dog)) \
+	{ \
+		waiterSharedPtr->notify_all(); \
+	} \
 }
 
 namespace ddk
@@ -34,7 +54,8 @@ public:
 
 	void lock();
 	void unlock();
-	void wait(const function<bool()>& i_predicate);
+	void wait();
+	void wait_until(const function<bool()>& i_predicate);
 	void notify_one();
 	void notify_all();
 
@@ -53,6 +74,7 @@ class watch_dog
 public:
 	watch_dog(watch_dog_waiter_weak_ptr& i_weakWaiter);
 
+	void wait();
 	void wait_until(const function<bool()>& i_predicate);
 	void notify_one();
 	void notify_all();

@@ -578,7 +578,12 @@ inline lent_reference_wrapper<const TT> lend(const share_from_this<T,TT>& i_shar
 }
 
 template<typename T>
-inline weak_pointer_wrapper<T> weak(const shared_pointer_wrapper<T>& i_sharedPtr)
+inline weak_pointer_wrapper<T> weak(shared_pointer_wrapper<T>& i_sharedPtr)
+{
+	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename T>
+inline weak_pointer_wrapper<const T> weak(const shared_pointer_wrapper<T>& i_sharedPtr)
 {
 	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
 }
@@ -591,6 +596,17 @@ template<typename T,typename TT>
 inline weak_pointer_wrapper<const TT> weak(const share_from_this<TT>& i_sharedFromThis)
 {
 	return __make_weak_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+}
+
+template<typename T>
+inline shared_pointer_wrapper<const T> share(const weak_pointer_wrapper<T>& i_weakPtr)
+{
+	return i_weakPtr.share();
+}
+template<typename T>
+inline shared_pointer_wrapper<T> share(weak_pointer_wrapper<T>& i_weakPtr)
+{
+	return i_weakPtr.share();
 }
 
 template<typename T>

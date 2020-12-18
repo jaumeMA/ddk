@@ -50,7 +50,9 @@ class shared_pointer_wrapper
 	template<typename TT>
 	friend shared_pointer_wrapper<TT> __make_shared_pointer(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 	template<typename TT>
-	friend weak_pointer_wrapper<TT> weak(const shared_pointer_wrapper<TT>&);
+	friend weak_pointer_wrapper<TT> weak(shared_pointer_wrapper<TT>&);
+	template<typename TT>
+	friend weak_pointer_wrapper<const TT> weak(const shared_pointer_wrapper<TT>&);
 
 public:
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;

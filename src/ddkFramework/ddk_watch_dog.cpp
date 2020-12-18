@@ -16,7 +16,13 @@ void watch_dog_waiter::unlock()
 {
 	m_mutex.unlock();
 }
-void watch_dog_waiter::wait(const function<bool()>& i_predicate)
+void watch_dog_waiter::wait()
+{
+	lock_guard lg(m_mutex);
+
+	m_condVar.wait(m_mutex);
+}
+void watch_dog_waiter::wait_until(const function<bool()>& i_predicate)
 {
 	lock_guard lg(m_mutex);
 
@@ -35,7 +41,7 @@ void watch_dog_waiter::notify_all()
 
 watch_dog::watch_dog(watch_dog_waiter_weak_ptr& i_weakWaiter)
 {
-	if(watch_dog_waiter_shared_ptr waiterSharedPtr = i_weakWaiter.share())
+	if(watch_dog_waiter_shared_ptr waiterSharedPtr = share(i_weakWaiter))
 	{
 		m_waiter = waiterSharedPtr;
 	}
@@ -46,11 +52,18 @@ watch_dog::watch_dog(watch_dog_waiter_weak_ptr& i_weakWaiter)
 		i_weakWaiter = weak(m_waiter);
 	}
 }
+void watch_dog::wait()
+{
+	if(m_waiter)
+	{
+		m_waiter->wait();
+	}
+}
 void watch_dog::wait_until(const function<bool()>& i_predicate)
 {
 	if(m_waiter)
 	{
-		m_waiter->wait(i_predicate);
+		m_waiter->wait_until(i_predicate);
 	}
 }
 void watch_dog::notify_one()
