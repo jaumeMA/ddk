@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ddk_macros.h"
-#include "ddk_arena.h"
 #include "ddk_shared_pointer_wrapper.h"
 #include "ddk_lent_pointer_wrapper.h"
 #include "ddk_reference_wrapper.h"
@@ -31,11 +30,8 @@ struct linked_list_node : public share_from_this<linked_list_node<T>>
 	typedef shared_pointer_wrapper<const detail::linked_list_node<T>> linked_node_const_shared_ptr;
 
 public:
-	typedef linked_node_ptr reference_type;
-	typedef linked_node_const_ptr const_reference_type;
-	typedef linked_node_ptr rreference_type;
 	typedef T value_type;
-	typedef typename std::add_lvalue_reference<typename std::add_const<value_type>::type>::type reference;
+	typedef typename std::add_lvalue_reference<value_type>::type reference;
 	typedef typename std::add_lvalue_reference<typename std::add_const<value_type>::type>::type const_reference;
 	typedef typename std::add_rvalue_reference<value_type>::type rreference;
 	typedef typename std::add_const<rreference>::type const_rreference;
@@ -44,12 +40,8 @@ public:
 
 	template<typename ... Args>
 	linked_list_node(Args&& ... i_args)
+	: m_content(std::forward<Args>(i_args) ...)
 	{
-		m_content.template construct<T>(std::forward<Args>(i_args) ...);
-	}
-	~linked_list_node()
-	{
-		m_content.template destroy<T>();
 	}
 	linked_node_ptr get_prev_node()
 	{
@@ -135,25 +127,37 @@ public:
 
 		return res;
 	}
-	T& get_value()
+	reference get()
 	{
-		return m_content.template get<T>();
+		return m_content;
 	}
-	const T& get_value() const
+	const_reference get() const
 	{
-		return m_content.template get<T>();
+		return m_content;
 	}
-	T extract_value()
+	rreference extract() &&
 	{
-		return m_content.template extract<T>();
+		return std::move(m_content);
 	}
-	bool operator==(const T& other) const
+	pointer get_ptr()
 	{
-		return m_content.template compare<T>(other);
+		return &m_content;
+	}
+	const_pointer get_ptr() const
+	{
+		return &m_content;
+	}
+	bool operator==(const linked_list_node<T>& other) const
+	{
+		return m_content == other.m_content;
+	}
+	bool operator!=(const linked_list_node<T>& other) const
+	{
+		return m_content != other.m_content;
 	}
 
 private:
-	typed_arena<T> m_content;
+	T m_content;
 	linked_node_shared_ptr m_prevNode;
 	linked_node_shared_ptr m_nextNode;
 };

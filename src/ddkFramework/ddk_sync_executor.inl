@@ -52,7 +52,7 @@ template<typename Return>
 future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
 	//at some point put a composed callable here
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -68,7 +68,7 @@ future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 template<typename Return>
 future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 {
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
@@ -110,7 +110,7 @@ template<typename Return>
 future<Return> async_executor<Return>::deferred_attach(thread_sheaf i_threadSheaf)
 {
 	//at some point put a composed callable here
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -122,7 +122,7 @@ future<Return> async_executor<Return>::deferred_attach(thread_sheaf i_threadShea
 template<typename Return>
 future<Return> async_executor<Return>::deferred_attach(fiber_sheaf i_fiberSheaf)
 {
-	async_executor<detail::void_t>* newAsyncExecutor = new async_executor<detail::void_t>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
@@ -161,7 +161,7 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
     }
 
 	const nested_start_result execRes = m_executor->execute(make_function(this,&async_executor<Return>::set_value),
-	make_function([self = this->unsafe_ref_from_this()]() mutable
+	make_function([self = this->ref_from_this()]() mutable
 	{
 		try
 		{

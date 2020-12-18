@@ -15,7 +15,7 @@ public:
 	typedef typename AccessCallContext::provider_interface provider_interface;
 	typedef typename AccessCallContext::critical_context critical_context;
 	typedef ddk::lent_reference_wrapper<critical_context> critical_context_ref;
-	typedef ddk::detail::intrusive_node<critical_context_ref> critical_context_context;
+	typedef ddk::intrusive_node<critical_context_ref> critical_context_context;
 
 	CriticalCallContext(AccessCallContext& i_callContext, critical_context_ref i_context)
 	: m_callContext(i_callContext)
@@ -56,7 +56,7 @@ public:
 	typedef typename AccessCallContext::provider_interface provider_interface;
 	typedef typename AccessCallContext::critical_context critical_context;
 	typedef ddk::lent_reference_wrapper<critical_context> critical_context_ref;
-	typedef ddk::detail::intrusive_node<critical_context_ref> critical_context_context;
+	typedef ddk::intrusive_node<critical_context_ref> critical_context_context;
 
 	ConstCriticalCallContext(const AccessCallContext& i_callContext, critical_context_ref i_context)
 	: m_callContext(i_callContext)

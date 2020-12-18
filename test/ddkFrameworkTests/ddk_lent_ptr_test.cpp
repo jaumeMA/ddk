@@ -50,58 +50,58 @@ TEST(DDKLentPtrTest,uniquePtrLentScope)
 
 			EXPECT_EQ(refCounter.hasStrongReferences(),true);
 #if defined(DDK_DEBUG)
-			EXPECT_EQ(refCounter.getNumWeakReferences(),1);
+			EXPECT_EQ(refCounter.getNumLentReferences(),1);
 #endif
 			{
 				ddk::lent_pointer_wrapper<DefaultType> foo2 = ddk::lend(fooUnique);
 
 #if defined(DDK_DEBUG)
-				EXPECT_EQ(refCounter.getNumWeakReferences(),2);
+				EXPECT_EQ(refCounter.getNumLentReferences(),2);
 #endif
 				{
 					ddk::lent_pointer_wrapper<DefaultType> foo3 = ddk::lend(fooUnique);
 
 #if defined(DDK_DEBUG)
-					EXPECT_EQ(refCounter.getNumWeakReferences(),3);
+					EXPECT_EQ(refCounter.getNumLentReferences(),3);
 #endif
 
 					{
 						ddk::lent_pointer_wrapper<DefaultType> foo4 = ddk::lend(fooUnique);
 
 #if defined(DDK_DEBUG)
-						EXPECT_EQ(refCounter.getNumWeakReferences(),4);
+						EXPECT_EQ(refCounter.getNumLentReferences(),4);
 #endif
 
 						{
 							ddk::lent_pointer_wrapper<DefaultType> foo5 = ddk::lend(fooUnique);
 
 #if defined(DDK_DEBUG)
-							EXPECT_EQ(refCounter.getNumWeakReferences(),5);
+							EXPECT_EQ(refCounter.getNumLentReferences(),5);
 #endif
 						}
 
 #if defined(DDK_DEBUG)
-						EXPECT_EQ(refCounter.getNumWeakReferences(),4);
+						EXPECT_EQ(refCounter.getNumLentReferences(),4);
 #endif
 					}
 
 #if defined(DDK_DEBUG)
-					EXPECT_EQ(refCounter.getNumWeakReferences(),3);
+					EXPECT_EQ(refCounter.getNumLentReferences(),3);
 #endif
 				}
 
 #if defined(DDK_DEBUG)
-				EXPECT_EQ(refCounter.getNumWeakReferences(),2);
+				EXPECT_EQ(refCounter.getNumLentReferences(),2);
 #endif
 			}
 
 #if defined(DDK_DEBUG)
-			EXPECT_EQ(refCounter.getNumWeakReferences(),1);
+			EXPECT_EQ(refCounter.getNumLentReferences(),1);
 #endif
 		}
 
 #if defined(DDK_DEBUG)
-		EXPECT_EQ(refCounter.getNumWeakReferences(),0);
+		EXPECT_EQ(refCounter.getNumLentReferences(),0);
 #endif
 	}
 

@@ -24,7 +24,7 @@ class IAccessCriticalCallContextImpl<Traits,false>: protected Traits::provider_i
 public:
 	typedef typename Traits::provider_interface provider_interface;
 	typedef typename Traits::critical_context critical_context;
-	typedef ddk::detail::intrusive_node<critical_context_ref> context_node_base;
+	typedef ddk::intrusive_node<critical_context_ref> context_node_base;
 	typedef CriticalCallContext<IAccessCriticalCallContextImpl<Traits,false>> critical_call_context;
 	typedef ConstCriticalCallContext<IAccessCriticalCallContextImpl<Traits,false>> const_critical_call_context;
 
@@ -80,7 +80,7 @@ class IAccessCriticalCallContextImpl<Traits,true>: protected Traits::provider_in
 public:
 	typedef typename Traits::provider_interface provider_interface;
 	typedef typename Traits::critical_context critical_context;
-	typedef ddk::detail::intrusive_node<critical_context_ref> context_node_base;
+	typedef ddk::intrusive_node<critical_context_ref> context_node_base;
 
 	inline provider_interface* get_provider()
 	{

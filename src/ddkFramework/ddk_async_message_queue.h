@@ -19,28 +19,12 @@ struct async_message_queue
 public:
 	typedef MessageType message_type;
 
-	async_message_queue()
-	{
-	}
-	~async_message_queue()
-	{
-	}
-	virtual void push_message(const MessageType& i_msg)
-	{
-		m_list.push(i_msg);
-	}
-	virtual optional<MessageType> pop_message()
-	{
-		return m_list.pop();
-	}
-	bool empty() const
-	{
-		return m_list.empty();
-	}
-	receiver_id get_id() const
-	{
-		return receiver_id(reinterpret_cast<size_t>(this));
-	}
+	async_message_queue() = default;
+	~async_message_queue() = default;
+	virtual void push_message(const MessageType& i_msg);
+	virtual optional<MessageType> pop_message();
+	bool empty() const;
+	receiver_id get_id() const;
 
 private:
 	lock_free_stack<MessageType> m_list;
@@ -54,78 +38,13 @@ public:
     using async_message_queue<MessageType>::empty;
     using async_message_queue<MessageType>::pop_message;
 
-	async_attachable_message_queue(thread_executor_unique_ref i_executor)
-	: m_executor(std::move(i_executor))
-	{
-	}
-	void start(sender_id i_id, const ddk::function<void(const MessageType&)>& i_processor)
-	{
-		lock_guard lg(m_mutex);
-
-		typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair){ return i_pair.first == i_id; });
-
-		DDK_ASSERT(itReceiver == m_receivers.end(), "Attempting to connect more than once to the same queue");
-
-		if(itReceiver == m_receivers.end())
-		{
-			if(m_receivers.empty())
-			{
-				thread_executor_interface::start_result startRes = m_executor->execute(nullptr,ddk::make_function(this,&async_attachable_message_queue<MessageType>::dispatch_messages));
-
-				DDK_ASSERT(startRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.error()));
-			}
-
-			m_receivers.push(std::make_pair(i_id,i_processor));
-		}
-	}
-	void stop(sender_id i_id)
-	{
-		lock_guard lg(m_mutex);
-
-		typename linked_list<std::pair<sender_id,this::function<void(const message_type&)>>>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair){ return i_pair.first == i_id; });
-
-		DDK_ASSERT(itReceiver != m_receivers.end(), "Attempting to unconnect from not connected queue");
-
-		if(itReceiver != m_receivers.end())
-		{
-			m_receivers.erase(itReceiver);
-
-			if(m_receivers.empty())
-			{
-				thread_executor_interface::resume_result stopRes = m_executor->resume();
-
-				DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
-			}
-		}
-	}
-	virtual void push_message(const MessageType& i_msg)
-	{
-		async_message_queue<MessageType>::push_message(i_msg);
-
-		m_executor->signal();
-	}
+	async_attachable_message_queue(thread_executor_unique_ref i_executor);
+	void start(sender_id i_id, const ddk::function<void(const MessageType&)>& i_processor);
+	void stop(sender_id i_id);
+	virtual void push_message(const MessageType& i_msg);
 
 private:
-	void dispatch_messages()
-	{
-		lock_guard lg(m_mutex);
-
-		while(const optional<message_type> currMsgOpt = pop_message())
-		{
-			const message_type& currMsg = *currMsgOpt;
-
-			typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = m_receivers.begin();
-			for(;itReceiver!=m_receivers.end();++itReceiver)
-			{
-				const std::pair<const sender_id,ddk::function<void(const message_type&)>>& currReceiver = *itReceiver;
-
-				if(currReceiver.first == currMsg.get_id())
-				{
-					(currReceiver.second)(currMsg);
-				}
-			}
-		}
-	}
+	void dispatch_messages();
 
 	mutex	m_mutex;
 	linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>	m_receivers;
@@ -133,3 +52,5 @@ private:
 };
 
 }
+
+#include "ddk_async_message_queue.inl"

@@ -11,18 +11,15 @@ namespace ddk
 template<typename T>
 struct intrusive_list
 {
-	typedef lent_reference_wrapper<detail::intrusive_node<T>> intrusive_node_ref;
-	typedef lent_pointer_wrapper<detail::intrusive_node<T>> intrusive_node_ptr;
-
 public:
-	typedef list_iterator<detail::intrusive_node<T>> iterator;
-	typedef list_const_iterator<detail::intrusive_node<T>> const_iterator;
+	typedef list_iterator<intrusive_ptr<T>> iterator;
+	typedef list_iterator<intrusive_const_ptr<T>> const_iterator;
 
 	intrusive_list();
 	intrusive_list(const intrusive_list<T>& other);
 	intrusive_list(intrusive_list<T>&& other);
 	~intrusive_list();
-	void push(const intrusive_node_ref& i_node);
+	void push(const intrusive_ptr<T>& i_node);
 	void pop();
 	void clear();
 	iterator begin();
@@ -34,10 +31,10 @@ public:
 	bool empty() const;
 
 private:
-	bool already_contains_node(intrusive_node_ptr i_node) const;
+	bool already_contains_node(intrusive_ptr<T> i_node) const;
 
-	intrusive_node_ptr m_firstNode;
-	intrusive_node_ptr m_lastNode;
+	intrusive_ptr<T> m_firstNode;
+	intrusive_ptr<T> m_lastNode;
 };
 
 }

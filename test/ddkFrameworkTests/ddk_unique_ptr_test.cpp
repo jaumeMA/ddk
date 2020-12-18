@@ -51,9 +51,9 @@ TEST(DDKUniquePtrTest,construction3)
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		tagged_pointer<ddk::reference_counter<ddk::Policy::Unique>> taggedRefCounter(new ddk::reference_counter<ddk::Policy::Unique>(), ddk::ReferenceAllocationType::Dynamic);
+		tagged_pointer<ddk::unique_reference_counter> taggedRefCounter(new ddk::unique_reference_counter(), ddk::ReferenceAllocationType::Dynamic);
 
-		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,taggedRefCounter,objFactory);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,taggedRefCounter,&objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);

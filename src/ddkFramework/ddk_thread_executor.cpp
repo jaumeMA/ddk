@@ -133,6 +133,7 @@ thread_event_driven_executor::thread_event_driven_executor(thread_event_driven_e
 , m_updateThread(std::move(other.m_updateThread))
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
+, m_testFunc([=](){ return m_pendingWork; })
 {
 	std::swap(m_executor,other.m_executor);
 	std::swap(m_stopped,other.m_stopped);
@@ -161,10 +162,6 @@ void thread_event_driven_executor::start_thread(const ddk::function<void()>& i_e
 	if (i_testFunc != nullptr)
 	{
 		m_testFunc = i_testFunc;
-	}
-	else
-	{
-		m_testFunc = [=]() { return m_pendingWork; };
 	}
 
 	const start_result startRes = execute(nullptr,i_executor);

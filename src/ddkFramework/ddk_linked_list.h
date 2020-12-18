@@ -16,10 +16,14 @@ struct linked_list
 	typedef lent_pointer_wrapper<detail::linked_list_node<T>> linked_node_ptr;
 	typedef shared_reference_wrapper<detail::linked_list_node<T>> linked_node_shared_ref;
 	typedef shared_pointer_wrapper<detail::linked_list_node<T>> linked_node_shared_ptr;
+	typedef lent_reference_wrapper<detail::linked_list_node<T>> linked_node_lent_ref;
+	typedef lent_reference_wrapper<const detail::linked_list_node<T>> linked_node_const_lent_ref;
+	typedef lent_pointer_wrapper<detail::linked_list_node<T>> linked_node_lent_ptr;
+	typedef lent_pointer_wrapper<const detail::linked_list_node<T>> linked_node_const_lent_ptr;
 
 public:
-	typedef list_iterator<detail::linked_list_node<T>> iterator;
-	typedef list_const_iterator<detail::linked_list_node<T>> const_iterator;
+	typedef list_iterator<linked_node_lent_ptr> iterator;
+	typedef list_iterator<linked_node_const_lent_ptr> const_iterator;
 
 	linked_list() = default;
 	linked_list(const linked_list<T>& other);

@@ -15,7 +15,7 @@ linked_list<T,Allocator>::linked_list(const linked_list<T>& other)
 		{
 			detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(*itNode);
 
-			_push(as_shared_reference(newNode,tagged_pointer<shared_reference_counter>(newNode->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
+			_push(as_shared_reference(newNode,get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
 		}
 		else
 		{
@@ -42,7 +42,7 @@ T& linked_list<T,Allocator>::push(Args&& ... i_args)
 	{
 		detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(std::forward<Args>(i_args) ...);
 
-		return _push(as_shared_reference(newNode,tagged_pointer<shared_reference_counter>(newNode->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
+		return _push(as_shared_reference(newNode,get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
 	}
 	else
 	{
@@ -156,7 +156,7 @@ T& linked_list<T,Allocator>::_push(linked_node_shared_ref i_node)
 		m_lastNode = m_lastNode->set_next_node(i_node);
 	}
 
-	return m_lastNode->get_value();
+	return m_lastNode->get();
 }
 
 }

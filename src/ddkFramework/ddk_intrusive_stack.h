@@ -8,10 +8,10 @@ namespace ddk
 template<typename T>
 struct intrusive_stack
 {
-	typedef lent_reference_wrapper<detail::intrusive_node<T>> intrusive_node_ref;
-	typedef lent_reference_wrapper<const detail::intrusive_node<T>> intrusive_node_const_ref;
-	typedef lent_pointer_wrapper<detail::intrusive_node<T>> intrusive_node_ptr;
-	typedef lent_pointer_wrapper<const detail::intrusive_node<T>> intrusive_node_const_ptr;
+	typedef lent_reference_wrapper<intrusive_node<T>> intrusive_node_ref;
+	typedef lent_reference_wrapper<const intrusive_node<T>> intrusive_node_const_ref;
+	typedef lent_pointer_wrapper<intrusive_node<T>> intrusive_node_ptr;
+	typedef lent_pointer_wrapper<const intrusive_node<T>> intrusive_node_const_ptr;
 
 public:
 	enum Type

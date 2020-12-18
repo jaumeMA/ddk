@@ -32,7 +32,7 @@ public:
 	{
 		m_counter.removeStrongReference();
 
-		DDK_ASSERT(m_counter.hasWeakReferences() == false, "Still lent references alive while destroying lend_from_this");
+		DDK_ASSERT(m_counter.hasLentReferences() == false, "Still lent references alive while destroying lend_from_this");
 	}
 	inline lent_reference_wrapper<TT> lend()
 	{

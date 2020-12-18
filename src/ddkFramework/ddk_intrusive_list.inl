@@ -28,7 +28,7 @@ intrusive_list<T>::~intrusive_list()
 	clear();
 }
 template<typename T>
-void intrusive_list<T>::push(const intrusive_node_ref& i_node)
+void intrusive_list<T>::push(const intrusive_ptr<T>& i_node)
 {
 #ifdef DETECT_CYCLES
 	DDK_ASSERT(already_contains_node(i_node) == false, "Trying to insert already present node, about to produce a cycle");
@@ -48,9 +48,9 @@ void intrusive_list<T>::push(const intrusive_node_ref& i_node)
 template<typename T>
 void intrusive_list<T>::pop()
 {
-	if(intrusive_node_ptr firstNode = m_firstNode)
+	if(intrusive_ptr<T> firstNode = m_firstNode)
 	{
-		if(intrusive_node_ptr firstNode = m_firstNode->extract_next_node())
+		if(intrusive_ptr<T> firstNode = m_firstNode->extract_next_node())
 		{
 			m_firstNode = firstNode;
 		}
@@ -63,11 +63,11 @@ void intrusive_list<T>::pop()
 template<typename T>
 void intrusive_list<T>::clear()
 {
-	intrusive_node_ptr currNode = m_firstNode;
+	intrusive_ptr<T> currNode = m_firstNode;
 
 	while(currNode)
 	{
-		intrusive_node_ptr nextNode = currNode->extract_next_node();
+		intrusive_ptr<T> nextNode = currNode->extract_next_node();
 		currNode = nextNode;
 	}
 
@@ -97,9 +97,9 @@ typename intrusive_list<T>::const_iterator intrusive_list<T>::end() const
 template<typename T>
 typename intrusive_list<T>::iterator intrusive_list<T>::erase(iterator i_it)
 {
-	intrusive_node_ptr nextNode = nullptr;
+	intrusive_ptr<T> nextNode = nullptr;
 
-	if(intrusive_node_ptr currNode = i_it.extract())
+	if(intrusive_ptr<T> currNode = i_it.extract())
 	{
 		if(m_firstNode == currNode)
 		{
@@ -110,7 +110,7 @@ typename intrusive_list<T>::iterator intrusive_list<T>::erase(iterator i_it)
 			m_lastNode = currNode->extract_prev_node();
 		}
 
-		nextNode = detail::intrusive_node<T>::collapse(std::move(currNode));
+		nextNode = detail::intrusive_node_impl<T>::collapse(std::move(currNode));
 	}
 
 	return iterator(nextNode);
@@ -120,7 +120,7 @@ size_t intrusive_list<T>::size() const
 {
 	size_t res = 0;
 
-	if(intrusive_node_ptr currNode = m_firstNode)
+	if(intrusive_ptr<T> currNode = m_firstNode)
 	{
 		do
 		{
@@ -137,9 +137,9 @@ bool intrusive_list<T>::empty() const
 	return m_firstNode == nullptr;
 }
 template<typename T>
-bool intrusive_list<T>::already_contains_node(intrusive_node_ptr i_node) const
+bool intrusive_list<T>::already_contains_node(intrusive_ptr<T> i_node) const
 {
-	if(intrusive_node_ptr currNode = m_firstNode)
+	if(intrusive_ptr<T> currNode = m_firstNode)
 	{
 		do
 		{

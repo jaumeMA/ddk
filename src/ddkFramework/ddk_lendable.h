@@ -55,7 +55,7 @@ public:
 #ifdef DDK_DEBUG
 		m_counter.removeStrongReference();
 
-		DDK_ASSERT(m_counter.hasWeakReferences() == false, "Still lent references alive while destroying unique reference");
+		DDK_ASSERT(m_counter.hasLentReferences() == false, "Still lent references alive while destroying unique reference");
 #endif
 	}
 	lendable& operator=(const lendable& other)

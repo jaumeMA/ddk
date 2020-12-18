@@ -28,7 +28,7 @@ public:
 	{
 	}
 	template<typename Callable, typename MessageType>
-	detail::connection_base& connect(detail::intrusive_node<signal_functor<Callable>>& i_caller, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue)
+	detail::connection_base& connect(intrusive_ptr<signal_functor<Callable>>& i_caller, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue)
 	{
 		detail::connection_base& res = *i_caller;
 

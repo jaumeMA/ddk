@@ -6,6 +6,7 @@
 #include "ddk_shared_pointer_wrapper.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_pointer_wrapper.h"
+#include "ddk_weak_pointer_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_lend_from_this.h"
 #include "ddk_shared_from_this.h"
@@ -38,7 +39,19 @@ inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, tagged_poi
 template<typename T>
 inline shared_reference_wrapper<T> __make_shared_reference(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
 {
-    return shared_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+	if constexpr (mpl::contains_symbol___shared_type_tag<T>::value)
+	{
+		i_data->set_reference_counter(i_refCounter);
+		i_data->set_deleter(i_refDeleter);
+	}
+
+	return shared_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+
+template<typename T>
+inline weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	return weak_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
 }
 
 #ifdef DDK_DEBUG
@@ -114,19 +127,11 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr)
 }
 
 template<typename T>
-unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter)
+unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr)
 {
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
 
-	return __make_unique_reference(i_ptr, i_refCounter, nullptr);
-}
-
-template<typename T>
-unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter& i_refDeleter)
-{
-	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
-
-	return __make_unique_reference(i_ptr, i_refCounter, &i_refDeleter);
+	return __make_unique_reference(i_ptr, i_refCounter,i_refDeleter);
 }
 
 template<typename T, typename ... Args>
@@ -134,24 +139,18 @@ shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 {
 	typedef typename shared_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
 
-	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(T) + sizeof(shared_reference_counter)));
+	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(T)));
 
 	T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
 
-	if constexpr (mpl::contains_symbol___shared_type_tag<T>::value)
-	{
-		tagged_reference_counter taggedRefCounter(allocatedObject->get_reference_counter(),ReferenceAllocationType::Embedded);
+	// In the case of shared pointers we cannot group memory allocation into a single malloc since we have weak deps
+	allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(shared_reference_counter)));
 
-		return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
-	}
-	else
-	{
-		shared_reference_counter* refCounter = new (allocatedMemory + sizeof(T)) shared_reference_counter();
+	shared_reference_counter* refCounter = new (allocatedMemory) shared_reference_counter();
 
-		tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
+	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
 
-		return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
-	}
+	return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
 }
 
 template<typename T>
@@ -159,20 +158,13 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr)
 {
 	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
 
-	if constexpr(mpl::contains_symbol___shared_type_tag<T>::value)
-	{
-		return __make_shared_reference(i_ptr,i_ptr->get_reference_counter(),i_ptr->get_deleter());
-	}
-	else
-	{
-		shared_reference_counter* refCounter = new shared_reference_counter();
+	shared_reference_counter* refCounter = new shared_reference_counter();
 
-		return __make_shared_reference(i_ptr,refCounter,nullptr);
-	}
+	return __make_shared_reference(i_ptr,refCounter,nullptr);
 }
 
 template<typename T>
-shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrapperDeleter* i_refDeleter, typename std::enable_if<mpl::contains_symbol___shared_type_tag<T>::value==false>::type* = nullptr)
+shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrapperDeleter* i_refDeleter)
 {
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
@@ -547,12 +539,12 @@ lent_reference_wrapper<T> lend(const shared_reference_wrapper<T>& i_sharedRef)
 template<typename T, typename TT>
 inline lent_reference_wrapper<TT> lend(lend_from_this<T,TT>& i_lendable)
 {
-	return i_lendable.template ref_from_this<TT>();
+	return i_lendable.ref_from_this();
 }
 template<typename T, typename TT>
 inline lent_reference_wrapper<const TT> lend(const lend_from_this<T,TT>& i_lendable)
 {
-	return i_lendable.template ref_from_this<const TT>();
+	return i_lendable.ref_from_this();
 }
 
 template<typename T>
@@ -564,6 +556,41 @@ template<typename T>
 inline lent_reference_wrapper<const T> lend(const lendable<T>& i_lendable)
 {
 	return i_lendable.ref_from_this();
+}
+
+template<typename T,typename TT>
+inline lent_reference_wrapper<TT> lend(share_from_this<T,TT>& i_sharedFromThis)
+{
+#ifdef DDK_DEBUG
+	return __make_lent_pointer(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter);
+#else
+	return static_cast<TT*>(&i_sharedFromThis);
+#endif
+}
+template<typename T,typename TT>
+inline lent_reference_wrapper<const TT> lend(const share_from_this<T,TT>& i_sharedFromThis)
+{
+#ifdef DDK_DEBUG
+	return __make_lent_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedPtr.m_refCounter);
+#else
+	return static_cast<const TT*>(&i_sharedFromThis);
+#endif
+}
+
+template<typename T>
+inline weak_pointer_wrapper<T> weak(const shared_pointer_wrapper<T>& i_sharedPtr)
+{
+	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename T,typename TT>
+inline weak_pointer_wrapper<TT> weak(share_from_this<T,TT>& i_sharedFromThis)
+{
+	return __make_weak_pointer(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+}
+template<typename T,typename TT>
+inline weak_pointer_wrapper<const TT> weak(const share_from_this<TT>& i_sharedFromThis)
+{
+	return __make_weak_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
 }
 
 template<typename T>

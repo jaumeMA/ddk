@@ -31,10 +31,7 @@ public:
 	typedef typename std::add_lvalue_reference<T>::type value_reference;
 	typedef typename std::add_const<value_reference>::type value_const_reference;
 
-	tagged_pointer()
-	: m_data(NULL)
-	{
-	}
+	tagged_pointer() = default;
 	tagged_pointer(T* i_data)
 	: m_data(i_data)
 	{
@@ -47,18 +44,18 @@ public:
 		m_data = as_pointer(as_number(i_data) | i_tag);
 	}
 	inline tagged_pointer(const tagged_pointer& other)
-	: m_data(NULL)
+	: m_data(nullptr)
 	{
 		m_data = other.m_data;
 	}
 	inline tagged_pointer(tagged_pointer&& other)
-	: m_data(NULL)
+	: m_data(nullptr)
 	{
 		std::swap(m_data,other.m_data);
 	}
 	template<typename TT>
-	tagged_pointer(tagged_pointer<TT> other)
-	: m_data(NULL)
+	tagged_pointer(const tagged_pointer<TT>& other)
+	: m_data(nullptr)
 	{
 		static_assert(std::is_base_of<T,TT>::value, "You shall provider inherited type");
 
@@ -225,7 +222,7 @@ private:
 		return res.dataNumber;
 	}
 
-	T* m_data;
+	T* m_data = nullptr;
 };
 
 template<typename T, typename ... Args>

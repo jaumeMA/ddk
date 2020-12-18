@@ -44,10 +44,10 @@ public:
 	lent_reference_counter(lent_reference_counter&& other);
 	virtual ~lent_reference_counter() = default;
 #ifdef DDK_DEBUG
-	size_t incrementWeakReference();
-	size_t decrementWeakReference();
-	size_t getNumWeakReferences() const;
-	bool hasWeakReferences() const;
+	size_t incrementLentReference();
+	size_t decrementLentReference();
+	size_t getNumLentReferences() const;
+	bool hasLentReferences() const;
 	void registerStackTrace(size_t i_id);
 	void unregisterStackTrace(size_t i_id);
 	void copyStackTrace(size_t i_oldId, size_t i_newId);
@@ -60,106 +60,45 @@ private:
 	static detail::symbol_cache_table m_symbolInfoCache;
 	stack_container m_stackTraces;
 	mutex m_refMutex;
-	atomic_size_t m_numWeakReferences;
+	atomic_size_t m_numLentReferences;
 #endif
 };
 
-template<int>
-class reference_counter;
-
-//reference counting for shared references
-template<>
-class reference_counter<Policy::Shared> : public lent_reference_counter
+class shared_reference_counter: public lent_reference_counter
 {
 public:
-	reference_counter()
-	: lent_reference_counter()
-	, m_numSharedReferences(0)
-	{
-	}
-	reference_counter(const reference_counter& other)
-	: lent_reference_counter(other)
-	, m_numSharedReferences(other.m_numSharedReferences)
-	{
-	}
-	reference_counter(reference_counter&& other)
-	: lent_reference_counter(std::move(other))
-	, m_numSharedReferences(0)
-	{
-		std::swap(m_numSharedReferences, other.m_numSharedReferences);
-	}
-	~reference_counter()
-	{
-	}
-	size_t incrementSharedReference()
-	{
-		return atomic_post_increment(m_numSharedReferences);
-	}
-	size_t decrementSharedReference()
-	{
-		return atomic_post_decrement(m_numSharedReferences);
-	}
-	size_t getNumSharedReferences() const
-	{
-		return m_numSharedReferences.get();
-	}
-	bool hasSharedReferences() const
-	{
-		return m_numSharedReferences.get() > 0;
-	}
+	shared_reference_counter();
+	shared_reference_counter(const shared_reference_counter& other);
+	shared_reference_counter(shared_reference_counter&& other);
+	size_t incrementSharedReference();
+	bool incrementSharedReferenceIfNonEmpty();
+	size_t decrementSharedReference();
+	size_t getNumSharedReferences() const;
+	bool hasSharedReferences() const;
+	size_t incrementWeakReference();
+	size_t decrementWeakReference();
+	size_t getNumWeakReferences() const;
+	bool hasWeakReferences() const;
 
 private:
 	atomic_size_t m_numSharedReferences;
+	atomic_size_t m_numWeakReferences;
 };
 
 //reference counting for unique references
 
-template<>
-class reference_counter<Policy::Unique> : public lent_reference_counter
+class unique_reference_counter : public lent_reference_counter
 {
 public:
-	reference_counter()
-	: lent_reference_counter()
-	, m_hasStrongReferences(false)
-	{
-	}
-	reference_counter(const reference_counter& other)
-	: lent_reference_counter(other)
-	, m_hasStrongReferences(other.m_hasStrongReferences)
-	{
-	}
-	reference_counter(reference_counter&& other)
-	: lent_reference_counter(std::move(other))
-	, m_hasStrongReferences(false)
-	{
-		std::swap(m_hasStrongReferences, other.m_hasStrongReferences);
-	}
-	bool addStrongReference()
-	{
-		DDK_ASSERT(m_hasStrongReferences == false, "Unique reference already incremented");
-
-		m_hasStrongReferences = true;
-
-		return m_hasStrongReferences;
-	}
-	bool removeStrongReference()
-	{
-		DDK_ASSERT(m_hasStrongReferences == true, "Trying to decrement empty reference counter");
-
-		m_hasStrongReferences = false;
-
-		return m_hasStrongReferences;
-	}
-	bool hasStrongReferences() const
-	{
-		return m_hasStrongReferences;
-	}
+	unique_reference_counter();
+	unique_reference_counter(const unique_reference_counter& other);
+	unique_reference_counter(unique_reference_counter&& other);
+	bool addStrongReference();
+	bool removeStrongReference();
+	bool hasStrongReferences() const;
 
 private:
 	bool m_hasStrongReferences;
 };
-
-typedef reference_counter<Policy::Shared> shared_reference_counter;
-typedef reference_counter<Policy::Unique> unique_reference_counter;
 
 }

@@ -62,7 +62,7 @@ function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>>
     {
         spec_func_type* newFuncImpl = new(mem) spec_func_type(this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
 
-        return as_shared_reference(newFuncImpl,tagged_pointer<shared_reference_counter>(newFuncImpl->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<spec_func_type>(i_allocator));
+        return as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<spec_func_type>(i_allocator));
     }
     else
     {
