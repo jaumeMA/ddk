@@ -1,5 +1,4 @@
 
-#include "ddk_iterable.h"
 #include "ddk_iterable_impl.h"
 #include "ddk_union_iterable_impl.h"
 #include "ddk_intersection_iterable_impl.h"
@@ -14,6 +13,23 @@ Iterable make_iterable(IIterable&& i_iterable)
     typedef typename Iterable::traits traits;
 
     return Iterable{ make_shared_reference<detail::iterable_impl<traits,IIterable>>(std::forward<IIterable>(i_iterable)) };
+}
+
+TEMPLATE(typename Iterable)
+REQUIRED
+Iterable deduce_iterable(Iterable&& i_iterable)
+{
+	return i_iterable;
+}
+
+TEMPLATE(typename Iterable)
+REQUIRED
+resolved_iterable<Iterable> deduce_iterable(Iterable&& i_iterable)
+{
+	typedef resolved_iterable<Iterable> iterable_type;
+	typedef typename iterable_type::traits traits;
+
+	return iterable_type{ make_shared_reference<detail::iterable_impl<traits,Iterable>>(std::forward<Iterable>(i_iterable)) };
 }
 
 }

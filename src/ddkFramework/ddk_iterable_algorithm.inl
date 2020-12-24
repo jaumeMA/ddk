@@ -24,9 +24,9 @@ const typename mpl::nth_type_of<Index,Iterables...>::type& iterable_pack<Iterabl
 }
 
 template<typename ... Iterables>
-detail::iterable_pack<Iterables...> iterable_sum(const Iterables& ... i_iterables)
+detail::iterable_pack<decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_sum(const Iterables& ... i_iterables)
 {
-	return detail::iterable_pack<Iterables...>{i_iterables...};
+	return detail::iterable_pack<decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
 }
 
 }

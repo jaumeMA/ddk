@@ -118,6 +118,7 @@ template<typename T>
 struct const_forward_iterable_traits : base_iterable_traits<T>
 {
     typedef iter::const_forward_action action;
+	typedef std::forward_iterator_tag iterable_tag;
 
     static constexpr iter::const_forward_action default_action()
     {
@@ -129,6 +130,7 @@ template<typename T>
 struct forward_iterable_traits: base_iterable_traits<T>
 {
 	typedef iter::forward_action action;
+	typedef std::forward_iterator_tag iterable_tag;
 
 	static constexpr iter::forward_action default_action()
 	{
@@ -140,6 +142,7 @@ template<typename T>
 struct const_bidirectional_iterable_traits : base_iterable_traits<T>
 {
     typedef iter::const_bidirectional_action action;
+	typedef std::bidirectional_iterator_tag iterable_tag;
 
     static constexpr iter::const_bidirectional_action default_action()
     {
@@ -151,6 +154,7 @@ template<typename T>
 struct bidirectional_iterable_traits: base_iterable_traits<T>
 {
 	typedef iter::bidirectional_action action;
+	typedef std::bidirectional_iterator_tag iterable_tag;
 
 	static constexpr iter::bidirectional_action default_action()
 	{
@@ -162,6 +166,7 @@ template<typename T>
 struct const_random_access_iterable_traits : base_iterable_traits<T>
 {
     typedef iter::const_random_access_action action;
+	typedef std::random_access_iterator_tag iterable_tag;
 
     static constexpr iter::const_random_access_action default_action()
     {
@@ -173,6 +178,7 @@ template<typename T>
 struct random_access_iterable_traits: base_iterable_traits<T>
 {
 	typedef iter::random_access_action action;
+	typedef std::random_access_iterator_tag iterable_tag;
 
 	static constexpr iter::random_access_action default_action()
 	{

@@ -13,6 +13,7 @@
 #include "ddk_iterable_state.h"
 #include "ddk_await_executor.h"
 #include "ddk_arena.h"
+#include "ddk_iterable_template_helper.h"
 
 namespace ddk
 {
@@ -24,7 +25,8 @@ class iterable : protected iterable_interface
 {
     template<typename TTraits>
     friend class iterable;
-    friend inline iterable_impl_lent_ref<typename Traits::iterable_base_traits> lend(const iterable<Traits>& i_iterable)
+	friend typename Traits::iterable_tag iterable_tag_resolver(const iterable&);
+	friend inline iterable_impl_lent_ref<typename Traits::iterable_base_traits> lend(const iterable<Traits>& i_iterable)
     {
         return lend(i_iterable.m_iterableImpl);
     }
@@ -96,6 +98,36 @@ using const_random_access_iterable = detail::iterable<detail::const_random_acces
 template<typename T>
 using random_access_iterable = detail::iterable<detail::random_access_iterable_valued_traits<T>>;
 
+namespace detail
+{
+
+template<typename,typename>
+struct iterable_type_correspondence;
+
+template<typename T>
+struct iterable_type_correspondence<T,std::forward_iterator_tag>
+{
+	typedef typename T::value_type value_type;
+	typedef typename mpl::static_if<std::is_const<T>::value,forward_iterable<const value_type>,forward_iterable<value_type>>::type type;
+};
+template<typename T>
+struct iterable_type_correspondence<T,std::bidirectional_iterator_tag>
+{
+	typedef typename T::value_type value_type;
+	typedef typename mpl::static_if<std::is_const<T>::value,bidirectional_iterable<const value_type>,bidirectional_iterable<value_type>>::type type;
+};
+template<typename T>
+struct iterable_type_correspondence<T,std::random_access_iterator_tag>
+{
+private:
+	typedef typename std::remove_reference<T>::type raw_type;
+
+public:
+	typedef typename raw_type::value_type value_type;
+	typedef typename mpl::static_if<std::is_const<raw_type>::value,random_access_iterable<const value_type>,random_access_iterable<value_type>>::type type;
+};
+
+}
 }
 
 #include "ddk_iterable.inl"

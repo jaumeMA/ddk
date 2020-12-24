@@ -57,36 +57,13 @@ private:
 
 TEMPLATE(typename Sink,typename Traits)
 REQUIRES(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_sink, const ddk::detail::iterable<Traits>& i_transformedIterable)
-{
-	typedef typename Traits::iterable_value iterable_value;
-
-	linearized_index_access_dumping<Sink> _dumper(i_sink);
-
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread);
-}
-
+inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_sink, const ddk::detail::iterable<Traits>& i_transformedIterable);
 TEMPLATE(typename Sink,typename Traits)
 REQUIRES(ASSIGNABLE_DYNAMIC_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable, void* = nullptr)
-{
-	typedef typename Traits::iterable_value iterable_value;
-
-	dynamic_access_dumping<Sink> _dumper(i_sink);
-
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread);
-}
-
+inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable, void* = nullptr);
 TEMPLATE(typename Sink,typename Traits)
 REQUIRES(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_TYPE_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,int* = nullptr)
-{
-	typedef typename Traits::iterable_value iterable_value;
-
-	type_access_dumping<Sink> _dumper(i_sink);
-
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread);
-}
+inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,int* = nullptr);
 
 }
 }

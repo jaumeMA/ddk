@@ -6,6 +6,7 @@
 #include "ddk_iterable_state.h"
 #include "ddk_iterable_action_state.h"
 #include "ddk_lendable.h"
+#include "ddk_iterable_template_helper.h"
 
 #define IS_CO_ITERATOR(_CO_ITERATOR) \
 template<typename TT> \
@@ -173,10 +174,6 @@ struct co_iterator_type_correspondence<T, std::random_access_iterator_tag>
 };
 
 }
-
-template<typename Iterable>
-typename std::iterator_traits<typename Iterable::iterator>::iterator_category iterable_tag_resolver(const Iterable&);
-
 }
 
 #include "ddk_co_iterator.inl"

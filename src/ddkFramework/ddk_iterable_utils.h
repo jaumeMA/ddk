@@ -6,12 +6,26 @@
 #include "ddk_transformed_iterable_impl.h"
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
+#include "ddk_iterable.h"
+#include "ddk_iterable_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
 
+template<typename Iterable>
+using resolved_iterable = typename detail::iterable_type_correspondence<Iterable,decltype(iterable_tag_resolver(std::declval<Iterable>()))>::type;
+
 template<typename Iterable, typename IIterable>
 inline Iterable make_iterable(IIterable&& i_iterable);
+
+TEMPLATE(typename Iterable)
+REQUIRES(IS_ITERABLE(Iterable))
+inline Iterable deduce_iterable(Iterable&& i_iterable);
+
+TEMPLATE(typename Iterable)
+REQUIRES(IS_NOT_ITERABLE(Iterable))
+inline resolved_iterable<Iterable> deduce_iterable(Iterable&& i_iterable);
 
 template<typename>
 struct transformed_traits_resolver;

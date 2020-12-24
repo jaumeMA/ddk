@@ -30,7 +30,7 @@ private:
 
 
 template<typename ... Iterables>
-inline detail::iterable_pack<Iterables...> iterable_sum(const Iterables& ... i_iterables);
+inline detail::iterable_pack<decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_sum(const Iterables& ... i_iterables);
 
 }
 }
