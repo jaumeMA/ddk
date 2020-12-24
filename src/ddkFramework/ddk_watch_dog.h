@@ -4,8 +4,8 @@
 #include "ddk_thread_utils.h"
 #include "ddk_mutex.h"
 #include "ddk_cond_var.h"
-#include "ddk_shared_pointer_wrapper.h"
-#include "ddk_weak_pointer_wrapper.h"
+#include "ddk_atomic_shared_pointer_wrapper.h"
+#include "ddk_atomic_weak_pointer_wrapper.h"
 
 #define WATCHABLE_TYPE(_TYPE) \
 mutable ddk::watch_dog_waiter_weak_ptr __watch_dog; \
@@ -17,7 +17,7 @@ friend inline void watch(const _TYPE& i_watchable) \
 { \
 	ddk::watch_dog watcher(i_watchable.__watch_dog); \
 	\
-	watcher.wait(); \
+	watcher.watch(); \
 } \
 friend inline bool is_watchable(const _TYPE&) \
 { \
@@ -66,16 +66,16 @@ private:
 
 }
 
-typedef shared_pointer_wrapper<detail::watch_dog_waiter> watch_dog_waiter_shared_ptr;
-typedef weak_pointer_wrapper<detail::watch_dog_waiter> watch_dog_waiter_weak_ptr;
+typedef atomic_shared_pointer_wrapper<detail::watch_dog_waiter> watch_dog_waiter_shared_ptr;
+typedef atomic_weak_pointer_wrapper<detail::watch_dog_waiter> watch_dog_waiter_weak_ptr;
 
 class watch_dog
 {
 public:
 	watch_dog(watch_dog_waiter_weak_ptr& i_weakWaiter);
 
-	void wait();
-	void wait_until(const function<bool()>& i_predicate);
+	void watch();
+	void watch_until(const function<bool()>& i_predicate);
 	void notify_one();
 	void notify_all();
 

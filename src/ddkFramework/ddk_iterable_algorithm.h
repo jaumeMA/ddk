@@ -2,89 +2,41 @@
 
 #include "ddk_iteration.h"
 #include "ddk_iterable_value.h"
+#include "ddk_iterable_algorithm_impl.h"
+#include "ddk_iterable_utils.h"
+#include "ddk_tuple.h"
 
 namespace ddk
 {
-namespace algo
+namespace trans
+{
+namespace detail
 {
 
-//template<typename Predicate>
-//class find
-//{
-//	template<typename Iterable>
-//	iteration<typename Iterable::traits> operator<<=(const find& i_lhs,const Iterable& i_iterable)
-//	{
-//		typedef typename Iterable::iterable_value iterable_value;
-//
-//		return make_function([&m_predicate](iterable_value i_value) { if(m_predicate(*i_value) { stop(erase_value(std::move(i_value))); })}) <<= i_iterable;
-//	}
-//
-//public:
-//	find(Predicate&& i_predicate);
-//
-//private:
-//	Predicate m_predicate;
-//};
-//
-//template<typename Predicate>
-//class erase
-//{
-//	template<typename Iterable>
-//	iteration operator<<=(const erase& i_lhs,const Iterable& i_iterable)
-//	{
-//		typedef typename Iterable::iterable_value iterable_value;
-//
-//		return make_function([&m_predicate](iterable_value i_value) { if(m_predicate(*i_value) { erase_value(std::move(i_value)); stop_iteration(); })}) <<= i_iterable;
-//	}
-//
-//public:
-//	erase(Predicate&& i_predicate);
-//
-//private:
-//	Predicate m_predicate;
-//};
-//
-//template<typename Predicate>
-//class erase_any
-//{
-//	template<typename Iterable>
-//	iteration operator<<=(const erase_any& i_lhs, const Iterable& i_iterable)
-//	{
-//		typedef typename Iterable::iterable_value iterable_value;
-//
-//		return make_function([&m_predicate](iterable_value i_value){ while(m_predicate(*i_value){ erase_value(std::move(i_value)); } )}) <<= i_iterable;
-//	}
-//
-//public:
-//	erase_any(Predicate&& i_predicate);
-//
-//private:
-//	Predicate m_predicate;
-//};
-
-template<typename PredicateA, typename PredicateB>
-class swap
+template<typename ... Iterables>
+class iterable_pack
 {
-	template<typename Iterable>
-	friend inline iteration<typename Iterable::traits> operator<<=(const swap& i_lhs,const Iterable& i_iterable)
-	{
-		typedef typename Iterable::value_type value_type;
-		typedef typename detail::intersection_iterable_transformed_traits<value_type,Iterable,Iterable>::iterable_value iterable_value;
-		typedef typename Iterable::iterable_value iterable_value;
-
-		return make_function([](iterable_value i_value){ std::swap(i_value->get<0>(),i_value->get<1>()); stop_iteration(); })  <<= (m_perdicateA <<= i_iterable) & (m_predicateB <<= i_iterable)
-	}
-
 public:
-	template<typename PPredicateA, typename PPredicateB>
-	swap(PPredicateA&& i_predicateA, PPredicateB&& i_predicateB);
+	explicit iterable_pack(const Iterables& ... i_iterables);
+
+	template<size_t Index>
+	inline const typename mpl::nth_type_of<Index,Iterables...>::type& get() const;
 
 private:
-	const PredicateA m_predicateA;
-	const PredicateB m_predicateB;
+	tuple<const Iterables...> m_iterables;
 };
 
 }
+
+
+template<typename ... Iterables>
+inline detail::iterable_pack<Iterables...> iterable_sum(const Iterables& ... i_iterables);
+
 }
+}
+
+template<typename Sink,typename ... Iterables>
+inline ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_lhs,const ddk::trans::detail::iterable_pack<Iterables...>& i_rhs);
+
 
 #include "ddk_iterable_algorithm.inl"

@@ -20,6 +20,54 @@ namespace ddk
 {
 
 template<typename T>
+struct atomic8
+{
+	static_assert(sizeof(T) == 1,"You cannot operate atomically on types bigger than 8 bits");
+	static_assert(std::is_trivially_copyable<T>::value &&
+					std::is_copy_constructible<T>::value &&
+					std::is_move_constructible<T>::value &&
+					std::is_copy_assignable<T>::value &&
+					std::is_move_assignable<T>::value,"You cannot apply atomic32 operation son types of non trivial data type");
+
+	template<typename TT>
+	friend bool atomic_compare_exchange(atomic8<TT>&,const TT&,const TT&);
+	template<typename TT>
+	friend TT atomic_compare_exchange_val(atomic8<TT>&,const TT&,const TT&);
+	template<typename TT>
+	friend TT atomic_pre_increment(atomic8<TT>&);
+	template<typename TT>
+	friend TT atomic_post_increment(atomic8<TT>&);
+	template<typename TT>
+	friend TT atomic_pre_decremeemt(atomic8<TT>&);
+	template<typename TT>
+	friend TT atomic_post_decrement(atomic8<TT>&);
+
+	atomic8() = default;
+	atomic8(const T& i_value);
+	atomic8(T&& i_value);
+	atomic8(const atomic8& other);
+	atomic8(atomic8&& other);
+	~atomic8();
+	atomic8& operator=(const atomic8& other);
+	atomic8& operator=(atomic8&& other);
+	inline bool empty() const;
+	inline const T& get() const;
+	inline T& get();
+	inline void set(const T& i_value);
+	inline void set(T&& i_value);
+	inline void reset();
+
+private:
+	T* _get_typed_arena();
+	char* _get_arena();
+
+	arena<1,std::alignment_of<T>::value> m_arena;
+}; 
+
+typedef atomic8<bool> atomic_bool;
+typedef atomic8<char> atomic_char;
+
+template<typename T>
 struct atomic32
 {
 	static_assert(sizeof(T) <= 4, "You cannot operate atomically on types bigger than 32 bits");
@@ -66,7 +114,6 @@ private:
 
 //put here whatever specialization you need
 typedef atomic32<int> atomic_int;
-typedef atomic32<bool> atomic_bool;
 
 template<typename T>
 struct atomic64
@@ -147,11 +194,15 @@ private:
 };
 
 template<typename T>
+inline bool atomic_compare_exchange(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue);
+template<typename T>
 inline bool atomic_compare_exchange(atomic32<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
 template<typename T>
 inline bool atomic_compare_exchange(atomic64<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
 template<typename T>
 inline bool atomic_compare_exchange(atomic<T*>& i_atomic, T* i_expectedValue, T* i_desiredValue);
+template<typename T>
+inline T atomic_compare_exchange_val(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue);
 template<typename T>
 inline T atomic_compare_exchange_val(atomic32<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
 template<typename T>
@@ -159,17 +210,25 @@ inline T atomic_compare_exchange_val(atomic64<T>& i_atomic, const T& i_expectedV
 template<typename T>
 inline T* atomic_compare_exchange_val(atomic<T*>& i_atomic, T* i_expectedValue, T* i_desiredValue);
 template<typename T>
+inline T atomic_pre_increment(atomic8<T>& i_atomic);
+template<typename T>
 inline T atomic_pre_increment(atomic32<T>& i_atomic);
 template<typename T>
 inline T atomic_pre_increment(atomic64<T>& i_atomic);
+template<typename T>
+inline T atomic_post_increment(atomic8<T>& i_atomic);
 template<typename T>
 inline T atomic_post_increment(atomic32<T>& i_atomic);
 template<typename T>
 inline T atomic_post_increment(atomic64<T>& i_atomic);
 template<typename T>
+inline T atomic_pre_decrement(atomic8<T>& i_atomic);
+template<typename T>
 inline T atomic_pre_decrement(atomic32<T>& i_atomic);
 template<typename T>
 inline T atomic_pre_decrement(atomic64<T>& i_atomic);
+template<typename T>
+inline T atomic_post_decrement(atomic8<T>& i_atomic);
 template<typename T>
 inline T atomic_post_decrement(atomic32<T>& i_atomic);
 template<typename T>

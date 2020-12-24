@@ -109,6 +109,11 @@ constexpr size_t tuple_impl<mpl::sequence<0>,Type>::size()
 {
 	return 1;
 }
+template<typename Type>
+bool tuple_impl<mpl::sequence<0>,Type>::empty() const
+{
+	return false;
+}
 
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl()
@@ -245,6 +250,11 @@ template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typena
 constexpr size_t tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::size()
 {
 	return mpl::get_num_types<Type1,Type2,Types...>::value;
+}
+template<size_t Index1,size_t Index2,size_t ... Indexs,typename Type1,typename Type2,typename ... Types>
+bool tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::empty() const
+{
+	return false;
 }
 
 }

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddk_variant_impl.h"
+#include "ddk_concepts.h"
+#include "ddk_type_concepts.h"
 
 namespace ddk
 {
@@ -11,27 +13,36 @@ class variant;
 template<typename Type>
 class variant<Type>
 {
+	template<typename...>
+	friend class variant;
+
 public:
 	static const size_t npos = 1;
 
 	variant();
 	variant(const variant<Type>& other);
 	variant(variant<Type>&& other);
-	template<typename TType>
-	variant(const variant<TType>& other,typename std::enable_if<std::is_constructible<Type,TType>::value == false>::type* = nullptr);
-	template<typename TType>
-	variant(variant<TType>&& other,typename std::enable_if<std::is_constructible<Type,TType>::value == false>::type* = nullptr);
-	template<typename T>
-	variant(T&& i_value,typename std::enable_if<std::is_constructible<Type,T>::value>::type* = nullptr);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	variant(const variant<TTypes ...>& other);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	variant(variant<TTypes...>&& other);
+	TEMPLATE(typename T)
+	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(Type,T))
+	variant(T&& i_value);
 	~variant() = default;
 	variant& operator=(const variant<Type>& other);
 	variant& operator=(variant<Type>&& other);
-	template<typename TType>
-	typename std::enable_if<std::is_constructible<Type,TType>::value == false,variant>::type& operator=(const variant<TType>& other);
-	template<typename TType>
-	typename std::enable_if<std::is_constructible<Type,TType>::value == false,variant>::type& operator=(variant<TType>&& other);
-	template<typename T>
-	typename std::enable_if<std::is_constructible<Type,T>::value,variant>::type& operator=(T&& i_value);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	variant& operator=(const variant<TTypes...>& other);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	variant& operator=(variant<TTypes...>&& other);
+	TEMPLATE(typename T)
+	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(Type,T))
+	variant& operator=(T&& i_value);
 	template<typename T>
 	bool operator==(T&& other) const;
 	template<typename T>
@@ -82,26 +93,43 @@ public:
 	variant();
 	variant(const variant<Types...>& other);
 	variant(variant<Types...>&& other);
-	template<typename ... TTypes>
-	variant(const variant<TTypes...>& other, typename std::enable_if<mpl::is_among_constructible_types<variant<TTypes...>,Types...>::value == false>::type* = nullptr);
-	template<typename ... TTypes>
-	variant(variant<TTypes...>&& other, typename std::enable_if<mpl::is_among_constructible_types<variant<TTypes...>,Types...>::value == false>::type* = nullptr);
-	template<typename T>
-	variant(T&& i_value, typename std::enable_if<mpl::is_among_constructible_types<T,Types...>::value>::type* = nullptr);
+	TEMPLATE(typename TType)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
+	variant(const variant<TType>& other);
+	TEMPLATE(typename TType)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
+	variant(variant<TType>&& other);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	variant(const variant<TTypes...>& other);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	variant(variant<TTypes...>&& other);
+	TEMPLATE(typename T)
+	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+	variant(T&& i_value);
     ~variant() = default;
 	variant& operator=(const variant<Types...>& other);
 	variant& operator=(variant<Types...>&& other);
-	template<typename ... TTypes>
-	typename std::enable_if<mpl::is_among_constructible_types<variant<TTypes...>,Types...>::value == false,variant>::type& operator=(const variant<TTypes...>& other);
-	template<typename ... TTypes>
-	typename std::enable_if<mpl::is_among_constructible_types<variant<TTypes...>,Types...>::value == false,variant>::type& operator=(variant<TTypes...>&& other);
-	template<typename T>
-	typename std::enable_if<mpl::is_among_constructible_types<T,Types...>::value,variant>::type& operator=(T&& i_value);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	variant& operator=(const variant<TTypes...>& other);
+	TEMPLATE(typename ... TTypes)
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	variant& operator=(variant<TTypes...>&& other);
+	TEMPLATE(typename T)
+	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+	variant& operator=(T&& i_value);
 	template<typename T>
 	bool operator==(T&& other) const;
 	template<typename T>
 	bool operator!=(T&& other) const;
 };
+
+template<typename ... T>
+using variant_reference = variant<typename embedded_type<T>::ref_type ...>;
+template<typename ... T>
+using variant_const_reference = variant<typename embedded_type<T>::cref_type ...>;
 
 template<typename T>
 std::true_type _is_variant(const T&,const typename T::variant_tag* = nullptr);

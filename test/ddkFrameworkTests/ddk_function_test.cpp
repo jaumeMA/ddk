@@ -21,7 +21,7 @@ int sum_func(int a, float b)
 
 int prod_func(int a, const std::string& b,float c,double d,char f)
 {
-    return a * b.size();
+    return a * static_cast<int>(b.size());
 }
 
 class Foo
@@ -114,7 +114,7 @@ TEST(DDKFunctionTest,funcIntersection)
     ddk::function<char(float,double)> foo3;
     ddk::function<float(float,double)> foo4;
 
-    ddk::function<bool(float,double)> foo12 =  foo1 <<= (foo2 & foo3 & foo4);
+    ddk::function<bool(float,double)> foo12 =  foo1 <<= ddk::fusion(foo2,foo3,foo4);
 }
 TEST(DDKFunctionTest,funcUnion)
 {
@@ -123,5 +123,5 @@ TEST(DDKFunctionTest,funcUnion)
     ddk::function<char(const std::string&)> foo3;
     ddk::function<float(char)> foo4;
 
-    ddk::function<bool(float,double,const std::string&,char)> foo12 =  foo1 <<= (foo2 | foo3 | foo4);
+    ddk::function<bool(float,double,const std::string&,char)> foo12 =  foo1 <<= ddk::concat(foo2,foo3,foo4);
 }

@@ -56,7 +56,7 @@ private:
 	co_forward_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value==false>::type* = nullptr);
 	iter::go_forward_action&& acquire_iterable_value(reference i_value);
 
-	ddk::function<reference(const iter::shift_action&,const function<iter::const_forward_action(reference)>&)> m_function;
+	ddk::function<reference(const iter::shift_action&, const detail::relative_function_impl<co_forward_iterator<T>,iter::go_forward_action&&,reference>&)> m_function;
 	iter::iterable_state m_currState;
 	detail::this_fiber_t m_caller;
 	iter::go_forward_action m_currAction = iter::go_no_place;

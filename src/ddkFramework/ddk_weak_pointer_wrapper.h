@@ -10,6 +10,8 @@ namespace ddk
 template<typename T>
 class weak_pointer_wrapper
 {
+	template<typename>
+	friend class weak_pointer_wrapper;
 	template<typename T>
 	friend weak_pointer_wrapper<T> __make_weak_pointer(T*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
 	template<typename TT>

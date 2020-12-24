@@ -46,87 +46,15 @@ inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_
 template<typename IterableValue, typename Allocator, typename Traits>
 inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<Traits>,ddk::iteration<Traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs);
 
-//for union iterables
-template<typename Return, typename Type, typename Allocator, typename ... Iterables>
-inline ddk::detail::iterable<ddk::transformed_traits<ddk::detail::union_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs);
-
-template<typename Type, typename Allocator, typename ... Iterables>
-inline typename ddk::detail::union_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs);
-
-template<typename T, typename ... Iterables>
-inline typename ddk::detail::union_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs);
-
-template<typename IterableValue, typename Allocator, typename ... Iterables>
-inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::union_iterable<Iterables...>& i_rhs);
-
-template<typename IterableValue, typename Allocator, typename ... Iterables>
-inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::union_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::union_iterable<Iterables...>& i_rhs);
-
-//for intersection iterables
-template<typename Return, typename Type, typename Allocator, typename ... Iterables>
-inline ddk::detail::iterable<ddk::transformed_traits<ddk::detail::intersection_iterable_transformed_traits<Return,Iterables...>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs);
-
-template<typename Type, typename Allocator, typename ... Iterables>
-inline typename ddk::detail::intersection_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs);
-
-template<typename T, typename ... Iterables>
-inline typename ddk::detail::intersection_iterable<Iterables...>::related_iterable operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs);
-
-template<typename IterableValue, typename Allocator, typename ... Iterables>
-inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::intersection_iterable<Iterables...>& i_rhs);
-
-template<typename IterableValue, typename Allocator, typename ... Iterables>
-inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>,ddk::iteration<typename ddk::detail::intersection_iterable<Iterables...>::related_traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::intersection_iterable<Iterables...>& i_rhs);
-
-template<typename Traits1, typename Traits2>
-inline ddk::detail::union_iterable<ddk::detail::iterable<Traits1>,ddk::detail::iterable<Traits2>> operator|(const ddk::detail::iterable<Traits1>& i_lhs, const ddk::detail::iterable<Traits2>& i_rhs);
-
 namespace ddk
 {
-namespace detail
-{
 
-template<typename ... Iterables, typename Traits>
-inline union_iterable<Iterables...,iterable<Traits>> operator|(const union_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
+template<typename ... Traits>
+inline detail::iterable<detail::union_iterable_traits<Traits...>> concat(const ddk::detail::iterable<Traits>& ... i_iterables);
 
-template<typename ... Iterables, typename Traits>
-inline union_iterable<typename intersection_iterable<Iterables...>::related_iterable,iterable<Traits>> operator|(const intersection_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline union_iterable<Iterables...,typename intersection_iterable<IIterables...>::related_iterable> operator|(const union_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline union_iterable<typename intersection_iterable<Iterables...>::related_iterable,IIterables...> operator|(const intersection_iterable<IIterables...>& i_lhs, const union_iterable<Iterables...>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline union_iterable<typename intersection_iterable<Iterables...>::related_iterable,typename intersection_iterable<IIterables...>::related_iterable> operator|(const intersection_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
-
-template<typename ... Iterables, typename Traits>
-inline intersection_iterable<Iterables...,iterable<Traits>> operator&(const intersection_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
-
-template<typename ... Iterables, typename Traits>
-inline intersection_iterable<typename union_iterable<Iterables...>::related_iterable,iterable<Traits>> operator&(const union_iterable<Iterables...>& i_lhs, const iterable<Traits>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline intersection_iterable<Iterables...,IIterables...> operator&(const intersection_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline intersection_iterable<Iterables...,typename union_iterable<IIterables...>::related_iterable> operator&(const intersection_iterable<Iterables...>& i_lhs, const union_iterable<IIterables...>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline intersection_iterable<typename union_iterable<Iterables...>::related_iterable,IIterables...> operator&(const union_iterable<Iterables...>& i_lhs, const intersection_iterable<IIterables...>& i_rhs);
-
-template<typename ... Iterables, typename ... IIterables>
-inline intersection_iterable<typename union_iterable<Iterables...>::related_iterable,typename union_iterable<IIterables...>::related_iterable> operator&(const union_iterable<Iterables...>& i_lhs, const union_iterable<IIterables...>& i_rhs);
+template<typename ... Traits>
+inline detail::iterable<detail::intersection_iterable_traits<Traits...>> fusion(const ddk::detail::iterable<Traits>& ... i_iterables);
 
 }
-}
-
-template<typename ... Iterables, typename ... IIterables>
-inline ddk::detail::union_iterable<Iterables...,IIterables...> operator|(const ddk::detail::union_iterable<Iterables...>& i_lhs, const ddk::detail::union_iterable<IIterables...>& i_rhs);
-
-template<typename Traits1, typename Traits2>
-inline ddk::detail::intersection_iterable<ddk::detail::iterable<Traits1>,ddk::detail::iterable<Traits2>> operator&(const ddk::detail::iterable<Traits1>& i_lhs, const ddk::detail::iterable<Traits2>& i_rhs);
-
 
 #include "ddk_iterable_utils.inl"

@@ -104,7 +104,7 @@ public:
 }
 
 template<typename Iterable, typename Function,typename Action>
-inline typename Iterable::reference visit_iterator(Iterable& i_iterable, const Function& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr);
+inline void visit_iterator(Iterable& i_iterable, const Function& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr);
 
 }
 }

@@ -16,7 +16,9 @@ high_order_sub_array<T,ranks...> high_order_sub_array<T,rank,ranks...>::operator
 {
 	if(i_index < rank)
 	{
-		return *(&m_ref + i_index * sizeof(T));
+		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+
+		return *(&m_ref + i_index * s_partialSize);
 	}
 	else
 	{
@@ -28,7 +30,9 @@ high_order_sub_array<const T,ranks...> high_order_sub_array<T,rank,ranks...>::op
 {
 	if(i_index < rank)
 	{
-		return *(&m_ref + i_index * sizeof(T));
+		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+
+		return *(&m_ref + i_index * partialSize);
 	}
 	else
 	{
@@ -63,12 +67,6 @@ high_order_sub_array<T>::operator const T&() const
 }
 
 template<typename T,size_t rank,size_t ... ranks>
-template<typename ... Args>
-high_order_array<T,rank,ranks...>::high_order_array(Args&& ... i_initValues)
-: m_data{ i_initValues ... }
-{
-}
-template<typename T,size_t rank,size_t ... ranks>
 high_order_array<T,rank,ranks...>::high_order_array(const high_order_array<T,rank,ranks...>& other)
 {
 	if constexpr(std::is_trivially_copyable<T>::value)
@@ -97,7 +95,9 @@ detail::high_order_sub_array<T,ranks...> high_order_array<T,rank,ranks...>::oper
 {
 	if(i_index < rank)
 	{
-		return m_data[i_index];
+		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+
+		return m_data[i_index * s_partialSize];
 	}
 	else
 	{
@@ -109,12 +109,54 @@ detail::high_order_sub_array<const T,ranks...> high_order_array<T,rank,ranks...>
 {
 	if(i_index < rank)
 	{
-		return m_data[i_index];
+		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+
+		return m_data[i_index * s_partialSize];
 	}
 	else
 	{
 		throw bad_access_exception{ "Index out of bounds" };
 	}
+}
+template<typename T,size_t rank,size_t ... ranks>
+typename high_order_array<T,rank,ranks...>::reference high_order_array<T,rank,ranks...>::at(const high_order_array<size_t,s_numRanks>& i_indexs)
+{
+	static const size_t s_ranks[s_numRanks] = { rank, ranks... };
+
+	size_t linearizedIndex = i_indexs[0];
+	size_t accProdRank = s_ranks[0];
+	for(size_t index=1;index < s_numRanks;++index)
+	{
+		linearizedIndex += i_indexs[index] * accProdRank;
+		accProdRank *= s_ranks[index];
+	}
+
+	return m_data[linearizedIndex];
+}
+template<typename T,size_t rank,size_t ... ranks>
+typename high_order_array<T,rank,ranks...>::const_reference high_order_array<T,rank,ranks...>::at(const high_order_array<size_t,s_numRanks>& i_indexs) const
+{
+	static const size_t s_ranks[s_numRanks] = { rank, ranks... };
+
+	size_t linearizedIndex = i_indexs[0];
+	size_t accProdRank = s_ranks[0];
+	for(size_t index = 1; index < s_numRanks; ++index)
+	{
+		linearizedIndex += i_indexs[index] * accProdRank;
+		accProdRank *= s_ranks[index];
+	}
+
+	return m_data[linearizedIndex];
+}
+template<typename T,size_t rank,size_t ... ranks>
+typename high_order_array<T,rank,ranks...>::reference high_order_array<T,rank,ranks...>::at(size_t i_index)
+{
+	return m_data[i_index];
+}
+template<typename T,size_t rank,size_t ... ranks>
+typename high_order_array<T,rank,ranks...>::const_reference high_order_array<T,rank,ranks...>::at(size_t i_index) const
+{
+	return m_data[i_index];
 }
 template<typename T,size_t rank,size_t ... ranks>
 high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(const high_order_array<T,rank,ranks...>& other)
@@ -144,6 +186,11 @@ template<typename T,size_t rank,size_t ... ranks>
 size_t high_order_array<T,rank,ranks...>::size() const
 {
 	return s_totalSize;
+}
+template<typename T,size_t rank,size_t ... ranks>
+bool high_order_array<T,rank,ranks...>::empty() const
+{
+	return false;
 }
 
 }

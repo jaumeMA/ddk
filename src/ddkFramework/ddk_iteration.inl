@@ -88,6 +88,11 @@ future<iter::action_result> iteration<Traits>::attach(T&& i_execContext)
 
 	return res->attach(std::forward<T>(i_execContext));
 }
+template<typename Traits>
+future<iter::action_result> iteration<Traits>::attach(const detail::this_thread_t&)
+{
+	return make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+}
 
 template<typename Traits>
 template<typename IterableValue>
@@ -160,6 +165,11 @@ future<iter::action_result> co_iteration<Traits>::attach(T&& i_execContext)
     shared_reference_wrapper<async_executor<iter::action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
 
     return res->attach(std::forward<T>(i_execContext));
+}
+template<typename Traits>
+future<iter::action_result> co_iteration<Traits>::attach(const detail::this_thread_t&)
+{
+	return make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
 }
 
 }

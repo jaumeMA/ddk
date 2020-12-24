@@ -3,37 +3,15 @@
 #include "ddk_arena.h"
 #include "ddk_function_impl.h"
 #include "ddk_system_reference_wrapper_allocator.h"
-#include "ddk_allocator_template_helper.h"
 #include "ddk_function_view.h"
 #include "ddk_tuple_template_helper.h"
 #include "ddk_function_arguments.h"
+#include "ddk_concepts.h"
+#include "ddk_function_concepts.h"
+#include "ddk_allocator_concepts.h"
 
 namespace ddk
 {
-
-template<typename,typename = system_allocator>
-class function;
-
-template<typename>
-struct _is_function;
-
-template<typename T>
-struct _is_function
-{
-    static const bool value = false;
-};
-template<typename Return, typename ... Types, typename Allocator>
-struct _is_function<function<Return(Types...),Allocator>>
-{
-    static const bool value = true;
-};
-
-template<typename T>
-struct is_function
-{
-    typedef typename std::remove_const<typename std::remove_reference<T>::type>::type raw_type;
-    static const bool value = _is_function<raw_type>::value;
-};
 
 template<typename,typename,typename>
 struct get_resolved_function;
@@ -44,7 +22,7 @@ struct get_resolved_function<Return,tuple<Types...>,Allocator>
 };
 
 template<typename Return, typename Type, typename Allocator = system_allocator>
-using resolved_function = typename get_resolved_function<Return,Type,typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type>::type;
+using resolved_function = typename get_resolved_function<Return,Type,typename std::enable_if<concepts::is_allocator<Allocator>::value,Allocator>::type>::type;
 
 template<typename Callable, typename Allocator = system_allocator>
 using resolved_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type,Allocator>;
@@ -80,8 +58,9 @@ public:
     function(const function<Return(),AAllocator>& other);
     template<typename AAllocator = Allocator>
     function(function<Return(),AAllocator>&& other);
-    template<typename T>
-    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T>::value && is_function<T>::value==false>::type* = nullptr);
+	TEMPLATE(typename T)
+	REQUIRES(IS_CALLABLE_NOT_FUNCTION(T))
+    function(T&& functor, const Allocator& i_allocator = Allocator());
     template<typename T>
     function(T *pRef, Return(T::*call)(), const Allocator& i_allocator = Allocator());
     template<typename T>
@@ -130,8 +109,9 @@ public:
     function(const function<Return(Types...),AAllocator>& other);
     template<typename AAllocator = Allocator>
     function(function<Return(Types...),AAllocator>&& other);
-    template<typename T>
-    function(T&& functor, const Allocator& i_allocator = Allocator(), typename std::enable_if<mpl::is_valid_functor<T,Types...>::value && is_function<T>::value==false>::type* = nullptr);
+	TEMPLATE(typename T)
+	REQUIRES(IS_CALLABLE_NOT_FUNCTION(T))
+	function(T&& functor, const Allocator& i_allocator = Allocator());
     template<typename T>
     function(T *pRef, Return(T::*call)(Types...), const Allocator& i_allocator = Allocator());
     template<typename T>

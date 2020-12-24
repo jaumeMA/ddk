@@ -159,7 +159,9 @@ TEST(DDKLentPtrTest,clear)
 TEST(DDKLentPtrTest,derivedConstruction)
 {
 	ddk::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ddk::make_unique_reference<DerivedDefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooUnique);
+	const ddk::lent_pointer_wrapper<DefaultType> foo = ddk::lend(fooUnique);
+
+	ddk::lent_pointer_wrapper<const DefaultType> foo2 = foo;
 
 	EXPECT_EQ(*foo,0xFF);
 }

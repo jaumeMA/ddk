@@ -37,11 +37,11 @@ struct forward_iterable_valued_traits : public forward_iterable_traits<T>
 };
 
 template<typename T>
-struct const_bidirectional_iterable_valued_traits : public bidirectional_iterable_traits<T>
+struct const_bidirectional_iterable_valued_traits : public const_bidirectional_iterable_traits<T>
 {
     DEFINE_COMMON_TRAITS(const_bidirectional_iterable_valued_traits,const_forward_iterable_valued_traits,const_forward_iterable_valued_traits);
 
-    typedef bidirectional_iterable_traits<T> iterable_base_traits;
+    typedef const_bidirectional_iterable_traits<T> iterable_base_traits;
     typedef const_bidirectional_value<T> iterable_value;
     typedef const_bidirectional_value<const T> iterable_const_value;
 };
@@ -59,12 +59,12 @@ struct bidirectional_iterable_valued_traits : public bidirectional_iterable_trai
 };
 
 template<typename T>
-struct const_random_access_iterable_valued_traits : public random_access_iterable_traits<T>
+struct const_random_access_iterable_valued_traits : public const_random_access_iterable_traits<T>
 {
     DEFINE_COMMON_TRAITS(const_random_access_iterable_valued_traits,const_bidirectional_iterable_valued_traits,const_bidirectional_iterable_valued_traits);
     DEFINE_COMMON_TRAITS(const_random_access_iterable_valued_traits,const_forward_iterable_valued_traits,const_forward_iterable_valued_traits);
 
-    typedef random_access_iterable_traits<T> iterable_base_traits;
+    typedef const_random_access_iterable_traits<T> iterable_base_traits;
     typedef const_random_accessed_value<T> iterable_value;
     typedef const_random_accessed_value<const T> iterable_const_value;
 };

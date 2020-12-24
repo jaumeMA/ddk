@@ -3,10 +3,15 @@
 #include "ddk_embedded_type.h"
 #include "ddk_template_helper.h"
 #include "ddk_arena.h"
+#include "ddk_iterable_adaptor.h"
 #include <array>
 
 namespace ddk
 {
+
+template<typename ...>
+class tuple_adaptor;
+
 namespace detail
 {
 
@@ -45,6 +50,8 @@ class tuple_impl<mpl::sequence<0>,Type>
 {
     template<typename,typename...>
     friend class tuple_impl;
+	typedef ddk::tuple_adaptor<Type> tuple_adaptor_t;
+	DDK_ITERABLE_TYPE(tuple_impl,tuple_adaptor_t,std::random_access_iterator_tag)
 
 public:
     tuple_impl() = default;
@@ -67,6 +74,7 @@ public:
     tuple_impl<mpl::sequence<0>,Type>* operator->();
     const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
     static constexpr size_t size();
+	bool empty() const;
 
 private:
 	Type m_val;
@@ -78,6 +86,8 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
     template<typename,typename...>
     friend class tuple_impl;
     static const size_t s_total_size = mpl::get_total_size<Type1,Type2,Types...>::value;
+	typedef ddk::tuple_adaptor<Type1,Type2,Types...> tuple_adaptor_t;
+	DDK_ITERABLE_TYPE(tuple_impl,tuple_adaptor_t,std::random_access_iterator_tag)
 
 public:	
 	tuple_impl();
@@ -107,6 +117,7 @@ public:
     tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* operator->();
     const tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* operator->() const;
     static constexpr size_t size();
+	bool empty() const;
 
 private:
     template<typename TType, typename Arg>

@@ -22,8 +22,8 @@ public:
 	static const size_t npos = _numTypes;
 
     variant_impl();
-    inline void construct(const variant_impl<Types...>& other);
-    inline void construct(variant_impl<Types...>&& other);
+    inline void construct(const variant_impl& other);
+    inline void construct(variant_impl&& other);
     template<typename ... TTypes>
     inline void construct(const variant_impl<TTypes...>& other);
     template<typename ... TTypes>

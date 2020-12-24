@@ -11,6 +11,9 @@
 #include "ddk_lend_from_this.h"
 #include "ddk_shared_from_this.h"
 #include "ddk_lendable.h"
+#include "ddk_atomic_shared_pointer_wrapper.h"
+#include "ddk_atomic_shared_reference_wrapper.h"
+#include "ddk_atomic_weak_pointer_wrapper.h"
 #include "ddk_smart_ptr_template_helper.h"
 
 namespace ddk
@@ -179,6 +182,50 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<s
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	return __make_shared_reference(i_ptr, i_refCounter,i_refDeleter);
+}
+
+template<typename T,typename ... Args>
+atomic_shared_reference_wrapper<T> make_atomic_shared_reference(Args&& ... i_args)
+{
+	typedef typename shared_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+
+	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(T)));
+
+	T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
+
+	// In the case of shared pointers we cannot group memory allocation into a single malloc since we have weak deps
+	allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(shared_reference_counter)));
+
+	shared_reference_counter* refCounter = new (allocatedMemory) shared_reference_counter();
+
+	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
+
+	return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+}
+template<typename T>
+atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	shared_reference_counter* refCounter = new shared_reference_counter();
+
+	return __make_shared_reference(i_ptr,refCounter,nullptr);
+}
+template<typename T>
+atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	shared_reference_counter* refCounter = new shared_reference_counter();
+
+	return __make_shared_reference(i_ptr,refCounter,i_refDeleter);
+}
+template<typename T>
+atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter = nullptr)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	return __make_shared_reference(i_ptr,i_refCounter,i_refDeleter);
 }
 
 template<typename T>
@@ -587,6 +634,7 @@ inline weak_pointer_wrapper<const T> weak(const shared_pointer_wrapper<T>& i_sha
 {
 	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
 }
+
 template<typename T,typename TT>
 inline weak_pointer_wrapper<TT> weak(share_from_this<T,TT>& i_sharedFromThis)
 {
@@ -599,12 +647,29 @@ inline weak_pointer_wrapper<const TT> weak(const share_from_this<TT>& i_sharedFr
 }
 
 template<typename T>
+inline atomic_weak_pointer_wrapper<T> weak(atomic_shared_pointer_wrapper<T> i_sharedPtr)
+{
+	return weak(i_sharedPtr.m_ptr);
+}
+
+template<typename T>
 inline shared_pointer_wrapper<const T> share(const weak_pointer_wrapper<T>& i_weakPtr)
 {
 	return i_weakPtr.share();
 }
 template<typename T>
 inline shared_pointer_wrapper<T> share(weak_pointer_wrapper<T>& i_weakPtr)
+{
+	return i_weakPtr.share();
+}
+
+template<typename T>
+inline atomic_shared_pointer_wrapper<const T> share(const atomic_weak_pointer_wrapper<T>& i_weakPtr)
+{
+	return i_weakPtr.share();
+}
+template<typename T>
+inline atomic_shared_pointer_wrapper<T> share(atomic_weak_pointer_wrapper<T>& i_weakPtr)
 {
 	return i_weakPtr.share();
 }

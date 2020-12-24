@@ -47,19 +47,19 @@ watch_dog::watch_dog(watch_dog_waiter_weak_ptr& i_weakWaiter)
 	}
 	else
 	{
-		m_waiter = make_shared_reference<detail::watch_dog_waiter>();
+		watch_dog_waiter_shared_ptr newWaiter = make_atomic_shared_reference<detail::watch_dog_waiter>();
 
-		i_weakWaiter = weak(m_waiter);
+		m_waiter = share(i_weakWaiter = weak(newWaiter));
 	}
 }
-void watch_dog::wait()
+void watch_dog::watch()
 {
 	if(m_waiter)
 	{
 		m_waiter->wait();
 	}
 }
-void watch_dog::wait_until(const function<bool()>& i_predicate)
+void watch_dog::watch_until(const function<bool()>& i_predicate)
 {
 	if(m_waiter)
 	{

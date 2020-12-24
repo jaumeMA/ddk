@@ -28,6 +28,7 @@ public:
 	iter::action_result execute() const;
 	template<typename T>
 	future<iter::action_result> attach(T&& i_execContext);
+	future<iter::action_result> attach(const detail::this_thread_t&);
 
 private:
 	detail::iterable<Traits> m_iterable;
@@ -56,6 +57,7 @@ public:
     iter::action_result execute() const;
 	template<typename T>
 	future<iter::action_result> attach(T&& i_execContext);
+	future<iter::action_result> attach(const detail::this_thread_t&);
 
 private:
     detail::iterable<Traits> m_iterable;

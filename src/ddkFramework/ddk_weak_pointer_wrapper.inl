@@ -80,18 +80,19 @@ weak_pointer_wrapper<T>& weak_pointer_wrapper<T>::operator=(const weak_pointer_w
 {
 	if(m_data != other.m_data)
 	{
+		m_data = other.m_data;
+
 		if(m_refCounter)
 		{
 			clearIfCounterVoid(m_refCounter->decrementWeakReference())
 		}
 
-		m_data = other.m_data;
-		m_deleter = other.m_deleter;
-
 		if((m_refCounter = other.m_refCounter))
 		{
 			m_refCounter->incrementWeakReference();
 		}
+
+		m_deleter = other.m_deleter;
 	}
 
 	return *this;
@@ -101,15 +102,17 @@ weak_pointer_wrapper<T>& weak_pointer_wrapper<T>::operator=(weak_pointer_wrapper
 {
 	if(m_data != other.m_data)
 	{
+		m_data = other.m_data;
+		other.m_data = nullptr;
+
 		if(m_refCounter)
 		{
 			clearIfCounterVoid(m_refCounter->decrementWeakReference());
 		}
 
-		m_data = other.m_data;
-		other.m_data = nullptr;
 		m_refCounter = other.m_refCounter;
 		other.m_refCounter = nullptr;
+
 		m_deleter = other.m_deleter;
 		other.m_deleter = nullptr;
 	}
@@ -122,12 +125,12 @@ weak_pointer_wrapper<T>& weak_pointer_wrapper<T>::operator=(const weak_pointer_w
 {
 	if(m_data != other.m_data)
 	{
+		m_data = other.m_data;
+
 		if(m_refCounter)
 		{
 			clearIfCounterVoid(m_refCounter->decrementWeakReference())
 		}
-
-		m_data = other.m_data;
 
 		if((m_refCounter = other.m_refCounter))
 		{
@@ -145,15 +148,17 @@ weak_pointer_wrapper<T>& weak_pointer_wrapper<T>::operator=(weak_pointer_wrapper
 {
 	if(m_data != other.m_data)
 	{
-		if(m_refCounter)
-		{
-			clearIfCounterVoid(m_refCounter->decrementWeakReference())
-		}
-
 		m_data = other.m_data;
 		other.m_data = nullptr;
+
+		if(m_refCounter)
+		{
+			clearIfCounterVoid(m_refCounter->decrementWeakReference());
+		}
+
 		m_refCounter = other.m_refCounter;
 		other.m_refCounter = nullptr;
+
 		m_deleter = other.m_deleter;
 		other.m_deleter = nullptr;
 	}

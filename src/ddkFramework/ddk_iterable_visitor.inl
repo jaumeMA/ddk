@@ -254,7 +254,7 @@ typename Adaptor::reference action_visitor<Iterable,random_access_action,Adaptor
 }
 
 template<typename Iterable, typename Function, typename Action>
-typename Iterable::reference visit_iterator(Iterable& i_iterable, const Function& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+void visit_iterator(Iterable& i_iterable, const Function& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
 	detail::action_visitor<Iterable,Action,typename detail::iterable_adaptor<Iterable,Action>::type> actionVisitor(i_iterable,i_initialAction.get_as<iter::shift_action>(),i_actionStatePtr);
 
@@ -271,8 +271,6 @@ typename Iterable::reference visit_iterator(Iterable& i_iterable, const Function
 	{
 		suspend();
 	}
-
-	return ddk::crash_on_return<typename Iterable::reference>::value();
 }
 
 }

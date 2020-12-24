@@ -29,7 +29,7 @@ void transformed_iterable_impl<PublicTraits,PrivateTraits,Return,Type>::iterate_
 template<typename PublicTraits, typename PrivateTraits, typename Return, typename Type>
 void transformed_iterable_impl<PublicTraits,PrivateTraits,Return,Type>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const
 {
-	m_iterableRef->iterate_impl(make_composition(i_try,make_function([this](private_const_reference i_value) -> Return { return eval(m_transform,const_cast<private_reference>(i_value)); })),i_initialAction,i_actionStatePtr);
+	m_iterableRef->iterate_impl(make_composition(i_try,make_function([this](private_const_reference i_value) -> Return { return eval(m_transform,i_value); })),i_initialAction,i_actionStatePtr);
 }
 template<typename PublicTraits, typename PrivateTraits, typename Return, typename Type>
 size_t transformed_iterable_impl<PublicTraits,PrivateTraits,Return,Type>::size() const

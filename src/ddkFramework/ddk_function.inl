@@ -24,12 +24,11 @@ function<Return(Types...),Allocator>::function(std::nullptr_t)
 {
 }
 template<typename Return, typename ... Types, typename Allocator>
-template<typename T>
-function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T,Types...>::value && is_function<T>::value==false>::type*)
+TEMPLATE(typename T)
+REQUIRED
+function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator)
 : m_allocator(i_allocator)
 {
-    static_assert(is_function<T>::value==false,"wtf");
-
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return,Types...> Functor;
 
     if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
@@ -190,12 +189,11 @@ function<Return(),Allocator>::function(std::nullptr_t)
 {
 }
 template<typename Return, typename Allocator>
-template<typename T>
-function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocator, typename std::enable_if<mpl::is_valid_functor<T>::value && is_function<T>::value==false>::type*)
+TEMPLATE(typename T)
+REQUIRED
+function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocator)
 : m_allocator(i_allocator)
 {
-    static_assert(is_function<T>::value==false,"wtf");
-
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return> Functor;
 
     if(void* mem = m_allocator.allocate(1,sizeof(Functor)))

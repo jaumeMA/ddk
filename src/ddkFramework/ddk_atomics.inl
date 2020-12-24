@@ -3,6 +3,94 @@ namespace ddk
 {
 
 template<typename T>
+atomic8<T>::atomic8(const T& i_value)
+{
+	m_arena.template construct<T>(i_value);
+}
+template<typename T>
+atomic8<T>::atomic8(T&& i_value)
+{
+	m_arena.template construct<T>(std::move(i_value));
+}
+template<typename T>
+atomic8<T>::atomic8(const atomic8& other)
+{
+	if(other.m_arena.empty() == false)
+	{
+		m_arena.template construct<T>(other.template get<T>());
+	}
+}
+template<typename T>
+atomic8<T>::atomic8(atomic8&& other)
+{
+	if(other.m_arena.empty() == false)
+	{
+		m_arena.template construct<T>(other.template extract<T>());
+	}
+}
+template<typename T>
+atomic8<T>::~atomic8()
+{
+	m_arena.template destroy<T>();
+}
+template<typename T>
+atomic8<T>& atomic8<T>::operator=(const atomic8& other)
+{
+	if(other.m_arena.empty() == false)
+	{
+		m_arena.template assign<T>(other.template get<T>());
+	}
+}
+template<typename T>
+atomic8<T>& atomic8<T>::operator=(atomic8&& other)
+{
+	if(other.m_arena.empty() == false)
+	{
+		m_arena.template assign<T>(other.template extract<T>());
+	}
+}
+template<typename T>
+bool atomic8<T>::empty() const
+{
+	m_arena.empty();
+}
+template<typename T>
+const T& atomic8<T>::get() const
+{
+	m_arena.template get<T>();
+}
+template<typename T>
+T& atomic8<T>::get()
+{
+	m_arena.template get<T>();
+}
+template<typename T>
+void atomic8<T>::set(const T& i_value)
+{
+	m_arena.template assign<T>(i_value);
+}
+template<typename T>
+void atomic8<T>::set(T&& i_value)
+{
+	m_arena.template assign<T>(std::move(i_value));
+}
+template<typename T>
+void atomic8<T>::reset()
+{
+	m_arena.template destroy<T>();
+}
+template<typename T>
+T* atomic8<T>::_get_typed_arena()
+{
+	return m_arena.template get_ptr<T>();
+}
+template<typename T>
+char* atomic8<T>::_get_arena()
+{
+	return m_arena.template get_ptr<char>();
+}
+
+template<typename T>
 atomic32<T>::atomic32(const T& i_value)
 {
 	m_arena.template construct<T>(i_value);
@@ -239,7 +327,18 @@ void* volatile* atomic<T*>::_get_arena()
 }
 
 template<typename T>
-inline bool atomic_compare_exchange(atomic32<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+bool atomic_compare_exchange(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+{
+	#if defined(WIN32)
+	return _InterlockedCompareExchange8(i_atomic._get_arena(),i_desiredValue,i_expectedValue) == static_cast<char>(i_expectedValue);
+	#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
+	#else
+	#error "Unsupported platform"
+	#endif
+}
+template<typename T>
+bool atomic_compare_exchange(atomic32<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
 {
 	#if defined(WIN32)
 	return InterlockedCompareExchange(reinterpret_cast<LONG*>(i_atomic._get_arena()),i_desiredValue,i_expectedValue) == i_expectedValue;
@@ -250,7 +349,7 @@ inline bool atomic_compare_exchange(atomic32<T>& i_atomic,const T& i_expectedVal
 	#endif
 }
 template<typename T>
-inline bool atomic_compare_exchange(atomic64<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+bool atomic_compare_exchange(atomic64<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
 {
 	#ifdef _WIN32
 	return InterlockedCompareExchange64(i_atomic._get_arena(),i_desiredValue,i_expectedValue) == i_expectedValue;
@@ -261,12 +360,23 @@ inline bool atomic_compare_exchange(atomic64<T>& i_atomic,const T& i_expectedVal
 	#endif
 }
 template<typename T>
-inline bool atomic_compare_exchange(atomic<T*>& i_atomic,T* i_expectedValue,T* i_desiredValue)
+bool atomic_compare_exchange(atomic<T*>& i_atomic,T* i_expectedValue,T* i_desiredValue)
 {
 	#ifdef _WIN32
 	return InterlockedCompareExchangePointer(i_atomic._get_arena(),i_desiredValue,i_expectedValue) == i_expectedValue;
 	#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_bool_compare_and_swap(i_atomic.m_arena,i_expectedValue,i_desiredValue);
+	#else
+	#error "Unsupported platform"
+	#endif
+}
+template<typename T>
+inline T atomic_compare_exchange_val(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+{
+	#ifdef _WIN32
+	return T(_InterlockedCompareExchange8(i_atomic._get_arena(),i_desiredValue,i_expectedValue));
+	#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_val_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
 	#else
 	#error "Unsupported platform"
 	#endif
@@ -305,6 +415,17 @@ inline T* atomic_compare_exchange_val(atomic<T*>& i_atomic,T* i_expectedValue,T*
 	#endif
 }
 template<typename T>
+inline T atomic_pre_increment(atomic8<T>& i_atomic)
+{
+	#ifdef _WIN32
+	return T(InterlockedIncrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())) - 1);
+	#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_fetch_and_add(i_atomic._get_typed_arena(),1);
+	#else
+	#error "Unsupported platform"
+	#endif
+}
+template<typename T>
 inline T atomic_pre_increment(atomic32<T>& i_atomic)
 {
 	#ifdef _WIN32
@@ -322,6 +443,17 @@ inline T atomic_pre_increment(atomic64<T>& i_atomic)
 	return T(InterlockedIncrement64(i_atomic._get_arena()) - 1);
 	#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_add(i_atomic._get_typed_arena(),1);
+	#else
+	#error "Unsupported platform"
+	#endif
+}
+template<typename T>
+inline T atomic_post_increment(atomic8<T>& i_atomic)
+{
+	#ifdef _WIN32
+	return T(InterlockedIncrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())));
+	#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_add_and_fetch(i_atomic._get_typed_arena(),1);
 	#else
 	#error "Unsupported platform"
 	#endif
@@ -349,6 +481,17 @@ inline T atomic_post_increment(atomic64<T>& i_atomic)
 	#endif
 }
 template<typename T>
+inline T atomic_pre_decrement(atomic8<T>& i_atomic)
+{
+	#ifdef _WIN32
+	return T(InterlockedDecrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())) + 1);
+	#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_fetch_and_sub(i_atomic._get_typed_arena(),1);
+	#else
+	#error "Unsupported platform"
+	#endif
+}
+template<typename T>
 inline T atomic_pre_decrement(atomic32<T>& i_atomic)
 {
 	#ifdef _WIN32
@@ -366,6 +509,17 @@ inline T atomic_pre_decrement(atomic64<T>& i_atomic)
 	return T(InterlockedDecrement64(i_atomic._get_arena()) + 1);
 	#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_sub(i_atomic._get_typed_arena(),1);
+	#else
+	#error "Unsupported platform"
+	#endif
+}
+template<typename T>
+inline T atomic_post_decrement(atomic8<T>& i_atomic)
+{
+	#ifdef _WIN32
+	return T(InterlockedDecrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())));
+	#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
 	#else
 	#error "Unsupported platform"
 	#endif

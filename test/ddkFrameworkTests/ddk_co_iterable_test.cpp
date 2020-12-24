@@ -9,8 +9,10 @@ class DDKCoIterableTest : public Test
 {
 };
 
-struct MyIterable
+template<typename T>
+class MyIterable
 {
+	DDK_ITERABLE_TYPE(MyIterable,MyIterableAdaptor,std::forward_iterator_tag)
 public:
 	typedef const size_t& reference;
 	typedef const size_t& const_reference;
@@ -35,25 +37,23 @@ private:
 	size_t m_end;
 };
 
-struct MyIterableAdaptor
+class MyIterableAdaptor
 {
-	DDK_ITERABLE_TYPE(MyIterable,const MyIterableAdaptor,std::forward_iterator_tag)
-
 public:
-	typedef typename MyIterable::reference reference;
-	typedef typename MyIterable::const_reference const_reference;
+	typedef typename MyIterable<int>::reference reference;
+	typedef typename MyIterable<int>::const_reference const_reference;
 
-	MyIterableAdaptor(const MyIterable& i_iterable,const ddk::iter::shift_action& i_initialAction);
+	MyIterableAdaptor(const MyIterable<int>& i_iterable,const ddk::iter::shift_action& i_initialAction);
 	inline const_reference get_value() const noexcept;
 	inline ddk::optional<const_reference> next_value() const noexcept;
 	inline bool valid() const noexcept;
 
 private:
-	const MyIterable& m_iterable;
+	const MyIterable<int>& m_iterable;
 	mutable size_t m_currValue = 0;
 };
 
-MyIterableAdaptor::MyIterableAdaptor(const MyIterable& i_iterable,const ddk::iter::shift_action& i_initialAction)
+MyIterableAdaptor::MyIterableAdaptor(const MyIterable<int>& i_iterable,const ddk::iter::shift_action& i_initialAction)
 : m_iterable(i_iterable)
 ,m_currValue(i_initialAction.shifted())
 {
@@ -308,11 +308,6 @@ std::vector<int> myLargeVector = createLargeVector(1000000);
 
 TEST(DDKCoIterableTest,stdForwardIteration)
 {
-	//const size_t initIndex = 0;
-	//const size_t maxIndex = 1000000;
-	//const MyIterable foo(initIndex,maxIndex);
-
-
 	//int sum = 0;
 	std::vector<int>::const_iterator itQQ = myLargeVector.begin();
 	for(size_t index = 0; itQQ != myLargeVector.end(); ++itQQ,++index)
@@ -325,10 +320,13 @@ TEST(DDKCoIterableTest,myIterableForwardIteration)
 {
 	typedef ddk::co_iterable<std::vector<int>> iterable;
 	typedef typename iterable::iterator iterator;
+	const size_t initIndex = 0;
+	const size_t maxIndex = 1000000;
+	MyIterable<int> foo(initIndex,maxIndex);
 
-	iterable res1 = ddk::co_iterate(myLargeVector);
-	iterator itRes1 = std::begin(res1);
-	iterator itEnd = std::end(res1);
+	auto res1 = ddk::co_iterate(foo);
+	auto itRes1 = std::begin(res1);
+	auto itEnd = std::end(res1);
 	int a = 0;
 	for(; itRes1 != itEnd; ++itRes1)
 	{

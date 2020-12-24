@@ -4,9 +4,9 @@
 #include "ddk_iterable_action.h"
 
 #define DDK_ITERABLE_TYPE(_ITERABLE,_ADAPTOR,_TAG) \
-template<typename Action> \
-friend _ADAPTOR adaptor_resolver(const _ITERABLE&,const Action&); \
-friend _TAG iterable_tag_resolver(const _ITERABLE&);
+friend class _ADAPTOR; \
+friend inline typename std::add_const<_ADAPTOR>::type& adaptor_resolver(const _ITERABLE&,...); \
+friend _TAG iterable_tag_resolver(typename std::add_const<_ITERABLE>::type&);
 
 namespace ddk
 {
@@ -101,6 +101,9 @@ protected:
 	const reverse_iterator m_endReverseIterator;
 };
 
+template<typename>
+class random_access_iterable_adaptor;
+
 template<typename Iterable>
 class random_access_iterable_adaptor : public bidirectional_iterable_adaptor<Iterable>
 {
@@ -116,16 +119,20 @@ public:
 };
 
 template<typename Iterable, typename Action>
-forward_iterable_adaptor<Iterable> adaptor_resolver(Iterable&, Action,typename std::enable_if<std::is_same<input_action,Action>::value || std::is_same<const_input_action,Action>::value>::type* = nullptr);
+const forward_iterable_adaptor<Iterable>& adaptor_resolver(Iterable&, Action,typename std::enable_if<std::is_same<input_action,Action>::value || std::is_same<const_input_action,Action>::value>::type* = nullptr);
 template<typename Iterable,typename Action>
-bidirectional_iterable_adaptor<Iterable> adaptor_resolver(Iterable&,Action,typename std::enable_if<std::is_same<bidirectional_action,Action>::value || std::is_same<const_bidirectional_action,Action>::value>::type* = nullptr);
+const bidirectional_iterable_adaptor<Iterable>& adaptor_resolver(Iterable&,Action,typename std::enable_if<std::is_same<bidirectional_action,Action>::value || std::is_same<const_bidirectional_action,Action>::value>::type* = nullptr);
 template<typename Iterable,typename Action>
-random_access_iterable_adaptor<Iterable> adaptor_resolver(Iterable&,Action,typename std::enable_if<std::is_same<random_access_action,Action>::value || std::is_same<const_random_access_action,Action>::value>::type* = nullptr);
+const random_access_iterable_adaptor<Iterable>& adaptor_resolver(Iterable&,Action,typename std::enable_if<std::is_same<random_access_action,Action>::value || std::is_same<const_random_access_action,Action>::value>::type* = nullptr);
 
 template<typename Iterable, typename Action>
 struct iterable_adaptor
 {
-	typedef decltype(adaptor_resolver(std::declval<Iterable>(),std::declval<Action>())) type;
+private:
+	typedef decltype(adaptor_resolver(std::declval<Iterable>(),std::declval<Action>())) raw_type;
+
+public:
+	typedef typename std::remove_const<typename std::remove_reference<raw_type>::type>::type type;
 };
 
 }

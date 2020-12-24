@@ -1,6 +1,9 @@
 #include "ddk_iterable.h"
 #include <gtest/gtest.h>
 #include <vector>
+#include "ddk_iterable_algorithm.h"
+#include "ddk_high_order_array_adaptor.h"
+#include "ddk_tuple_adaptor.h"
 
 using namespace testing;
 
@@ -61,13 +64,60 @@ TEST(DDKIterableTest, forwardIterableConstruction)
     foo.push_back(1897);
     foo.push_back(76);
 
-    ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
+	ddk::high_order_array<size_t,2,2> highOrderProva;
 
-	ddk::make_function([](ddk::const_bidirectional_value<int> i_value) { printf("1 current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<= fooIterable;
+	highOrderProva[0][0] = 1;
+	highOrderProva[0][1] = 2;
+	highOrderProva[1][0] = 3;
+	highOrderProva[1][1] = 4;
+
+	ddk::const_random_access_iterable<size_t> highOrderIterable = ddk::make_iterable<ddk::const_random_access_iterable<size_t>>(highOrderProva);
+
+	ddk::make_function([](size_t i_value){printf("cur high order value: %d\n",i_value);}) <<= highOrderIterable;
+
+	std::vector<size_t> highOrderProvaSuma;
+
+	highOrderProvaSuma <<= ddk::trans::iterable_sum(highOrderIterable,highOrderIterable,highOrderIterable);
+
+	ddk::tuple<double,int,float> provaTuple;
+	provaTuple.set<0>(10.2f);
+	provaTuple.set<1>(20);
+	provaTuple.set<2>(30.5f);
+
+	ddk::const_random_access_iterable<ddk::variant_reference<double,int,float>> provaTuplaIterable = ddk::make_iterable<ddk::const_random_access_iterable<ddk::variant_reference<double,int,float>>>(provaTuple);
+
+	ddk::tuple<double,int,float> provaSumTuple;
+
+	//provaSumTuple <<= ddk::trans::iterable_sum(provaTuplaIterable,provaTuplaIterable,provaTuplaIterable);
+
+	ddk::make_function([](const ddk::variant_reference<double,int,float>& i_value)
+	{  
+		if(i_value.is<double&>())
+		{
+			printf("curr tupla str value: %f\n",i_value.get<double&>());
+		}
+		else if(i_value.is<int&>())
+		{
+			printf("curr tupla int value: %d\n",i_value.get<int&>());
+		}
+		else
+		{
+			printf("curr tupla float value: %f\n",i_value.get<float&>());
+		}
 	
+	}) <<= provaTuplaIterable;
+
+	ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
+
+	ddk::thread myThread;
+	((ddk::make_function([](ddk::const_bidirectional_value<int> i_value) { printf("1 current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<= fooIterable) -> attach(std::move(myThread))).then(ddk::make_function([](const ddk::iter::action_result&){}));
+	
+	//ddk::algo::swap swaper(ddk::make_function([](int i_value){ return i_value == 4; }),ddk::make_function([](int i_value){ return i_value == 76; }));
+
 	ddk::const_random_access_iterable<const int> transformedFoo = ddk::view::transform([](int i_value) { return 2 * i_value; }) <<= fooIterable;
 
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value) { printf("2 current value: %d at %zd\n", *i_value, value_position(i_value)); }) <<= ddk::view::order(ddk::iter::reverse_order) <<= ddk::view::filter([](const A& i_value) { return i_value > 0; }) <<= ddk::view::transform([](int i_value) { return A(i_value); }) <<= fooIterable;
+
 }
 TEST(DDKIterableTest, iterableUnion)
 {
@@ -101,7 +151,7 @@ TEST(DDKIterableTest, iterableUnion)
 	ddk::tuple<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> fooIterable4(fooIterable1,fooIterable2);
 	ddk::detail::union_iterable_impl<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> unionIterable(fooIterable1,fooIterable2);
 
-	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %zd\n",**i_value,value_position(i_value)); }) <<=  (fooIterable1 | fooIterable2);
-    ddk::const_random_access_iterable<A> fooIterableUnion2 = fooIterable1 | fooIterable2 | fooIterable3;
-    ddk::make_function([](ddk::const_bidirectional_value<const A, const D,const A> i_value){ printf("current values tuple: %d, %d, %d\n",*(i_value->get<0>()),*(i_value->get<1>()),*(i_value->get<2>())); }) <<= ddk::view::order(ddk::iter::reverse_order) <<= ((fooIterable1 | fooIterable2) & fooIterable2 & (fooIterable1 | fooIterable3)), ddk::make_function([](ddk::iter::action_result i_result){ if(i_result != ddk::success) printf("error: %d\n", i_result.error().get_nested_error<ddk::iter::EraseActionError>().getValue()); });
+	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %zd\n",**i_value,value_position(i_value)); }) <<=  ddk::concat(fooIterable1,fooIterable2);
+    ddk::const_random_access_iterable<A> fooIterableUnion2 = ddk::concat(fooIterable1,fooIterable2,fooIterable3);
+    ddk::make_function([](ddk::const_bidirectional_value<const A, const D,const A> i_value){ printf("current values tuple: %d, %d, %d\n",*(i_value->get<0>()),*(i_value->get<1>()),*(i_value->get<2>())); }) <<= ddk::view::order(ddk::iter::reverse_order) <<= ddk::fusion(ddk::concat(fooIterable1,fooIterable2),fooIterable2, ddk::concat(fooIterable1,fooIterable3)), ddk::make_function([](ddk::iter::action_result i_result){ if(i_result != ddk::success) printf("error: %d\n", i_result.error().get_nested_error<ddk::iter::EraseActionError>().getValue()); });
 }
