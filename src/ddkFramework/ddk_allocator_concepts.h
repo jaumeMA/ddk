@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ddk_allocator_template_helper.h"
 #include "ddk_type_concepts.h"
 
 #define IS_ALLOCATOR(_TYPE) \
