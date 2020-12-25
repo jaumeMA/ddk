@@ -56,6 +56,11 @@ struct which_type<false,T1,T2>
 	typedef T2 type;
 };
 
+template<typename ... Types>
+struct type_pack
+{
+};
+
 template<typename>
 struct is_copy_constructible;
 
@@ -592,6 +597,20 @@ template<typename ... Types>
 struct acc_sizeof
 {
     typedef _acc_sizeof<typename acc_sequence<size_of_qualified_type<Types>::value ...>::type> type;
+};
+
+template<template<typename> class, typename ...>
+struct fullfils_predicate;
+
+template<template<typename> class P>
+struct fullfils_predicate<P>
+{
+	static const bool value = true;
+};
+template<template<typename> class P, typename T, typename ... TT>
+struct fullfils_predicate<P,T,TT...>
+{
+	static const bool value = P<T>::value && fullfils_predicate<P,TT...>::value;
 };
 
 }

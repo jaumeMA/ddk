@@ -132,4 +132,11 @@ any_value inherited_value<T,Allocator>::visit(Visitor&& i_visitor) const
 	return __visit(m_typeInfo,*m_value,i_visitor);
 }
 
+TEMPLATE(typename Visitor,typename InheritedValue)
+REQUIRED
+any_value visit(Visitor&& i_visitor,InheritedValue&& i_variant)
+{
+	return i_variant.visit(std::forward<Visitor>(i_visitor));
+}
+
 }

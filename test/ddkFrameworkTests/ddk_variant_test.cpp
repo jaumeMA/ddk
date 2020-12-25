@@ -4,6 +4,7 @@
 #include <string>
 #include "test_utils.h"
 #include "ddk_static_visitor.h"
+#include "ddk_function.h"
 
 using namespace testing;
 
@@ -237,4 +238,24 @@ TEST(DDKVariantTest,visitation)
 	foo = nestedValue5;
 
 	EXPECT_EQ(foo.visit(visitor),0xBB);
+}
+
+struct myMultiVisitor
+{
+	template<typename ... T>
+	size_t operator()(T&& ... i_values) const
+	{
+		return ddk::mpl::get_num_types<T...>::value;
+	}
+};
+
+TEST(DDKVariantTest,multi_visitation)
+{
+	TestVisitor visitor;
+	ddk::variant<std::string,int,size_t,nonCopyConstructibleType> foo1;
+	ddk::variant<DefaultType,std::vector<int>> foo2;
+	ddk::variant<char,double,float,std::string> foo3;
+
+	myMultiVisitor multiVisitor;
+	const size_t res = ddk::visit<size_t>(multiVisitor,foo1,foo2,foo3);
 }

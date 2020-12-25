@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ddk_tuple.h"
 #include "ddk_function_template_helper.h"
+#include "ddk_system_allocator.h"
 
 #define IS_FUNCTION(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_function<_TYPE>::value>::type*
@@ -30,7 +30,7 @@ namespace concepts
 template<typename ... Callables>
 struct require_callables
 {
-	typedef tuple<typename std::enable_if<mpl::is_valid_functor<Callables>::value>::type ...> type;
+	typedef mpl::type_pack<typename std::enable_if<mpl::is_valid_functor<Callables>::value>::type ...> type;
 };
 
 template<typename>

@@ -3,13 +3,13 @@
 #include "ddk_template_helper.h"
 #include "ddk_tuple.h"
 
+#define define_place_arg(_INDEX) \
+static const ddk::mpl::place_holder<_INDEX> arg_##_INDEX;
+
 namespace ddk
 {
 namespace mpl
 {
-
-#define define_place_arg(_INDEX) \
-static const ddk::mpl::place_holder<_INDEX> arg_##_INDEX;
 
 template<size_t Index>
 struct place_holder

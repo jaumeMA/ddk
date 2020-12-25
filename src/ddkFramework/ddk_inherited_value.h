@@ -1,9 +1,12 @@
 #pragma once
 
 #include "ddk_shared_pointer_wrapper.h"
+#include "ddk_dynamic_visitor.h"
 #include "ddk_system_allocator.h"
 #include "ddk_rtti_defs.h"
 #include "ddk_any_value.h"
+#include "ddk_concepts.h"
+#include "ddk_type_concepts.h"
 
 namespace ddk
 {
@@ -59,6 +62,11 @@ private:
 	shared_pointer_wrapper<T> m_value;
 	Allocator m_allocator;
 };
+
+
+TEMPLATE(typename Visitor,typename InheritedValue)
+REQUIRES(IS_BASE_OF(dynamic_visitor,Visitor))
+inline any_value visit(Visitor&& visitor, InheritedValue&& i_variant);
 
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ddk_variant_concepts.h"
+
 namespace ddk
 {
 
@@ -295,7 +297,7 @@ template<typename ... Types>
 template<typename T>
 bool variant<Types...>::operator==(T&& other) const
 {
-	if constexpr(is_variant<T>)
+	if constexpr(concepts::is_variant_v<T>)
 	{
 		return detail::variant_impl<Types...>::operator==(std::forward<T>(other));
 	}
@@ -312,7 +314,7 @@ template<typename ... Types>
 template<typename T>
 bool variant<Types...>::operator!=(T&& other) const
 {
-	if constexpr(is_variant<T>)
+	if constexpr(concepts::is_variant_v<T>)
 	{
 		return detail::variant_impl<Types...>::operator!=(std::forward<T>(other));
 	}
@@ -324,6 +326,13 @@ bool variant<Types...>::operator!=(T&& other) const
 
 		return detail::variant_impl<Types...>::compare<converted_type_pos>(std::forward<T>(other)) == false;
 	}
+}
+
+TEMPLATE(typename Visitor,typename Variant)
+REQUIRED
+typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor,Variant&& i_variant)
+{
+	return i_variant.visit(std::forward<Visitor>(i_visitor));
 }
 
 }

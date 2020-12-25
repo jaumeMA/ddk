@@ -3,6 +3,8 @@
 #include "ddk_variant_impl.h"
 #include "ddk_concepts.h"
 #include "ddk_type_concepts.h"
+#include "ddk_variant_concepts.h"
+#include "ddk_function_concepts.h"
 
 namespace ddk
 {
@@ -131,9 +133,6 @@ using variant_reference = variant<typename embedded_type<T>::ref_type ...>;
 template<typename ... T>
 using variant_const_reference = variant<typename embedded_type<T>::cref_type ...>;
 
-template<typename T>
-std::true_type _is_variant(const T&,const typename T::variant_tag* = nullptr);
-std::false_type _is_variant(...);
 template<typename ... Types>
 constexpr const variant<Types...>& as_variant(const variant<Types...>& i_value)
 {
@@ -145,9 +144,11 @@ variant<Types...>&& as_variant(variant<Types...>&& i_value)
 	return std::move(i_value);
 }
 
-template<typename T>
-inline constexpr bool is_variant = decltype(_is_variant(std::declval<T>()))::value;
+TEMPLATE(typename Visitor, typename Variant)
+REQUIRES(IS_BASE_OF(detail::static_visitor_base,Visitor),IS_VARIANT(Variant))
+inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor, Variant&& i_variant);
 
 }
 
 #include "ddk_variant.inl"
+#include "ddk_variant_multi_visitor.h"

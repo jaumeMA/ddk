@@ -2,6 +2,8 @@
 namespace ddk
 {
 
+#ifdef DDK_DEBUG
+
 template<typename T>
 lent_pointer_wrapper<T>::lent_pointer_wrapper(T* i_data,const tagged_pointer<lent_reference_counter>& i_refCounter)
 : m_data(i_data)
@@ -297,5 +299,7 @@ typename lent_pointer_wrapper<T>::tagged_reference_counter lent_pointer_wrapper<
 {
 	return m_refCounter;
 }
+
+#endif
 
 }

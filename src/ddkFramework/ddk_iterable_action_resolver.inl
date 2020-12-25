@@ -25,7 +25,7 @@ variant<Types...> reversable_action_resolver::resolve(const variant<Types...>& i
 	{
 		const iter::shift_action& nestedAction = i_action.get<iter::shift_action>();
 
-		return (m_reversed) ? action(go_to_place(-nestedAction.shifted())) : action(go_to_place(nestedAction.shifted()));
+		return (m_reversed) ? action(go_to_place(-nestedAction.shifting())) : action(go_to_place(nestedAction.shifting()));
 	}
 	else
 	{
