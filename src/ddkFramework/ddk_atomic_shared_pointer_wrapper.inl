@@ -5,68 +5,55 @@ namespace ddk
 {
 
 template<typename T>
-atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper()
-: m_barrier(false)
-{
-}
-template<typename T>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(std::nullptr_t)
-: m_barrier(false)
 {
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(T* i_data,IReferenceWrapperDeleter* i_refDeleter)
-: m_barrier(false)
-, m_ptr(i_data,i_refDeleter)
+: m_ptr(i_data,i_refDeleter)
 {
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(const atomic_shared_pointer_wrapper& other)
-: m_barrier(false)
 {
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = other.m_ptr;
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(const shared_pointer_wrapper<T>& other)
-: m_barrier(false)
 {
 	m_ptr = other;
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(atomic_shared_pointer_wrapper&& other)
-: m_barrier(false)
 {
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = std::move(other.m_ptr);
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(shared_pointer_wrapper<T>&& other)
-: m_barrier(false)
 {
 	m_ptr = std::move(other);
 }
 template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(const atomic_shared_pointer_wrapper<TT>& other)
-: m_barrier(false)
 {
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = other.m_ptr;
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 }
 template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(const shared_pointer_wrapper<TT>& other)
-: m_barrier(false)
 {
 	m_ptr = other;
 }
@@ -75,16 +62,15 @@ template<typename TT>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(atomic_shared_pointer_wrapper<TT>&& other)
 : m_barrier(false)
 {
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = std::move(other.m_ptr);
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 }
 template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>::atomic_shared_pointer_wrapper(shared_pointer_wrapper<TT>&& other)
-: m_barrier(false)
 {
 	m_ptr = std::move(other);
 }
@@ -95,61 +81,61 @@ atomic_shared_pointer_wrapper<T>::~atomic_shared_pointer_wrapper()
 template<typename T>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(std::nullptr_t)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
 	m_ptr = nullptr;
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(const atomic_shared_pointer_wrapper& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = other.m_ptr;
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(const shared_pointer_wrapper<T>& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
 	m_ptr = other;
 
-	dropBarrier();
+	m_barrier.unlock();
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(atomic_shared_pointer_wrapper&& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = std::move(other.m_ptr);
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
 template<typename T>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(shared_pointer_wrapper<T>&& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
 	m_ptr = std::move(other);
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
@@ -157,15 +143,15 @@ template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(const atomic_shared_pointer_wrapper<TT>& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = other.m_ptr;
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
@@ -173,11 +159,11 @@ template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(const shared_pointer_wrapper<TT>& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
 	m_ptr = other;
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
@@ -185,15 +171,15 @@ template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(atomic_shared_pointer_wrapper<TT>&& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
-	other.raiseBarrier();
+	other.m_barrier.lock();
 
 	m_ptr = std::move(other.m_ptr);
 
-	other.dropBarrier();
+	other.m_barrier.unlock();
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
@@ -201,11 +187,11 @@ template<typename T>
 template<typename TT>
 atomic_shared_pointer_wrapper<T>& atomic_shared_pointer_wrapper<T>::operator=(shared_pointer_wrapper<TT>&& other)
 {
-	raiseBarrier();
+	m_barrier.lock();
 
 	m_ptr = std::move(other);
 
-	dropBarrier();
+	m_barrier.unlock();
 
 	return *this;
 }
@@ -273,21 +259,6 @@ template<typename T>
 bool atomic_shared_pointer_wrapper<T>::empty() const
 {
 	return m_ptr.empty();
-}
-template<typename T>
-void atomic_shared_pointer_wrapper<T>::raiseBarrier() const
-{
-	while(atomic_compare_exchange(m_barrier,false,true) == false) { std::this_thread::yield(); }
-}
-template<typename T>
-void atomic_shared_pointer_wrapper<T>::dropBarrier() const
-{
-	while(atomic_compare_exchange(m_barrier,true,false) == false) { std::this_thread::yield(); }
-}
-template<typename T>
-bool atomic_shared_pointer_wrapper<T>::isBarred() const
-{
-	return m_barrier.load();
 }
 
 }

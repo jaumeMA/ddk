@@ -57,12 +57,12 @@ bool atomic8<T>::empty() const
 template<typename T>
 const T& atomic8<T>::get() const
 {
-	m_arena.template get<T>();
+	return m_arena.template get<T>();
 }
 template<typename T>
 T& atomic8<T>::get()
 {
-	m_arena.template get<T>();
+	return m_arena.template get<T>();
 }
 template<typename T>
 void atomic8<T>::set(const T& i_value)

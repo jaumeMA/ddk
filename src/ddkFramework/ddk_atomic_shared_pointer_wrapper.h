@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_shared_pointer_wrapper.h"
-#include "ddk_atomics.h"
+#include "ddk_spin_lock.h"
 
 namespace ddk
 {
@@ -16,7 +16,7 @@ class atomic_shared_pointer_wrapper
 	friend atomic_weak_pointer_wrapper<TT> weak(atomic_shared_pointer_wrapper<TT>);
 
 public:
-	atomic_shared_pointer_wrapper();
+	atomic_shared_pointer_wrapper() = default;
 	atomic_shared_pointer_wrapper(std::nullptr_t);
 	atomic_shared_pointer_wrapper(T* i_data,IReferenceWrapperDeleter* i_refDeleter = nullptr);
 	atomic_shared_pointer_wrapper(const atomic_shared_pointer_wrapper& other);
@@ -60,11 +60,7 @@ public:
 	inline bool empty() const;
 
 private:
-	void raiseBarrier() const;
-	void dropBarrier() const;
-	bool isBarred() const;
-
-	mutable atomic_bool m_barrier;
+	mutable spin_lock m_barrier;
 	shared_pointer_wrapper<T> m_ptr;
 };
 

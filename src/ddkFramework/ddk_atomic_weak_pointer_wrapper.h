@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_atomics.h"
+#include "ddk_spin_lock.h"
 #include "ddk_weak_pointer_wrapper.h"
 #include "ddk_atomic_shared_pointer_wrapper.h"
 
@@ -11,7 +11,7 @@ template<typename T>
 class atomic_weak_pointer_wrapper
 {
 public:
-	atomic_weak_pointer_wrapper();
+	atomic_weak_pointer_wrapper() = default;
 	atomic_weak_pointer_wrapper(const atomic_weak_pointer_wrapper& other);
 	atomic_weak_pointer_wrapper(const weak_pointer_wrapper<T>& other);
 	atomic_weak_pointer_wrapper(atomic_weak_pointer_wrapper&& other);
@@ -46,11 +46,7 @@ public:
 	atomic_shared_pointer_wrapper<T> share() const;
 
 private:
-	inline void raiseBarrier() const;
-	inline void dropBarrier() const;
-	inline bool isBarred() const;
-
-	mutable atomic_bool m_barrier;
+	mutable spin_lock m_barrier;
 	weak_pointer_wrapper<T> m_ptr;
 };
 
