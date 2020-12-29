@@ -2,18 +2,20 @@
 
 #include "ddk_rtti_defs.h"
 #include "ddk_default_values.h"
+#include "ddk_concepts.h"
+#include "ddk_rtti_concepts.h"
 
-#define PUBLISH_TYPE_INFO(_TYPE_NAME) \
+#define PUBLISH_TYPE_INFO(...) \
 template<typename T> \
-friend ddk::TypeInfo ddk::rtti(const T&); \
+friend const ddk::TypeInfo& ddk::rtti(const T&); \
 template<typename T> \
-friend ddk::TypeInfo ddk::rtti(); \
+friend const ddk::TypeInfo& ddk::rtti(); \
 template<typename> \
-friend struct ddk::detail::is_rtti_available; \
+friend struct ddk::concepts::is_rtti_available; \
 typedef ddk::detail::rtti_tag_t rtti_tag; \
 static const ddk::TypeInfo& __get_static_rtti_type_info() \
 { \
-	static const ddk::TypeInfo s_typeInfo(#_TYPE_NAME); \
+	static const ddk::TypeInfo s_typeInfo = ddk::make_type_info<__VA_ARGS__>(); \
 	\
 	return s_typeInfo; \
 }
@@ -26,28 +28,14 @@ namespace ddk
 {
 
 template<typename T>
-TypeInfo rtti(const T& i_object)
+const TypeInfo& rtti(const T& i_object)
 {
-	static_assert(detail::is_rtti_available<T>::value, "You shall provide a class for whom rtti is published");
-
 	return i_object.__get_rtti_type_info();
 }
 template<typename T>
-TypeInfo rtti()
+const TypeInfo& rtti()
 {
-	static_assert(detail::is_rtti_available<T>::value, "You shall provide a class for whom rtti is published");
-
 	return T::__get_static_rtti_type_info();
 }
-
-template<>
-struct default_value<TypeInfo>
-{
-	static inline TypeInfo initial_value()
-	{
-		return TypeInfo();
-	}
-};
-
 
 }

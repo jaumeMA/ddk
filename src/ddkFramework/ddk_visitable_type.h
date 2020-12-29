@@ -5,13 +5,17 @@
 #include "ddk_hash.h"
 #include "ddk_macros.h"
 
-#define DECLARE_TYPE_VISITABLE(_Type_Name,_Visitor_Interface) \
-PUBLISH_TYPE_INFO(_Type_Name) \
+#define DECLARE_TYPE_VISITABLE(_Type_Name) \
+template<typename,typename,typename,typename ...> \
+friend class ddk::dynamic_multi_visitor; \
+template<typename,typename> \
+friend inline bool ddk::detail::__expand_type_visitor_layout(); \
 typedef decltype(__get_type_interface(std::declval<_Type_Name>())) type_interface; \
-typedef ddk::visitable_type<_Type_Name,type_interface,_Visitor_Interface> _type_expansion; \
+typedef ddk::visitable_type<_Type_Name,type_interface> _type_expansion; \
+PUBLISH_TYPE_INFO(_Type_Name,type_interface) \
 static void __expand_type_visitable_type() \
 { \
-	static const bool __s_static_visitable_type_expansion = ddk::visitable_type<_Type_Name,type_interface,_Visitor_Interface>::s_initialized; \
+	static const bool __s_static_visitable_type_expansion = ddk::visitable_type<_Type_Name,type_interface>::s_initialized; \
     \
     UNUSED(__s_static_visitable_type_expansion); \
 }
@@ -19,17 +23,14 @@ static void __expand_type_visitable_type() \
 namespace ddk
 {
 
-template<typename InterfaceType, typename VisitorType>
+template<typename InterfaceType>
 struct agnostic_visitable_type
 {
 	typedef InterfaceType type_interface;
-	typedef VisitorType visitor_interface;
+	typedef dynamic_visitor<InterfaceType> visitor_interface;
 
-	static_assert(detail::is_rtti_available<type_interface>::value, "You shall provide a type for whom rtti has been published");
-	static_assert(std::is_base_of<ddk::dynamic_visitor, visitor_interface>::value, "Provided visitor shall inherit from dynamic visitor");
-
-	typedef any_value(*visitor_func)(const type_interface*, visitor_interface&);
-	typedef any_value(*const_visitor_func)(const type_interface*, const visitor_interface&);
+	typedef void(*visitor_func)(const type_interface*, visitor_interface&);
+	typedef void(*const_visitor_func)(const type_interface*, const visitor_interface&);
 
 	template<typename T>
 	static void _initializeStaticData(size_t i_typeId)
@@ -39,31 +40,35 @@ struct agnostic_visitable_type
 		s_const_visitor_funcs()[i_typeId] = &nested_visit<T>;
 	}
 	template<typename T>
-	static any_value nested_visit(const type_interface* i_object, const visitor_interface& i_visitor)
+	static void nested_visit(const type_interface* i_object, const visitor_interface& i_visitor)
 	{
+		const TypeInfo& typeInfo = rtti<T>();
+
 		if (const T* finalObjectPtr = static_cast<const T*>(i_object))
 		{
-			return i_visitor.visit(*finalObjectPtr);
-		}
-		else
-		{
-			DDK_FAIL("Visiting wrong type");
+			const size_t typedVisitorLayout = visitor_interface::get_dynamic_visitor(typeInfo);
 
-			return visitor_empty_value;
+			if(typedVisitorLayout != visitor_interface::nvisitor)
+			{
+				const typed_dynamic_visitor<T>* typedVisitor = reinterpret_cast<const typed_dynamic_visitor<T>*>(reinterpret_cast<const char*>(&i_visitor) + typedVisitorLayout);
+
+				typedVisitor->visit(*finalObjectPtr);
+			}
 		}
 	}
 	template<typename T>
-	static any_value nested_visit(const type_interface* i_object, visitor_interface& i_visitor)
+	static void nested_visit(const type_interface* i_object, visitor_interface& i_visitor)
 	{
-		if (const T* finalObjectPtr = static_cast<const T*>(i_object))
-		{
-			return i_visitor.visit(*finalObjectPtr);
-		}
-		else
-		{
-			DDK_FAIL("Visiting wrong type");
+		static const TypeInfo typeInfo = rtti<T>();
 
-			return visitor_empty_value;
+		if(const T* finalObjectPtr = static_cast<const T*>(i_object))
+		{
+			const size_t typedVisitorLayout = visitor_interface::get_dynamic_visitor(typeInfo);
+
+			if(typedVisitorLayout != visitor_interface::nvisitor)
+			{
+				reinterpret_cast<typed_dynamic_visitor<T>*>(reinterpret_cast<char*>(&i_visitor) + typedVisitorLayout)->visit(*finalObjectPtr);
+			}
 		}
 	}
 	static std::map<size_t, const_visitor_func>& s_const_visitor_funcs()
@@ -80,26 +85,26 @@ struct agnostic_visitable_type
 	}
 	static const ddk::TypeInfo& s_categoryTypeInfo()
 	{
-		static const ddk::TypeInfo res = ddk::rtti<visitor_interface>();;
+		static const ddk::TypeInfo res = ddk::rtti<type_interface>();;
 
 		return res;
 	}
 };
 
-template<typename Type, typename Interface, typename VisitorInterface>
-struct visitable_type : protected agnostic_visitable_type<Interface,VisitorInterface>
+template<typename Type, typename Interface>
+struct visitable_type : protected agnostic_visitable_type<Interface>
 {
 	static bool __initializedStaticData()
 	{
-		s_type_info();
+		const TypeInfo& typeInfo = s_type_info();
 
-		agnostic_visitable_type<Interface,VisitorInterface>::template _initializeStaticData<Type>(ddk::hash(s_type_info().get_name()));
+		agnostic_visitable_type<Interface>::template _initializeStaticData<Type>(typeInfo.get_id());
 
 		return true;
 	}
 	static inline const TypeInfo& s_type_info()
 	{
-		static const TypeInfo res = rtti<Type>();
+		static const TypeInfo& res = rtti<Type>();
 
 		return res;
 	}
@@ -107,7 +112,7 @@ struct visitable_type : protected agnostic_visitable_type<Interface,VisitorInter
 	static const bool s_initialized;
 };
 
-template<typename Type,typename Interface,typename VisitorInterface>
-const bool visitable_type<Type,Interface,VisitorInterface>::s_initialized = visitable_type<Type,Interface,VisitorInterface>::__initializedStaticData();
+template<typename Type,typename Interface>
+const bool visitable_type<Type,Interface>::s_initialized = visitable_type<Type,Interface>::__initializedStaticData();
 
 }

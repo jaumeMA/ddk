@@ -41,7 +41,7 @@ Transform iterable_pack<Transform,Iterables...>::get_transform() const
 }
 
 TEMPLATE(typename Transform,typename ... Iterables)
-REQUIRED
+REQUIRED(IS_CALLABLE(Transform))
 detail::iterable_pack<Transform,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_transform(Transform&& i_transform,const Iterables& ... i_iterables)
 {
 	return detail::iterable_pack<Transform,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ std::forward<Transform>(i_transform), deduce_iterable(i_iterables) ... };

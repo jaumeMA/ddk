@@ -9,41 +9,35 @@ namespace detail
 
 struct rtti_tag_t;
 
-template<typename T>
-struct is_rtti_available
-{
-private:
-	typedef char yes;
-	typedef int no;
-
-	template<typename TT>
-	static inline yes _checker(const TT*, const typename TT::rtti_tag* = NULL);
-	template<typename TT>
-	static inline no _checker(const TT*,...);
-
-public:
-	static const bool value = (sizeof(_checker(reinterpret_cast<const T*>(NULL),0)) == sizeof(yes));
-};
-
 }
 
 struct TypeInfo
 {
+	template<typename,typename>
+	friend TypeInfo make_type_info();
+	template<typename>
+	friend TypeInfo make_type_info();
+
 public:
 	static const size_t s_invalid = -1;
 
 	TypeInfo() = default;
-	TypeInfo(const std::string& i_name);
-	TypeInfo(const char* i_name);
-	TypeInfo(size_t i_nameHash);
-	std::string get_name() const;
-	size_t get_name_hash() const;
+	size_t get_id() const;
 	bool operator==(const TypeInfo& other) const;
 	bool empty() const;
 
 private:
-	std::string m_name;
-	size_t m_nameHash = s_invalid;
+	TypeInfo(size_t i_id);
+
+	size_t m_id = s_invalid;
 };
 
+template<typename T, typename TT>
+inline TypeInfo make_type_info();
+
+template<typename T>
+inline TypeInfo make_type_info();
+
 }
+
+#include "ddk_rtti_defs.inl"

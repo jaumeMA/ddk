@@ -16,14 +16,14 @@ Iterable make_iterable(IIterable&& i_iterable)
 }
 
 TEMPLATE(typename Iterable)
-REQUIRED
+REQUIRED(IS_ITERABLE(Iterable))
 Iterable deduce_iterable(Iterable&& i_iterable)
 {
 	return i_iterable;
 }
 
 TEMPLATE(typename Iterable)
-REQUIRED
+REQUIRED(IS_NOT_ITERABLE(Iterable))
 resolved_iterable<Iterable> deduce_iterable(Iterable&& i_iterable)
 {
 	typedef resolved_iterable<Iterable> iterable_type;

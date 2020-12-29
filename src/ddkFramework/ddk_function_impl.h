@@ -163,6 +163,20 @@ private:
     mutable T m_functor;
 };
 
+template<typename,typename,typename>
+struct get_resolved_functor;
+template<typename Functor, typename Return,typename ... Types>
+struct get_resolved_functor<Functor,Return,tuple<Types...>>
+{
+	typedef functor_impl<Functor,Return,Types...> type;
+};
+
+template<typename Callable, typename Return,typename Type>
+using resolved_functor = typename get_resolved_functor<Callable,Return,Type>::type;
+
+template<typename Callable>
+using resolved_functor_impl = resolved_functor<Callable,typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type>;
+
 }
 }
 

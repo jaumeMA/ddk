@@ -51,7 +51,7 @@ function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedT
 }
 
 TEMPLATE(typename Return,typename Callable,typename ... Variants)
-REQUIRED
+REQUIRED(IS_CALLABLE(Callable),IS_VARIANT(Variants)...)
 Return visit(const Callable& i_callable,Variants&& ... i_variants)
 {
 	detail::multi_visitor<Return,Callable,tuple<>,Variants...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);

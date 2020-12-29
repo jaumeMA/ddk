@@ -18,6 +18,9 @@ template<typename Object,typename Return,typename ... Types>
 inline detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const);
 template<typename Return,typename ... Types>
 inline detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...));
+TEMPLATE(typename Functor)
+REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor))
+inline detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor);
 
 //no allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types>
@@ -55,7 +58,7 @@ TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typen
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
 inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Arg, typename ... Args)
-REQUIRES(IS_CLASS(Functor),IS_NOT_ALLOCATOR(Arg))
+REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_NOT_ALLOCATOR(Arg))
 inline resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&&, Arg&& i_arg, Args&& ... i_args);
 
 //allocator specified, args specified
@@ -66,7 +69,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
-REQUIRES(IS_CLASS(Functor))
+REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor))
 inline resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
 //safe version
@@ -99,17 +102,11 @@ inline detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> 
 
 TEMPLATE(typename ... Functions)
 REQUIRES(ARE_CALLABLES(Functions...))
-inline ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions)
-{
-	return { i_functions ... };
-}
+inline ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions);
 
 TEMPLATE(typename ... Functions)
 REQUIRES(ARE_CALLABLES(Functions...))
-inline ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions)
-{
-	return { i_functions ... };
-}
+inline ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions);
 
 }
 

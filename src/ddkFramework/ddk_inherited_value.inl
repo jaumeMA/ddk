@@ -16,7 +16,13 @@ inherited_value<TT> make_inherited_value(Args&& ... i_args)
 	return inherited_value<TT>(std::forward<Args>(i_args) ...);
 }
 
-
+template<typename T,typename Allocator>
+template<typename TT>
+inherited_value<T,Allocator>::inherited_value(const shared_pointer_wrapper<TT>& i_value)
+: m_typeInfo(rtti<T>())
+, m_value(i_value)
+{
+}
 template<typename T,typename Allocator>
 template<typename TT>
 inherited_value<T,Allocator>::inherited_value(const inherited_value<TT,Allocator>& other)
@@ -32,7 +38,8 @@ inherited_value<T,Allocator>::inherited_value(inherited_value<TT,Allocator>&& ot
 {
 }
 template<typename T, typename Allocator>
-template<typename ... Args>
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
 inherited_value<T,Allocator>::inherited_value(Args&& ... i_args)
 : m_typeInfo(rtti<T>())
 {
@@ -127,16 +134,9 @@ bool inherited_value<T,Allocator>::may_visit() const
 }
 template<typename T,typename Allocator>
 template<typename Visitor>
-any_value inherited_value<T,Allocator>::visit(Visitor&& i_visitor) const
+void inherited_value<T,Allocator>::visit(Visitor&& i_visitor) const
 {
-	return __visit(m_typeInfo,*m_value,i_visitor);
-}
-
-TEMPLATE(typename Visitor,typename InheritedValue)
-REQUIRED
-any_value visit(Visitor&& i_visitor,InheritedValue&& i_variant)
-{
-	return i_variant.visit(std::forward<Visitor>(i_visitor));
+	__visit(m_typeInfo,*m_value,i_visitor);
 }
 
 }

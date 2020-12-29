@@ -28,54 +28,17 @@ private:
 	int m_value;
 };
 
-class DerivedBaseType;
-
-struct BaseTypeVisitor : public ddk::dynamic_visitor
+class DerivedBaseType1 : public BaseType
 {
-	DECLARE_TYPE_VISITOR_BASE(BaseTypeVisitor,BaseType)
+	DECLARE_TYPE_VISITABLE(DerivedBaseType1)
 
 public:
-	virtual ddk::any_value visit(const BaseType&) const
-	{
-		return true;
-	}
-	virtual ddk::any_value visit(BaseType&) const
-	{
-		return true;
-	}
-	virtual ddk::any_value visit(const DerivedBaseType&) const
-	{
-		return true;
-	}
-	virtual ddk::any_value visit(DerivedBaseType&) const
-	{
-		return true;
-	}
+	using BaseType::BaseType;
 };
 
-struct DerivedTypeVisitor : public BaseTypeVisitor
+class DerivedBaseType2: public BaseType
 {
-	ddk::any_value visit(const BaseType&) const override
-	{
-		return true;
-	}
-	ddk::any_value visit(BaseType&) const override
-	{
-		return true;
-	}
-	ddk::any_value visit(const DerivedBaseType&) const override
-	{
-		return true;
-	}
-	ddk::any_value visit(DerivedBaseType&) const override
-	{
-		return true;
-	}
-};
-
-class DerivedBaseType : public BaseType
-{
-	DECLARE_TYPE_VISITABLE(DerivedBaseType,BaseTypeVisitor)
+	DECLARE_TYPE_VISITABLE(DerivedBaseType2)
 
 public:
 	using BaseType::BaseType;
@@ -85,13 +48,32 @@ class DDKInheritedValuetTest : public Test
 {
 };
 
+struct DerivedTypeMultiVisitor
+{
+	typedef ddk::tuple<DerivedBaseType1,DerivedBaseType2> considered_types;
+	typedef int return_type;
+
+	int visit(const DerivedBaseType1&,const DerivedBaseType1&) const
+	{
+		return 1;
+	}
+	int visit(const DerivedBaseType1&,const DerivedBaseType2&) const
+	{
+		return 1;
+	}
+	template<typename ... T>
+	int visit(const T& ... i_values) const
+	{
+		return 0;
+	}
+};
+
 TEST(DDKInheritedValuetTest,defaultConstruction)
 {
-	ddk::inherited_value<BaseType> foo = ddk::make_inherited_value<DerivedBaseType>(10);
+	ddk::inherited_value<DerivedBaseType1> foo0 = ddk::make_inherited_value<DerivedBaseType1>(10);
+	ddk::inherited_value<DerivedBaseType2> foo1 = ddk::make_inherited_value<DerivedBaseType2>(10);
+	DerivedTypeMultiVisitor multiVisitor;
 
-	DerivedTypeVisitor visitor;
-	if(foo.may_visit<DerivedTypeVisitor>())
-	{
-		ddk::any_value visitRes = foo.visit(visitor);
-	}
+	int res = ddk::visit(multiVisitor,foo0,foo1);
+	int a = 0;
 }

@@ -13,3 +13,6 @@
 
 #define IS_CLASS(_TYPE) \
 	typename std::enable_if<std::is_class<_TYPE>::value>::type*
+
+#define IS_CONSTRUCTIBLE(_TYPE,...) \
+	typename std::enable_if<std::is_constructible<_TYPE,__VA_ARGS__>::value>::type*

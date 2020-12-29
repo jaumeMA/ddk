@@ -12,6 +12,9 @@
 #define IS_CALLABLE(_TYPE) \
 	typename ddk::concepts::require_callables<_TYPE>::type
 
+#define IS_RETURN_TYPE_CONVERTIBLE_TO(_TYPE,_RETURN) \
+	typename std::enable_if<std::is_convertible<typename ddk::mpl::aqcuire_callable_return_type<_TYPE>::type,_RETURN>::value>::type*
+
 #define IS_CALLABLE_NOT_FUNCTION(_TYPE) \
 	IS_CALLABLE(_TYPE),IS_NOT_FUNCTION(_TYPE)
 

@@ -25,7 +25,7 @@ function<Return(Types...),Allocator>::function(std::nullptr_t)
 }
 template<typename Return, typename ... Types, typename Allocator>
 TEMPLATE(typename T)
-REQUIRED
+REQUIRED(IS_CALLABLE_NOT_FUNCTION(T))
 function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator)
 : m_allocator(i_allocator)
 {
@@ -190,7 +190,7 @@ function<Return(),Allocator>::function(std::nullptr_t)
 }
 template<typename Return, typename Allocator>
 TEMPLATE(typename T)
-REQUIRED
+REQUIRED(IS_CALLABLE_NOT_FUNCTION(T))
 function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocator)
 : m_allocator(i_allocator)
 {

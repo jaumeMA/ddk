@@ -22,21 +22,21 @@ variant<Type>::variant(variant<Type>&& other)
 }
 template<typename Type>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
 variant<Type>::variant(const variant<TTypes ...>& other)
 : m_value(other.template get<Type>())
 {
 }
 template<typename Type>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
 variant<Type>::variant(variant<TTypes...>&& other)
 : m_value(other.template extract<Type>())
 {
 }
 template<typename Type>
 TEMPLATE(typename T)
-REQUIRED
+REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(Type,T))
 variant<Type>::variant(T&& i_value)
 : m_value(std::forward<T>(i_value))
 {
@@ -57,7 +57,7 @@ variant<Type>& variant<Type>::operator=(variant<Type>&& other)
 }
 template<typename Type>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
 variant<Type>& variant<Type>::operator=(const variant<TTypes...>& other)
 {
 	m_value = other.template get<Type>();
@@ -66,7 +66,7 @@ variant<Type>& variant<Type>::operator=(const variant<TTypes...>& other)
 }
 template<typename Type>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
 variant<Type>& variant<Type>::operator=(variant<TTypes...>&& other)
 {
 	m_value = other.template extract<Type>();
@@ -75,7 +75,7 @@ variant<Type>& variant<Type>::operator=(variant<TTypes...>&& other)
 }
 template<typename Type>
 TEMPLATE(typename T)
-REQUIRED
+REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(Type,T))
 variant<Type>& variant<Type>::operator=(T&& i_value)
 {
 	m_value = std::forward<T>(i_value);
@@ -203,7 +203,7 @@ variant<Types...>::variant(variant<Types...>&& other)
 }
 template<typename ... Types>
 TEMPLATE(typename TType)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
 variant<Types...>::variant(const variant<TType>& other)
 {
 	static_assert(mpl::is_among_constructible_types<TType,Types...>::value,"You shall provide convertible type");
@@ -214,7 +214,7 @@ variant<Types...>::variant(const variant<TType>& other)
 }
 template<typename ... Types>
 TEMPLATE(typename TType)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
 variant<Types...>::variant(variant<TType>&& other)
 {
 	static_assert(mpl::is_among_constructible_types<TType,Types...>::value,"You shall provide convertible type");
@@ -225,21 +225,21 @@ variant<Types...>::variant(variant<TType>&& other)
 }
 template<typename ... Types>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
 variant<Types...>::variant(const variant<TTypes...>& other)
 {
 	detail::variant_impl<Types...>::template construct<TTypes...>(other);
 }
 template<typename ... Types>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
 variant<Types...>::variant(variant<TTypes...>&& other)
 {
 	detail::variant_impl<Types...>::template construct<TTypes...>(std::move(other));
 }
 template<typename ... Types>
 TEMPLATE(typename T)
-REQUIRED
+REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 variant<Types...>::variant(T&& i_value)
 {
 	static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
@@ -264,7 +264,7 @@ variant<Types...>& variant<Types...>::operator=(variant<Types...>&& other)
 }
 template<typename ... Types>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
 variant<Types...>& variant<Types...>::operator=(const variant<TTypes...>& other)
 {
 	detail::variant_impl<Types...>::operator=(other);
@@ -273,7 +273,7 @@ variant<Types...>& variant<Types...>::operator=(const variant<TTypes...>& other)
 }
 template<typename ... Types>
 TEMPLATE(typename ... TTypes)
-REQUIRED
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
 variant<Types...>& variant<Types...>::operator=(variant<TTypes...>&& other)
 {
 	detail::variant_impl<Types...>::operator=(std::move(other));
@@ -282,7 +282,7 @@ variant<Types...>& variant<Types...>::operator=(variant<TTypes...>&& other)
 }
 template<typename ... Types>
 TEMPLATE(typename T)
-REQUIRED
+REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 variant<Types...>& variant<Types...>::operator=(T&& i_value)
 {
 	static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
@@ -329,7 +329,7 @@ bool variant<Types...>::operator!=(T&& other) const
 }
 
 TEMPLATE(typename Visitor,typename Variant)
-REQUIRED
+REQUIRED(IS_BASE_OF(detail::static_visitor_base,Visitor),IS_VARIANT(Variant))
 typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor,Variant&& i_variant)
 {
 	return i_variant.visit(std::forward<Visitor>(i_visitor));

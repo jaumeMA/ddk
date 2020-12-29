@@ -19,6 +19,12 @@ detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr
 {
 	return std::move(detail::free_function_impl<Return,Types...>(i_funcPtr));
 }
+TEMPLATE(typename Functor)
+REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
+inline detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor)
+{
+	return { std::forward<Functor>(i_functor) };
+}
 
 template<typename Object, typename Return, typename ... Types>
 function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...))
@@ -36,7 +42,7 @@ function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...))
     return function<Return(Types...)>(i_funcPtr);
 }
 TEMPLATE(typename Functor)
-REQUIRED
+REQUIRED(IS_CLASS(Functor))
 resolved_callable<Functor> make_function(Functor&& i_functor)
 {
     typedef resolved_callable<Functor> function_type;
@@ -44,25 +50,25 @@ resolved_callable<Functor> make_function(Functor&& i_functor)
     return function_type(std::forward<Functor>(i_functor));
 }
 TEMPLATE(typename Object, typename Return, typename ... Types, typename Allocator)
-REQUIRED
+REQUIRED(IS_ALLOCATOR(Allocator))
 function<Return(Types...),Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_object, i_funcPtr);
 }
 TEMPLATE(typename Object, typename Return, typename ... Types, typename Allocator)
-REQUIRED
+REQUIRED(IS_ALLOCATOR(Allocator))
 function<Return(Types...),Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_object,i_funcPtr);
 }
 TEMPLATE(typename Return, typename ... Types, typename Allocator)
-REQUIRED
+REQUIRED(IS_ALLOCATOR(Allocator))
 function<Return(Types...),Allocator> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_funcPtr);
 }
 TEMPLATE(typename Functor, typename Allocator)
-REQUIRED
+REQUIRED(IS_CLASS(Functor),IS_ALLOCATOR(Allocator))
 resolved_callable<Functor,Allocator> make_function(Functor&& i_functor, const Allocator& i_allocator)
 {
     typedef resolved_callable<Functor,Allocator> function_type;
@@ -70,7 +76,7 @@ resolved_callable<Functor,Allocator> make_function(Functor&& i_functor, const Al
     return function_type(std::forward<Functor>(i_functor),i_allocator);
 }
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
-REQUIRED
+REQUIRED(IS_NOT_ALLOCATOR(Arg))
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
@@ -80,7 +86,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
-REQUIRED
+REQUIRED(IS_NOT_ALLOCATOR(Arg))
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
@@ -90,7 +96,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
-REQUIRED
+REQUIRED(IS_NOT_ALLOCATOR(Arg))
 inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
@@ -100,7 +106,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 TEMPLATE(typename Functor, typename Arg, typename ... Args)
-REQUIRED
+REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_NOT_ALLOCATOR(Arg))
 resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&& i_functor, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
@@ -139,7 +145,7 @@ inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
-REQUIRED
+REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
 resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
@@ -260,6 +266,20 @@ template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename
 detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_composition(const function<ReturnDst(TypesDst...)>& i_fuscDst, const function<ReturnSrc(TypesSrc...)>& i_funcSrc)
 {
     return detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>(i_fuscDst,i_funcSrc);
+}
+
+TEMPLATE(typename ... Functions)
+REQUIRED(ARE_CALLABLES(Functions...))
+inline ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions)
+{
+	return { i_functions ... };
+}
+
+TEMPLATE(typename ... Functions)
+REQUIRED(ARE_CALLABLES(Functions...))
+inline ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions)
+{
+	return { i_functions ... };
 }
 
 }

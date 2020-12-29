@@ -6,6 +6,7 @@
 #include "ddk_rtti_defs.h"
 #include "ddk_any_value.h"
 #include "ddk_concepts.h"
+#include "ddk_smart_pointer_concepts.h"
 #include "ddk_type_concepts.h"
 
 namespace ddk
@@ -32,6 +33,8 @@ public:
 	inherited_value(const inherited_value& other) = default;
 	inherited_value(inherited_value&& other) = default;
 	template<typename TT>
+	inherited_value(const shared_pointer_wrapper<TT>& i_value);
+	template<typename TT>
 	inherited_value(const inherited_value<TT,Allocator>& other);
 	template<typename TT>
 	inherited_value(inherited_value<TT,Allocator>&& other);
@@ -52,22 +55,19 @@ public:
 	template<typename Visitor>
 	inline bool may_visit() const;
 	template<typename Visitor>
-	any_value visit(Visitor&& i_visitor) const;
+	void visit(Visitor&& i_visitor) const;
 
 private:
-	template<typename ... Args>
-	inherited_value(Args&& ... i_args);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+	explicit inherited_value(Args&& ... i_args);
 
 	TypeInfo m_typeInfo;
 	shared_pointer_wrapper<T> m_value;
 	Allocator m_allocator;
 };
 
-
-TEMPLATE(typename Visitor,typename InheritedValue)
-REQUIRES(IS_BASE_OF(dynamic_visitor,Visitor))
-inline any_value visit(Visitor&& visitor, InheritedValue&& i_variant);
-
 }
 
 #include "ddk_inherited_value.inl"
+#include "ddk_dynamic_multivisitor.h"
