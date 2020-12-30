@@ -30,8 +30,8 @@ public:
 	typedef T nested_type;
 
 	share_from_this() = default;
-	share_from_this(const share_from_this&) = delete;
-	share_from_this(share_from_this&&);
+	share_from_this(const share_from_this&) = default;
+	share_from_this(share_from_this&&) = delete;
 
 	share_from_this& operator=(const share_from_this&) = delete;
 	share_from_this& operator=(share_from_this&&) = delete;

@@ -3,6 +3,7 @@
 #include "ddk_intersection_function.h"
 #include "ddk_union_function.h"
 #include "ddk_composed_function.h"
+#include "ddk_specialized_callable.h"
 #include "ddk_concepts.h"
 #include "ddk_function_concepts.h"
 #include "ddk_allocator_concepts.h"
@@ -90,6 +91,13 @@ inline resolved_return_type<Arg,Return> eval_unsafe(const function<Return(Types.
 template<typename Return,typename ... Types,typename Allocator,typename ... Args>
 inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
 
+template<typename Return,typename ... Types,typename Allocator,typename ... Args>
+inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args);
+template<typename Return,typename ... Types,typename Allocator,typename ... Args>
+inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
+TEMPLATE(typename Functor, typename ... Args)
+REQUIRES(IS_CALLABLE(Functor))
+inline specialized_callable<typename std::remove_reference<Functor>::type,Args...> specialize(Functor&& i_functor, Args&& ... i_args);
 
 template<typename ... Callables>
 inline detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables);

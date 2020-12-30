@@ -250,6 +250,23 @@ Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const 
 	}
 }
 
+template<typename Return,typename ... Types,typename Allocator,typename ... Args>
+resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args)
+{
+	return i_function(std::forward<Args>(i_args)...);
+}
+template<typename Return,typename ... Types,typename Allocator,typename ... Args>
+resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args)
+{
+	return i_function(std::forward<Args>(i_args)...);
+}
+TEMPLATE(typename Functor,typename ... Args)
+REQUIRED(IS_CALLABLE(Functor))
+specialized_callable<typename std::remove_reference<Functor>::type,Args...> specialize(Functor&& i_functor,Args&& ... i_args)
+{
+	return specialized_callable<typename std::remove_reference<Functor>::type,Args...>(std::forward<Functor>(i_functor),std::forward<Args>(i_args)...);
+}
+
 template<typename ... Callables>
 detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables)
 {

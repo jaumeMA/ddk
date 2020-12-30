@@ -30,7 +30,7 @@ private:
 
 class DerivedBaseType1 : public BaseType
 {
-	DECLARE_TYPE_VISITABLE(DerivedBaseType1)
+	DECLARE_TYPE_VISITABLE(DerivedBaseType1,BaseType)
 
 public:
 	using BaseType::BaseType;
@@ -38,7 +38,7 @@ public:
 
 class DerivedBaseType2: public BaseType
 {
-	DECLARE_TYPE_VISITABLE(DerivedBaseType2)
+	DECLARE_TYPE_VISITABLE(DerivedBaseType2,BaseType)
 
 public:
 	using BaseType::BaseType;
@@ -50,19 +50,19 @@ class DDKInheritedValuetTest : public Test
 
 struct DerivedTypeMultiVisitor
 {
-	typedef ddk::tuple<DerivedBaseType1,DerivedBaseType2> considered_types;
 	typedef int return_type;
+	typedef BaseType type_interface;
 
-	int visit(const DerivedBaseType1&,const DerivedBaseType1&) const
+	int operator()(const DerivedBaseType1&,const DerivedBaseType1&) const
 	{
 		return 1;
 	}
-	int visit(const DerivedBaseType1&,const DerivedBaseType2&) const
+	int operator()(const DerivedBaseType1&,const DerivedBaseType2&) const
 	{
 		return 1;
 	}
 	template<typename ... T>
-	int visit(const T& ... i_values) const
+	int operator()(const T& ... i_values) const
 	{
 		return 0;
 	}
@@ -74,6 +74,7 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	ddk::inherited_value<DerivedBaseType2> foo1 = ddk::make_inherited_value<DerivedBaseType2>(10);
 	DerivedTypeMultiVisitor multiVisitor;
 
-	int res = ddk::visit(multiVisitor,foo0,foo1);
 	int a = 0;
+	int res = ddk::visit(multiVisitor,foo0,foo1);
+	int b = 0;
 }

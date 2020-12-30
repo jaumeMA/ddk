@@ -56,11 +56,6 @@ struct which_type<false,T1,T2>
 	typedef T2 type;
 };
 
-template<typename ... Types>
-struct type_pack
-{
-};
-
 template<typename>
 struct is_copy_constructible;
 
@@ -161,6 +156,9 @@ struct get_cond_rank<cond,rank1,rank2,ranks...>
 {
     static const size_t value = (cond<rank1,rank2>::value) ? get_cond_rank<cond,rank1,ranks...>::value : get_cond_rank<cond,rank2,ranks...>::value;
 };
+
+template<size_t Index>
+struct static_number{};
 
 template<size_t ...>
 struct sequence;
@@ -519,6 +517,16 @@ struct construct_type
 	{
 		return Type{i_arg};
 	}
+};
+
+template<typename ... Types>
+struct type_pack
+{
+	template<typename TType>
+	struct add
+	{
+		typedef typename static_if<is_among_types<TType,Types...>::value,type_pack<Types...>,type_pack<Types...,TType>>::type type;
+	};
 };
 
 template<int ...ranks>

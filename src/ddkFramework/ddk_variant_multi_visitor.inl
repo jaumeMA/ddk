@@ -45,7 +45,7 @@ multi_visitor<Return,Callable,tuple<ResolvedTypes...>>::multi_visitor(const Call
 template<typename Return,typename Callable, typename ... ResolvedTypes>
 function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedTypes...>>::visit() const
 {
-	return make_function([thisTransform = std::move(m_transform)](ResolvedTypes ... i_values) -> Return { return thisTransform(std::forward<ResolvedTypes>(i_values) ...); });
+	return make_function([thisTransform = std::move(m_transform)](ResolvedTypes ... i_values) -> Return { return thisTransform(*i_values ...); });
 }
 
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ddk_tuple.h"
 #include "ddk_function.h"
 #include "ddk_concepts.h"
 #include "ddk_function_concepts.h"
@@ -35,9 +34,9 @@ template<typename,typename,typename,typename ...>
 class dynamic_multi_visitor;
 
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes, typename Value, typename ... Values>
-class dynamic_multi_visitor<Visitor,tuple<Types...>,tuple<ResolvedTypes...>,Value,Values...> 
+class dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>
 	: public dynamic_visitor<typename Value::type_interface>
-	, public detail::dynamic_multi_visitor_base<dynamic_multi_visitor<Visitor,tuple<Types...>,tuple<ResolvedTypes...>,Value,Values...>,Visitor,Types> ...
+	, public detail::dynamic_multi_visitor_base<dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>,Visitor,Types> ...
 {
 public:
 	typedef Visitor visitor_interface;
@@ -60,7 +59,7 @@ private:
 };
 
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes>
-class dynamic_multi_visitor<Visitor,tuple<Types...>,tuple<ResolvedTypes...>>
+class dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>>
 {
 public:
 	typedef Visitor visitor_interface;
@@ -73,10 +72,12 @@ private:
 	Visitor& m_visitor;
 };
 
-template<typename Visitor,typename ... Values>
+TEMPLATE(typename Visitor,typename ... Values)
+REQUIRES(IS_CALLABLE(Visitor),IS_BASE_OF(typename Visitor::type_interface,Values)...)
 inline typename Visitor::return_type visit(const Visitor& i_callable,const inherited_value<Values>& ... i_values);
 
-template<typename Visitor,typename ... Values>
+TEMPLATE(typename Visitor,typename ... Values)
+REQUIRES(IS_CALLABLE(Visitor),IS_BASE_OF(typename Visitor::type_interface,Values)...)
 inline typename Visitor::return_type visit(Visitor& i_callable,const inherited_value<Values>& ... i_values);
 
 }

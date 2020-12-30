@@ -3,13 +3,6 @@ namespace ddk
 {
 
 template<typename T,typename TT>
-share_from_this<T,TT>::share_from_this(share_from_this&& other)
-: m_refCounter(std::move(other.m_refCounter))
-, m_deleter(nullptr)
-{
-	std::swap(m_deleter,other.m_deleter);
-}
-template<typename T,typename TT>
 const IReferenceWrapperDeleter* share_from_this<T,TT>::set_deleter(const IReferenceWrapperDeleter* i_deleter) const
 {
 	return (m_deleter = i_deleter);

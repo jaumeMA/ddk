@@ -2,15 +2,18 @@
 
 #include <map>
 #include "ddk_visitable_type_interface.h"
-#include "ddk_hash.h"
 #include "ddk_macros.h"
 
-#define DECLARE_TYPE_VISITABLE(_Type_Name) \
+#define DECLARE_TYPE_VISITABLE(_Type_Name, _Type_Interface) \
 template<typename,typename,typename,typename ...> \
 friend class ddk::dynamic_multi_visitor; \
 template<typename,typename> \
 friend inline bool ddk::detail::__expand_type_visitor_layout(); \
-typedef decltype(__get_type_interface(std::declval<_Type_Name>())) type_interface; \
+typedef _Type_Interface type_interface; \
+static const size_t s_currTypeCounter = ddk::static_counter<type_interface>::get_curr_count(); \
+static const size_t s_nextTypeCounter = ddk::static_counter<type_interface>::get_next_count(); \
+typedef decltype(__get_inherited_type_list(std::declval<type_interface>(),std::declval<ddk::mpl::static_number<s_currTypeCounter>>())) prev_type_list; \
+friend typename prev_type_list::add<_Type_Name>::type __get_inherited_type_list(const type_interface&,const ddk::mpl::static_number<s_nextTypeCounter>&); \
 typedef ddk::visitable_type<_Type_Name,type_interface> _type_expansion; \
 PUBLISH_TYPE_INFO(_Type_Name,type_interface) \
 static void __expand_type_visitable_type() \
