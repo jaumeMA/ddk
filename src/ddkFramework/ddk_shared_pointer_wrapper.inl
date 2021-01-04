@@ -54,9 +54,8 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_poin
 	std::swap(m_refCounter,other.m_refCounter);
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable == false || Weakable == WWeakable)
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,Weakable>& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(other.m_deleter)
@@ -72,9 +71,8 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const share
 	}
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable == false || Weakable == WWeakable)
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,Weakable>&& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(other.m_deleter)
@@ -147,9 +145,8 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 	return *this;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable == false || Weakable == WWeakable)
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(const shared_pointer_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(const shared_pointer_wrapper_impl<TT,Weakable>& other)
 {
 	static_assert(std::is_base_of<T,TT>::value,"You shall provide inherited classes");
 
@@ -175,9 +172,8 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 	return *this;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable == false || Weakable == WWeakable)
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(shared_pointer_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(shared_pointer_wrapper_impl<TT,Weakable>&& other)
 {
 	static_assert(std::is_base_of<T,TT>::value,"You shall provide inherited classes");
 

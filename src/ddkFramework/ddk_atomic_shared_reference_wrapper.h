@@ -21,18 +21,14 @@ public:
 	atomic_shared_reference_wrapper_impl(const shared_reference_wrapper_impl<T,Weakable>& other);
 	atomic_shared_reference_wrapper_impl(atomic_shared_reference_wrapper_impl&& other);
 	atomic_shared_reference_wrapper_impl(shared_reference_wrapper_impl<T,Weakable>&& other);
-	TEMPLATE(typename TT, bool WWeakable)
-	REQUIRES_COND(Weakable || Weakable == WWeakable)
-	atomic_shared_reference_wrapper_impl(const atomic_shared_reference_wrapper_impl<TT,WWeakable>& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable || Weakable == WWeakable)
-	atomic_shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,WWeakable>& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable || Weakable == WWeakable)
-	atomic_shared_reference_wrapper_impl(atomic_shared_reference_wrapper_impl<TT,WWeakable>&& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable || Weakable == WWeakable)
-	atomic_shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,WWeakable>&& other);
+	template<typename TT>
+	atomic_shared_reference_wrapper_impl(const atomic_shared_reference_wrapper_impl<TT,Weakable>& other);
+	template<typename TT>
+	atomic_shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,Weakable>& other);
+	template<typename TT>
+	atomic_shared_reference_wrapper_impl(atomic_shared_reference_wrapper_impl<TT,Weakable>&& other);
+	template<typename TT>
+	atomic_shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,Weakable>&& other);
 	atomic_shared_reference_wrapper_impl& operator=(const atomic_shared_reference_wrapper_impl& other);
 	atomic_shared_reference_wrapper_impl& operator=(const shared_reference_wrapper_impl<T,Weakable>& other);
 	atomic_shared_reference_wrapper_impl& operator=(atomic_shared_reference_wrapper_impl&& other);

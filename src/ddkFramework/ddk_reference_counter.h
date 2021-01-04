@@ -27,14 +27,14 @@ SCOPED_ENUM_DECL(ReferenceAllocationType,
 	Embedded
 );
 
+#ifdef DDK_DEBUG
+
 class lent_reference_counter
 {
-#ifdef DDK_DEBUG
 	static const size_t k_maxNumberOfStacks = 16;
 	static const size_t k_maxNumOfChars = 64;
 	typedef void* stack_entry[k_maxNumberOfStacks];
 	typedef std::unordered_map<size_t, stack_entry> stack_container;
-#endif
 
 public:
 	typedef std::map<size_t,std::vector<std::string>> stack_contents;
@@ -43,26 +43,25 @@ public:
 	lent_reference_counter(const lent_reference_counter& other);
 	lent_reference_counter(lent_reference_counter&& other);
 	virtual ~lent_reference_counter() = default;
-#ifdef DDK_DEBUG
-	size_t incrementLentReference();
-	size_t decrementLentReference();
-	size_t getNumLentReferences() const;
+
+	unsigned int incrementLentReference();
+	unsigned int decrementLentReference();
+	unsigned int getNumLentReferences() const;
 	bool hasLentReferences() const;
 	void registerStackTrace(size_t i_id);
 	void unregisterStackTrace(size_t i_id);
 	void copyStackTrace(size_t i_oldId, size_t i_newId);
 	void reassignStackTrace(size_t i_oldId, size_t i_newId);
 	stack_contents dumpStackTrace();
-#endif
 
 private:
-#ifdef DDK_DEBUG
 	static detail::symbol_cache_table m_symbolInfoCache;
 	stack_container m_stackTraces;
 	mutex m_refMutex;
-	atomic_size_t m_numLentReferences;
-#endif
+	atomic_uint m_numLentReferences;
 };
+
+#endif
 
 class weak_reference_counter
 {
@@ -71,30 +70,33 @@ public:
 	weak_reference_counter(const weak_reference_counter& other);
 	weak_reference_counter(weak_reference_counter&& other);
 
-	size_t incrementWeakReference();
-	size_t decrementWeakReference();
-	size_t getNumWeakReferences() const;
+	unsigned int incrementWeakReference();
+	unsigned int decrementWeakReference();
+	unsigned int getNumWeakReferences() const;
 	bool hasWeakReferences() const;
 
 private:
-	atomic_size_t m_numWeakReferences;
+	atomic_uint m_numWeakReferences;
 };
 
-class distributed_reference_counter : public lent_reference_counter
+class distributed_reference_counter 
+#ifdef DDK_DEBUG
+: public lent_reference_counter
+#endif
 {
 public:
 	distributed_reference_counter();
 	distributed_reference_counter(const distributed_reference_counter& other);
 	distributed_reference_counter(distributed_reference_counter&& other);
-	size_t incrementSharedReference();
+	unsigned int incrementSharedReference();
 	bool incrementSharedReferenceIfNonEmpty();
-	size_t decrementSharedReference();
-	size_t getNumSharedReferences() const;
+	unsigned int decrementSharedReference();
+	unsigned int getNumSharedReferences() const;
 	bool hasSharedReferences() const;
-	virtual bool hasWeakReferences() const;
+	bool hasWeakReferences() const;
 
 private:
-	atomic_size_t m_numSharedReferences;
+	atomic_uint m_numSharedReferences;
 };
 
 class shared_reference_counter: public distributed_reference_counter, public weak_reference_counter
@@ -103,18 +105,21 @@ public:
 	shared_reference_counter() = default;
 	shared_reference_counter(const shared_reference_counter& other) = default;
 	shared_reference_counter(shared_reference_counter&& other) = default;
-	size_t incrementSharedReference();
+	unsigned int incrementSharedReference();
 	bool incrementSharedReferenceIfNonEmpty();
-	size_t decrementSharedReference();
-	bool hasWeakReferences() const override;
+	unsigned int decrementSharedReference();
+	bool hasWeakReferences() const;
 
 private:
-	atomic_size_t m_numSharedReferences;
+	atomic_uint m_numSharedReferences;
 };
 
 //reference counting for unique references
 
-class unique_reference_counter : public lent_reference_counter
+class unique_reference_counter
+#ifdef DDK_DEBUG
+: public lent_reference_counter
+#endif
 {
 public:
 	unique_reference_counter();

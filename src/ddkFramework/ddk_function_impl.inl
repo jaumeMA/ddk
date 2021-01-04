@@ -11,7 +11,7 @@ namespace detail
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
 template<typename ... Args>
-function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args)
+function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::specialized_impl(const function_base_const_dist_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args)
 : m_object(i_object)
 , m_specArgs(std::move(i_args).template extract<specIndexs>() ...)
 {
@@ -51,7 +51,7 @@ Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequen
 
 template<typename Return, typename ... Types>
 template<typename Allocator, typename ... Args>
-function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>> function_impl_base<Return, tuple<Types...>>::specialize(const Allocator& i_allocator, Args&& ... args) const
+function_base_const_dist_ref<Return,unresolved_types<tuple<Args...>,Types...>> function_impl_base<Return, tuple<Types...>>::specialize(const Allocator& i_allocator, Args&& ... args) const
 {
     typedef typename mpl::pos_place_holder<0,tuple<Args...>>::type not_spec_indexs;
     typedef typename mpl::dual_sequence<not_spec_indexs>::template at<0,s_numTypes>::type spec_sequence;
@@ -62,7 +62,7 @@ function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>>
     {
         spec_func_type* newFuncImpl = new(mem) spec_func_type(this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
 
-        return as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<spec_func_type>(i_allocator));
+        return as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<spec_func_type>(i_allocator));
     }
     else
     {

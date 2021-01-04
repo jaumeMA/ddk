@@ -6,7 +6,7 @@
 #include "ddk_tagged_pointer.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_pointer_wrapper.h"
-#include "ddk_shared_from_this.h"
+#include "ddk_distribute_from_this.h"
 
 namespace ddk
 {
@@ -17,13 +17,13 @@ template<typename,typename>
 struct function_impl_base;
 
 template<typename T, typename TT>
-using function_base_shared_ref = shared_reference_wrapper<function_impl_base<T, TT>>;
+using function_base_dist_ref = distributed_reference_wrapper<function_impl_base<T, TT>>;
 template<typename T, typename TT>
-using function_base_const_shared_ref = shared_reference_wrapper<const function_impl_base<T, TT>>;
+using function_base_const_dist_ref = distributed_reference_wrapper<const function_impl_base<T, TT>>;
 template<typename T, typename TT>
-using function_base_shared_ptr = shared_pointer_wrapper<function_impl_base<T, TT>>;
+using function_base_dist_ptr = distributed_pointer_wrapper<function_impl_base<T, TT>>;
 template<typename T, typename TT>
-using function_base_const_shared_ptr = shared_pointer_wrapper<const function_impl_base<T, TT>>;
+using function_base_const_dist_ptr = distributed_pointer_wrapper<const function_impl_base<T, TT>>;
 template<typename T, typename TT>
 using function_base_const_lent_ptr = lent_pointer_wrapper<const function_impl_base<T, TT>>;
 template<typename Sequence, typename ... Types>
@@ -38,7 +38,7 @@ template<typename TTypes, typename Types>
 using unresolved_tuple = typename mpl::make_tuple<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 
 template<typename Return, typename ... Types>
-struct function_impl_base<Return, tuple<Types...>> : public share_from_this<function_impl_base<Return,tuple<Types...>>>
+struct function_impl_base<Return, tuple<Types...>> : public distribute_from_this<function_impl_base<Return,tuple<Types...>>>
 {
     static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
 
@@ -51,7 +51,6 @@ struct function_impl_base<Return, tuple<Types...>> : public share_from_this<func
 	template<size_t ... specIndexs, size_t ... notSpecIndexs>
 	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::make_tuple<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
 	{
-
 #ifndef _WIN32
 		static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs, Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
 #endif
@@ -60,13 +59,13 @@ struct function_impl_base<Return, tuple<Types...>> : public share_from_this<func
 
         specialized_impl() = default;
         template<typename ... Args>
-		specialized_impl(const function_base_const_shared_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args);
+		specialized_impl(const function_base_const_dist_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args);
 
     private:
 		Return operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const override;
         Return apply(const vars_tuple& i_tuple) const override;
 
-        function_base_const_shared_ref<Return,tuple<Types...>> m_object;
+        function_base_const_dist_ref<Return,tuple<Types...>> m_object;
 		mutable args_tuple m_specArgs;
 	};
 
@@ -78,7 +77,7 @@ struct function_impl_base<Return, tuple<Types...>> : public share_from_this<func
 	virtual ~function_impl_base() = default;
 
 	template<typename Allocator, typename ... Args>
-	function_base_const_shared_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
+	function_base_const_dist_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
 	virtual Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const = 0;
 

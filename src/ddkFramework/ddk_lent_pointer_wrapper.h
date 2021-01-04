@@ -7,6 +7,8 @@
 namespace ddk
 {
 
+#ifdef DDK_DEBUG
+
 template<typename>
 class lent_pointer_wrapper;
 
@@ -19,8 +21,6 @@ template<typename TT>
 ddk::lent_pointer_wrapper<TT> __make_lent_pointer(TT*,const tagged_pointer<lent_reference_counter>&);
 
 }
-
-#ifdef DDK_DEBUG
 
 #define THIS_OBJECT (*this)
 

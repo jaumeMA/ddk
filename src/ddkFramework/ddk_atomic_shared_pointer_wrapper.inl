@@ -44,9 +44,8 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_im
 	m_ptr = std::move(other);
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl<TT,Weakable>& other)
 {
 	other.m_barrier.lock();
 
@@ -55,16 +54,14 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_im
 	other.m_barrier.unlock();
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,Weakable>& other)
 {
 	m_ptr = other;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl<TT,Weakable>&& other)
 : m_barrier(false)
 {
 	other.m_barrier.lock();
@@ -74,9 +71,8 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_im
 	other.m_barrier.unlock();
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>::atomic_shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,Weakable>&& other)
 {
 	m_ptr = std::move(other);
 }
@@ -146,9 +142,8 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_im
 	return *this;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(const atomic_shared_pointer_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(const atomic_shared_pointer_wrapper_impl<TT,Weakable>& other)
 {
 	m_barrier.lock();
 
@@ -163,9 +158,8 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_im
 	return *this;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(const shared_pointer_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(const shared_pointer_wrapper_impl<TT,Weakable>& other)
 {
 	m_barrier.lock();
 
@@ -176,9 +170,8 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_im
 	return *this;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(atomic_shared_pointer_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(atomic_shared_pointer_wrapper_impl<TT,Weakable>&& other)
 {
 	m_barrier.lock();
 
@@ -193,9 +186,8 @@ atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_im
 	return *this;
 }
 template<typename T, bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(shared_pointer_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+atomic_shared_pointer_wrapper_impl<T,Weakable>& atomic_shared_pointer_wrapper_impl<T,Weakable>::operator=(shared_pointer_wrapper_impl<TT,Weakable>&& other)
 {
 	m_barrier.lock();
 

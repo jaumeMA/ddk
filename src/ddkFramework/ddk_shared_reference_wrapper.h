@@ -39,12 +39,10 @@ public:
 
 	shared_reference_wrapper_impl(const shared_reference_wrapper_impl& other);
 	shared_reference_wrapper_impl(shared_reference_wrapper_impl&& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable || Weakable == WWeakable)
-	shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,WWeakable>& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable || Weakable == WWeakable)
-	shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,WWeakable>&& other);
+	template<typename TT>
+	shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,Weakable>& other);
+	template<typename TT>
+	shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,Weakable>&& other);
     shared_reference_wrapper_impl& operator=(const shared_reference_wrapper_impl& other);
     shared_reference_wrapper_impl& operator=(shared_reference_wrapper_impl&& other);
 };

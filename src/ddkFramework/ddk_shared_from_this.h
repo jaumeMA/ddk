@@ -9,9 +9,6 @@ namespace ddk
 namespace detail
 {
 
-template<typename,bool>
-class shared_reference_wrapper_impl;
-
 template<typename T>
 inline shared_reference_wrapper_impl<T,true> __make_shared_reference(T*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
 
@@ -49,8 +46,8 @@ public:
 
 
 protected:
-	inline ddk::shared_reference_wrapper<TT> ref_from_this();
-	inline ddk::shared_reference_wrapper<const TT> ref_from_this() const;
+	inline shared_reference_wrapper<TT> ref_from_this();
+	inline shared_reference_wrapper<const TT> ref_from_this() const;
 
 private:		
 	inline const IReferenceWrapperDeleter* set_deleter(const IReferenceWrapperDeleter* i_refDeleter) const;

@@ -114,6 +114,7 @@ private:
 
 //put here whatever specialization you need
 typedef atomic32<int> atomic_int;
+typedef atomic32<unsigned int> atomic_uint;
 
 template<typename T>
 struct atomic64

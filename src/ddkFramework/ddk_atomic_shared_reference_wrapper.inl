@@ -25,30 +25,26 @@ atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrappe
 {
 }
 template<typename T,bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(const atomic_shared_reference_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(const atomic_shared_reference_wrapper_impl<TT,Weakable>& other)
 : atomic_shared_pointer_wrapper<T>(other)
 {
 }
 template<typename T,bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,WWeakable>& other)
+template<typename TT>
+atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,Weakable>& other)
 : atomic_shared_pointer_wrapper<T>(other)
 {
 }
 template<typename T,bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(atomic_shared_reference_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(atomic_shared_reference_wrapper_impl<TT,Weakable>&& other)
 : atomic_shared_pointer_wrapper<T>(std::move(other))
 {
 }
 template<typename T,bool Weakable>
-TEMPLATE(typename TT,bool WWeakable)
-REQUIRED_COND(Weakable || Weakable == WWeakable)
-atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,WWeakable>&& other)
+template<typename TT>
+atomic_shared_reference_wrapper_impl<T,Weakable>::atomic_shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,Weakable>&& other)
 : atomic_shared_pointer_wrapper<T>(std::move(other))
 {
 }

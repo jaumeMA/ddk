@@ -6,6 +6,13 @@ namespace ddk
 {
 
 template<typename>
+class unique_reference_wrapper;
+template<typename>
+class lendable;
+
+#ifdef DDK_DEBUG
+
+template<typename>
 class lent_reference_wrapper;
 
 namespace detail
@@ -17,13 +24,6 @@ template<typename TT>
 ddk::lent_reference_wrapper<TT> __make_lent_reference(TT* i_data,const tagged_pointer<lent_reference_counter>& i_refCounter);
 
 }
-
-template<typename>
-class unique_reference_wrapper;
-template<typename>
-class lendable;
-
-#ifdef DDK_DEBUG
 
 template<typename T>
 class lent_reference_wrapper : public lent_pointer_wrapper<T>

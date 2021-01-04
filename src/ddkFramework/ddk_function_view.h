@@ -11,7 +11,6 @@ class function_view;
 template<typename Return, typename ... Types>
 class function_view<Return(Types...)>
 {
-    typedef detail::function_base_const_shared_ptr<Return,tuple<Types...>> function_base_const_shared_ptr;
     typedef detail::function_base_const_lent_ptr<Return,tuple<Types...>> function_base_const_lent_ptr;
 
 public:

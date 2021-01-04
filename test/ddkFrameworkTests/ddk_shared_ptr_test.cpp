@@ -65,7 +65,6 @@ TEST(DDKSharedPtrtTest,moveConstruction)
 {
 	{
 		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
-		ddk::distributed_pointer_wrapper<ConstructionDeletionBalancer> foo = foo1;
 
 		EXPECT_EQ(foo1.empty(),false);
 		EXPECT_EQ(foo1->getValue(),0xFF);

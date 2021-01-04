@@ -26,43 +26,33 @@ namespace ddk
 
 detail::symbol_cache_table lent_reference_counter::m_symbolInfoCache = detail::symbol_cache_table();
 
-#endif
 
 lent_reference_counter::lent_reference_counter()
-#ifdef DDK_DEBUG
-	: m_numLentReferences(0)
-#endif
+: m_numLentReferences(0)
 {
 }
 lent_reference_counter::lent_reference_counter(const lent_reference_counter& other)
-#ifdef DDK_DEBUG
-	: m_numLentReferences(other.m_numLentReferences)
-#endif
+: m_numLentReferences(other.m_numLentReferences)
 {
 }
 lent_reference_counter::lent_reference_counter(lent_reference_counter&& other)
-#ifdef DDK_DEBUG
 : m_numLentReferences(0)
-#endif
 {
-#ifdef DDK_DEBUG
 	m_numLentReferences.set(other.m_numLentReferences.get());
 	other.m_numLentReferences.set(0);
 #ifdef TRACK_STACK
 	std::swap(m_stackTraces,other.m_stackTraces);
 #endif
-#endif
 }
-#ifdef DDK_DEBUG
-size_t lent_reference_counter::incrementLentReference()
+unsigned int lent_reference_counter::incrementLentReference()
 {
 	return atomic_post_increment(m_numLentReferences);
 }
-size_t lent_reference_counter::decrementLentReference()
+unsigned int lent_reference_counter::decrementLentReference()
 {
 	return atomic_post_decrement(m_numLentReferences);
 }
-size_t lent_reference_counter::getNumLentReferences() const
+unsigned int lent_reference_counter::getNumLentReferences() const
 {
 	return m_numLentReferences.get();
 }
@@ -190,15 +180,15 @@ weak_reference_counter::weak_reference_counter(weak_reference_counter&& other)
 {
 	std::swap(m_numWeakReferences,other.m_numWeakReferences);
 }
-size_t weak_reference_counter::incrementWeakReference()
+unsigned int weak_reference_counter::incrementWeakReference()
 {
 	return atomic_post_increment(m_numWeakReferences);
 }
-size_t weak_reference_counter::decrementWeakReference()
+unsigned int weak_reference_counter::decrementWeakReference()
 {
 	return atomic_post_decrement(m_numWeakReferences);
 }
-size_t weak_reference_counter::getNumWeakReferences() const
+unsigned int weak_reference_counter::getNumWeakReferences() const
 {
 	return m_numWeakReferences.get();
 }
@@ -220,15 +210,15 @@ distributed_reference_counter::distributed_reference_counter(distributed_referen
 {
 	std::swap(m_numSharedReferences,other.m_numSharedReferences);
 }
-size_t distributed_reference_counter::incrementSharedReference()
+unsigned int distributed_reference_counter::incrementSharedReference()
 {
 	return atomic_post_increment(m_numSharedReferences);
 }
-size_t distributed_reference_counter::decrementSharedReference()
+unsigned int distributed_reference_counter::decrementSharedReference()
 {
 	return atomic_post_decrement(m_numSharedReferences);
 }
-size_t distributed_reference_counter::getNumSharedReferences() const
+unsigned int distributed_reference_counter::getNumSharedReferences() const
 {
 	return m_numSharedReferences.get();
 }
@@ -242,7 +232,7 @@ bool distributed_reference_counter::hasWeakReferences() const
 }
 bool distributed_reference_counter::incrementSharedReferenceIfNonEmpty()
 {
-	size_t oldValue = 0;
+	unsigned int oldValue = 0;
 
 	do
 	{
@@ -257,7 +247,7 @@ bool distributed_reference_counter::incrementSharedReferenceIfNonEmpty()
 	return true;
 }
 
-size_t shared_reference_counter::incrementSharedReference()
+unsigned int shared_reference_counter::incrementSharedReference()
 {
 	weak_reference_counter::incrementWeakReference();
 
@@ -274,7 +264,7 @@ bool shared_reference_counter::incrementSharedReferenceIfNonEmpty()
 
 	return false;
 }
-size_t shared_reference_counter::decrementSharedReference()
+unsigned int shared_reference_counter::decrementSharedReference()
 {
 	weak_reference_counter::decrementWeakReference();
 
@@ -286,18 +276,25 @@ bool shared_reference_counter::hasWeakReferences() const
 }
 
 unique_reference_counter::unique_reference_counter()
-: lent_reference_counter()
-, m_hasStrongReferences(false)
+: m_hasStrongReferences(false)
 {
 }
 unique_reference_counter::unique_reference_counter(const unique_reference_counter& other)
+#ifdef DDK_DEBUG
 : lent_reference_counter(other)
 , m_hasStrongReferences(other.m_hasStrongReferences)
+#else
+: m_hasStrongReferences(other.m_hasStrongReferences)
+#endif
 {
 }
 unique_reference_counter::unique_reference_counter(unique_reference_counter&& other)
+#ifdef DDK_DEBUG
 : lent_reference_counter(std::move(other))
-, m_hasStrongReferences(false)
+,m_hasStrongReferences(false)
+#else
+: m_hasStrongReferences(false)
+#endif
 {
 	std::swap(m_hasStrongReferences,other.m_hasStrongReferences);
 }

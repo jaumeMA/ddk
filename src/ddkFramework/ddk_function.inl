@@ -35,7 +35,7 @@ function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i
     {
         Functor* newFuncImpl = new(mem) Functor(std::forward<T>(i_functor));
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -52,7 +52,7 @@ function<Return(Types...),Allocator>::function(Return(*i_call)(Types...), const 
     {
         Functor* newFuncImpl = new(mem) Functor(i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -70,7 +70,7 @@ function<Return(Types...),Allocator>::function(T *i_pRef, Return(T::*i_call)(Typ
     {
         Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -83,11 +83,11 @@ function<Return(Types...),Allocator>::function(const T *i_pRef, Return(T::*i_cal
 {
     typedef detail::relative_function_impl<const T,Return,Types...> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
+	if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
     {
         Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -200,7 +200,7 @@ function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocat
     {
         Functor* newFuncImpl = new Functor(std::forward<T>(i_functor));
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -217,7 +217,7 @@ function<Return(),Allocator>::function(Return(*i_call)(), const Allocator& i_all
     {
         Functor* newFuncImpl = new Functor(i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -235,7 +235,7 @@ function<Return(),Allocator>::function(T *i_pRef, Return(T::*i_call)(), const Al
     {
         Functor* newFuncImpl = new Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {
@@ -252,7 +252,7 @@ function<Return(),Allocator>::function(const T *i_pRef, Return(T::*i_call)()cons
     {
         Functor* newFuncImpl = new Functor(i_pRef,i_call);
 
-        m_functionImpl = as_shared_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
+        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
     }
     else
     {

@@ -69,22 +69,18 @@ public:
 	shared_pointer_wrapper_impl(T* i_data, IReferenceWrapperDeleter* i_refDeleter = nullptr);
 	shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl& other);
 	shared_pointer_wrapper_impl(shared_pointer_wrapper_impl&& other);
-	TEMPLATE(typename TT, bool WWeakable)
-	REQUIRES_COND(Weakable == false || Weakable == WWeakable)
-	shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,WWeakable>& other);
-	TEMPLATE(typename TT, bool WWeakable)
-	REQUIRES_COND(Weakable == false || Weakable == WWeakable)
-	shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,WWeakable>&& other);
+	template<typename TT>
+	shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,Weakable>& other);
+	template<typename TT>
+	shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,Weakable>&& other);
 	~shared_pointer_wrapper_impl();
 	shared_pointer_wrapper_impl& operator=(std::nullptr_t);
 	shared_pointer_wrapper_impl& operator=(const shared_pointer_wrapper_impl& other);
 	shared_pointer_wrapper_impl& operator=(shared_pointer_wrapper_impl&& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable == false || Weakable == WWeakable)
-	shared_pointer_wrapper_impl& operator=(const shared_pointer_wrapper_impl<TT,WWeakable>& other);
-	TEMPLATE(typename TT,bool WWeakable)
-	REQUIRES_COND(Weakable == false || Weakable == WWeakable)
-	shared_pointer_wrapper_impl& operator=(shared_pointer_wrapper_impl<TT,WWeakable>&& other);
+	template<typename TT>
+	shared_pointer_wrapper_impl& operator=(const shared_pointer_wrapper_impl<TT,Weakable>& other);
+	template<typename TT>
+	shared_pointer_wrapper_impl& operator=(shared_pointer_wrapper_impl<TT,Weakable>&& other);
 	inline bool operator==(std::nullptr_t) const;
 	inline bool operator!=(std::nullptr_t) const;
 	inline T* operator->();

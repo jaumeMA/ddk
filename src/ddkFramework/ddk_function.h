@@ -38,7 +38,7 @@ class function<Return(),Allocator>
 {
     template<typename,typename>
     friend class function;
-    typedef detail::function_base_const_shared_ptr<Return,tuple<>> function_base_const_shared_ptr;
+    typedef detail::function_base_const_dist_ptr<Return,tuple<>> function_base_const_dist_ptr;
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
     template<typename RReturn, typename AAllocator>
     friend inline function_view<RReturn()> lend(const function<RReturn(),AAllocator>&);
@@ -76,7 +76,7 @@ public:
 private:
     inline Return eval_tuple(const mpl::sequence<>&) const;
 
-    function_base_const_shared_ptr m_functionImpl;
+    function_base_const_dist_ptr m_functionImpl;
     Allocator m_allocator;
 };
 
@@ -85,7 +85,7 @@ class function<Return(Types...),Allocator>
 {
     template<typename,typename>
     friend class function;
-    typedef detail::function_base_const_shared_ptr<Return,tuple<Types...>> function_base_const_shared_ptr;
+    typedef detail::function_base_const_dist_ptr<Return,tuple<Types...>> function_base_const_dist_ptr;
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
     template<typename RReturn, typename ... TTypes, typename AAllocator>
     friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
@@ -131,7 +131,7 @@ private:
     template<size_t ... Indexs, typename ... Args>
     inline Return eval_tuple(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
 
-    function_base_const_shared_ptr m_functionImpl;
+    function_base_const_dist_ptr m_functionImpl;
     Allocator m_allocator;
 };
 
