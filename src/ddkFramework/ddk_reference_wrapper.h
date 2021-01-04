@@ -19,55 +19,41 @@
 namespace ddk
 {
 
-template<typename T>
-inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
+namespace detail
 {
-    return unique_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-}
-template<typename T>
-inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-    return unique_pointer_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
-}
-template<typename T>
-inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-  return unique_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-}
-template<typename T>
-inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-  return unique_reference_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
-}
-template<typename T>
-inline shared_reference_wrapper<T> __make_shared_reference(T* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter)
-{
-	if constexpr (mpl::contains_symbol___shared_type_tag<T>::value)
-	{
-		i_data->set_reference_counter(i_refCounter);
-		i_data->set_deleter(i_refDeleter);
-	}
-
-	return shared_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
-}
 
 template<typename T>
-inline weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
 {
-	return weak_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+	return unique_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	return unique_pointer_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
+}
+template<typename T>
+unique_reference_wrapper<T> __make_unique_reference(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	return unique_reference_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+unique_reference_wrapper<T> __make_unique_reference(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	return unique_reference_wrapper<T>(i_data,std::move(i_refCounter),i_refDeleter);
 }
 
 #ifdef DDK_DEBUG
 
 template<typename T>
-inline lent_reference_wrapper<T> __make_lent_reference(T* i_data, const tagged_pointer<lent_reference_counter>& i_refCounter)
+lent_reference_wrapper<T> __make_lent_reference(T* i_data,const tagged_pointer<lent_reference_counter>& i_refCounter)
 {
-	return lent_reference_wrapper<T>(i_data, i_refCounter);
+	return lent_reference_wrapper<T>(i_data,i_refCounter);
 }
 template<typename T>
-inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data, const tagged_pointer<lent_reference_counter>& i_refCounter)
+lent_pointer_wrapper<T> __make_lent_pointer(T* i_data,const tagged_pointer<lent_reference_counter>& i_refCounter)
 {
-	return lent_pointer_wrapper<T>(i_data, i_refCounter);
+	return lent_pointer_wrapper<T>(i_data,i_refCounter);
 }
 
 #else
@@ -85,6 +71,123 @@ inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data)
 
 #endif
 
+template<typename T>
+shared_reference_wrapper_impl<T,true> __make_shared_reference(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	if constexpr(mpl::contains_symbol___shared_type_tag<T>::value)
+	{
+		i_data->set_reference_counter(i_refCounter);
+		i_data->set_deleter(i_refDeleter);
+	}
+
+	return shared_reference_wrapper_impl<T,true>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+shared_reference_wrapper_impl<T,false> __make_shared_reference(T* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	return shared_reference_wrapper_impl<T,false>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+ddk::weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	return weak_pointer_wrapper<T>(i_data,i_refCounter,i_refDeleter);
+}
+template<typename T>
+ddk::weak_pointer_wrapper<T> __weak(shared_pointer_wrapper_impl<T,true>& i_sharedPtr)
+{
+	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename T, bool Weakable>
+ddk::weak_pointer_wrapper<const T> __weak(const shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename TT,typename T,bool Weakable>
+shared_pointer_wrapper_impl<TT,Weakable> __static_shared_cast(const shared_pointer_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	return shared_pointer_wrapper_impl<TT,Weakable>(static_cast<TT*>(i_sharedRef.m_data),i_sharedRef.m_refCounter,i_sharedRef.m_deleter);
+}
+template<typename TT,typename T,bool Weakable>
+shared_reference_wrapper_impl<TT,Weakable> __static_shared_cast(const shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	return shared_reference_wrapper_impl<TT,Weakable>(static_cast<TT*>(i_sharedRef.m_data),i_sharedRef.m_refCounter,i_sharedRef.m_deleter);
+}
+template<typename TT,typename T,bool Weakable>
+shared_pointer_wrapper_impl<TT,Weakable> __dynamic_shared_cast(const shared_pointer_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	if(TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_sharedRef.m_data)))
+	{
+		return shared_pointer_wrapper_impl<TT,Weakable>(tData,i_sharedRef.m_refCounter,i_sharedRef.m_deleter);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+template<typename TT,typename T,bool Weakable>
+shared_pointer_wrapper_impl<TT,Weakable> __reinterpret_shared_cast(const shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return shared_pointer_wrapper_impl<TT,Weakable>(reinterpret_cast<TT*>(const_cast<T*>(i_sharedPtr.m_data)),i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename TT,typename T,bool Weakable>
+shared_reference_wrapper_impl<TT,Weakable> __reinterpret_shared_cast(const shared_reference_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return shared_reference_wrapper_impl<TT,Weakable>(reinterpret_cast<TT*>(const_cast<T*>(i_sharedPtr.m_data)),i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename T,bool Weakable>
+shared_reference_wrapper_impl<T,Weakable> __const_shared_cast(const shared_reference_wrapper_impl<const T,Weakable>& i_sharedRef)
+{
+	return detail::shared_pointer_wrapper_impl<T,Weakable>(const_cast<T*>(i_sharedRef.m_data),i_sharedRef.m_refCounter,i_sharedRef.m_deleter);
+}
+template<typename T,bool Weakable>
+shared_pointer_wrapper_impl<T,Weakable> __const_shared_cast(const shared_pointer_wrapper_impl<const T,Weakable>& i_sharedPtr)
+{
+	return shared_pointer_wrapper_impl<T,Weakable>(const_cast<T*>(i_sharedPtr.m_data),i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename T,bool Weakable>
+shared_reference_wrapper_impl<T,Weakable> __promote_to_ref(const shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return shared_reference_wrapper_impl<T,Weakable>(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
+}
+template<typename T,bool Weakable>
+lent_pointer_wrapper<T> __lend(shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	#ifdef DDK_DEBUG
+	return __make_lent_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter);
+	#else
+	return i_sharedPtr.m_data;
+	#endif
+}
+template<typename T,bool Weakable>
+lent_pointer_wrapper<T> __lend(const shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	#ifdef DDK_DEBUG
+	return __make_lent_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter);
+	#else
+	return i_sharedPtr.m_data;
+	#endif
+}
+template<typename T,bool Weakable>
+lent_reference_wrapper<T> __lend(shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	#ifdef DDK_DEBUG
+	return __make_lent_reference(i_sharedRef.m_data,i_sharedRef.m_refCounter);
+	#else
+	return i_sharedRef.m_data;
+	#endif
+}
+template<typename T,bool Weakable>
+lent_reference_wrapper<T> __lend(const shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	#ifdef DDK_DEBUG
+	return __make_lent_reference(i_sharedRef.m_data,i_sharedRef.m_refCounter);
+	#else
+	return i_sharedRef.m_data;
+	#endif
+}
+
+}
+
 template<typename T, typename ... Args>
 unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args)
 {
@@ -98,7 +201,7 @@ unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args)
 
 	tagged_reference_counter taggedRefCounter(refCounter, ReferenceAllocationType::Contiguous);
 
-	return __make_unique_reference(allocatedObject, taggedRefCounter, NULL);
+	return detail::__make_unique_reference(allocatedObject, taggedRefCounter, NULL);
 }
 
 template<typename T>
@@ -112,7 +215,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const IReferenceWrappe
 
 	tagged_reference_counter taggedRefCounter(refCounter, ReferenceAllocationType::Dynamic);
 
-	return __make_unique_reference(i_ptr, taggedRefCounter, &i_refDeleter);
+	return detail::__make_unique_reference(i_ptr, taggedRefCounter, &i_refDeleter);
 }
 
 template<typename T>
@@ -126,7 +229,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr)
 
 	tagged_reference_counter taggedRefCounter(refCounter, ReferenceAllocationType::Dynamic);
 
-	return __make_unique_reference(i_ptr, taggedRefCounter, nullptr);
+	return detail::__make_unique_reference(i_ptr, taggedRefCounter, nullptr);
 }
 
 template<typename T>
@@ -134,7 +237,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<u
 {
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct unique reference from null pointer");
 
-	return __make_unique_reference(i_ptr, i_refCounter,i_refDeleter);
+	return detail::__make_unique_reference(i_ptr, i_refCounter,i_refDeleter);
 }
 
 template<typename T, typename ... Args>
@@ -153,35 +256,79 @@ shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 
 	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
 
-	return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+	return detail::__make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+}
+template<typename T,typename ... Args>
+distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_args)
+{
+	typedef typename distributed_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+
+	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(distributed_reference_counter) + sizeof(T)));
+
+	distributed_reference_counter* refCounter = new (allocatedMemory) distributed_reference_counter();
+
+	T* allocatedObject = new (allocatedMemory + sizeof(distributed_reference_counter)) T(std::forward<Args>(i_args) ...);
+
+	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
+
+	return detail::__make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
 }
 
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr)
 {
+	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
+
 	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
-	return __make_shared_reference(i_ptr,refCounter,nullptr);
+	return detail::__make_shared_reference(i_ptr,tagged_reference_counter{refCounter},nullptr);
 }
-
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const IReferenceWrapperDeleter* i_refDeleter)
 {
+	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
+
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
-	return __make_shared_reference(i_ptr,refCounter,i_refDeleter);
+	return detail::__make_shared_reference(i_ptr,tagged_reference_counter{refCounter},i_refDeleter);
+}
+template<typename T>
+shared_reference_wrapper<T> as_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter = nullptr)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+	DDK_ASSERT(i_refCounter.get_tag() == ReferenceAllocationType::Dynamic,"Trying to contruct shared reference non dynamic reference counter");
+
+	return detail::__make_shared_reference(i_ptr,i_refCounter,i_refDeleter);
 }
 
 template<typename T>
-shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr)
+distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	distributed_reference_counter* refCounter = new distributed_reference_counter();
+
+	return detail::__make_shared_reference(i_ptr,refCounter,nullptr);
+}
+template<typename T>
+distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	distributed_reference_counter* refCounter = new distributed_reference_counter();
+
+	return detail::__make_shared_reference<false>(i_ptr,refCounter,i_refDeleter);
+}
+template<typename T>
+distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr, const tagged_pointer<distributed_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr)
 {
 	DDK_ASSERT(i_ptr!=nullptr, "Trying to contruct shared reference from null pointer");
 
-	return __make_shared_reference(i_ptr, i_refCounter,i_refDeleter);
+	return detail::__make_shared_reference(i_ptr, i_refCounter,i_refDeleter);
 }
 
 template<typename T,typename ... Args>
@@ -200,8 +347,24 @@ atomic_shared_reference_wrapper<T> make_atomic_shared_reference(Args&& ... i_arg
 
 	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
 
-	return __make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+	return detail::__make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
 }
+template<typename T,typename ... Args>
+atomic_distributed_reference_wrapper<T> make_atomic_distributed_reference(Args&& ... i_args)
+{
+	typedef typename distributed_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+
+	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(distributed_reference_counter) + sizeof(T)));
+
+	distributed_reference_counter* refCounter = new (allocatedMemory) distributed_reference_counter();
+
+	T* allocatedObject = new (allocatedMemory + sizeof(distributed_reference_counter)) T(std::forward<Args>(i_args) ...);
+
+	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
+
+	return detail::__make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
+}
+
 template<typename T>
 atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr)
 {
@@ -209,7 +372,7 @@ atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr)
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
-	return __make_shared_reference(i_ptr,refCounter,nullptr);
+	return detail::__make_shared_reference(i_ptr,refCounter,nullptr);
 }
 template<typename T>
 atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const IReferenceWrapperDeleter* i_refDeleter)
@@ -218,14 +381,41 @@ atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const IRe
 
 	shared_reference_counter* refCounter = new shared_reference_counter();
 
-	return __make_shared_reference(i_ptr,refCounter,i_refDeleter);
+	return detail::__make_shared_reference(i_ptr,refCounter,i_refDeleter);
 }
 template<typename T>
-atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter = nullptr)
+atomic_distributed_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter = nullptr)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+	DDK_ASSERT(i_refCounter.get_tag() == ReferenceAllocationType::Dynamic,"Trying to contruct shared reference non dynamic reference counter");
+
+	return detail::__make_shared_reference(i_ptr,i_refCounter,i_refDeleter);
+}
+
+template<typename T>
+atomic_distributed_reference_wrapper<T> as_atomic_distributed_reference(T* i_ptr)
 {
 	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
 
-	return __make_shared_reference(i_ptr,i_refCounter,i_refDeleter);
+	distributed_reference_counter* refCounter = new distributed_reference_counter();
+
+	return detail::__make_shared_reference(i_ptr,refCounter,nullptr);
+}
+template<typename T>
+atomic_distributed_reference_wrapper<T> as_atomic_distributed_reference(T* i_ptr,const IReferenceWrapperDeleter* i_refDeleter)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	distributed_reference_counter* refCounter = new distributed_reference_counter();
+
+	return detail::__make_shared_reference(i_ptr,refCounter,i_refDeleter);
+}
+template<typename T>
+atomic_distributed_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<distributed_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter = nullptr)
+{
+	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct shared reference from null pointer");
+
+	return detail::__make_shared_reference(i_ptr,i_refCounter,i_refDeleter);
 }
 
 template<typename T>
@@ -268,12 +458,18 @@ inline void clear_ptr(lent_pointer_wrapper<T>& i_ref)
 #endif
 }
 
-template<typename TT, typename T>
-shared_pointer_wrapper<TT> dynamic_shared_cast(const shared_reference_wrapper<T>& i_sharedRef)
+template<typename TT, typename T, bool Weakable>
+inline auto dynamic_shared_cast(const detail::shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
 {
-	if (TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_sharedRef.m_data)))
+	return detail::__dynamic_shared_cast<TT>(i_sharedRef);
+}
+
+template<typename TT, typename T>
+inline unique_pointer_wrapper<TT> dynamic_unique_cast(unique_reference_wrapper<T>&& i_uniqueRef)
+{
+	if (TT* tData = dynamic_cast<TT*>(i_uniqueRef.m_data))
 	{
-		return __make_shared_reference(tData, i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
+		return detail::__make_unique_pointer(tData, std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
 	}
 	else
 	{
@@ -281,31 +477,14 @@ shared_pointer_wrapper<TT> dynamic_shared_cast(const shared_reference_wrapper<T>
 	}
 }
 
-template<typename TT, typename T>
-unique_pointer_wrapper<TT> dynamic_unique_cast(unique_reference_wrapper<T>&& i_uniqueRef)
-{
-	unique_pointer_wrapper<TT> res;
-
-	if (TT* tData = dynamic_cast<TT*>(i_uniqueRef.m_data))
-	{
-		res = __make_unique_pointer(tData, std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
-	}
-	else
-	{
-		res = nullptr;
-	}
-
-	return res;
-}
-
 #ifdef DDK_DEBUG
 
 template<typename TT, typename T>
-lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
+inline lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
 {
 	if (TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_lentRef.m_data)))
 	{
-		return __make_lent_pointer(tData, i_lentRef.m_refCounter);
+		return detail::__make_lent_pointer(tData, i_lentRef.m_refCounter);
 	}
 	else
 	{
@@ -315,27 +494,20 @@ lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_reference_wrapper<T>& i_le
 
 #endif
 
-template<typename TT, typename T>
-shared_pointer_wrapper<TT> dynamic_shared_cast(const shared_pointer_wrapper<T>& i_sharedRef)
+template<typename TT, typename T, bool Weakable>
+inline auto dynamic_shared_cast(const detail::shared_pointer_wrapper_impl<T,Weakable>& i_sharedRef)
 {
-	if (TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_sharedRef.m_data)))
-	{
-		return shared_pointer_wrapper<TT>(tData, i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
-	}
-	else
-	{
-		return nullptr;
-	}
+	return detail::__dynamic_shared_cast<TT>(i_sharedRef);
 }
 
 template<typename TT, typename T>
-unique_pointer_wrapper<TT> dynamic_unique_cast(unique_pointer_wrapper<T>&& i_uniqueRef)
+inline unique_pointer_wrapper<TT> dynamic_unique_cast(unique_pointer_wrapper<T>&& i_uniqueRef)
 {
 	unique_pointer_wrapper<TT> res;
 
 	if (TT* tData = dynamic_cast<TT*>(i_uniqueRef.m_data))
 	{
-		res = __make_unique_pointer(tData, std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
+		res = detail::__make_unique_pointer(tData, std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
 		i_uniqueRef.m_data = nullptr;
 	}
 	else
@@ -347,12 +519,12 @@ unique_pointer_wrapper<TT> dynamic_unique_cast(unique_pointer_wrapper<T>&& i_uni
 }
 
 template<typename TT, typename T>
-lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
+inline lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
 {
 #ifdef DDK_DEBUG
 	if (TT* tData = dynamic_cast<TT*>(const_cast<T*>(i_lentRef.m_data)))
 	{
-		return __make_lent_pointer(tData, i_lentRef.m_refCounter);
+		return detail::__make_lent_pointer(tData, i_lentRef.m_refCounter);
 	}
 	else
 	{
@@ -363,68 +535,72 @@ lent_pointer_wrapper<TT> dynamic_lent_cast(const lent_pointer_wrapper<T>& i_lent
 #endif
 }
 
-template<typename TT, typename T>
-shared_reference_wrapper<TT> static_shared_cast(const shared_reference_wrapper<T>& i_sharedRef)
+template<typename TT,typename T,bool Weakable>
+inline auto static_shared_cast(const detail::shared_pointer_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	static_assert(std::is_base_of<T,TT>::value || std::is_base_of<TT,T>::value,"Trying to cast unrelated classes");
+
+	return detail::__static_shared_cast<TT>(i_sharedRef);
+}
+
+template<typename TT, typename T, bool Weakable>
+inline auto static_shared_cast(const detail::shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
 {
 	typedef typename std::remove_const<T>::type non_const_T;
 	typedef typename std::remove_const<TT>::type non_const_TT;
 	static_assert(std::is_base_of<non_const_T, non_const_TT>::value || std::is_base_of<non_const_TT, non_const_T>::value, "Trying to cast unrelated classes");
 
-	return shared_reference_wrapper<TT>(static_cast<TT*>(i_sharedRef.m_data), i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
+	return detail::__static_shared_cast<TT>(i_sharedRef);
 }
 
 template<typename TT, typename T>
-unique_reference_wrapper<TT> static_unique_cast(unique_reference_wrapper<T> i_uniqueRef)
+inline unique_reference_wrapper<TT> static_unique_cast(unique_reference_wrapper<T> i_uniqueRef)
 {
 	typedef typename std::remove_const<T>::type non_const_T;
 	typedef typename std::remove_const<TT>::type non_const_TT;
 	static_assert(std::is_base_of<non_const_T, non_const_TT>::value || std::is_base_of<non_const_TT, non_const_T>::value, "Trying to cast unrelated classes");
 
-	unique_reference_wrapper<TT> res = __make_unique_reference(static_cast<TT*>(i_uniqueRef.m_data), std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
-
-	return res;
+	return  detail::__make_unique_reference(static_cast<TT*>(i_uniqueRef.m_data), std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
 }
 
 template<typename TT, typename T>
-shared_pointer_wrapper<TT> static_shared_cast(const shared_pointer_wrapper<T>& i_sharedRef)
-{
-	static_assert(std::is_base_of<T, TT>::value || std::is_base_of<TT, T>::value, "Trying to cast unrelated classes");
-
-	return shared_pointer_wrapper<TT>(static_cast<TT*>(i_sharedRef.m_data), i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
-}
-
-template<typename TT, typename T>
-unique_pointer_wrapper<TT> static_unique_cast(unique_pointer_wrapper<T> i_uniqueRef)
+inline unique_pointer_wrapper<TT> static_unique_cast(unique_pointer_wrapper<T> i_uniqueRef)
 {
 	static_assert(std::is_base_of<T, TT>::value || std::is_base_of<TT, T>::value, "Trying to cast unrelated classes");
 
 	unique_pointer_wrapper<TT> res;
 
-	return __make_unique_pointer(static_cast<TT*>(i_uniqueRef.m_data), std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
+	return detail::__make_unique_pointer(static_cast<TT*>(i_uniqueRef.m_data), std::move(i_uniqueRef.m_refCounter), i_uniqueRef.m_deleter);
 }
 
 template<typename TT, typename T>
-lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
+inline lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
 {
 	static_assert(std::is_base_of<T, TT>::value || std::is_base_of<TT, T>::value, "Trying to cast unrelated classes");
 
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(static_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
+	return detail::__make_lent_pointer(static_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
 #else
 	return static_cast<TT*>(const_cast<T*>(i_lentRef));
 #endif
 }
 
-template<typename TT, typename T>
-shared_pointer_wrapper<TT> reinterpret_shared_cast(const shared_pointer_wrapper<T>& i_sharedPtr)
+template<typename TT, typename T, bool Weakable>
+inline detail::shared_pointer_wrapper_impl<TT,Weakable> reinterpret_shared_cast(const detail::shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
 {
-	return __make_shared_reference(reinterpret_cast<TT*>(const_cast<T*>(i_sharedPtr.m_data)), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
+	return detail::__reinterpret_shared_cast<TT>(i_sharedPtr);
+}
+
+template<typename TT,typename T,bool Weakable>
+inline detail::shared_reference_wrapper_impl<TT,Weakable> reinterpret_shared_cast(const detail::shared_reference_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return detail::__reinterpret_shared_cast<TT>(i_sharedPtr);
 }
 
 template<typename TT, typename T>
-unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_uniquePtr)
+inline unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_uniquePtr)
 {
-	unique_pointer_wrapper<TT> res = __make_unique_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_uniquePtr.m_data)), i_uniquePtr.m_refCounter, i_uniquePtr.m_deleter);
+	unique_pointer_wrapper<TT> res = detail::__make_unique_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_uniquePtr.m_data)), i_uniquePtr.m_refCounter, i_uniquePtr.m_deleter);
 
 	i_uniquePtr.clear();
 
@@ -432,15 +608,9 @@ unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_u
 }
 
 template<typename TT, typename T>
-shared_reference_wrapper<TT> reinterpret_shared_cast(const shared_reference_wrapper<T>& i_sharedRef)
+inline unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wrapper<T> i_uniqueRef)
 {
-	return __make_shared_reference(reinterpret_cast<TT*>(const_cast<T*>(i_sharedRef.m_data)), i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
-}
-
-template<typename TT, typename T>
-unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wrapper<T> i_uniqueRef)
-{
-	unique_reference_wrapper<TT> res = __make_unique_reference(reinterpret_cast<TT*>(const_cast<T*>(i_uniqueRef.m_data)), i_uniqueRef.m_refCounter, i_uniqueRef.m_deleter);
+	unique_reference_wrapper<TT> res = detail::__make_unique_reference(reinterpret_cast<TT*>(const_cast<T*>(i_uniqueRef.m_data)), i_uniqueRef.m_refCounter, i_uniqueRef.m_deleter);
 
 	i_uniqueRef.clear();
 
@@ -448,50 +618,50 @@ unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wrapper<T>
 }
 
 template<typename TT, typename T>
-lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
+inline lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
+	return detail::__make_lent_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_lentRef.m_data)), i_lentRef.m_refCounter);
 #else
 	return reinterpret_cast<TT*>(const_cast<T*>(i_lentRef));
 #endif
 }
 
 template<typename T>
-unique_pointer_wrapper<T> const_unique_cast(unique_pointer_wrapper<const T> i_uniquePtr)
+inline unique_pointer_wrapper<T> const_unique_cast(unique_pointer_wrapper<const T> i_uniquePtr)
 {
-	unique_pointer_wrapper<typename std::add_const<T>::type> res = __make_unique_pointer(const_cast<T*>(i_uniquePtr.m_data), i_uniquePtr.m_refCounter, i_uniquePtr.m_deleter);
+	unique_pointer_wrapper<typename std::add_const<T>::type> res = detail::__make_unique_pointer(const_cast<T*>(i_uniquePtr.m_data), i_uniquePtr.m_refCounter, i_uniquePtr.m_deleter);
 
 	i_uniquePtr.clear();
 
 	return std::move(res);
 }
 template<typename T>
-unique_reference_wrapper<T> const_unique_cast(unique_reference_wrapper<const T> i_uniqueRef)
+inline unique_reference_wrapper<T> const_unique_cast(unique_reference_wrapper<const T> i_uniqueRef)
 {
-	unique_reference_wrapper<typename std::add_const<T>::type> res = __make_unique_reference(const_cast<T*>(i_uniqueRef.m_data), i_uniqueRef.m_refCounter, i_uniqueRef.m_deleter);
+	unique_reference_wrapper<typename std::add_const<T>::type> res = detail::__make_unique_reference(const_cast<T*>(i_uniqueRef.m_data), i_uniqueRef.m_refCounter, i_uniqueRef.m_deleter);
 
 	i_uniqueRef.clear();
 
 	return std::move(res);
 }
 
-template<typename T>
-shared_reference_wrapper<T> const_shared_cast(const shared_reference_wrapper<const T>& i_sharedRef)
+template<typename T, bool Weakable>
+inline detail::shared_reference_wrapper_impl<T,Weakable> const_shared_cast(const detail::shared_reference_wrapper_impl<const T,Weakable>& i_sharedRef)
 {
-	return __make_shared_reference(const_cast<T*>(i_sharedRef.m_data), i_sharedRef.m_refCounter, i_sharedRef.m_deleter);
+	return detail::__const_shared_cast(i_sharedRef);
 }
-template<typename T>
-shared_pointer_wrapper<T> const_shared_cast(const shared_pointer_wrapper<const T>& i_sharedPtr)
+template<typename T, bool Weakable>
+inline detail::shared_pointer_wrapper_impl<T,Weakable> const_shared_cast(const detail::shared_pointer_wrapper_impl<const T,Weakable>& i_sharedPtr)
 {
-	return __make_shared_reference(const_cast<T*>(i_sharedPtr.m_data), i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
+	return detail::__const_shared_cast(i_sharedRef);
 }
 
 template<typename T>
-lent_pointer_wrapper<T> const_lent_cast(const lent_pointer_wrapper<const T>& i_lentPtr)
+inline lent_pointer_wrapper<T> const_lent_cast(const lent_pointer_wrapper<const T>& i_lentPtr)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(const_cast<T*>(i_lentPtr.m_data), i_lentPtr.m_refCounter);
+	return detail::__make_lent_pointer(const_cast<T*>(i_lentPtr.m_data), i_lentPtr.m_refCounter);
 #else
 	return const_cast<T*>(i_lentPtr);
 #endif
@@ -500,87 +670,92 @@ lent_pointer_wrapper<T> const_lent_cast(const lent_pointer_wrapper<const T>& i_l
 #ifdef DDK_DEBUG
 
 template<typename T>
-lent_reference_wrapper<T> const_lent_cast(const lent_reference_wrapper<const T>& i_lentRef)
+inline lent_reference_wrapper<T> const_lent_cast(const lent_reference_wrapper<const T>& i_lentRef)
 {
-	return __make_lent_reference(const_cast<T*>(i_lentRef.m_data), i_lentRef.m_refCounter);
+	return detail::__make_lent_reference(const_cast<T*>(i_lentRef.m_data), i_lentRef.m_refCounter);
 }
 
 #endif
 
 template<typename T>
-lent_pointer_wrapper<T> lend(unique_pointer_wrapper<T>& i_uniquePtr)
+inline lent_pointer_wrapper<T> lend(unique_pointer_wrapper<T>& i_uniquePtr)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(i_uniquePtr.m_data, i_uniquePtr.m_refCounter);
+	return detail::__make_lent_pointer(i_uniquePtr.m_data, i_uniquePtr.m_refCounter);
 #else
 	return i_uniquePtr.m_data;
 #endif
 }
 template<typename T>
-lent_pointer_wrapper<T> lend(const unique_pointer_wrapper<T>& i_uniquePtr)
+inline lent_pointer_wrapper<T> lend(const unique_pointer_wrapper<T>& i_uniquePtr)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(i_uniquePtr.m_data, i_uniquePtr.m_refCounter);
+	return detail::__make_lent_pointer(i_uniquePtr.m_data, i_uniquePtr.m_refCounter);
 #else
 	return i_uniquePtr.m_data;
 #endif
 }
 
 template<typename T>
-lent_reference_wrapper<T> lend(unique_reference_wrapper<T>& i_uniqueRef)
+inline lent_reference_wrapper<T> lend(unique_reference_wrapper<T>& i_uniqueRef)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_reference(i_uniqueRef.m_data, i_uniqueRef.m_refCounter);
+	return detail::__make_lent_reference(i_uniqueRef.m_data, i_uniqueRef.m_refCounter);
 #else
 	return i_uniqueRef.m_data;
 #endif
 }
 template<typename T>
-lent_reference_wrapper<T> lend(const unique_reference_wrapper<T>& i_uniqueRef)
+inline lent_reference_wrapper<T> lend(const unique_reference_wrapper<T>& i_uniqueRef)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_reference(i_uniqueRef.m_data, i_uniqueRef.m_refCounter);
+	return detail::__make_lent_reference(i_uniqueRef.m_data, i_uniqueRef.m_refCounter);
 #else
 	return i_uniqueRef.m_data;
 #endif
 }
 
-template<typename T>
-lent_pointer_wrapper<T> lend(shared_pointer_wrapper<T>& i_sharedPtr)
+template<typename T, bool Weakable>
+inline lent_pointer_wrapper<T> lend(detail::shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
 {
-#ifdef DDK_DEBUG
-	return __make_lent_pointer(i_sharedPtr.m_data, i_sharedPtr.m_refCounter);
-#else
-	return i_sharedPtr.m_data;
-#endif
+	return detail::__lend(i_sharedPtr);
 }
-template<typename T>
-lent_pointer_wrapper<T> lend(const shared_pointer_wrapper<T>& i_sharedPtr)
+template<typename T, bool Weakable>
+inline lent_pointer_wrapper<T> lend(const detail::shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
 {
-#ifdef DDK_DEBUG
-	return __make_lent_pointer(i_sharedPtr.m_data, i_sharedPtr.m_refCounter);
-#else
-	return i_sharedPtr.m_data;
-#endif
+	return detail::__lend(i_sharedPtr);
 }
 
-template<typename T>
-lent_reference_wrapper<T> lend(shared_reference_wrapper<T>& i_sharedRef)
+template<typename T, bool Weakable>
+inline lent_reference_wrapper<T> lend(detail::shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
 {
-#ifdef DDK_DEBUG
-	return __make_lent_reference(i_sharedRef.m_data, i_sharedRef.m_refCounter);
-#else
-	return i_sharedRef.m_data;
-#endif
+	return detail::__lend(i_sharedRef);
 }
-template<typename T>
-lent_reference_wrapper<T> lend(const shared_reference_wrapper<T>& i_sharedRef)
+template<typename T, bool Weakable>
+inline lent_reference_wrapper<T> lend(const detail::shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
 {
-#ifdef DDK_DEBUG
-	return __make_lent_reference(i_sharedRef.m_data, i_sharedRef.m_refCounter);
-#else
-	return i_sharedRef.m_data;
-#endif
+	return detail::__lend(i_sharedRef);
+}
+
+template<typename T,bool Weakable>
+inline lent_pointer_wrapper<T> lend(detail::atomic_shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return detail::__lend(static_cast<detail::shared_pointer_wrapper_impl<T>&>(i_sharedPtr));
+}
+template<typename T,bool Weakable>
+inline lent_pointer_wrapper<T> lend(const detail::atomic_shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
+{
+	return detail::__lend(static_cast<const detail::shared_pointer_wrapper_impl<T>&>(i_sharedPtr));
+}
+template<typename T,bool Weakable>
+inline lent_reference_wrapper<T> lend(detail::atomic_shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	return detail::__lend(static_cast<detail::shared_reference_wrapper_impl<T>&>(i_sharedPtr));
+}
+template<typename T,bool Weakable>
+inline lent_reference_wrapper<T> lend(const detail::atomic_shared_reference_wrapper_impl<T,Weakable>& i_sharedRef)
+{
+	return detail::__lend(static_cast<const detail::shared_reference_wrapper_impl<T>&>(i_sharedPtr));
 }
 
 template<typename T, typename TT>
@@ -609,7 +784,7 @@ template<typename T,typename TT>
 inline lent_reference_wrapper<TT> lend(share_from_this<T,TT>& i_sharedFromThis)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter);
+	return detail::__make_lent_pointer(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter);
 #else
 	return static_cast<TT*>(&i_sharedFromThis);
 #endif
@@ -618,38 +793,42 @@ template<typename T,typename TT>
 inline lent_reference_wrapper<const TT> lend(const share_from_this<T,TT>& i_sharedFromThis)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedPtr.m_refCounter);
+	return detail::__make_lent_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedPtr.m_refCounter);
 #else
 	return static_cast<const TT*>(&i_sharedFromThis);
 #endif
 }
 
-template<typename T>
-inline weak_pointer_wrapper<T> weak(shared_pointer_wrapper<T>& i_sharedPtr)
-{
-	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
-}
-template<typename T>
-inline weak_pointer_wrapper<const T> weak(const shared_pointer_wrapper<T>& i_sharedPtr)
-{
-	return __make_weak_pointer(i_sharedPtr.m_data,i_sharedPtr.m_refCounter,i_sharedPtr.m_deleter);
-}
-
 template<typename T,typename TT>
 inline weak_pointer_wrapper<TT> weak(share_from_this<T,TT>& i_sharedFromThis)
 {
-	return __make_weak_pointer(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+	return detail::__make_weak_pointer(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
 }
 template<typename T,typename TT>
 inline weak_pointer_wrapper<const TT> weak(const share_from_this<TT>& i_sharedFromThis)
 {
-	return __make_weak_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+	return detail::__make_weak_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+}
+template<typename T>
+inline weak_pointer_wrapper<T> weak(shared_pointer_wrapper<T>& i_sharedPtr)
+{
+	return detail::__weak(i_sharedPtr);
+}
+template<typename T>
+inline weak_pointer_wrapper<const T> weak(const shared_pointer_wrapper<T>& i_sharedPtr)
+{
+	return detail::__weak(static_cast<shared_pointer_wrapper<const T>>(i_sharedPtr));
 }
 
 template<typename T>
-inline atomic_weak_pointer_wrapper<T> weak(atomic_shared_pointer_wrapper<T> i_sharedPtr)
+inline atomic_weak_pointer_wrapper<T> weak(atomic_shared_pointer_wrapper<T>& i_sharedPtr)
 {
-	return weak(i_sharedPtr.m_ptr);
+	return detail::__weak(static_cast<shared_pointer_wrapper<T>&>(i_sharedPtr));
+}
+template<typename T>
+inline atomic_weak_pointer_wrapper<const T> weak(const atomic_shared_pointer_wrapper<T>& i_sharedPtr)
+{
+	return detail::__weak(static_cast<const shared_pointer_wrapper<T>&>(i_sharedPtr));
 }
 
 template<typename T>
@@ -677,18 +856,18 @@ inline atomic_shared_pointer_wrapper<T> share(atomic_weak_pointer_wrapper<T>& i_
 template<typename T>
 unique_reference_wrapper<T> promote_to_ref(unique_pointer_wrapper<T> i_uniquePtr)
 {
-	return __make_unique_reference(i_uniquePtr.m_data, std::move(i_uniquePtr.m_refCounter), i_uniquePtr.m_deleter);
+	return detail::__make_unique_reference(i_uniquePtr.m_data, std::move(i_uniquePtr.m_refCounter), i_uniquePtr.m_deleter);
 }
-template<typename T>
-shared_reference_wrapper<T> promote_to_ref(const shared_pointer_wrapper<T>& i_sharedPtr)
+template<typename T, bool Weakable>
+detail::shared_reference_wrapper_impl<T,Weakable> promote_to_ref(const detail::shared_pointer_wrapper_impl<T,Weakable>& i_sharedPtr)
 {
-	return __make_shared_reference(i_sharedPtr.m_data, i_sharedPtr.m_refCounter, i_sharedPtr.m_deleter);
+	return detail::__promote_to_ref(i_sharedPtr);
 }
 template<typename T>
 lent_reference_wrapper<T> promote_to_ref(const lent_pointer_wrapper<T>& i_lentPtr)
 {
 #ifdef DDK_DEBUG
-	return __make_lent_reference(i_lentPtr.m_data, i_lentPtr.m_refCounter);
+	return detail::__make_lent_reference(i_lentPtr.m_data, i_lentPtr.m_refCounter);
 #else
 	return i_lentPtr;
 #endif

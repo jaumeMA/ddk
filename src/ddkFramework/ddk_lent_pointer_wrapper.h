@@ -7,6 +7,19 @@
 namespace ddk
 {
 
+template<typename>
+class lent_pointer_wrapper;
+
+namespace detail
+{
+
+template<typename,bool>
+class shared_pointer_wrapper_impl;
+template<typename TT>
+ddk::lent_pointer_wrapper<TT> __make_lent_pointer(TT*,const tagged_pointer<lent_reference_counter>&);
+
+}
+
 #ifdef DDK_DEBUG
 
 #define THIS_OBJECT (*this)
@@ -36,8 +49,6 @@ template<typename>
 class lent_reference_wrapper;
 template<typename>
 class unique_pointer_wrapper;
-template<typename>
-class shared_pointer_wrapper;
 
 template<typename T>
 class lent_pointer_wrapper
@@ -67,7 +78,7 @@ class lent_pointer_wrapper
 	template<typename TT>
 	friend lent_reference_wrapper<TT> promote_to_ref(const lent_pointer_wrapper<TT>&);
 	template<typename TT>
-	friend lent_pointer_wrapper<TT> __make_lent_pointer(TT*, const tagged_pointer<lent_reference_counter>&);
+	friend lent_pointer_wrapper<TT> detail::__make_lent_pointer(TT*, const tagged_pointer<lent_reference_counter>&);
 
 	lent_pointer_wrapper(T* i_data, const tagged_pointer<lent_reference_counter>& i_refCounter);
 

@@ -77,6 +77,14 @@ relative_function_impl<ObjectType,Return,Types...>::relative_function_impl(Objec
 {
 }
 template<typename ObjectType,typename Return,typename ... Types>
+relative_function_impl<ObjectType,Return,Types...>::relative_function_impl(relative_function_impl&& other)
+: m_object(other.m_object)
+, m_funcPointer(other.m_funcPointer)
+{
+	other.m_object = nullptr;
+	other.m_funcPointer = nullptr;
+}
+template<typename ObjectType,typename Return,typename ... Types>
 inline Return relative_function_impl<ObjectType,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)

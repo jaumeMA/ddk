@@ -101,7 +101,7 @@ public:
 
 	relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
 	relative_function_impl(const relative_function_impl&) = delete;
-	relative_function_impl(relative_function_impl&&) = default;
+	relative_function_impl(relative_function_impl&& other);
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;

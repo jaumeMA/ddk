@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_shared_from_this.h"
+#include "ddk_template_helper.h"
 
 namespace ddk
 {

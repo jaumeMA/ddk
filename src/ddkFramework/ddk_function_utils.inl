@@ -7,7 +7,7 @@ namespace ddk
 template<typename Object,typename Return,typename ... Types>
 detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...))
 {
-	return detail::relative_function_impl<Object,Return,Types...>(i_object,i_funcPtr);
+	return std::move(detail::relative_function_impl<Object,Return,Types...>(i_object,i_funcPtr));
 }
 template<typename Object,typename Return,typename ... Types>
 detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const)

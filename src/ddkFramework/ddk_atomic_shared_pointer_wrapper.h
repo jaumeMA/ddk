@@ -2,50 +2,57 @@
 
 #include "ddk_shared_pointer_wrapper.h"
 #include "ddk_spin_lock.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
 
-template<typename>
-class atomic_weak_pointer_wrapper;
-
-template<typename T>
-class atomic_shared_pointer_wrapper
+namespace detail
 {
-	template<typename TT>
-	friend atomic_weak_pointer_wrapper<TT> weak(atomic_shared_pointer_wrapper<TT>);
 
+template<typename T, bool Weakable>
+class atomic_shared_pointer_wrapper_impl
+{
 public:
-	atomic_shared_pointer_wrapper() = default;
-	atomic_shared_pointer_wrapper(std::nullptr_t);
-	atomic_shared_pointer_wrapper(T* i_data,IReferenceWrapperDeleter* i_refDeleter = nullptr);
-	atomic_shared_pointer_wrapper(const atomic_shared_pointer_wrapper& other);
-	atomic_shared_pointer_wrapper(const shared_pointer_wrapper<T>& other);
-	atomic_shared_pointer_wrapper(atomic_shared_pointer_wrapper&& other);
-	atomic_shared_pointer_wrapper(shared_pointer_wrapper<T>&& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper(const atomic_shared_pointer_wrapper<TT>& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper(const shared_pointer_wrapper<TT>& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper(atomic_shared_pointer_wrapper<TT>&& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper(shared_pointer_wrapper<TT>&& other);
-	~atomic_shared_pointer_wrapper();
-	atomic_shared_pointer_wrapper& operator=(std::nullptr_t);
-	atomic_shared_pointer_wrapper& operator=(const atomic_shared_pointer_wrapper& other);
-	atomic_shared_pointer_wrapper& operator=(const shared_pointer_wrapper<T>& other);
-	atomic_shared_pointer_wrapper& operator=(atomic_shared_pointer_wrapper&& other);
-	atomic_shared_pointer_wrapper& operator=(shared_pointer_wrapper<T>&& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper& operator=(const atomic_shared_pointer_wrapper<TT>& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper& operator=(const shared_pointer_wrapper<TT>& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper& operator=(atomic_shared_pointer_wrapper<TT>&& other);
-	template<typename TT>
-	atomic_shared_pointer_wrapper& operator=(shared_pointer_wrapper<TT>&& other);
-	inline operator shared_pointer_wrapper<T>() const;
+	atomic_shared_pointer_wrapper_impl() = default;
+	atomic_shared_pointer_wrapper_impl(std::nullptr_t);
+	atomic_shared_pointer_wrapper_impl(T* i_data,IReferenceWrapperDeleter* i_refDeleter = nullptr);
+	atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl& other);
+	atomic_shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<T,Weakable>& other);
+	atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl&& other);
+	atomic_shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<T,Weakable>&& other);
+	TEMPLATE(typename TT, bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl<TT,WWeakable>& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,WWeakable>& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl<TT,WWeakable>&& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,WWeakable>&& other);
+	~atomic_shared_pointer_wrapper_impl();
+	atomic_shared_pointer_wrapper_impl& operator=(std::nullptr_t);
+	atomic_shared_pointer_wrapper_impl& operator=(const atomic_shared_pointer_wrapper_impl& other);
+	atomic_shared_pointer_wrapper_impl& operator=(const shared_pointer_wrapper_impl<T,Weakable>& other);
+	atomic_shared_pointer_wrapper_impl& operator=(atomic_shared_pointer_wrapper_impl&& other);
+	atomic_shared_pointer_wrapper_impl& operator=(shared_pointer_wrapper_impl<T,Weakable>&& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl& operator=(const atomic_shared_pointer_wrapper_impl<TT,WWeakable>& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl& operator=(const shared_pointer_wrapper_impl<TT,WWeakable>& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl& operator=(atomic_shared_pointer_wrapper_impl<TT,WWeakable>&& other);
+	TEMPLATE(typename TT,bool WWeakable)
+	REQUIRES_COND(Weakable || Weakable == WWeakable)
+	atomic_shared_pointer_wrapper_impl& operator=(shared_pointer_wrapper_impl<TT,WWeakable>&& other);
+	inline operator shared_pointer_wrapper_impl<T,Weakable>&();
+	inline operator const shared_pointer_wrapper_impl<T,Weakable>&() const;
 	inline bool operator==(std::nullptr_t) const;
 	inline bool operator!=(std::nullptr_t) const;
 	inline T* operator->();
@@ -61,8 +68,15 @@ public:
 
 private:
 	mutable spin_lock m_barrier;
-	shared_pointer_wrapper<T> m_ptr;
+	shared_pointer_wrapper_impl<T,Weakable> m_ptr;
 };
+
+}
+
+template<typename T>
+using atomic_shared_pointer_wrapper = detail::atomic_shared_pointer_wrapper_impl<T,true>;
+template<typename T>
+using atomic_distributed_pointer_wrapper = detail::atomic_shared_pointer_wrapper_impl<T,false>;
 
 }
 

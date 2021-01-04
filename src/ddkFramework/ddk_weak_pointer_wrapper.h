@@ -7,13 +7,24 @@
 namespace ddk
 {
 
+template<typename>
+class weak_pointer_wrapper;
+
+namespace detail
+{
+
+template<typename TT>
+weak_pointer_wrapper<TT> __make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+
+}
+
 template<typename T>
 class weak_pointer_wrapper
 {
 	template<typename>
 	friend class weak_pointer_wrapper;
-	template<typename T>
-	friend weak_pointer_wrapper<T> __make_weak_pointer(T*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+	template<typename TT>
+	friend weak_pointer_wrapper<TT> detail::__make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
 	template<typename TT>
 	friend shared_pointer_wrapper<const TT> share(const weak_pointer_wrapper<TT>&);
 	template<typename TT>

@@ -12,7 +12,19 @@ namespace ddk
 {
 
 template<typename>
+class unique_pointer_wrapper;
+template<typename>
 class unique_reference_wrapper;
+
+namespace detail
+{
+
+template<typename TT>
+inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
+template<typename TT>
+inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
+
+}
 
 template<typename T>
 class unique_pointer_wrapper
@@ -45,9 +57,9 @@ class unique_pointer_wrapper
 	template<typename TT>
 	friend unique_reference_wrapper<TT> promote_to_ref(unique_pointer_wrapper<TT>);
     template<typename TT>
-	friend inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
     template<typename TT>
-	friend inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 
 public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;

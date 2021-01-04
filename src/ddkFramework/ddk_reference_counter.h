@@ -64,25 +64,52 @@ private:
 #endif
 };
 
-class shared_reference_counter: public lent_reference_counter
+class weak_reference_counter
 {
 public:
-	shared_reference_counter();
-	shared_reference_counter(const shared_reference_counter& other);
-	shared_reference_counter(shared_reference_counter&& other);
-	size_t incrementSharedReference();
-	bool incrementSharedReferenceIfNonEmpty();
-	size_t decrementSharedReference();
-	size_t getNumSharedReferences() const;
-	bool hasSharedReferences() const;
+	weak_reference_counter();
+	weak_reference_counter(const weak_reference_counter& other);
+	weak_reference_counter(weak_reference_counter&& other);
+
 	size_t incrementWeakReference();
 	size_t decrementWeakReference();
 	size_t getNumWeakReferences() const;
 	bool hasWeakReferences() const;
 
 private:
-	atomic_size_t m_numSharedReferences;
 	atomic_size_t m_numWeakReferences;
+};
+
+class distributed_reference_counter : public lent_reference_counter
+{
+public:
+	distributed_reference_counter();
+	distributed_reference_counter(const distributed_reference_counter& other);
+	distributed_reference_counter(distributed_reference_counter&& other);
+	size_t incrementSharedReference();
+	bool incrementSharedReferenceIfNonEmpty();
+	size_t decrementSharedReference();
+	size_t getNumSharedReferences() const;
+	bool hasSharedReferences() const;
+	virtual bool hasWeakReferences() const;
+
+private:
+	atomic_size_t m_numSharedReferences;
+};
+
+class shared_reference_counter: public distributed_reference_counter, public weak_reference_counter
+{
+public:
+	shared_reference_counter() = default;
+	shared_reference_counter(const shared_reference_counter& other) = default;
+	shared_reference_counter(shared_reference_counter&& other) = default;
+	size_t incrementSharedReference();
+	bool incrementSharedReferenceIfNonEmpty();
+	size_t decrementSharedReference();
+	bool hasWeakReferences() const override;
+
+private:
+	atomic_size_t m_numSharedReferences;
 };
 
 //reference counting for unique references

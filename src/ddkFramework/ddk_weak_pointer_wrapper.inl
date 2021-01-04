@@ -1,6 +1,4 @@
 
-#include "ddk_shared_pointer_wrapper.h"
-
 namespace ddk
 {
 

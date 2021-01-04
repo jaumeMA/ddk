@@ -177,33 +177,70 @@ lent_reference_counter::stack_contents lent_reference_counter::dumpStackTrace()
 
 #endif
 
-shared_reference_counter::shared_reference_counter()
-: lent_reference_counter()
-, m_numSharedReferences(0)
-, m_numWeakReferences(0)
+weak_reference_counter::weak_reference_counter()
+: m_numWeakReferences(0)
 {
 }
-shared_reference_counter::shared_reference_counter(const shared_reference_counter& other)
-: lent_reference_counter(other)
-, m_numSharedReferences(other.m_numSharedReferences)
-, m_numWeakReferences(other.m_numWeakReferences)
+weak_reference_counter::weak_reference_counter(const weak_reference_counter& other)
+: m_numWeakReferences(other.m_numWeakReferences)
 {
 }
-shared_reference_counter::shared_reference_counter(shared_reference_counter&& other)
-: lent_reference_counter(std::move(other))
-, m_numSharedReferences(0)
-, m_numWeakReferences(0)
+weak_reference_counter::weak_reference_counter(weak_reference_counter&& other)
+: m_numWeakReferences(0)
 {
-	std::swap(m_numSharedReferences,other.m_numSharedReferences);
 	std::swap(m_numWeakReferences,other.m_numWeakReferences);
 }
-size_t shared_reference_counter::incrementSharedReference()
+size_t weak_reference_counter::incrementWeakReference()
 {
-	atomic_post_increment(m_numWeakReferences);
+	return atomic_post_increment(m_numWeakReferences);
+}
+size_t weak_reference_counter::decrementWeakReference()
+{
+	return atomic_post_decrement(m_numWeakReferences);
+}
+size_t weak_reference_counter::getNumWeakReferences() const
+{
+	return m_numWeakReferences.get();
+}
+bool weak_reference_counter::hasWeakReferences() const
+{
+	return m_numWeakReferences.get() > 0;
+}
 
+distributed_reference_counter::distributed_reference_counter()
+: m_numSharedReferences(0)
+{
+}
+distributed_reference_counter::distributed_reference_counter(const distributed_reference_counter& other)
+: m_numSharedReferences(other.m_numSharedReferences)
+{
+}
+distributed_reference_counter::distributed_reference_counter(distributed_reference_counter&& other)
+: m_numSharedReferences(0)
+{
+	std::swap(m_numSharedReferences,other.m_numSharedReferences);
+}
+size_t distributed_reference_counter::incrementSharedReference()
+{
 	return atomic_post_increment(m_numSharedReferences);
 }
-bool shared_reference_counter::incrementSharedReferenceIfNonEmpty()
+size_t distributed_reference_counter::decrementSharedReference()
+{
+	return atomic_post_decrement(m_numSharedReferences);
+}
+size_t distributed_reference_counter::getNumSharedReferences() const
+{
+	return m_numSharedReferences.get();
+}
+bool distributed_reference_counter::hasSharedReferences() const
+{
+	return m_numSharedReferences.get() > 0;
+}
+bool distributed_reference_counter::hasWeakReferences() const
+{
+	return false;
+}
+bool distributed_reference_counter::incrementSharedReferenceIfNonEmpty()
 {
 	size_t oldValue = 0;
 
@@ -215,42 +252,37 @@ bool shared_reference_counter::incrementSharedReferenceIfNonEmpty()
 		{
 			return false;
 		}
-	}
-	while(atomic_compare_exchange(m_numSharedReferences,oldValue,oldValue+1));
-
-	atomic_post_increment(m_numWeakReferences);
+	} while(atomic_compare_exchange(m_numSharedReferences,oldValue,oldValue + 1));
 
 	return true;
 }
+
+size_t shared_reference_counter::incrementSharedReference()
+{
+	weak_reference_counter::incrementWeakReference();
+
+	return distributed_reference_counter::incrementSharedReference();
+}
+bool shared_reference_counter::incrementSharedReferenceIfNonEmpty()
+{
+	if(distributed_reference_counter::incrementSharedReferenceIfNonEmpty())
+	{
+		weak_reference_counter::incrementWeakReference();
+
+		return true;
+	}
+
+	return false;
+}
 size_t shared_reference_counter::decrementSharedReference()
 {
-	atomic_post_decrement(m_numWeakReferences);
+	weak_reference_counter::decrementWeakReference();
 
-	return atomic_post_decrement(m_numSharedReferences);
-}
-size_t shared_reference_counter::getNumSharedReferences() const
-{
-	return m_numSharedReferences.get();
-}
-bool shared_reference_counter::hasSharedReferences() const
-{
-	return m_numSharedReferences.get() > 0;
-}
-size_t shared_reference_counter::incrementWeakReference()
-{
-	return atomic_post_increment(m_numWeakReferences);
-}
-size_t shared_reference_counter::decrementWeakReference()
-{
-	return atomic_post_decrement(m_numWeakReferences);
-}
-size_t shared_reference_counter::getNumWeakReferences() const
-{
-	return m_numWeakReferences.get();
+	return distributed_reference_counter::decrementSharedReference();
 }
 bool shared_reference_counter::hasWeakReferences() const
 {
-	return m_numWeakReferences.get() > 0;
+	return weak_reference_counter::hasWeakReferences();
 }
 
 unique_reference_counter::unique_reference_counter()
