@@ -8,41 +8,40 @@ namespace ddk
 namespace detail
 {
 
-template<typename T, bool Weakable>
-class shared_reference_wrapper_impl : public shared_pointer_wrapper_impl<T,Weakable>
+template<typename T, typename ReferenceCounter>
+class shared_reference_wrapper_impl : public shared_pointer_wrapper_impl<T,ReferenceCounter>
 {
-	template<typename,bool>
+	template<typename,typename>
 	friend class shared_reference_wrapper_impl;
-	template<typename TTT, typename TT, bool WWeakable>
-	friend shared_reference_wrapper_impl<TTT,WWeakable> __static_shared_cast(const shared_reference_wrapper_impl<TT,WWeakable>&);
-	template<typename TTT, typename TT,bool WWeakable>
-	friend shared_reference_wrapper_impl<TTT,WWeakable> __dynamic_shared_cast(const shared_reference_wrapper_impl<TT,WWeakable>&);
-	template<typename TT,bool WWeakable>
-	friend lent_reference_wrapper<TT> __lend(const shared_reference_wrapper_impl<TT,WWeakable>&);
+	template<typename TTT, typename TT, typename RReferenceCounter>
+	friend shared_reference_wrapper_impl<TTT,RReferenceCounter> __static_shared_cast(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
+	template<typename TTT, typename TT,typename RReferenceCounter>
+	friend shared_reference_wrapper_impl<TTT,RReferenceCounter> __dynamic_shared_cast(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
+	template<typename TT,typename RReferenceCounter>
+	friend lent_reference_wrapper<TT> __lend(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
 	template<typename TT>
-	friend inline shared_reference_wrapper_impl<TT,true> __make_shared_reference(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline shared_reference_wrapper_impl<TT,shared_reference_counter> __make_shared_reference(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 	template<typename TT>
-	friend inline shared_reference_wrapper_impl<TT,false> __make_shared_reference(TT* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
-	typedef typename mpl::static_if<Weakable,shared_reference_counter,distributed_reference_counter>::type reference_counter;
+	friend inline shared_reference_wrapper_impl<TT,distributed_reference_counter> __make_shared_reference(TT* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
 
-	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr);
+	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr);
 
-	using shared_pointer_wrapper_impl<T,Weakable>::operator bool;
-	using shared_pointer_wrapper_impl<T,Weakable>::empty;
+	using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator bool;
+	using shared_pointer_wrapper_impl<T,ReferenceCounter>::empty;
 
 public:
-	using typename shared_pointer_wrapper_impl<T,Weakable>::tagged_reference_counter;
-    using shared_pointer_wrapper_impl<T,Weakable>::operator*;
-    using shared_pointer_wrapper_impl<T,Weakable>::operator->;
-    using shared_pointer_wrapper_impl<T,Weakable>::get;
-    using shared_pointer_wrapper_impl<T,Weakable>::clear;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::tagged_reference_counter;
+    using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator*;
+    using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator->;
+    using shared_pointer_wrapper_impl<T,ReferenceCounter>::get;
+    using shared_pointer_wrapper_impl<T,ReferenceCounter>::clear;
 
 	shared_reference_wrapper_impl(const shared_reference_wrapper_impl& other);
 	shared_reference_wrapper_impl(shared_reference_wrapper_impl&& other);
 	template<typename TT>
-	shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,Weakable>& other);
+	shared_reference_wrapper_impl(const shared_reference_wrapper_impl<TT,ReferenceCounter>& other);
 	template<typename TT>
-	shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,Weakable>&& other);
+	shared_reference_wrapper_impl(shared_reference_wrapper_impl<TT,ReferenceCounter>&& other);
     shared_reference_wrapper_impl& operator=(const shared_reference_wrapper_impl& other);
     shared_reference_wrapper_impl& operator=(shared_reference_wrapper_impl&& other);
 };
@@ -50,9 +49,9 @@ public:
 }
 
 template<typename T>
-using shared_reference_wrapper = detail::shared_reference_wrapper_impl<T,true>;
+using shared_reference_wrapper = detail::shared_reference_wrapper_impl<T,shared_reference_counter>;
 template<typename T>
-using distributed_reference_wrapper = detail::shared_reference_wrapper_impl<T,false>;
+using distributed_reference_wrapper = detail::shared_reference_wrapper_impl<T,distributed_reference_counter>;
 
 }
 

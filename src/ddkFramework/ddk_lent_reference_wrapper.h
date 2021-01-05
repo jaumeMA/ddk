@@ -18,7 +18,7 @@ class lent_reference_wrapper;
 namespace detail
 {
 
-template<typename,bool>
+template<typename,typename>
 class shared_reference_wrapper_impl;
 template<typename TT>
 ddk::lent_reference_wrapper<TT> __make_lent_reference(TT* i_data,const tagged_pointer<lent_reference_counter>& i_refCounter);
@@ -36,8 +36,8 @@ class lent_reference_wrapper : public lent_pointer_wrapper<T>
 	friend lent_reference_wrapper<TT> promote_to_ref(const lent_pointer_wrapper<TT>&);
 	template<typename TT>
 	friend lent_reference_wrapper<TT> lend(const unique_reference_wrapper<TT>&);
-	template<typename TT, bool Weakable>
-	friend lent_reference_wrapper<TT> lend(const detail::shared_reference_wrapper_impl<TT,Weakable>&);
+	template<typename TT, typename ReferenceCounter>
+	friend lent_reference_wrapper<TT> lend(const detail::shared_reference_wrapper_impl<TT,ReferenceCounter>&);
 	template<typename TT>
 	friend lent_reference_wrapper<TT> detail::__make_lent_reference(TT* i_data, const tagged_pointer<lent_reference_counter>& i_refCounter);
 

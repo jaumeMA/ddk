@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T>
-inline shared_reference_wrapper_impl<T,false> __make_shared_reference(T*,const tagged_pointer<distributed_reference_counter>&,const IReferenceWrapperDeleter*);
+inline shared_reference_wrapper_impl<T,distributed_reference_counter> __make_shared_reference(T*,const tagged_pointer<distributed_reference_counter>&,const IReferenceWrapperDeleter*);
 
 }
 
@@ -26,7 +26,7 @@ class distribute_from_this
 	template<typename TT>
 	friend inline distributed_reference_wrapper<TT> as_distributed_reference(TT* i_ptr,const IReferenceWrapperDeleter* i_refDeleter);
 	template<typename TTT>
-	friend inline detail::shared_reference_wrapper_impl<TTT,false> detail::__make_shared_reference(TTT*,const tagged_pointer<distributed_reference_counter>&,const IReferenceWrapperDeleter*);
+	friend inline detail::shared_reference_wrapper_impl<TTT,distributed_reference_counter> detail::__make_shared_reference(TTT*,const tagged_pointer<distributed_reference_counter>&,const IReferenceWrapperDeleter*);
 
 public:
 	struct __distributed_type_tag;

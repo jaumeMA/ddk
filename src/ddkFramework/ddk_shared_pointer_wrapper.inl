@@ -4,22 +4,22 @@ namespace ddk
 namespace detail
 {
 
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl()
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl()
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(nullptr)
 {
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(std::nullptr_t)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(std::nullptr_t)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(nullptr)
 {
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(T* i_data,IReferenceWrapperDeleter* i_refDeleter)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(T* i_data,IReferenceWrapperDeleter* i_refDeleter)
 : m_data(i_data)
 , m_refCounter(nullptr)
 , m_deleter(i_refDeleter)
@@ -31,8 +31,8 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(T* i_data,I
 		m_refCounter->incrementSharedReference();
 	}
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl& other)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(other.m_deleter)
@@ -44,8 +44,8 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const share
 		m_refCounter->incrementSharedReference();
 	}
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_pointer_wrapper_impl&& other)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(shared_pointer_wrapper_impl&& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(other.m_deleter)
@@ -53,9 +53,9 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_poin
 	std::swap(m_data,other.m_data);
 	std::swap(m_refCounter,other.m_refCounter);
 }
-template<typename T, bool Weakable>
+template<typename T, typename ReferenceCounter>
 template<typename TT>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,Weakable>& other)
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<TT,ReferenceCounter>& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(other.m_deleter)
@@ -70,9 +70,9 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(const share
 		}
 	}
 }
-template<typename T, bool Weakable>
+template<typename T, typename ReferenceCounter>
 template<typename TT>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,Weakable>&& other)
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<TT,ReferenceCounter>&& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
 , m_deleter(other.m_deleter)
@@ -86,16 +86,16 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(shared_poin
 
 	other.m_data = nullptr;
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::~shared_pointer_wrapper_impl()
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::~shared_pointer_wrapper_impl()
 {
 	if(m_refCounter)
 	{
 		clearIfCounterVoid(m_refCounter->decrementSharedReference());
 	}
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(std::nullptr_t)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(std::nullptr_t)
 {
 	if(m_refCounter)
 	{
@@ -104,8 +104,8 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 
 	return *this;
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(const shared_pointer_wrapper_impl& other)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(const shared_pointer_wrapper_impl& other)
 {
 	if(m_data != other.m_data)
 	{
@@ -125,8 +125,8 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 
 	return *this;
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(shared_pointer_wrapper_impl&& other)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(shared_pointer_wrapper_impl&& other)
 {
 	if(m_data != other.m_data)
 	{
@@ -144,9 +144,9 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 
 	return *this;
 }
-template<typename T, bool Weakable>
+template<typename T, typename ReferenceCounter>
 template<typename TT>
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(const shared_pointer_wrapper_impl<TT,Weakable>& other)
+shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(const shared_pointer_wrapper_impl<TT,ReferenceCounter>& other)
 {
 	static_assert(std::is_base_of<T,TT>::value,"You shall provide inherited classes");
 
@@ -171,9 +171,9 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 
 	return *this;
 }
-template<typename T, bool Weakable>
+template<typename T, typename ReferenceCounter>
 template<typename TT>
-shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>::operator=(shared_pointer_wrapper_impl<TT,Weakable>&& other)
+shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(shared_pointer_wrapper_impl<TT,ReferenceCounter>&& other)
 {
 	static_assert(std::is_base_of<T,TT>::value,"You shall provide inherited classes");
 
@@ -196,28 +196,28 @@ shared_pointer_wrapper_impl<T,Weakable>& shared_pointer_wrapper_impl<T,Weakable>
 
 	return *this;
 }
-template<typename T, bool Weakable>
-bool shared_pointer_wrapper_impl<T,Weakable>::operator==(std::nullptr_t) const
+template<typename T, typename ReferenceCounter>
+bool shared_pointer_wrapper_impl<T,ReferenceCounter>::operator==(std::nullptr_t) const
 {
 	return m_data == nullptr;
 }
-template<typename T, bool Weakable>
-bool shared_pointer_wrapper_impl<T,Weakable>::operator!=(std::nullptr_t) const
+template<typename T, typename ReferenceCounter>
+bool shared_pointer_wrapper_impl<T,ReferenceCounter>::operator!=(std::nullptr_t) const
 {
 	return m_data != nullptr;
 }
-template<typename T, bool Weakable>
-T* shared_pointer_wrapper_impl<T,Weakable>::operator->()
+template<typename T, typename ReferenceCounter>
+T* shared_pointer_wrapper_impl<T,ReferenceCounter>::operator->()
 {
 	return m_data;
 }
-template<typename T, bool Weakable>
-const T* shared_pointer_wrapper_impl<T,Weakable>::operator->() const
+template<typename T, typename ReferenceCounter>
+const T* shared_pointer_wrapper_impl<T,ReferenceCounter>::operator->() const
 {
 	return m_data;
 }
-template<typename T, bool Weakable>
-T& shared_pointer_wrapper_impl<T,Weakable>::operator*()
+template<typename T, typename ReferenceCounter>
+T& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator*()
 {
 	if(m_data == nullptr)
 	{
@@ -226,8 +226,8 @@ T& shared_pointer_wrapper_impl<T,Weakable>::operator*()
 
 	return *m_data;
 }
-template<typename T, bool Weakable>
-const T& shared_pointer_wrapper_impl<T,Weakable>::operator*() const
+template<typename T, typename ReferenceCounter>
+const T& shared_pointer_wrapper_impl<T,ReferenceCounter>::operator*() const
 {
 	if(m_data == nullptr)
 	{
@@ -236,41 +236,41 @@ const T& shared_pointer_wrapper_impl<T,Weakable>::operator*() const
 
 	return *m_data;
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::operator bool() const
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::operator bool() const
 {
 	return m_data != nullptr;
 }
-template<typename T, bool Weakable>
-void shared_pointer_wrapper_impl<T,Weakable>::clear()
+template<typename T, typename ReferenceCounter>
+void shared_pointer_wrapper_impl<T,ReferenceCounter>::clear()
 {
 	if(m_refCounter)
 	{
 		clearIfCounterVoid(m_refCounter->decrementSharedReference());
 	}
 }
-template<typename T, bool Weakable>
-T* shared_pointer_wrapper_impl<T,Weakable>::get()
+template<typename T, typename ReferenceCounter>
+T* shared_pointer_wrapper_impl<T,ReferenceCounter>::get()
 {
 	return m_data;
 }
-template<typename T, bool Weakable>
-const T* shared_pointer_wrapper_impl<T,Weakable>::get() const
+template<typename T, typename ReferenceCounter>
+const T* shared_pointer_wrapper_impl<T,ReferenceCounter>::get() const
 {
 	return m_data;
 }
-template<typename T, bool Weakable>
-const IReferenceWrapperDeleter* shared_pointer_wrapper_impl<T,Weakable>::get_deleter() const
+template<typename T, typename ReferenceCounter>
+const IReferenceWrapperDeleter* shared_pointer_wrapper_impl<T,ReferenceCounter>::get_deleter() const
 {
 	return m_deleter;
 }
-template<typename T, bool Weakable>
-bool shared_pointer_wrapper_impl<T,Weakable>::empty() const
+template<typename T, typename ReferenceCounter>
+bool shared_pointer_wrapper_impl<T,ReferenceCounter>::empty() const
 {
 	return m_data == nullptr;
 }
-template<typename T, bool Weakable>
-shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(T* i_data,const tagged_reference_counter& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter, bool i_alreadyIncremented)
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(T* i_data,const tagged_reference_counter& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter, bool i_alreadyIncremented)
 : m_data(i_data)
 , m_refCounter(i_refCounter)
 , m_deleter(i_refDeleter)
@@ -280,8 +280,8 @@ shared_pointer_wrapper_impl<T,Weakable>::shared_pointer_wrapper_impl(T* i_data,c
 		m_refCounter->incrementSharedReference();
 	}
 }
-template<typename T, bool Weakable>
-void shared_pointer_wrapper_impl<T,Weakable>::clearIfCounterVoid(size_t i_currNumRefs)
+template<typename T, typename ReferenceCounter>
+void shared_pointer_wrapper_impl<T,ReferenceCounter>::clearIfCounterVoid(size_t i_currNumRefs)
 {
 	if(i_currNumRefs == 0)
 	{
@@ -289,7 +289,7 @@ void shared_pointer_wrapper_impl<T,Weakable>::clearIfCounterVoid(size_t i_currNu
 
 		const short tagCategory = m_refCounter.get_tag();
 
-		reference_counter* refCounter = m_refCounter.extract_pointer();
+		ReferenceCounter* refCounter = m_refCounter.extract_pointer();
 		if(refCounter->hasWeakReferences() == false)
 		{
 			if(tagCategory == ReferenceAllocationType::Dynamic)
@@ -298,7 +298,7 @@ void shared_pointer_wrapper_impl<T,Weakable>::clearIfCounterVoid(size_t i_currNu
 			}
 			else if(tagCategory == ReferenceAllocationType::Contiguous)
 			{
-				refCounter->~reference_counter();
+				refCounter->~ReferenceCounter();
 			}
 		}
 

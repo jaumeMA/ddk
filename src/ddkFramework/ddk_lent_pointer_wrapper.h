@@ -15,8 +15,6 @@ class lent_pointer_wrapper;
 namespace detail
 {
 
-template<typename,bool>
-class shared_pointer_wrapper_impl;
 template<typename TT>
 ddk::lent_pointer_wrapper<TT> __make_lent_pointer(TT*,const tagged_pointer<lent_reference_counter>&);
 

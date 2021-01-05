@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T>
-inline shared_reference_wrapper_impl<T,true> __make_shared_reference(T*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+inline shared_reference_wrapper_impl<T,shared_reference_counter> __make_shared_reference(T*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
 
 }
 
@@ -22,7 +22,7 @@ class share_from_this
 	template<typename TTT,typename TTTT>
 	friend inline shared_reference_wrapper<const TTTT> share(const share_from_this<TTT,TTTT>&);
 	template<typename TTT>
-	friend inline detail::shared_reference_wrapper_impl<TTT,true> detail::__make_shared_reference(TTT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+	friend inline detail::shared_reference_wrapper_impl<TTT,shared_reference_counter> detail::__make_shared_reference(TTT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
 	friend inline weak_pointer_wrapper<TT> weak(share_from_this& i_sharedFromThis)
 	{
 		return as_shared_reference(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
