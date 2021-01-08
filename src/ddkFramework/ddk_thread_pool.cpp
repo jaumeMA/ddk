@@ -119,13 +119,15 @@ thread_pool::~thread_pool()
 	DDK_ASSERT(m_underUseThreads.empty(), "Trying to remove pool while threads under use");
 
 	thread_container::iterator itThread = m_availableThreads.begin();
-	for(;itThread!=m_underUseThreads.end();++itThread)
+	for(;itThread!= m_availableThreads.end();++itThread)
 	{
 		delete(*itThread);
 	}
 }
 thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 {
+	lock_guard lg(m_mutex);
+
 	if(m_availableThreads.empty())
 	{
 		//depending on the policy
@@ -145,12 +147,14 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 	m_availableThreads.erase(itThread);
 
-	m_underUseThreads.push_back(acquiredThread);
+	m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
 	return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ref_from_this(),AllocationMode::ConstructionProvided}));
 }
 thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_size)
 {
+	lock_guard lg(m_mutex);
+
 	if(m_availableThreads.size() < i_size)
 	{
 		//depending on the policy
@@ -181,7 +185,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 
 		threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,{ref_from_this(),AllocationMode::ConstructionProvided}));
 
-		m_underUseThreads.push_back(acquiredThread);
+		m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 	}
 
 	m_availableThreads.erase(m_availableThreads.begin(),m_availableThreads.begin()+i_size);
@@ -190,14 +194,16 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 }
 void thread_pool::deallocate(const void* i_object) const
 {
-	thread_container::iterator itThread = m_underUseThreads.begin();
+	lock_guard lg(m_mutex);
+
+	thread_in_use_container::iterator itThread = m_underUseThreads.find(i_object);
 	for(;itThread!=m_underUseThreads.end();++itThread)
 	{
-		if(*itThread == i_object)
+		if(itThread->first == i_object)
 		{
-			m_underUseThreads.erase(itThread);
+			m_availableThreads.push_back(itThread->second);
 
-			m_availableThreads.push_back(*itThread);
+			m_underUseThreads.erase(itThread);
 
 			return;
 		}

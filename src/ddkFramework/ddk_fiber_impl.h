@@ -57,7 +57,6 @@ public:
 	void set_executor(scheduler_interface_lent_ptr i_executor);
 	bool joinable() const;
 	bool operator==(const fiber_impl& other) const;
-	bool has_executor() const;
 
 private:
 	fiber_id m_id;

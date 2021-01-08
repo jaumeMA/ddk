@@ -51,6 +51,8 @@ void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielde
 {
 	if(m_started == false)
 	{
+		m_started = true;
+
 		m_threadFunc = i_function;
 
 		pthread_attr_t	attr;
@@ -92,8 +94,6 @@ void one_shot_thread_impl::execute()
 {
 	if(m_threadFunc != nullptr)
 	{
-		m_started = true;
-
 		thread_impl_interface::set_yielder(m_yielder);
 
 		pthread_cleanup_push(&threadExiting,this);

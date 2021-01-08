@@ -139,26 +139,13 @@ size_t fiber_pool::size() const
 }
 void fiber_pool::deallocate(const void* i_object) const
 {
-	lock_guard lg(m_mutex);
-
-	fiber_secheduler_t::iterator itFiber = m_fiberScheduler->begin();
-	for(; itFiber != m_fiberScheduler->end(); ++itFiber)
+	if(detail::fiber_impl* acquiredFiber = reinterpret_cast<detail::fiber_impl*>(const_cast<void*>(i_object)))
 	{
-		if(itFiber->second == i_object)
-		{
-			fiber_secheduler_t::unregister_fiber_result unregRes = m_fiberScheduler->unregister_fiber(itFiber->first);
+		m_fiberScheduler->unregister_fiber(acquiredFiber->get_id());
 
-			if(unregRes == success)
-			{
-				if(itFiber->second->has_executor())
-				{
-					int a = 0;
-					++a;
-				}
+		lock_guard lg(m_mutex);
 
-				m_fiberCtr.push_back(itFiber->second);
-			}
-		}
+		m_fiberCtr.push_back(acquiredFiber);
 	}
 }
 
