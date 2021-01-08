@@ -4,13 +4,13 @@
 #include "ddk_fiber.h"
 #include "ddk_reference_wrapper_deleter.h"
 #include "ddk_fiber_sheaf.h"
-#include <pthread.h>
 #include "ddk_stack_allocator_interface.h"
+#include "ddk_mutex.h"
 
 namespace ddk
 {
 
-class fiber_pool : protected IReferenceWrapperDeleter
+class fiber_pool : protected resource_deleter_interface
 {
 	typedef std::vector<detail::fiber_impl*> fiber_container;
 	typedef fiber_scheduler<> fiber_secheduler_t;
@@ -44,13 +44,14 @@ public:
 	size_t size() const;
 
 private:
-	void Deallocate(const void* i_object) const override;
+	void deallocate(const void* i_object) const override;
 
 	mutable fiber_container m_fiberCtr;
 	mutable fiber_scheduler_shared_ref<> m_fiberScheduler;
 	Policy m_policy;
 	stack_alloc_const_shared_ref m_stackAllocator;
 	size_t m_numMaxPages;
+	mutable mutex m_mutex;	
 };
 
 }

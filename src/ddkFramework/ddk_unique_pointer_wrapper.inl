@@ -172,12 +172,12 @@ bool unique_pointer_wrapper<T>::empty() const
 	return m_data == nullptr;
 }
 template<typename T>
-const IReferenceWrapperDeleter* unique_pointer_wrapper<T>::get_deleter() const
+const tagged_pointer_deleter& unique_pointer_wrapper<T>::get_deleter() const
 {
 	return m_deleter;
 }
 template<typename T>
-unique_pointer_wrapper<T>::unique_pointer_wrapper(T* i_data,const tagged_reference_counter& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+unique_pointer_wrapper<T>::unique_pointer_wrapper(T* i_data,const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_refDeleter)
 : m_data(i_data)
 , m_refCounter(i_refCounter)
 , m_deleter(i_refDeleter)
@@ -185,7 +185,7 @@ unique_pointer_wrapper<T>::unique_pointer_wrapper(T* i_data,const tagged_referen
 	m_refCounter->addStrongReference();
 }
 template<typename T>
-unique_pointer_wrapper<T>::unique_pointer_wrapper(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+unique_pointer_wrapper<T>::unique_pointer_wrapper(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter)
 : m_data(i_data)
 , m_refCounter(std::move(i_refCounter))
 , m_deleter(i_refDeleter)
@@ -212,7 +212,14 @@ void unique_pointer_wrapper<T>::clearIfCounterVoid(bool i_hasRefs)
 
 		if(m_deleter)
 		{
-			m_deleter->Deallocate(allocator_address_reference_wrapper(m_data));
+			const short allocCategory = m_deleter.get_tag();
+
+			if(allocCategory == AllocationMode::AllocationOnly)
+			{
+				m_data->~T();
+			}
+
+			m_deleter->deallocate(allocator_address_reference_wrapper(m_data));
 		}
 		else
 		{
@@ -222,6 +229,7 @@ void unique_pointer_wrapper<T>::clearIfCounterVoid(bool i_hasRefs)
 
 	m_refCounter = nullptr;
 	m_data = nullptr;
+	m_deleter = nullptr;
 }
 template<typename T>
 unique_reference_counter* unique_pointer_wrapper<T>::extract_reference_counter()

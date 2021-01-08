@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T>
-inline shared_reference_wrapper_impl<T,shared_reference_counter> __make_shared_reference(T*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+inline shared_reference_wrapper_impl<T,shared_reference_counter> __make_shared_reference(T*,const tagged_pointer<shared_reference_counter>&,const tagged_pointer_deleter&);
 
 }
 
@@ -22,7 +22,7 @@ class share_from_this
 	template<typename TTT,typename TTTT>
 	friend inline shared_reference_wrapper<const TTTT> share(const share_from_this<TTT,TTTT>&);
 	template<typename TTT>
-	friend inline detail::shared_reference_wrapper_impl<TTT,shared_reference_counter> detail::__make_shared_reference(TTT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+	friend inline detail::shared_reference_wrapper_impl<TTT,shared_reference_counter> detail::__make_shared_reference(TTT*,const tagged_pointer<shared_reference_counter>&,const tagged_pointer_deleter&);
 	friend inline weak_pointer_wrapper<TT> weak(share_from_this& i_sharedFromThis)
 	{
 		return as_shared_reference(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
@@ -50,11 +50,11 @@ protected:
 	inline shared_reference_wrapper<const TT> ref_from_this() const;
 
 private:		
-	inline const IReferenceWrapperDeleter* set_deleter(const IReferenceWrapperDeleter* i_refDeleter) const;
+	inline const tagged_pointer_deleter& set_deleter(const tagged_pointer_deleter& i_refDeleter) const;
 	inline void set_reference_counter(const tagged_reference_counter& i_refCounter) const;
 
 	mutable tagged_reference_counter m_refCounter;
-	mutable const IReferenceWrapperDeleter* m_deleter = nullptr;
+	mutable tagged_pointer_deleter m_deleter;
 };
 
 }

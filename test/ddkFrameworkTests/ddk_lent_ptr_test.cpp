@@ -45,7 +45,7 @@ TEST(DDKLentPtrTest,uniquePtrLentScope)
 			TestDynamicFactory<DefaultType> objFactory; 
 			DefaultType* newNestedValue = objFactory.Allocate(0xFF);
 
-			fooUnique = ddk::as_unique_reference(newNestedValue,tagged_pointer<ddk::unique_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded));
+			fooUnique = ddk::as_unique_reference(newNestedValue,ddk::tagged_pointer<ddk::unique_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded),nullptr);
 			ddk::lent_pointer_wrapper<DefaultType> foo1 = ddk::lend(fooUnique);
 
 			EXPECT_EQ(refCounter.hasStrongReferences(),true);

@@ -5,7 +5,7 @@ namespace detail
 {
 
 template<typename T,typename ReferenceCounter>
-shared_reference_wrapper_impl<T,ReferenceCounter>::shared_reference_wrapper_impl(T* i_data,const tagged_pointer<ReferenceCounter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter)
+shared_reference_wrapper_impl<T,ReferenceCounter>::shared_reference_wrapper_impl(T* i_data,const tagged_pointer<ReferenceCounter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter)
 : shared_pointer_wrapper_impl<T,ReferenceCounter>(i_data,i_refCounter,i_refDeleter)
 {
 	DDK_ASSERT(i_data != NULL,"Trying to construct non null reference from void pointer");

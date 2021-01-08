@@ -5,6 +5,13 @@
 namespace ddk
 {
 
+const size_t k_small_buffer_allocation_size = 32;
+
+template<typename Return,typename ... Types,typename Allocator>
+function<Return(Types...),Allocator>::function()
+: m_allocator(k_small_buffer_allocation_size,Allocator())
+{
+}
 template<typename Return, typename ... Types, typename Allocator>
 template<typename AAllocator>
 function<Return(Types...),Allocator>::function(const function<Return(Types...),AAllocator>& other)
@@ -21,78 +28,60 @@ function<Return(Types...),Allocator>::function(function<Return(Types...),AAlloca
 }
 template<typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),Allocator>::function(std::nullptr_t)
+: m_allocator(k_small_buffer_allocation_size,Allocator())
 {
 }
 template<typename Return, typename ... Types, typename Allocator>
 TEMPLATE(typename T)
 REQUIRED(IS_CALLABLE_NOT_FUNCTION(T))
 function<Return(Types...),Allocator>::function(T&& i_functor, const Allocator& i_allocator)
-: m_allocator(i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return,Types...> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new(mem) Functor(std::forward<T>(i_functor));
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(std::forward<T>(i_functor));
+
+    m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),Allocator>::function(Return(*i_call)(Types...), const Allocator& i_allocator)
-: m_allocator(i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::free_function_impl<Return,Types...> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new(mem) Functor(i_call);
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
+	
+    Functor* newFuncImpl = new(allocCtxt.second) Functor(i_call);
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+    m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<typename T>
 function<Return(Types...),Allocator>::function(T *i_pRef, Return(T::*i_call)(Types...), const Allocator& i_allocator)
-: m_allocator(i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::relative_function_impl<T,Return,Types...> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(i_pRef,i_call);
+
+	m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<typename T>
 function<Return(Types...),Allocator>::function(const T *i_pRef, Return(T::*i_call)(Types...)const, const Allocator& i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::relative_function_impl<const T,Return,Types...> Functor;
 
-	if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new(mem) Functor(i_pRef,i_call);
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(i_pRef,i_call);
+
+	m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename ... Types, typename Allocator>
 function<Return(Types...),Allocator>& function<Return(Types...),Allocator>::operator=(std::nullptr_t)
@@ -170,6 +159,11 @@ Return function<Return(Types...),Allocator>::eval_tuple(const mpl::sequence<Inde
 }
 
 //0 args version
+template<typename Return,typename Allocator>
+function<Return(),Allocator>::function()
+: m_allocator(k_small_buffer_allocation_size,Allocator())
+{
+}
 template<typename Return, typename Allocator>
 template<typename AAllocator>
 function<Return(),Allocator>::function(const function<Return(),AAllocator>& other)
@@ -186,78 +180,60 @@ function<Return(),Allocator>::function(function<Return(),AAllocator>&& other)
 }
 template<typename Return, typename Allocator>
 function<Return(),Allocator>::function(std::nullptr_t)
+: m_allocator(k_small_buffer_allocation_size,Allocator())
 {
 }
 template<typename Return, typename Allocator>
 TEMPLATE(typename T)
 REQUIRED(IS_CALLABLE_NOT_FUNCTION(T))
 function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocator)
-: m_allocator(i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new Functor(std::forward<T>(i_functor));
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
+	
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(std::forward<T>(i_functor));
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+	m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename Allocator>
 function<Return(),Allocator>::function(Return(*i_call)(), const Allocator& i_allocator)
-: m_allocator(i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::free_function_impl<Return> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new Functor(i_call);
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(i_call);
+
+	m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename Allocator>
 template<typename T>
 function<Return(),Allocator>::function(T *i_pRef, Return(T::*i_call)(), const Allocator& i_allocator)
-: m_allocator(i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::relative_function_impl<T,Return> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new Functor(i_pRef,i_call);
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(i_pRef,i_call);
+
+	m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename Allocator>
 template<typename T>
 function<Return(),Allocator>::function(const T *i_pRef, Return(T::*i_call)()const, const Allocator& i_allocator)
+: m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
     typedef detail::relative_function_impl<const T,Return> Functor;
 
-    if(void* mem = m_allocator.allocate(1,sizeof(Functor)))
-    {
-        Functor* newFuncImpl = new Functor(i_pRef,i_call);
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
+	
+	Functor* newFuncImpl = new(allocCtxt.second) Functor(i_pRef,i_call);
 
-        m_functionImpl = as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<Functor>(m_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{"Could not allocate function specialization"};
-    }
+    m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 template<typename Return, typename Allocator>
 function<Return(),Allocator>& function<Return(),Allocator>::operator=(std::nullptr_t)

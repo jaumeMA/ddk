@@ -109,9 +109,6 @@ public:
 	bool incrementSharedReferenceIfNonEmpty();
 	unsigned int decrementSharedReference();
 	bool hasWeakReferences() const;
-
-private:
-	atomic_uint m_numSharedReferences;
 };
 
 //reference counting for unique references

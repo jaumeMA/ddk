@@ -20,18 +20,26 @@ class shared_reference_wrapper_impl : public shared_pointer_wrapper_impl<T,Refer
 	template<typename TT,typename RReferenceCounter>
 	friend lent_reference_wrapper<TT> __lend(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
 	template<typename TT>
-	friend inline shared_reference_wrapper_impl<TT,shared_reference_counter> __make_shared_reference(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline shared_reference_wrapper_impl<TT,shared_reference_counter> __make_shared_reference(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 	template<typename TT>
-	friend inline shared_reference_wrapper_impl<TT,distributed_reference_counter> __make_shared_reference(TT* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline shared_reference_wrapper_impl<TT,distributed_reference_counter> __make_shared_reference(TT* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
-	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr);
+	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
 	using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator bool;
 	using shared_pointer_wrapper_impl<T,ReferenceCounter>::empty;
 
 public:
-	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::tagged_reference_counter;
-    using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator*;
+	using typename shared_pointer_wrapper_impl::tagged_reference_counter;
+	using typename shared_pointer_wrapper_impl::value_type;
+	using typename shared_pointer_wrapper_impl::const_value_type;
+	using typename shared_pointer_wrapper_impl::reference;
+	using typename shared_pointer_wrapper_impl::const_reference;
+	using typename shared_pointer_wrapper_impl::rreference;
+	using typename shared_pointer_wrapper_impl::pointer;
+	using typename shared_pointer_wrapper_impl::const_pointer;
+	typedef shared_pointer_wrapper_impl<const_value_type,ReferenceCounter> const_type;
+	using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator*;
     using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator->;
     using shared_pointer_wrapper_impl<T,ReferenceCounter>::get;
     using shared_pointer_wrapper_impl<T,ReferenceCounter>::clear;

@@ -3,6 +3,7 @@
 #include "ddk_fiber_scheduler.h"
 #include "ddk_dynamic_stack_allocator.h"
 #include "ddk_pool_stack_allocator.h"
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -47,6 +48,8 @@ fiber_pool::~fiber_pool()
 }
 fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 {
+	lock_guard lg(m_mutex);
+
 	if(m_fiberCtr.empty())
 	{
 		//depending on the policy
@@ -62,7 +65,7 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 
-	fiber acquiredFiber = as_unique_reference(*itFiber,static_cast<const IReferenceWrapperDeleter&>(*this));
+	fiber acquiredFiber = as_unique_reference(*itFiber,{ref_from_this(),AllocationMode::ConstructionProvided});
 
 	m_fiberScheduler->register_fiber(acquiredFiber);
 
@@ -72,6 +75,8 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 }
 fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 {
+	lock_guard lg(m_mutex);
+
 	if(m_fiberCtr.size() < i_size)
 	{
 		//depending on the policy
@@ -99,7 +104,7 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 	for(size_t fiberIndex=0;fiberIndex<i_size;++fiberIndex,++itFiber)
 	{
-		fiber acquiredFiber = as_unique_reference(*itFiber,static_cast<const IReferenceWrapperDeleter&>(*this));
+		fiber acquiredFiber = as_unique_reference(*itFiber,{ ref_from_this(),AllocationMode::ConstructionProvided });
 
 		fiber_id fiberId = acquiredFiber.get_id();
 
@@ -122,16 +127,22 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 }
 bool fiber_pool::empty() const
 {
+	lock_guard lg(m_mutex);
+
 	return m_fiberCtr.empty() && m_policy == FixedSize;
 }
 size_t fiber_pool::size() const
 {
+	lock_guard lg(m_mutex);
+
 	return m_fiberCtr.size();
 }
-void fiber_pool::Deallocate(const void* i_object) const
+void fiber_pool::deallocate(const void* i_object) const
 {
+	lock_guard lg(m_mutex);
+
 	fiber_secheduler_t::iterator itFiber = m_fiberScheduler->begin();
-	for(;itFiber!=m_fiberScheduler->end();++itFiber)
+	for(; itFiber != m_fiberScheduler->end(); ++itFiber)
 	{
 		if(itFiber->second == i_object)
 		{
@@ -139,14 +150,16 @@ void fiber_pool::Deallocate(const void* i_object) const
 
 			if(unregRes == success)
 			{
+				if(itFiber->second->has_executor())
+				{
+					int a = 0;
+					++a;
+				}
+
 				m_fiberCtr.push_back(itFiber->second);
 			}
-
-			return;
 		}
 	}
-
-	DDK_FAIL("Trying to remove non existent fiber from pool");
 }
 
 }

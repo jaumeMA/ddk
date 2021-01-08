@@ -175,11 +175,11 @@ consolidate_frame PROC FRAME
 .setframe rbp,00h
 .endprolog
 
-	sub rsp, 08h
+	sub rsp, 18h
 
 	call r8
 
-	add rsp, 10h
+	add rsp, 20h
 
 	pop rbp
 

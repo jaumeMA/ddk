@@ -48,7 +48,7 @@ private:
 
 }
 
-class thread_pool : public IReferenceWrapperDeleter
+class thread_pool : public resource_deleter_interface
 {
 	typedef std::vector<detail::thread_impl_interface*> thread_container;
 
@@ -75,7 +75,7 @@ public:
 	acquire_result<thread_sheaf> acquire_sheaf(size_t i_size);
 
 private:
-	void Deallocate(const void* i_object) const override;
+	void deallocate(const void* i_object) const override;
 
 	mutable thread_container m_availableThreads;
 	mutable thread_container m_underUseThreads;

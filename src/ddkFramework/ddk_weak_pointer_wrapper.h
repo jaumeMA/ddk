@@ -14,7 +14,7 @@ namespace detail
 {
 
 template<typename TT>
-weak_pointer_wrapper<TT> __make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+weak_pointer_wrapper<TT> __make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const tagged_pointer_deleter&);
 
 }
 
@@ -24,7 +24,7 @@ class weak_pointer_wrapper
 	template<typename>
 	friend class weak_pointer_wrapper;
 	template<typename TT>
-	friend weak_pointer_wrapper<TT> detail::__make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const IReferenceWrapperDeleter*);
+	friend weak_pointer_wrapper<TT> detail::__make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const tagged_pointer_deleter&);
 	template<typename TT>
 	friend shared_pointer_wrapper<const TT> share(const weak_pointer_wrapper<TT>&);
 	template<typename TT>
@@ -32,7 +32,14 @@ class weak_pointer_wrapper
 
 public:
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
-	typedef T nested_type;
+	typedef T value_type;
+	typedef typename std::add_const<T>::type const_value_type;
+	typedef value_type& reference;
+	typedef const_value_type& const_reference;
+	typedef value_type&& rreference;
+	typedef value_type* pointer;
+	typedef const_value_type* const_pointer;
+	typedef weak_pointer_wrapper<const_value_type> const_type;
 
 	weak_pointer_wrapper() = default;
 	weak_pointer_wrapper(const weak_pointer_wrapper& other);
@@ -56,13 +63,16 @@ public:
 	shared_pointer_wrapper<T> share() const;
 
 private:
-	weak_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter,const IReferenceWrapperDeleter* i_deleter);
+	weak_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_deleter);
 	void clearIfCounterVoid(size_t i_numWeakRefs);
 
 	T* m_data = nullptr;
 	mutable tagged_reference_counter m_refCounter;
-	const IReferenceWrapperDeleter* m_deleter = nullptr;
+	tagged_pointer_deleter m_deleter = nullptr;
 };
+
+template<typename T>
+using tagged_weak_pointer_wrapper = tagged_pointer<weak_pointer_wrapper<T>>;
 
 }
 

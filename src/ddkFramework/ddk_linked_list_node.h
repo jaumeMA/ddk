@@ -43,6 +43,9 @@ public:
 	: m_content(std::forward<Args>(i_args) ...)
 	{
 	}
+	~linked_list_node()
+	{
+	}
 	linked_node_ptr get_prev_node()
 	{
 		return lend(m_prevNode);

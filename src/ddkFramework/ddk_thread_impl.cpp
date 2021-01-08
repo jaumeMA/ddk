@@ -37,7 +37,7 @@ void* threadFunc(void *ptr)
 		thread->execute();
 	}
 
-	return NULL;
+	return nullptr;
 }
 void threadExiting(void* ptr)
 {
@@ -62,8 +62,6 @@ void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielde
 		pthread_create(&m_thread, &attr, threadFunc, this);
 
 		pthread_attr_destroy(&attr);
-
-		m_started = true;
 	}
 }
 void one_shot_thread_impl::stop()
@@ -73,7 +71,7 @@ void one_shot_thread_impl::stop()
 		m_started = false;
 		m_threadFunc = nullptr;
 
-		void *res = NULL;
+		void *res = nullptr;
 		thread_id_t prova = get_id();
 		pthread_join(m_thread,&res);
 	}
@@ -94,6 +92,8 @@ void one_shot_thread_impl::execute()
 {
 	if(m_threadFunc != nullptr)
 	{
+		m_started = true;
+
 		thread_impl_interface::set_yielder(m_yielder);
 
 		pthread_cleanup_push(&threadExiting,this);

@@ -42,7 +42,7 @@ T& linked_list<T,Allocator>::push(Args&& ... i_args)
 	{
 		detail::linked_list_node<T>* newNode = new (__mem) detail::linked_list_node<T>(std::forward<Args>(i_args) ...);
 
-		return _push(as_shared_reference(newNode,get_reference_wrapper_deleter<detail::linked_list_node<T>>(m_allocator)));
+		return _push(as_shared_reference(newNode,get_reference_wrapper_deleter(m_allocator)));
 	}
 	else
 	{

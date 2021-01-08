@@ -17,7 +17,7 @@ namespace detail
 struct async_state_base : public lend_from_this<async_state_base>
 {
 	virtual ~async_state_base() = default;
-	virtual void notify() = 0;
+	virtual void notify() const = 0;
 };
 
 template<typename T>
@@ -46,13 +46,13 @@ public:
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;
-	virtual void notify() override;
+	virtual void notify() const override;
 
 private:
 	mutable mutex m_mutex;
 	mutable cond_var m_condVar;
 	variant<detail::none_t,async_exception,T> m_arena;
-	async_cancellable_shared_ptr m_asyncExecutor;
+	mutable async_cancellable_shared_ptr m_asyncExecutor;
 };
 
 template<typename T>

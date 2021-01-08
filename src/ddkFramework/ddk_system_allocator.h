@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_reference_wrapper_deleter.h"
 #include <cstddef>
 
 namespace ddk
@@ -36,22 +37,14 @@ public:
 	using system_allocator::reallocate;
 
 	typed_system_allocator() = default;
-
-    void* allocate(size_t numUnits) const
-	{
-		return allocate(numUnits,sizeof(T));
-	}
-    void* reallocate(void *ptr, size_t numUnits) const
-	{
-		return reallocate(ptr,numUnits,sizeof(T));
-	}
-	void deallocate(void *ptr) const
-	{
-		if(const T* typedObject = reinterpret_cast<const T*>(ptr))
-		{
-			delete typedObject;
-		}
-	}
+    void* allocate(size_t numUnits) const;
+    void* reallocate(void *ptr, size_t numUnits) const;
 };
 
+resource_deleter_const_lent_ref get_reference_wrapper_deleter(const system_allocator&);
+template<typename T>
+resource_deleter_const_lent_ref get_reference_wrapper_deleter(const typed_system_allocator<T>& i_allocator);
+
 }
+
+#include "ddk_system_allocator.inl"

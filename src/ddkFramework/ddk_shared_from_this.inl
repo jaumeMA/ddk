@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<typename T,typename TT>
-const IReferenceWrapperDeleter* share_from_this<T,TT>::set_deleter(const IReferenceWrapperDeleter* i_deleter) const
+const tagged_pointer_deleter& share_from_this<T,TT>::set_deleter(const tagged_pointer_deleter& i_deleter) const
 {
 	return (m_deleter = i_deleter);
 }

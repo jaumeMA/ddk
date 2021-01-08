@@ -26,6 +26,7 @@ public:
 	intrusive_node_impl(Args&& ... i_args);
 	intrusive_node_impl(const intrusive_node_impl&) = delete;
 	intrusive_node_impl(intrusive_node_impl&&) = delete;
+	~intrusive_node_impl();
 	intrusive_node_impl& operator=(const intrusive_node_impl&) = delete;
 	intrusive_node_impl& operator=(intrusive_node_impl&&) = delete;
 	inline intrusive_node_ptr get_prev_node();
@@ -50,8 +51,8 @@ public:
 	operator const T&() const;
 
 private:
-	intrusive_node_ptr m_prevNode;
-	intrusive_node_ptr m_nextNode;
+	intrusive_node_ptr m_prevNode = nullptr;
+	intrusive_node_ptr m_nextNode = nullptr;
 	T m_value;
 	unique_reference_counter m_refCounter;
 };
@@ -80,7 +81,7 @@ public:
 	intrusive_node(intrusive_node&& other);
 	template<typename ... Args>
 	intrusive_node(Args&& ... i_args);
-	~intrusive_node() = default;
+	~intrusive_node();
 	intrusive_node& operator=(const intrusive_node& other) = delete;
 	intrusive_node& operator=(intrusive_node&& other);
 	inline void clear();

@@ -16,7 +16,7 @@ class atomic_shared_pointer_wrapper_impl
 public:
 	atomic_shared_pointer_wrapper_impl() = default;
 	atomic_shared_pointer_wrapper_impl(std::nullptr_t);
-	atomic_shared_pointer_wrapper_impl(T* i_data,IReferenceWrapperDeleter* i_refDeleter = nullptr);
+	atomic_shared_pointer_wrapper_impl(T* i_data,const tagged_pointer_deleter& i_refDeleter);
 	atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl& other);
 	atomic_shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<T,ReferenceCounter>& other);
 	atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl&& other);
@@ -55,7 +55,7 @@ public:
 	void clear();
 	inline T* get();
 	inline const T* get() const;
-	inline const IReferenceWrapperDeleter* get_deleter() const;
+	inline tagged_pointer_deleter get_deleter() const;
 	inline bool empty() const;
 
 private:

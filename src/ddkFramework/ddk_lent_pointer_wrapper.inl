@@ -87,10 +87,11 @@ lent_pointer_wrapper<T>::~lent_pointer_wrapper()
 {
 	UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-		if(m_refCounter)
-		{
-			m_refCounter->decrementLentReference();
-		}
+	if(m_refCounter)
+	{
+		m_refCounter->decrementLentReference();
+	}
+
 	m_data = nullptr;
 }
 template<typename T>
@@ -98,10 +99,10 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(const std::nullptr_t
 {
 	UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-		if(m_refCounter)
-		{
-			m_refCounter->decrementLentReference();
-		}
+	if(m_refCounter)
+	{
+		m_refCounter->decrementLentReference();
+	}
 
 	m_data = nullptr;
 	m_refCounter = nullptr;
@@ -115,10 +116,10 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(const lent_pointer_w
 	{
 		UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-			if(m_refCounter)
-			{
-				m_refCounter->decrementLentReference();
-			}
+		if(m_refCounter)
+		{
+			m_refCounter->decrementLentReference();
+		}
 
 		m_data = other.m_data;
 
@@ -139,10 +140,10 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(lent_pointer_wrapper
 	{
 		UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-			if(m_refCounter)
-			{
-				m_refCounter->decrementLentReference();
-			}
+		if(m_refCounter)
+		{
+			m_refCounter->decrementLentReference();
+		}
 
 		m_data = other.m_data;
 		other.m_data = nullptr;
@@ -162,10 +163,10 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(const lent_pointer_w
 	{
 		UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-			if(m_refCounter)
-			{
-				m_refCounter->decrementLentReference();
-			}
+		if(m_refCounter)
+		{
+			m_refCounter->decrementLentReference();
+		}
 
 		m_data = other.m_data;
 
@@ -187,10 +188,10 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(lent_pointer_wrapper
 	{
 		UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-			if(m_refCounter)
-			{
-				m_refCounter->decrementLentReference();
-			}
+		if(m_refCounter)
+		{
+			m_refCounter->decrementLentReference();
+		}
 
 		m_data = other.m_data;
 		other.m_data = nullptr;
@@ -205,12 +206,12 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(lent_pointer_wrapper
 template<typename T>
 bool lent_pointer_wrapper<T>::operator==(std::nullptr_t) const
 {
-	return m_data == NULL;
+	return m_data == nullptr;
 }
 template<typename T>
 bool lent_pointer_wrapper<T>::operator!=(std::nullptr_t) const
 {
-	return m_data != NULL;
+	return m_data != nullptr;
 }
 template<typename T>
 T* lent_pointer_wrapper<T>::operator->()
@@ -252,7 +253,7 @@ void lent_pointer_wrapper<T>::clear()
 {
 	UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-		m_data = nullptr;
+	m_data = nullptr;
 
 	if(m_refCounter)
 	{
@@ -276,29 +277,57 @@ T* lent_pointer_wrapper<T>::extract()
 {
 	UNREGISTER_STACK_TRACE(THIS_OBJECT)
 
-		if(T* res = m_data)
+	if(T* res = m_data)
+	{
+		m_data = nullptr;
+
+		if(m_refCounter)
 		{
-			m_data = nullptr;
+			m_refCounter->decrementLentReference();
 
-			if(m_refCounter)
-			{
-				m_refCounter->decrementLentReference();
-
-				m_refCounter = nullptr;
-			}
-
-			return res;
+			m_refCounter = nullptr;
 		}
-		else
-		{
-			return nullptr;
-		}
+
+		return res;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 template<typename T>
 typename lent_pointer_wrapper<T>::tagged_reference_counter lent_pointer_wrapper<T>::get_reference_counter() const
 {
 	return m_refCounter;
 }
+
+#else
+
+template<typename T>
+T* get_raw_ptr(lent_pointer_wrapper<T> i_ref, ...)
+{
+	return i_ref;
+}
+template<typename T>
+void set_raw_ptr(lent_pointer_wrapper<T>& i_ref,T* i_value, ...)
+{
+	i_ref = i_value;
+}
+template<typename T>
+T* extract_raw_ptr(lent_pointer_wrapper<T>& i_ref, ...)
+{
+	T* res = i_ref;
+
+	i_ref = nullptr;
+
+	return res;
+}
+template<typename T>
+void clear_ptr(lent_pointer_wrapper<T>& i_ref, ...)
+{
+	i_ref = nullptr;
+}
+
 
 #endif
 

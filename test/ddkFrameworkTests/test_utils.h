@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ddk_reference_wrapper_deleter.h"
+#include "ddk_resource_deleter.h"
 #include "ddk_rtti.h"
 #include <utility>
 #include <stddef.h>
 
 template<typename T>
-class TestDynamicFactory : public ddk::IReferenceWrapperDeleter
+class TestDynamicFactory : public ddk::resource_deleter_interface
 {
 public:
 	template<typename ... Args>
@@ -14,12 +14,9 @@ public:
 	{
 		return new T(std::forward<Args>(i_args) ...);
 	}
-	void Deallocate(const void* i_object) const override
+	void deallocate(const void* i_object) const override
 	{
-		if(const T* typedObj = reinterpret_cast<const T*>(i_object))
-		{
-			delete typedObj;
-		}
+		//already deleted by smart ptr
 	}
 };
 

@@ -51,10 +51,33 @@ class unique_pointer_wrapper;
 template<typename T>
 class lent_pointer_wrapper
 {
+	friend inline T* get_raw_ptr(lent_pointer_wrapper i_ref)
+	{
+		return i_ref.m_data;
+	}
+	friend inline void set_raw_ptr(lent_pointer_wrapper& i_ref,T* i_value)
+	{
+		i_ref.m_data = i_value;
+	}
+	friend inline T* extract_raw_ptr(lent_pointer_wrapper& i_ref)
+	{
+		T* res = i_ref.m_data;
+
+		i_ref.m_data = nullptr;
+
+		return res;
+	}
+	friend inline void clear_ptr(lent_pointer_wrapper& i_ref)
+	{
+		i_ref.m_data = nullptr;
+	}
+
 	template<typename>
 	friend class lent_pointer_wrapper;
 	template<typename>
 	friend class lent_reference_wrapper;
+	template<typename TT>
+	friend void set_raw_ptr(lent_pointer_wrapper<TT>&,TT*);
 	template<typename TT>
 	friend lent_pointer_wrapper<TT> lend(const unique_pointer_wrapper<TT>& i_uniqueRef);
 	template<typename TTT, typename TT>
@@ -83,9 +106,13 @@ class lent_pointer_wrapper
 public:
 	typedef tagged_pointer<lent_reference_counter> tagged_reference_counter;
 	typedef T value_type;
-	typedef T& reference;
-	typedef const T& const_reference;
-	typedef T&& rreference;
+	typedef typename std::add_const<T>::type const_value_type;
+	typedef value_type& reference;
+	typedef const_value_type& const_reference;
+	typedef value_type&& rreference;
+	typedef value_type* pointer;
+	typedef const_value_type* const_pointer;
+	typedef lent_pointer_wrapper<const_value_type> const_type;
 
 	lent_pointer_wrapper();
 	lent_pointer_wrapper(const std::nullptr_t&);
@@ -122,12 +149,25 @@ private:
 	tagged_reference_counter m_refCounter;
 };
 
+template<typename T>
+using tagged_lent_pointer_wrapper = tagged_pointer<T>;
+
 #else
 
 template<typename T>
 using lent_pointer_wrapper = T*;
 
+template<typename T>
+inline T* get_raw_ptr(lent_pointer_wrapper<T> i_ref, ...);
+template<typename T>
+inline void set_raw_ptr(lent_pointer_wrapper<T>& i_ref,T* i_value, ...);
+template<typename T>
+inline T* extract_raw_ptr(lent_pointer_wrapper<T>& i_ref, ...);
+template<typename T>
+inline void clear_ptr(lent_pointer_wrapper<T>& i_ref, ...);
+
 #endif
+
 
 }
 

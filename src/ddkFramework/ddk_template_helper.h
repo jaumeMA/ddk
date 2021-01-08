@@ -92,6 +92,55 @@ struct size_of_qualified_type<T*>
 	static const size_t value = sizeof(decltype(reinterpret_cast<T*>(NULL)));
 };
 
+template<typename T>
+struct get_pointer
+{
+private:
+	template<typename TT>
+	static TT _get(TT&&, typename TT::pointer* = nullptr);
+	template<typename TT>
+	static TT* _get(TT*);
+	template<typename TT>
+	static TT* _get(TT&, ...);
+	template<typename TT>
+	static typename TT::const_type _get_const(TT&&,typename TT::const_pointer* = nullptr);
+	template<typename TT>
+	static const TT* _get_const(TT*);
+	template<typename TT>
+	static const TT* _get_const(TT&,...);
+	template<typename TT>
+	static typename TT::pointer _get_pointer(TT&&,typename TT::pointer* = nullptr);
+	template<typename TT>
+	static TT* _get_pointer(TT*);
+	template<typename TT>
+	static TT* _get_pointer(TT&,...);
+	template<typename TT>
+	static typename TT::const_pointer _get_const_pointer(TT&&,typename TT::const_pointer* = nullptr);
+	template<typename TT>
+	static const TT* _get_const_pointer(TT*);
+	template<typename TT>
+	static const TT* _get_const_pointer(TT&,...);
+	template<typename TT>
+	static typename TT::reference _get_reference(TT&&,typename TT::reference* = nullptr);
+	template<typename TT>
+	static TT& _get_reference(TT*);
+	template<typename TT>
+	static TT& _get_reference(TT&,...);
+	template<typename TT>
+	static typename TT::reference _get_const_reference(TT&&,typename TT::const_reference* = nullptr);
+	template<typename TT>
+	static const TT& _get_const_reference(TT*);
+	template<typename TT>
+	static const TT& _get_const_reference(TT&,...);
+
+public:
+	typedef decltype(_get(std::declval<T>())) type;
+	typedef decltype(_get_const(std::declval<T>())) const_type;
+	typedef decltype(_get_pointer(std::declval<T>())) pointer;
+	typedef decltype(_get_const_pointer(std::declval<T>())) const_pointer;
+	typedef decltype(_get_reference(std::declval<T>())) reference;
+	typedef decltype(_get_const_reference(std::declval<T>())) const_reference;
+};
 
 template<typename...>
 struct max_type;

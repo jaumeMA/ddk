@@ -185,9 +185,9 @@ T* atomic32<T>::_get_typed_arena()
 	return m_arena.template get_ptr<T>();
 }
 template<typename T>
-int32_t* atomic32<T>::_get_arena()
+uint32_t* atomic32<T>::_get_arena()
 {
-	return m_arena.template get_ptr<int32_t>();
+	return m_arena.template get_ptr<uint32_t>();
 }
 
 template<typename T>
@@ -462,7 +462,7 @@ template<typename T>
 inline T atomic_post_increment(atomic32<T>& i_atomic)
 {
 	#ifdef _WIN32
-	return T(InterlockedIncrement(reinterpret_cast<LONG*>(i_atomic._get_arena())));
+	return T(InterlockedIncrement(i_atomic._get_arena()));
 	#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_add_and_fetch(i_atomic._get_typed_arena(),1);
 	#else

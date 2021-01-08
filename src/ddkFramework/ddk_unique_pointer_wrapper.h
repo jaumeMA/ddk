@@ -19,21 +19,41 @@ class unique_reference_wrapper;
 namespace detail
 {
 
-template<typename TT>
-inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
-template<typename TT>
-inline unique_pointer_wrapper<TT> __make_unique_pointer(TT* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const IReferenceWrapperDeleter* i_refDeleter);
+template<typename T>
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+template<typename T>
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 
 }
 
 template<typename T>
 class unique_pointer_wrapper
 {
+	friend inline T* get_raw_ptr(unique_pointer_wrapper i_ref)
+	{
+		return i_ref.m_data;
+	}
+	friend inline void set_raw_ptr(unique_pointer_wrapper& i_ref,T* i_value)
+	{
+		i_ref.m_data = i_value;
+	}
+	friend inline T* extract_raw_ptr(unique_pointer_wrapper& i_ref)
+	{
+		T* res = i_ref.m_data;
+
+		i_ref.m_data = nullptr;
+
+		return res;
+	}
+	friend inline void clear_ptr(unique_pointer_wrapper& i_ref)
+	{
+		i_ref.m_data = nullptr;
+	}
+
 	template<typename>
 	friend class unique_pointer_wrapper;
 	template<typename>
 	friend class unique_reference_wrapper;
-
 	template<typename TTT, typename TT>
 	friend unique_reference_wrapper<TTT> static_unique_cast(unique_reference_wrapper<TT>);
 	template<typename TTT, typename TT>
@@ -57,13 +77,20 @@ class unique_pointer_wrapper
 	template<typename TT>
 	friend unique_reference_wrapper<TT> promote_to_ref(unique_pointer_wrapper<TT>);
     template<typename TT>
-	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
     template<typename TT>
-	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
+	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
 public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;
-	typedef T nested_type;
+	typedef T value_type;
+	typedef typename std::add_const<T>::type const_value_type;
+	typedef value_type& reference;
+	typedef const_value_type& const_reference;
+	typedef value_type&& rreference;
+	typedef value_type* pointer;
+	typedef const_value_type* const_pointer;
+	typedef unique_pointer_wrapper<const_value_type> const_type;
 
 	unique_pointer_wrapper(const unique_pointer_wrapper&) = delete;
 	unique_pointer_wrapper& operator=(const unique_pointer_wrapper&) = delete;
@@ -88,29 +115,19 @@ public:
 	inline T* get();
 	inline const T* get() const;
 	inline bool empty() const;
-	inline const IReferenceWrapperDeleter* get_deleter() const;
+	inline const tagged_pointer_deleter& get_deleter() const;
 
 private:
-	unique_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr);
-	unique_pointer_wrapper(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr);
+	unique_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+	unique_pointer_wrapper(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 	void clearIfCounterVoid(bool i_hasRefs);
 	inline unique_reference_counter* extract_reference_counter();
 
 	T* m_data;
 	tagged_reference_counter m_refCounter;
-	const IReferenceWrapperDeleter* m_deleter;
+	tagged_pointer_deleter m_deleter;
 };
 
-namespace mpl
-{
-
-template<typename T>
-struct is_copy_constructible<unique_pointer_wrapper<T>>
-{
-    static const bool value = false;
-};
-
-}
 }
 
 #include "ddk_unique_pointer_wrapper.inl"

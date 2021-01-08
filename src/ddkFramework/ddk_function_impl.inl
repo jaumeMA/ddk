@@ -58,16 +58,11 @@ function_base_const_dist_ref<Return,unresolved_types<tuple<Args...>,Types...>> f
     typedef typename not_spec_indexs::template at<typename mpl::sequence_place_holder<tuple<Args...>>::type>::type not_spec_sequence;
     typedef specialized_impl<spec_sequence,not_spec_sequence> spec_func_type;
 
-    if(void* mem = i_allocator.allocate(1,sizeof(spec_func_type)))
-    {
-        spec_func_type* newFuncImpl = new(mem) spec_func_type(this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
+	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = i_allocator.allocate(sizeof(spec_func_type));
 
-        return as_distributed_reference(newFuncImpl,get_reference_wrapper_deleter<spec_func_type>(i_allocator));
-    }
-    else
-    {
-        throw bad_allocation_exception{ "Could not allocate function specialization" };
-    }
+	spec_func_type* newFuncImpl = new(allocCtxt.second) spec_func_type(this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
+
+    return as_distributed_reference(newFuncImpl,allocCtxt.first);
 }
 
 template<typename ObjectType, typename Return, typename ... Types>

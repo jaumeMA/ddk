@@ -22,6 +22,27 @@ namespace detail
 template<typename T, typename ReferenceCounter>
 class shared_pointer_wrapper_impl
 {
+	friend inline T* get_raw_ptr(shared_pointer_wrapper_impl i_ref)
+	{
+		return i_ref.m_data;
+	}
+	friend inline void set_raw_ptr(shared_pointer_wrapper_impl& i_ref,T* i_value)
+	{
+		i_ref.m_data = i_value;
+	}
+	friend inline T* extract_raw_ptr(shared_pointer_wrapper_impl& i_ref)
+	{
+		T* res = i_ref.m_data;
+
+		i_ref.m_data = nullptr;
+
+		return res;
+	}
+	friend inline void clear_ptr(shared_pointer_wrapper_impl& i_ref)
+	{
+		i_ref.m_data = nullptr;
+	}
+
 	template<typename,typename>
 	friend class shared_pointer_wrapper_impl;
 	template<typename,typename>
@@ -52,8 +73,6 @@ class shared_pointer_wrapper_impl
 	friend lent_reference_wrapper<TT> __lend(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
 	template<typename TT,typename RReferenceCounter>
 	friend shared_reference_wrapper_impl<TT,RReferenceCounter> __promote_to_ref(const shared_pointer_wrapper_impl<TT,RReferenceCounter>&);
-	template<typename TT,typename RReferenceCounter>
-	friend shared_pointer_wrapper_impl<TT,RReferenceCounter> __make_shared_pointer(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter);
 	template<typename TT>
 	friend ddk::weak_pointer_wrapper<TT> __weak(shared_pointer_wrapper_impl<TT,shared_reference_counter>&);
 	template<typename TT>
@@ -61,11 +80,18 @@ class shared_pointer_wrapper_impl
 
 public:
 	typedef tagged_pointer<ReferenceCounter> tagged_reference_counter;
-	typedef T nested_type;
+	typedef T value_type;
+	typedef typename std::add_const<T>::type const_value_type;
+	typedef value_type& reference;
+	typedef const_value_type& const_reference;
+	typedef value_type&& rreference;
+	typedef value_type* pointer;
+	typedef const_value_type* const_pointer;
+	typedef shared_pointer_wrapper_impl<const_value_type,ReferenceCounter> const_type;
 
 	shared_pointer_wrapper_impl();
 	shared_pointer_wrapper_impl(std::nullptr_t);
-	shared_pointer_wrapper_impl(T* i_data, IReferenceWrapperDeleter* i_refDeleter = nullptr);
+	shared_pointer_wrapper_impl(T* i_data,const tagged_pointer_deleter& i_refDeleter);
 	shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl& other);
 	shared_pointer_wrapper_impl(shared_pointer_wrapper_impl&& other);
 	template<typename TT>
@@ -90,16 +116,16 @@ public:
 	void clear();
 	inline T* get();
 	inline const T* get() const;
-	inline const IReferenceWrapperDeleter* get_deleter() const;
+	inline tagged_pointer_deleter get_deleter() const;
 	inline bool empty() const;
 
 private:
-	shared_pointer_wrapper_impl(T* i_data, const tagged_reference_counter& i_refCounter, const IReferenceWrapperDeleter* i_refDeleter = nullptr, bool i_alreadyIncremented = false);
+	shared_pointer_wrapper_impl(T* i_data, const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_refDeleter, bool i_alreadyIncremented = false);
 	void clearIfCounterVoid(size_t i_currNumRefs);
 
 	T* m_data;
 	tagged_reference_counter m_refCounter;
-	const IReferenceWrapperDeleter* m_deleter;
+	tagged_pointer_deleter m_deleter;
 };
 
 }

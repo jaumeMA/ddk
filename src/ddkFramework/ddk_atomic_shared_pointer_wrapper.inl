@@ -11,7 +11,7 @@ atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wr
 {
 }
 template<typename T, typename ReferenceCounter>
-atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(T* i_data,IReferenceWrapperDeleter* i_refDeleter)
+atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(T* i_data,const tagged_pointer_deleter& i_refDeleter)
 : m_ptr(i_data,i_refDeleter)
 {
 }
@@ -258,7 +258,7 @@ const T* atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::get() const
 	return m_ptr.get();
 }
 template<typename T, typename ReferenceCounter>
-const IReferenceWrapperDeleter* atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::get_deleter() const
+tagged_pointer_deleter atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::get_deleter() const
 {
 	return m_ptr.get_deleter();
 }

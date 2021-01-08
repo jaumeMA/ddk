@@ -155,6 +155,11 @@ void private_async_state<T>::wait() const
 
 	if(m_arena.template is<detail::none_t>())
 	{
+		notify();
+	}
+
+	if(m_arena.template is<detail::none_t>())
+	{
 		m_condVar.wait(m_mutex);
 	}
 }
@@ -162,6 +167,11 @@ template<typename T>
 void private_async_state<T>::wait_for(unsigned int i_period) const
 {
 	lock_guard lg(m_mutex);
+
+	if(m_arena.template is<detail::none_t>())
+	{
+		notify();
+	}
 
 	if(m_arena.template is<detail::none_t>())
 	{
@@ -178,7 +188,7 @@ bool private_async_state<T>::ready() const
 	return (m_arena.template is<detail::none_t>() == false);
 }
 template<typename T>
-void private_async_state<T>::notify()
+void private_async_state<T>::notify() const
 {
 	if(m_asyncExecutor)
 	{

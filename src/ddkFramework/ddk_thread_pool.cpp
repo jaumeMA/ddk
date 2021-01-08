@@ -147,7 +147,7 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 	m_underUseThreads.push_back(acquiredThread);
 
-	return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,static_cast<const IReferenceWrapperDeleter&>(*this)));
+	return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ref_from_this(),AllocationMode::ConstructionProvided}));
 }
 thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_size)
 {
@@ -179,7 +179,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 	{
 		detail::thread_impl_interface* acquiredThread = *itThread;
 
-		threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,static_cast<const IReferenceWrapperDeleter&>(*this)));
+		threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,{ref_from_this(),AllocationMode::ConstructionProvided}));
 
 		m_underUseThreads.push_back(acquiredThread);
 	}
@@ -188,7 +188,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 
 	return make_result<acquire_result<thread_sheaf>>(std::move(threadSheaf));
 }
-void thread_pool::Deallocate(const void* i_object) const
+void thread_pool::deallocate(const void* i_object) const
 {
 	thread_container::iterator itThread = m_underUseThreads.begin();
 	for(;itThread!=m_underUseThreads.end();++itThread)

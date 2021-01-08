@@ -1,14 +1,15 @@
 #pragma once
 
 #include "ddk_arena.h"
+#include "ddk_concepts.h"
+#include "ddk_function_concepts.h"
 #include "ddk_function_impl.h"
-#include "ddk_system_reference_wrapper_allocator.h"
 #include "ddk_function_view.h"
 #include "ddk_tuple_template_helper.h"
 #include "ddk_function_arguments.h"
-#include "ddk_concepts.h"
-#include "ddk_function_concepts.h"
 #include "ddk_allocator_concepts.h"
+#include "ddk_system_allocator.h"
+#include "ddk_global_allocators.h"
 
 namespace ddk
 {
@@ -50,7 +51,7 @@ class function<Return(),Allocator>
 public:
 	typedef Return return_type;
 	
-	function() = default;
+	function();
     function(std::nullptr_t);
     function(const function& other) = default;
     function(function&& other) = default;
@@ -66,6 +67,7 @@ public:
     template<typename T>
     function(const T *pRef, Return(T::*call)()const, const Allocator& i_allocator = Allocator());
     function(Return(*call)(), const Allocator& i_allocator = Allocator());
+	~function() = default;
     function& operator=(const function& other) = default;
     function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
@@ -77,7 +79,7 @@ private:
     inline Return eval_tuple(const mpl::sequence<>&) const;
 
     function_base_const_dist_ptr m_functionImpl;
-    Allocator m_allocator;
+	fixed_size_allocate_or<Allocator> m_allocator;
 };
 
 template<typename Return, typename ... Types, typename Allocator>
@@ -101,7 +103,7 @@ class function<Return(Types...),Allocator>
 public:
 	typedef Return return_type;
 	
-	function() = default;
+	function();
     function(std::nullptr_t);
     function(const function& other) = default;
     function(function&& other) = default;
@@ -132,7 +134,7 @@ private:
     inline Return eval_tuple(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
 
     function_base_const_dist_ptr m_functionImpl;
-    Allocator m_allocator;
+	fixed_size_allocate_or<Allocator> m_allocator;
 };
 
 namespace mpl

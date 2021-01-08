@@ -5,7 +5,7 @@ namespace ddk
 
 any_value::any_value()
 : m_currentAgnosticType(k_invalidType)
-, m_arena(NULL)
+, m_arena(nullptr)
 {
 }
 any_value::~any_value()
@@ -14,7 +14,7 @@ any_value::~any_value()
 }
 any_value::any_value(const any_value& other)
 : m_currentAgnosticType(k_invalidType)
-, m_arena(NULL)
+, m_arena(nullptr)
 {
 	clone(other);
 }

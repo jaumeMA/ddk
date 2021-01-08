@@ -64,7 +64,7 @@ private:
 	void* m_initStack = nullptr;
 	void* m_endStack = nullptr;
 	void* m_deallocStack = nullptr;
-	stack_alloc_const_lent_ptr m_stackAllocImpl;
+	stack_alloc_const_lent_ptr m_stackAllocImpl = nullptr;
 };
 
 }

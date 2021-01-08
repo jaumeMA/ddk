@@ -15,6 +15,10 @@ intrusive_node_impl<T>::intrusive_node_impl(Args&& ... i_args)
 {
 }
 template<typename T>
+intrusive_node_impl<T>::~intrusive_node_impl()
+{
+}
+template<typename T>
 typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::get_prev_node()
 {
 	return m_prevNode;
@@ -188,12 +192,16 @@ intrusive_node<T,Allocator>::intrusive_node(Args&& ... i_args)
 
 		detail::intrusive_node_impl<T>* impl = new(mem) detail::intrusive_node_impl<T>(std::forward<Args>(i_args) ...);
 
-		m_impl = as_unique_reference(impl,tagged_reference_counter(impl->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter<detail::intrusive_node_impl<T>>(m_allocator));
+		m_impl = as_unique_reference(impl,tagged_reference_counter(impl->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
 	}
 	else
 	{
 		throw bad_allocation_exception{"Could not allocate for intrusive node"};
 	}
+}
+template<typename T,typename Allocator>
+intrusive_node<T,Allocator>::~intrusive_node()
+{
 }
 template<typename T,typename Allocator>
 intrusive_node<T,Allocator>& intrusive_node<T,Allocator>::operator=(intrusive_node&& other)

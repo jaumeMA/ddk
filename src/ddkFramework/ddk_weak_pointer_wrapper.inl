@@ -45,7 +45,7 @@ weak_pointer_wrapper<T>::weak_pointer_wrapper(weak_pointer_wrapper<TT>&& other)
 	std::swap(m_deleter,other.m_deleter);
 }
 template<typename T>
-weak_pointer_wrapper<T>::weak_pointer_wrapper(T* i_data,const tagged_reference_counter& i_refCounter,const IReferenceWrapperDeleter* i_deleter)
+weak_pointer_wrapper<T>::weak_pointer_wrapper(T* i_data,const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_deleter)
 : m_data(i_data)
 , m_refCounter(i_refCounter)
 , m_deleter(i_deleter)

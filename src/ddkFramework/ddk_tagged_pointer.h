@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_template_helper.h"
 #include <type_traits>
 #include <cstring>
 
@@ -8,11 +9,22 @@
 
 #define MASK_NUM_BITS 2
 
+namespace ddk
+{
+
 template<typename T>
 class tagged_pointer
 {
+	friend inline T* get_raw_ptr(T* i_ref)
+	{
+		return i_ref;
+	}
+	friend inline void set_raw_ptr(T*& i_ref,T* i_value)
+	{
+		i_ref = i_value;
+	}
+
 	static const short tag_mask = (1 << MASK_NUM_BITS) - 1;
-	typedef T* interface_ptr;
 	static const uintptr_t bitMask = ~tag_mask;
 
 	template<typename TT>
@@ -25,226 +37,80 @@ class tagged_pointer
 	friend tagged_pointer<TTT> reinterpret_tagged_cast(const tagged_pointer<TT>&);
 
 public:
-	typedef T raw_type;
-	typedef typename std::add_pointer<T>::type value_pointer;
-	typedef typename std::add_const<value_pointer>::type value_const_pointer;
-	typedef typename std::add_lvalue_reference<T>::type value_reference;
-	typedef typename std::add_const<value_reference>::type value_const_reference;
+	typedef typename mpl::get_pointer<T>::type interface_ptr;
+	typedef typename mpl::get_pointer<T>::const_type interface_const_ptr;
+	typedef typename mpl::get_pointer<T>::pointer pointer;
+	typedef typename mpl::get_pointer<T>::const_pointer const_pointer;
+	typedef typename mpl::get_pointer<T>::reference reference;
+	typedef typename mpl::get_pointer<T>::const_reference const_reference;
 
 	tagged_pointer() = default;
-	tagged_pointer(T* i_data)
-	: m_data(i_data)
-	{
-	}
-	tagged_pointer(T* i_data, short i_tag)
-	: m_data(i_data)
-	{
-		DDK_ASSERT(i_tag <= tag_mask, "You shall provide a tag less than tag mask");
-
-		m_data = as_pointer(as_number(i_data) | i_tag);
-	}
-	inline tagged_pointer(const tagged_pointer& other)
-	: m_data(nullptr)
-	{
-		m_data = other.m_data;
-	}
-	inline tagged_pointer(tagged_pointer&& other)
-	: m_data(nullptr)
-	{
-		std::swap(m_data,other.m_data);
-	}
+	tagged_pointer(const std::nullptr_t&);
+	tagged_pointer(interface_ptr i_data);
+	tagged_pointer(interface_ptr i_data, short i_tag);
+	inline tagged_pointer(const tagged_pointer& other);
+	inline tagged_pointer(tagged_pointer&& other);
 	template<typename TT>
-	tagged_pointer(const tagged_pointer<TT>& other)
-	: m_data(nullptr)
-	{
-		static_assert(std::is_base_of<T,TT>::value, "You shall provider inherited type");
-
-		m_data = other.m_data;
-	}
-	tagged_pointer& operator=(const tagged_pointer& other)
-	{
-		m_data = other.m_data;
-
-		return *this;
-	}
+	tagged_pointer(const tagged_pointer<TT>& other);
 	template<typename TT>
-	tagged_pointer& operator=(const tagged_pointer<TT>& other)
-	{
-		static_assert(std::is_base_of<T,TT>::value, "You shall provider inherited type");
-
-		m_data = other.m_data;
-
-		return *this;
-	}
-	inline void set_pointer(T* i_pointer)
-	{
-		m_data = as_pointer(as_number(i_pointer) | (as_number(m_data) & tag_mask));
-	}
-	inline void set_tag(short i_tag)
-	{
-		DDK_ASSERT(i_tag <= tag_mask, "You shall provide a tag less than tag mask");
-
-		m_data = as_pointer((as_number(m_data) & bitMask) | i_tag);
-	}
-	inline short get_tag() const
-	{
-		return as_const_number(m_data) & tag_mask;
-	}
-	inline bool is_tagged() const
-	{
-		return (as_const_number(m_data) & tag_mask) != 0;
-	}
-	inline value_pointer operator->()
-	{
-		return as_pointer(as_number(m_data) & bitMask);
-	}
-	inline value_const_pointer operator->() const
-	{
-		return as_const_pointer(as_const_number(m_data) & bitMask);
-	}
-	inline value_reference operator*()
-	{
-		if (value_pointer pData = as_pointer(as_number(m_data) & bitMask))
-		{
-			return *pData;
-		}
-		else
-		{
-			MAKE_IT_CRASH
-
-			return *as_pointer(0xDEAD);
-		}
-	}
-	inline value_const_reference operator*() const
-	{
-		if (value_pointer pData = as_const_pointer(as_const_number(m_data) & bitMask))
-		{
-			return *pData;
-		}
-		else
-		{
-			MAKE_IT_CRASH
-
-			return *as_pointer(0xDEAD);
-		}
-	}
-	inline value_pointer get_pointer()
-	{
-		return as_pointer(as_number(m_data) & bitMask);
-	}
-	inline value_const_pointer get_pointer() const
-	{
-		return as_const_pointer(as_const_number(m_data) & bitMask);
-	}
-	inline value_pointer get_data()
-	{
-		return m_data;
-	}
-	inline value_const_pointer get_data() const
-	{
-		return m_data;
-	}
-	inline value_pointer extract_pointer()
-	{
-		value_pointer res = as_pointer(as_number(m_data) & bitMask);
-
-		m_data = NULL;
-
-		return res;
-	}
-	inline operator bool() const
-	{
-		return m_data != NULL;
-	}
-	inline bool operator==(const tagged_pointer& other) const
-	{
-		return m_data == other.m_data;
-	}
-	inline bool operator!=(const tagged_pointer& other) const
-	{
-		return m_data != other.m_data;
-	}
-	static inline T* tag_pointer(T* i_ptr, const short i_tag)
-	{
-		return as_pointer(as_number(i_ptr) | i_tag);
-	}
-	static inline uintptr_t tag_pointer_as_value(T* i_ptr, const short i_tag)
-	{
-		return as_number(i_ptr) | i_tag;
-	}
-	static inline T* untag_pointer(T* i_ptr)
-	{
-		return as_pointer(as_number(i_ptr) & bitMask);
-	}
-	static inline short get_tag(T* i_ptr)
-	{
-		return as_number(i_ptr) & tag_mask;
-	}
-	static inline bool is_tagged(T* i_ptr)
-	{
-		return (as_number(i_ptr) & tag_mask) != 0;
-	}
+	tagged_pointer(tagged_pointer<TT>&& other);
+	tagged_pointer& operator=(const tagged_pointer& other);
+	template<typename TT>
+	tagged_pointer& operator=(const tagged_pointer<TT>& other);
+	inline void set_pointer(interface_ptr i_pointer);
+	inline void set_tag(short i_tag);
+	inline short get_tag() const;
+	inline bool is_tagged() const;
+	inline pointer operator->();
+	inline const_pointer operator->() const;
+	inline reference operator*();
+	inline const_reference operator*() const;
+	inline pointer get_pointer();
+	inline const_pointer get_pointer() const;
+	inline interface_ptr get_data();
+	inline interface_const_ptr get_data() const;
+	inline pointer extract_pointer();
+	inline operator bool() const;
+	inline bool operator==(const tagged_pointer& other) const;
+	inline bool operator!=(const tagged_pointer& other) const;
+	static inline interface_ptr tag_pointer(interface_ptr i_ptr, const short i_tag);
+	static inline uintptr_t tag_pointer_as_value(interface_ptr i_ptr, const short i_tag);
+	static inline interface_ptr untag_pointer(interface_ptr i_ptr);
+	static inline short get_tag(interface_ptr i_ptr);
+	static inline bool is_tagged(interface_ptr i_ptr);
 
 private:
     union from_number_to_ptr
     {
         uintptr_t dataNumber;
-        value_pointer dataPointer;
+		pointer dataPointer;
     };
     union from_ptr_to_number
     {
-        value_pointer dataPointer;
+		pointer dataPointer;
         uintptr_t dataNumber;
     };
-
-	static inline value_pointer as_pointer(uintptr_t i_value)
+	union from_const_ptr_to_number
 	{
-        const from_number_to_ptr res = { i_value };
+		const_pointer dataPointer;
+		uintptr_t dataNumber;
+	};
 
-		return res.dataPointer;
-	}
-	static inline value_const_pointer as_const_pointer(uintptr_t i_value)
-	{
-        const from_number_to_ptr res = { i_value };
+	static inline pointer as_pointer(uintptr_t i_value);
+	static inline uintptr_t as_number(interface_ptr i_ptr);
 
-		return res.dataPointer;
-	}
-	static inline uintptr_t as_number(value_pointer i_ptr)
-	{
-        const from_ptr_to_number res = { i_ptr };
-
-		return res.dataNumber;
-	}
-	static inline uintptr_t as_const_number(value_const_pointer i_ptr)
-	{
-        const from_ptr_to_number res = { i_ptr };
-
-		return res.dataNumber;
-	}
-
-	T* m_data = nullptr;
+	mutable interface_ptr m_data = nullptr;
 };
 
 template<typename T, typename ... Args>
-tagged_pointer<T> make_tagged_pointer(short i_tag, Args&& ... i_args)
-{
-	return tagged_pointer<T>(new T(std::forward<Args>(i_args)...), i_tag);
+inline tagged_pointer<T> make_tagged_pointer(short i_tag, Args&& ... i_args);
+template<typename TT, typename T>
+inline tagged_pointer<TT> dynamic_tagged_cast(const tagged_pointer<T>& i_ptr);
+template<typename TT, typename T>
+inline tagged_pointer<TT> static_tagged_cast(const tagged_pointer<T>& i_ptr);
+template<typename TT, typename T>
+inline tagged_pointer<TT> reinterpret_tagged_cast(const tagged_pointer<T>& i_ptr);
+
 }
 
-template<typename TT, typename T>
-tagged_pointer<TT> dynamic_tagged_cast(const tagged_pointer<T>& i_ptr)
-{
-	TT* pData = dynamic_cast<TT*>(i_ptr.get_pointer());
-
-	return (pData) ? tagged_pointer<TT>(pData,i_ptr.get_tag()) : tagged_pointer<TT>();
-}
-template<typename TT, typename T>
-tagged_pointer<TT> static_tagged_cast(const tagged_pointer<T>& i_ptr)
-{
-	return tagged_pointer<TT>(static_cast<TT*>(i_ptr.get_pointer()),i_ptr.get_tag());
-}
-template<typename TT, typename T>
-tagged_pointer<TT> reinterpret_tagged_cast(const tagged_pointer<T>& i_ptr)
-{
-	return tagged_pointer<TT>(reinterpret_cast<TT*>(i_ptr.get_pointer()),i_ptr.get_tag());
-}
+#include "ddk_tagged_pointer.inl"

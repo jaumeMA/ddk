@@ -109,6 +109,9 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
 	ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 
+	auto deducedIterable = ddk::deduce_iterable(foo);
+	auto deducedFooIterable = ddk::deduce_iterable(fooIterable);
+
 	ddk::thread myThread;
 	((ddk::make_function([](ddk::const_bidirectional_value<int> i_value) { printf("1 current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<= fooIterable) -> attach(std::move(myThread))).then(ddk::make_function([](const ddk::iter::action_result&){}));
 	
