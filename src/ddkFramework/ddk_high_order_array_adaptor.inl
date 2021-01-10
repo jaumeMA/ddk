@@ -6,7 +6,7 @@ template<typename T,size_t ... ranks>
 high_order_array_adaptor<T,ranks...>::high_order_array_adaptor(high_order_array<T,ranks...>& i_iterable,const ddk::iter::shift_action& i_initialAction)
 : m_iterable(i_iterable)
 {
-	shift_value(i_initialAction.shifting());
+	m_currIndex = i_initialAction.shifting();
 }
 template<typename T,size_t ... ranks>
 typename high_order_array_adaptor<T,ranks...>::reference high_order_array_adaptor<T,ranks...>::get_value() noexcept
@@ -19,79 +19,97 @@ typename high_order_array_adaptor<T,ranks...>::const_reference high_order_array_
 	return m_iterable.at(m_currIndex);
 }
 template<typename T,size_t ... ranks>
-ddk::optional<typename high_order_array_adaptor<T,ranks...>::reference> high_order_array_adaptor<T,ranks...>::next_value() noexcept
+template<typename Sink>
+bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) noexcept
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		return m_iterable.at(++m_currIndex);
+		i_sink(m_iterable.at(++m_currIndex));
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-ddk::optional<typename high_order_array_adaptor<T,ranks...>::const_reference> high_order_array_adaptor<T,ranks...>::next_value() const noexcept
+template<typename Sink>
+bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) const noexcept
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		return m_iterable.at(++m_currIndex);
+		i_sink(m_iterable.at(++m_currIndex));
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-ddk::optional<typename high_order_array_adaptor<T,ranks...>::reference> high_order_array_adaptor<T,ranks...>::prev_value() noexcept
+template<typename Sink>
+bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) noexcept
 {
 	if(m_currIndex > 0)
 	{
-		return m_iterable.at(--m_currIndex);
+		i_sink(m_iterable.at(--m_currIndex));
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-ddk::optional<typename high_order_array_adaptor<T,ranks...>::const_reference> high_order_array_adaptor<T,ranks...>::prev_value() const noexcept
+template<typename Sink>
+bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) const noexcept
 {
 	if(m_currIndex > 0)
 	{
-		return m_iterable.at(--m_currIndex);
+		i_sink(m_iterable.at(--m_currIndex));
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-ddk::optional<typename high_order_array_adaptor<T,ranks...>::reference> high_order_array_adaptor<T,ranks...>::shift_value(int i_shift) noexcept
+template<typename Sink>
+bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept
 {
 	const size_t newIndex = m_currIndex + i_shift;
 
 	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		return m_iterable.at(m_currIndex = newIndex);
+		i_sink(m_iterable.at(m_currIndex = newIndex));
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-ddk::optional<typename high_order_array_adaptor<T,ranks...>::const_reference> high_order_array_adaptor<T,ranks...>::shift_value(int i_shift) const noexcept
+template<typename Sink>
+bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept
 {
 	const size_t newIndex = m_currIndex + i_shift;
 
 	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		return m_iterable.at(m_currIndex = newIndex);
+		i_sink(m_iterable.at(m_currIndex = newIndex));
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>

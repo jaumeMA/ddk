@@ -34,7 +34,7 @@ public:
     typedef typename Traits::const_reference const_reference;
     typedef typename Traits::action action;
 
-    filtered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<bool(reference)>& i_filter);
+    filtered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<bool(const_reference)>& i_filter);
 
 private:
     void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) override;
@@ -43,7 +43,7 @@ private:
     bool empty() const override;
 
     iterable_impl_shared_ref<iterable_base_traits> m_iterableRef;
-    const function<bool(reference)> m_filter;
+    const function<bool(const_reference)> m_filter;
 };
 
 }

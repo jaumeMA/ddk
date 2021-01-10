@@ -17,12 +17,18 @@ public:
 	high_order_array_adaptor(high_order_array<T,ranks...>& i_iterable,const ddk::iter::shift_action& i_initialAction);
 	inline reference get_value() noexcept;
 	inline const_reference get_value() const noexcept;
-	inline ddk::optional<reference> next_value() noexcept;
-	inline ddk::optional<const_reference> next_value() const noexcept;
-	inline ddk::optional<reference> prev_value() noexcept;
-	inline ddk::optional<const_reference> prev_value() const noexcept;
-	inline ddk::optional<reference> shift_value(int i_shift) noexcept;
-	inline ddk::optional<const_reference> shift_value(int i_shift) const noexcept;
+	template<typename Sink>
+	inline bool forward_next_value_in(Sink&& i_sink) noexcept;
+	template<typename Sink>
+	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
+	template<typename Sink>
+	inline bool forward_prev_value_in(Sink&& i_sink) noexcept;
+	template<typename Sink>
+	inline bool forward_prev_value_in(Sink&& i_sink) const noexcept;
+	template<typename Sink>
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept;
+	template<typename Sink>
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept;
 	inline bool valid() const noexcept;
 
 private:

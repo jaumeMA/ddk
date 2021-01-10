@@ -55,6 +55,20 @@ struct E : C
     using C::C;
 };
 
+namespace ddk
+{
+
+struct tuple_visitor
+{
+	template<typename T>
+	void operator()(T&& i_value) const
+	{
+		printf("A loperator de tuples");
+	}
+};
+
+}
+
 TEST(DDKIterableTest, forwardIterableConstruction)
 {
 	std::vector<int> foo;
@@ -77,35 +91,40 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
 	std::vector<size_t> highOrderProvaSuma;
 
-	highOrderProvaSuma <<= ddk::trans::iterable_sum(highOrderIterable,highOrderIterable,highOrderIterable);
+	highOrderProvaSuma <<= ddk::trans::iterable_sum(foo,foo,foo);
+	highOrderProvaSuma <<= ddk::trans::iterable_neg(foo);
 
 	ddk::tuple<double,int,float> provaTuple;
 	provaTuple.set<0>(10.2f);
 	provaTuple.set<1>(20);
 	provaTuple.set<2>(30.5f);
 
-	ddk::const_random_access_iterable<ddk::variant_reference<double,int,float>> provaTuplaIterable = ddk::make_iterable<ddk::const_random_access_iterable<ddk::variant_reference<double,int,float>>>(provaTuple);
+	ddk::const_random_access_iterable<ddk::const_variant_const_reference<double,int,float>> provaTuplaIterable = ddk::make_iterable<ddk::const_random_access_iterable<ddk::const_variant_const_reference<double,int,float>>>(provaTuple);
 
 	ddk::tuple<double,int,float> provaSumTuple;
 
 	//provaSumTuple <<= ddk::trans::iterable_sum(provaTuplaIterable,provaTuplaIterable,provaTuplaIterable);
 
-	ddk::make_function([](const ddk::variant_reference<double,int,float>& i_value)
+	ddk::make_function([](const ddk::variant_const_reference<double,int,float>& i_value)
 	{  
-		if(i_value.is<double&>())
+		if(i_value.is<const double&>())
 		{
-			printf("curr tupla str value: %f\n",i_value.get<double&>());
+			printf("curr tupla str value: %f\n",i_value.get<const double&>());
 		}
-		else if(i_value.is<int&>())
+		else if(i_value.is<const int&>())
 		{
-			printf("curr tupla int value: %d\n",i_value.get<int&>());
+			printf("curr tupla int value: %d\n",i_value.get<const int&>());
 		}
 		else
 		{
-			printf("curr tupla float value: %f\n",i_value.get<float&>());
+			printf("curr tupla float value: %f\n",i_value.get<const float&>());
 		}
 	
 	}) <<= provaTuplaIterable;
+
+	ddk::tuple_visitor tupleVisitor;
+
+	tupleVisitor <<= provaSumTuple;
 
 	ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 
@@ -117,7 +136,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	
 	//ddk::algo::swap swaper(ddk::make_function([](int i_value){ return i_value == 4; }),ddk::make_function([](int i_value){ return i_value == 76; }));
 
-	ddk::const_random_access_iterable<const int> transformedFoo = ddk::view::transform([](int i_value) { return 2 * i_value; }) <<= fooIterable;
+	ddk::const_random_access_iterable<int> transformedFoo = ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= foo;
 
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value) { printf("2 current value: %d at %zd\n", *i_value, value_position(i_value)); }) <<= ddk::view::order(ddk::iter::reverse_order) <<= ddk::view::filter([](const A& i_value) { return i_value > 0; }) <<= ddk::view::transform([](int i_value) { return A(i_value); }) <<= fooIterable;
 

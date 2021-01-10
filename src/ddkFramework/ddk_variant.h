@@ -131,7 +131,11 @@ public:
 template<typename ... T>
 using variant_reference = variant<typename embedded_type<T>::ref_type ...>;
 template<typename ... T>
+using const_variant_reference = const variant<typename embedded_type<T>::ref_type ...>;
+template<typename ... T>
 using variant_const_reference = variant<typename embedded_type<T>::cref_type ...>;
+template<typename ... T>
+using const_variant_const_reference = const variant<typename embedded_type<T>::cref_type ...>;
 
 template<typename ... Types>
 constexpr const variant<Types...>& as_variant(const variant<Types...>& i_value)

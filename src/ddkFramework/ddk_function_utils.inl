@@ -42,7 +42,7 @@ function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...))
     return function<Return(Types...)>(i_funcPtr);
 }
 TEMPLATE(typename Functor)
-REQUIRED(IS_CLASS(Functor))
+REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
 resolved_callable<Functor> make_function(Functor&& i_functor)
 {
     typedef resolved_callable<Functor> function_type;
@@ -68,7 +68,7 @@ function<Return(Types...),Allocator> make_function(Return(*i_funcPtr)(Types...),
     return function<Return(Types...),Allocator>(i_funcPtr);
 }
 TEMPLATE(typename Functor, typename Allocator)
-REQUIRED(IS_CLASS(Functor),IS_ALLOCATOR(Allocator))
+REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_ALLOCATOR(Allocator))
 resolved_callable<Functor,Allocator> make_function(Functor&& i_functor, const Allocator& i_allocator)
 {
     typedef resolved_callable<Functor,Allocator> function_type;
@@ -162,6 +162,7 @@ function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>&
 {
     return lend(i_function.m_functionImpl);
 }
+
 template<typename Return, typename Allocator>
 Return eval(const function<Return(),Allocator>& i_function)
 {
@@ -211,6 +212,19 @@ Return eval(const function<Return(Types...),Allocator>& i_function, const functi
     {
         return i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
     }
+}
+TEMPLATE(typename Function,typename ... Args)
+REQUIRED(IS_NOT_FUNCTION(Function))
+auto eval(Function&& i_function,Args&& ... i_args)
+{
+	if constexpr (std::is_same<void,decltype(std::declval<Function>().operator()(std::declval<Args>() ...))>::value)
+	{
+		i_function(std::forward<Args>(i_args) ...);
+	}
+	else
+	{
+		return i_function(std::forward<Args>(i_args) ...);
+	}
 }
 
 template<typename Return,typename Allocator>
@@ -286,14 +300,14 @@ detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_co
 }
 
 TEMPLATE(typename ... Functions)
-REQUIRED(ARE_CALLABLES(Functions...))
+REQUIRED(IS_CALLABLE(Functions)...)
 inline ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions)
 {
 	return { i_functions ... };
 }
 
 TEMPLATE(typename ... Functions)
-REQUIRED(ARE_CALLABLES(Functions...))
+REQUIRED(IS_CALLABLE(Functions)...)
 inline ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions)
 {
 	return { i_functions ... };

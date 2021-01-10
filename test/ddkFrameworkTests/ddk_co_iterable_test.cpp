@@ -45,7 +45,8 @@ public:
 
 	MyIterableAdaptor(const MyIterable<int>& i_iterable,const ddk::iter::shift_action& i_initialAction);
 	inline const_reference get_value() const noexcept;
-	inline ddk::optional<const_reference> next_value() const noexcept;
+	template<typename Sink>
+	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
 	inline bool valid() const noexcept;
 
 private:
@@ -66,15 +67,18 @@ typename MyIterableAdaptor::const_reference MyIterableAdaptor::get_value() const
 {
 	return m_currValue;
 }
-ddk::optional<typename MyIterableAdaptor::const_reference> MyIterableAdaptor::next_value() const noexcept
+template<typename Sink>
+bool MyIterableAdaptor::forward_next_value_in(Sink&& i_sink) const noexcept
 {
 	if(m_currValue < m_iterable.get_max())
 	{
-		return ++m_currValue;
+		i_sink(++m_currValue);
+
+		return true;
 	}
 	else
 	{
-		return none;
+		return false;
 	}
 }
 

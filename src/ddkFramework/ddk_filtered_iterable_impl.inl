@@ -18,7 +18,7 @@ Function iterable_filter<Function>::get_filter() const
 }
 
 template<typename Traits>
-filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<bool(reference)>& i_filter)
+filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<bool(const_reference)>& i_filter)
 : m_iterableRef(i_iterableRef)
 , m_filter(i_filter)
 {

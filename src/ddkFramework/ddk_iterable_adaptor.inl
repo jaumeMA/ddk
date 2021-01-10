@@ -42,20 +42,39 @@ typename iterable_adaptor_base<Iterable>::const_reference iterable_adaptor_base<
 	return *m_currIterator;
 }
 template<typename Iterable>
-typename iterable_adaptor_base<Iterable>::pointer iterable_adaptor_base<Iterable>::add_item(const_reference i_value) noexcept
+template<typename Sink>
+bool iterable_adaptor_base<Iterable>::forward_add_value_in(const_reference i_value, Sink&& i_sink) noexcept
 {
 	typedef typename Iterable::value_type value_type;
 
 	iterator itNew = m_iterable.insert(m_currIterator,i_value);
 
-	if (itNew != this->m_endIterator) return &*itNew; else return nullptr;
+	if (itNew != this->m_endIterator)
+	{
+		i_sink(*itNew);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename Iterable>
-typename iterable_adaptor_base<Iterable>::pointer iterable_adaptor_base<Iterable>::remove_item() noexcept
+template<typename Sink>
+bool iterable_adaptor_base<Iterable>::forward_erase_value_in(Sink&& i_sink) noexcept
 {
 	iterator itNew = m_iterable.erase(m_currIterator);
 
-	if(itNew != this->m_endIterator) return &*itNew; else return nullptr;
+	if(itNew != this->m_endIterator) 
+	{
+		i_sink(*itNew);
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename Iterable>
 template<typename Action>
@@ -89,14 +108,34 @@ typename iterable_adaptor_base<const Iterable>::const_reference iterable_adaptor
 }
 
 template<typename Iterable>
-typename forward_iterable_adaptor<Iterable>::pointer forward_iterable_adaptor<Iterable>::next_value() noexcept
+template<typename Sink>
+bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink) noexcept
 {
-	if(++(this->m_currIterator) != this->m_endIterator) return &*(this->m_currIterator); else return nullptr;
+	if(++(this->m_currIterator) != this->m_endIterator)
+	{
+		i_sink(*(this->m_currIterator));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename Iterable>
-typename forward_iterable_adaptor<Iterable>::const_pointer forward_iterable_adaptor<Iterable>::next_value() const noexcept
+template<typename Sink>
+bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink) const noexcept
 {
-	if(++(this->m_currIterator) != this->m_endIterator) return &*(this->m_currIterator); else return nullptr;
+	if(++(this->m_currIterator) != this->m_endIterator)
+	{
+		i_sink(*(this->m_currIterator));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 template<typename Iterable>
@@ -107,41 +146,103 @@ bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterabl
 {
 }
 template<typename Iterable>
-typename bidirectional_iterable_adaptor<Iterable>::pointer bidirectional_iterable_adaptor<Iterable>::prev_value() noexcept
+template<typename Sink>
+bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink) noexcept
 {
-	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator) return &*(this->m_currIterator); else return nullptr;
+	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator)
+	{
+		i_sink(*(this->m_currIterator));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename Iterable>
-typename bidirectional_iterable_adaptor<Iterable>::const_pointer bidirectional_iterable_adaptor<Iterable>::prev_value() const noexcept
+template<typename Sink>
+bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink) const noexcept
 {
-	return (std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator) return &*(this->m_currIterator); else return nullptr;
+	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator) 
+	{
+		i_sink(*(this->m_currIterator));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 template<typename Iterable>
-typename random_access_iterable_adaptor<Iterable>::pointer random_access_iterable_adaptor<Iterable>::shift_value(int i_shift) noexcept
+template<typename Sink>
+bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shift, Sink&& i_sink) noexcept
 {
 	switch(i_shift)
 	{
 	case 1:
-		if(++(this->m_currIterator) != this->m_endIterator) return &*(this->m_currIterator); else return nullptr;
+		if(++(this->m_currIterator) != this->m_endIterator)
+		{
+			i_sink(*(this->m_currIterator));
+
+			return true;
+		}
+		break;
 	case -1:
-		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator) return &*(this->m_currIterator); else return nullptr;
+		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator) 
+		{
+			i_sink(*(this->m_currIterator));
+
+			return true;
+		}
+		break;
 	default:
-		if((this->m_currIterator += i_shift) != this->m_endIterator) return &*(this->m_currIterator); else return nullptr;
+		if((this->m_currIterator += i_shift) != this->m_endIterator) 
+		{
+			i_sink(*(this->m_currIterator));
+
+			return true;
+		}
+		break;
 	}
+
+	return false;
 }
 template<typename Iterable>
-typename random_access_iterable_adaptor<Iterable>::const_pointer random_access_iterable_adaptor<Iterable>::shift_value(int i_shift) const noexcept
+template<typename Sink>
+bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shift, Sink&& i_sink) const noexcept
 {
 	switch(i_shift)
 	{
 	case 1:
-		if(++(this->m_currIterator) != this->m_endIterator) return &*(this->m_currIterator); else return nullptr;
+		if(++(this->m_currIterator) != this->m_endIterator)
+		{
+			i_sink(*(this->m_currIterator));
+
+			return true;
+		}
+		break;
 	case -1:
-		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator) return &*(this->m_currIterator); else return nullptr;
+		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator)
+		{
+			i_sink(*(this->m_currIterator));
+
+			return true;
+		}
+		break;
 	default:
-		if((this->m_currIterator += i_shift) != this->m_endIterator) return &*(this->m_currIterator); else return nullptr;
+		if((this->m_currIterator += i_shift) != this->m_endIterator)
+		{
+			i_sink(*(this->m_currIterator));
+
+			return true;
+		}
+		break;
 	}
+
+	return false;
 }
 
 }

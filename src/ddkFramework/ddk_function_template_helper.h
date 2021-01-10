@@ -115,14 +115,14 @@ struct is_valid_functor
 {
 private:
     template<typename TT>
-	static std::true_type func(const TT&, decltype(&TT::operator())); // non template call operator
-    template<typename TT, typename TTT = decltype(std::declval<TT>().operator()(std::declval<Types>() ...))>
-	static std::true_type func(const TT&, TTT); // template call operator
-    template<typename TT, typename ... TTT>
-	static std::false_type func(const TT&, TTT&& ...);
+	static std::true_type resolver(const TT&, decltype(&TT::operator())); // non template call operator
+    template<typename TT>
+	static std::true_type resolver(const TT&, typename std::add_pointer<decltype(std::declval<TT>().operator()(std::declval<Types>() ...))>::type); // template call operator and known types
+	template<typename TT>
+	static std::false_type resolver(const TT&, ...);
 
 public:
-    static const bool value = decltype(func(std::declval<T>(),nullptr))::value;
+    static const bool value = decltype(resolver(std::declval<T>(),nullptr))::value;
 };
 
 }

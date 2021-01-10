@@ -11,100 +11,100 @@ namespace iter
 namespace detail
 {
 
-template<typename Iterable, typename Adaptor>
-struct action_visitor_base : public static_visitor<typename Adaptor::reference>
+template<typename Iterable,typename FinalAction, typename Function, typename Adaptor>
+struct action_visitor_base : public static_visitor<bool>
 {
 public:
-	template<typename Action>
-	action_visitor_base(Iterable& i_iterable, Action&& i_initialAction, action_state_lent_ptr i_actionStatePtr);
+	template<typename Action, typename FFunction>
+	action_visitor_base(Iterable& i_iterable, Action&& i_initialAction, FFunction&& i_sink, action_state_lent_ptr i_actionStatePtr);
 
+	template<typename Visitor>
+	inline void loop();
+	template<typename T>
+	inline void operator()(T&& i_values) const;
 	inline bool valid() const noexcept;
 
 protected:
 	Adaptor m_adaptor;
 	action_state_lent_ptr m_actionStatePtr;
+	mutable FinalAction m_currAction;
+	Function m_sink;
 };
 
-template<typename Iterable, typename Action, typename AAction = Action>
+template<typename Iterable, typename FinalAction,typename Function, typename Action, typename Adaptor>
 struct action_visitor;
 
-template<typename Iterable,typename Adaptor>
-struct action_visitor<Iterable,const_input_action,Adaptor>: public action_visitor_base<Iterable,Adaptor>
+template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>
+struct action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>: public action_visitor_base<Iterable,FinalAction,Function,Adaptor>
 {
 public:
-	using action_visitor_base<Iterable,Adaptor>::action_visitor_base;
-	typedef typename Adaptor::reference reference;
-	typedef typename Adaptor::const_reference const_reference;
+	using action_visitor_base<Iterable,FinalAction,Function,Adaptor>::action_visitor_base;
+	typedef const_input_action action;
 
-	inline reference visit(const go_forward_action&);
+	inline bool visit(const go_forward_action&);
 };
 
-template<typename Iterable, typename Adaptor>
-struct action_visitor<Iterable,input_action,Adaptor> : public action_visitor<Iterable,const_input_action,Adaptor>
+template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>
+struct action_visitor<Iterable,FinalAction,Function,input_action,Adaptor> : public action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>
 {
 public:
-    using action_visitor<Iterable,const_input_action,Adaptor>::action_visitor;
-	using action_visitor<Iterable,const_input_action,Adaptor>::visit;
-	typedef typename Adaptor::reference reference;
-	typedef typename Adaptor::const_reference const_reference;
+    using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::action_visitor;
+	using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::visit;
+	typedef input_action action;
 
-	inline reference visit(const stop_action&);
-	inline reference visit(const erase_action&);
-	inline reference visit(const add_action&);
+	inline bool visit(const stop_action&);
+	inline bool visit(const erase_action&);
+	inline bool visit(const add_action&);
 };
 
-template<typename Iterable, typename Adaptor>
-struct action_visitor<Iterable,const_bidirectional_action,Adaptor> : public action_visitor<Iterable,const_input_action,Adaptor>
+template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>
+struct action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor> : public action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>
 {
 public:
-    using action_visitor<Iterable,const_input_action,Adaptor>::action_visitor;
-	using action_visitor<Iterable,const_input_action,Adaptor>::visit;
-	typedef typename Adaptor::reference reference;
-	typedef typename Adaptor::const_reference const_reference;
+    using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::action_visitor;
+	using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::visit;
+	typedef const_bidirectional_action action;
 
-	inline reference visit(const go_backward_action&);
+	inline bool visit(const go_backward_action&);
 };
 
-template<typename Iterable,typename Adaptor>
-struct action_visitor<Iterable,bidirectional_action,Adaptor>: public action_visitor<Iterable,input_action,Adaptor>
+template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>
+struct action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>: public action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>
 {
 public:
-	using action_visitor<Iterable,input_action,Adaptor>::action_visitor;
-	using action_visitor<Iterable,input_action,Adaptor>::visit;
-	typedef typename Adaptor::reference reference;
-	typedef typename Adaptor::const_reference const_reference;
+	using action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::action_visitor;
+	using action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit;
+	typedef bidirectional_action action;
 
-	inline reference visit(const go_backward_action&);
+	inline bool visit(const go_backward_action&);
 };
 
-template<typename Iterable, typename Adaptor>
-struct action_visitor<Iterable,const_random_access_action,Adaptor> : public action_visitor<Iterable,const_bidirectional_action,Adaptor>
+template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>
+struct action_visitor<Iterable,FinalAction,Function,const_random_access_action,Adaptor> : public action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>
 {
 public:
-    using action_visitor<Iterable,const_bidirectional_action,Adaptor>::action_visitor;
-	using action_visitor<Iterable,const_bidirectional_action,Adaptor>::visit;
-	typedef typename Adaptor::reference reference;
-	typedef typename Adaptor::const_reference const_reference;
+    using action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::action_visitor;
+	using action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::visit;
+	typedef const_random_access_action action;
 
-	inline reference visit(const shift_action&);
+	inline bool visit(const shift_action&);
 };
 
-template<typename Iterable,typename Adaptor>
-struct action_visitor<Iterable,random_access_action,Adaptor>: public action_visitor<Iterable,bidirectional_action,Adaptor>
+template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>
+struct action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>: public action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>
 {
 public:
-	using action_visitor<Iterable,bidirectional_action,Adaptor>::action_visitor;
-	using action_visitor<Iterable,bidirectional_action,Adaptor>::visit;
-	typedef typename Adaptor::reference reference;
-	typedef typename Adaptor::const_reference const_reference;
+	using action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::action_visitor;
+	using action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::visit;
+	typedef const_random_access_action action;
 
-	inline reference visit(const shift_action&);
+	inline bool visit(const shift_action&);
 };
 
 }
 
 template<typename Iterable, typename Function,typename Action>
-inline void visit_iterator(Iterable& i_iterable, const Function& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr);
+inline void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr);
 
 }
 }

@@ -10,40 +10,39 @@ template<typename ... T>
 class tuple_adaptor
 {
 	static const size_t s_numTypes = tuple<T...>::size();
-	typedef typed_arena<variant<typename embedded_type<T>::ref_type ...>> cached_value_t;
 
 public:
-	typedef variant<typename embedded_type<T>::ref_type ...> reference;
-	typedef variant<typename embedded_type<T>::cref_type ...> const_reference;
-
 	tuple_adaptor(tuple<T...>& i_iterable,const ddk::iter::shift_action& i_initialAction);
-	~tuple_adaptor();
-	inline reference get_value() noexcept;
-	inline const_reference get_value() const noexcept;
-	inline ddk::optional<reference> next_value() noexcept;
-	inline ddk::optional<const_reference> next_value() const noexcept;
-	inline ddk::optional<reference> prev_value() noexcept;
-	inline ddk::optional<const_reference> prev_value() const noexcept;
-	inline ddk::optional<reference> shift_value(int i_shift) noexcept;
-	inline ddk::optional<const_reference> shift_value(int i_shift) const noexcept;
+	~tuple_adaptor() = default;
+	template<typename Sink>
+	inline bool forward_next_value_in(Sink&& i_sink) noexcept;
+	template<typename Sink>
+	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
+	template<typename Sink>
+	inline bool forward_prev_value_in(Sink&& i_sink) noexcept;
+	template<typename Sink>
+	inline bool forward_prev_value_in(Sink&& i_sink) const noexcept;
+	template<typename Sink>
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept;
+	template<typename Sink>
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept;
 	inline bool valid() const noexcept;
 
 private:
-	template<size_t ... Indexs>
-	inline reference get(const mpl::sequence<Indexs...>&);
+	template<typename Sink, size_t ... Indexs>
+	inline void get(const mpl::sequence<Indexs...>&, Sink&& i_sink);
 
-	template<size_t ... Indexs>
-	inline const_reference get(const mpl::sequence<Indexs...>&) const;
+	template<typename Sink, size_t ... Indexs>
+	inline void get(const mpl::sequence<Indexs...>&,Sink&& i_sink) const;
 
-	template<size_t Index>
-	inline static reference _get(tuple<T...>&, cached_value_t&);
+	template<size_t Index,typename Sink>
+	inline static void _get(Sink&& i_sink, tuple<T...>&);
 
-	template<size_t Index>
-	inline static const_reference _get(const tuple<T...>&, cached_value_t&);
+	template<size_t Index,typename Sink>
+	inline static void _get(Sink&& i_sink,const tuple<T...>&);
 
 	tuple<T...>& m_iterable;
 	mutable size_t m_currIndex = 0;
-	mutable cached_value_t m_currValue;
 };
 
 }

@@ -168,7 +168,6 @@ inline void clear_ptr(lent_pointer_wrapper<T>& i_ref, ...);
 
 #endif
 
-
 }
 
 #include "ddk_lent_pointer_wrapper.inl"

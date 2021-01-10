@@ -187,15 +187,4 @@ inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_
 
 }
 
-namespace std
-{
-
-template<typename ... Types>
-struct add_const<ddk::tuple<Types...>>
-{
-    typedef ddk::tuple<typename add_const<Types>::type ...> type;
-};
-
-}
-
 #include "ddk_tuple.inl"

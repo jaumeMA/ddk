@@ -127,6 +127,25 @@ public:
 	typedef typename mpl::static_if<std::is_const<raw_type>::value,random_access_iterable<const value_type>,random_access_iterable<value_type>>::type type;
 };
 
+template<bool,typename>
+struct iterable_action_type_correspondence;
+
+template<bool IsConst>
+struct iterable_action_type_correspondence<IsConst,std::forward_iterator_tag>
+{
+	typedef typename mpl::static_if<IsConst,iter::const_forward_action,iter::forward_action>::type type;
+};
+template<bool IsConst>
+struct iterable_action_type_correspondence<IsConst,std::bidirectional_iterator_tag>
+{
+	typedef typename mpl::static_if<IsConst,iter::const_bidirectional_action,iter::bidirectional_action>::type type;
+};
+template<bool IsConst>
+struct iterable_action_type_correspondence<IsConst,std::random_access_iterator_tag>
+{
+	typedef typename mpl::static_if<IsConst,iter::const_random_access_action,iter::random_access_action>::type type;
+};
+
 }
 }
 

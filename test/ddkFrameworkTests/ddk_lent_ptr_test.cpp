@@ -136,12 +136,14 @@ TEST(DDKLentPtrTest,pointerAccess)
 }
 TEST(DDKLentPtrTest,get)
 {
+	using namespace ddk;
+
 	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
 	ddk::lent_pointer_wrapper<DefaultType> foo;
 
 	foo = ddk::lend(fooUnique);
 
-	EXPECT_EQ(ddk::get_raw_ptr(foo),fooUnique.get());
+	EXPECT_EQ(get_raw_ptr(foo),fooUnique.get());
 }
 TEST(DDKLentPtrTest,clear)
 {
