@@ -15,17 +15,17 @@ public:
 	tuple_adaptor(tuple<T...>& i_iterable,const ddk::iter::shift_action& i_initialAction);
 	~tuple_adaptor() = default;
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) const noexcept;
+	inline bool forward_prev_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept;
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept;
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const;
 	inline bool valid() const noexcept;
 
 private:

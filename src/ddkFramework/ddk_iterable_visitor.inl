@@ -182,69 +182,49 @@ bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>:
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Adaptor>::visit(const shift_action& i_action)
 {
-	if(const int shiftingValue = i_action.shifting())
+	const int currShift = i_action.shifting();
+
+	if(m_adaptor.forward_shift_value_in(currShift,*this))
 	{
-		if(m_adaptor.forward_shift_value_in(shiftingValue,*this))
+		if(m_actionStatePtr)
 		{
-			if(m_actionStatePtr)
-			{
-				m_actionStatePtr->forward_result(go_to_place(shiftingValue,shiftingValue));
-			}
-
-			return true;
+			m_actionStatePtr->forward_result(go_to_place(currShift,currShift));
 		}
-		else
-		{
-			if(m_actionStatePtr)
-			{
-				m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError{ShiftActionError::ShiftOutOfBounds}));
-			}
 
-			return false;
-		}
+		return true;
 	}
 	else
 	{
 		if(m_actionStatePtr)
 		{
-			m_actionStatePtr->forward_result(i_action);
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError{ShiftActionError::ShiftOutOfBounds}));
 		}
 
-		return true;
+		return false;
 	}
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>::visit(const shift_action& i_action)
 {
-	if(const int shiftingValue = i_action.shifting())
+	const int currShift = i_action.shifting();
+
+	if(m_adaptor.forward_shift_value_in(currShift,*this))
 	{
-		if(m_adaptor.forward_shift_value_in(shiftingValue,*this))
+		if(m_actionStatePtr)
 		{
-			if(m_actionStatePtr)
-			{
-				m_actionStatePtr->forward_result(go_to_place(shiftingValue,shiftingValue));
-			}
-
-			return true;
+			m_actionStatePtr->forward_result(go_to_place(currShift,currShift));
 		}
-		else
-		{
-			if(m_actionStatePtr)
-			{
-				m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
-			}
 
-			return false;
-		}
+		return true;
 	}
 	else
 	{
 		if(m_actionStatePtr)
 		{
-			m_actionStatePtr->forward_result(i_action);
+			m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
 		}
 
-		return true;
+		return false;
 	}
 }
 
@@ -260,6 +240,8 @@ void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_ini
 	{
 		actionVisitor.loop<action_visitor_t>();
 	}
+
+	suspend();
 }
 
 }

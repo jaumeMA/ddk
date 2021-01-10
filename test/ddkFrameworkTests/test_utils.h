@@ -16,7 +16,10 @@ public:
 	}
 	void deallocate(const void* i_object) const override
 	{
-		//already deleted by smart ptr
+		if(const T* pObject = reinterpret_cast<const T*>(i_object))
+		{
+			delete pObject;
+		}
 	}
 };
 

@@ -53,6 +53,7 @@ public:
 	bool operator==(const co_forward_iterator<T>& other) const;
 
 private:
+	co_forward_iterator(const co_forward_iterator& other,const stack_allocator&);
 	template<typename Iterable>
 	co_forward_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value==false>::type* = nullptr);
 	iter::go_forward_action&& acquire_iterable_value(reference i_value);
@@ -94,6 +95,7 @@ public:
 	bool operator==(const co_bidirectional_iterator<T>& other) const;
 
 private:
+	co_bidirectional_iterator(const co_bidirectional_iterator& other,const stack_allocator&);
 	template<typename Iterable>
 	co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
     iter::bidirectional_action&& acquire_iterable_value(reference i_value);
@@ -136,6 +138,7 @@ public:
 	bool operator==(const co_random_access_iterator<T>& other) const;
 
 private:
+	co_random_access_iterator(const co_random_access_iterator& other,const stack_allocator&);
 	template<typename Iterable>
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
 	iter::shift_action&& acquire_iterable_value(reference i_value);

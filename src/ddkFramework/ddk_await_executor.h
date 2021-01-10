@@ -32,6 +32,7 @@ public:
 	ExecutorState get_state() const;
 
 private:
+	await_executor(const await_executor& other,const stack_allocator&);
 	void yield(yielder_context* i_context) override;
 	void suspend(yielder_context* = nullptr) override;
 

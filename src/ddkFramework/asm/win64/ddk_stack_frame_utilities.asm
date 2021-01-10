@@ -76,54 +76,6 @@ get_curr_thread_stack PROC
 
 get_curr_thread_stack ENDP
 
-set_curr_thread_stack_base PROC
-
-	mov gs:[008h], rcx
-
-	ret
-
-set_curr_thread_stack_base ENDP
-
-set_curr_thread_stack_limit PROC
-
-	mov gs:[010h], rcx
-
-	ret
-
-set_curr_thread_stack_limit ENDP
-
-set_curr_thread_stack_dealloc PROC
-
-	mov gs:[01478h], rcx
-
-	ret
-
-set_curr_thread_stack_dealloc ENDP
-
-get_curr_thread_stack_base PROC
-
-	mov rax, gs:[008h]
-
-	ret
-
-get_curr_thread_stack_base ENDP
-
-get_curr_thread_stack_limit PROC
-
-	mov rax, gs:[010h]
-
-	ret
-
-get_curr_thread_stack_limit ENDP
-
-get_curr_thread_stack_dealloc PROC
-
-	mov rax, gs:[01478h]
-
-	ret
-
-get_curr_thread_stack_dealloc ENDP
-
 frame_get_out PROC
 
 	pop r15

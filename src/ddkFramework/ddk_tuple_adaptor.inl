@@ -10,7 +10,7 @@ tuple_adaptor<T...>::tuple_adaptor(tuple<T...>& i_iterable,const ddk::iter::shif
 }
 template<typename ... T>
 template<typename Sink>
-bool tuple_adaptor<T...>::forward_next_value_in(Sink&& i_sink) noexcept
+bool tuple_adaptor<T...>::forward_next_value_in(Sink&& i_sink)
 {
 	if(m_currIndex < s_numTypes)
 	{
@@ -27,7 +27,7 @@ bool tuple_adaptor<T...>::forward_next_value_in(Sink&& i_sink) noexcept
 }
 template<typename ... T>
 template<typename Sink>
-bool tuple_adaptor<T...>::forward_next_value_in(Sink&& i_sink) const noexcept
+bool tuple_adaptor<T...>::forward_next_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex < s_numTypes)
 	{
@@ -44,7 +44,7 @@ bool tuple_adaptor<T...>::forward_next_value_in(Sink&& i_sink) const noexcept
 }
 template<typename ... T>
 template<typename Sink>
-bool tuple_adaptor<T...>::forward_prev_value_in(Sink&& i_sink) noexcept
+bool tuple_adaptor<T...>::forward_prev_value_in(Sink&& i_sink)
 {
 	if(m_currIndex >= 0)
 	{
@@ -61,7 +61,7 @@ bool tuple_adaptor<T...>::forward_prev_value_in(Sink&& i_sink) noexcept
 }
 template<typename ... T>
 template<typename Sink>
-bool tuple_adaptor<T...>::forward_prev_value_in(Sink&& i_sink) const noexcept
+bool tuple_adaptor<T...>::forward_prev_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex >= 0)
 	{
@@ -78,7 +78,7 @@ bool tuple_adaptor<T...>::forward_prev_value_in(Sink&& i_sink) const noexcept
 }
 template<typename ... T>
 template<typename Sink>
-bool tuple_adaptor<T...>::forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept
+bool tuple_adaptor<T...>::forward_shift_value_in(int i_shift,Sink&& i_sink)
 {
 	size_t newIndex = m_currIndex + i_shift;
 
@@ -97,7 +97,7 @@ bool tuple_adaptor<T...>::forward_shift_value_in(int i_shift,Sink&& i_sink) noex
 }
 template<typename ... T>
 template<typename Sink>
-bool tuple_adaptor<T...>::forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept
+bool tuple_adaptor<T...>::forward_shift_value_in(int i_shift,Sink&& i_sink) const
 {
 	size_t newIndex = m_currIndex + i_shift;
 

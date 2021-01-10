@@ -15,20 +15,18 @@ public:
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 
 	high_order_array_adaptor(high_order_array<T,ranks...>& i_iterable,const ddk::iter::shift_action& i_initialAction);
-	inline reference get_value() noexcept;
-	inline const_reference get_value() const noexcept;
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) const noexcept;
+	inline bool forward_prev_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept;
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept;
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const;
 	inline bool valid() const noexcept;
 
 private:

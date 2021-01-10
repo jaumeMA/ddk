@@ -28,12 +28,10 @@ public:
 	iterable_adaptor_base(Iterable& i_iterable, Action&& i_initialAction);
 
 	inline bool valid() const noexcept;
-	inline reference get_value() noexcept;
-	inline const_reference get_value() const noexcept;
 	template<typename Sink>
-	inline bool forward_add_value_in(const_reference i_value, Sink&& i_sink) noexcept;
+	inline bool forward_add_value_in(const_reference i_value, Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_erase_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_erase_value_in(Sink&& i_sink);
 
 protected:
 	Iterable& m_iterable;
@@ -56,7 +54,6 @@ public:
 	iterable_adaptor_base(const Iterable& i_iterable,Action&& i_initialAction);
 
 	inline bool valid() const noexcept;
-	inline const_reference get_value() const noexcept;
 
 protected:
 	const Iterable& m_iterable;
@@ -75,9 +72,9 @@ public:
 	using typename iterable_adaptor_base<Iterable>::const_pointer;
 
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink) const;
 };
 
 template<typename Iterable>
@@ -94,9 +91,9 @@ public:
 	template<typename Action>
 	bidirectional_iterable_adaptor(Iterable& i_iterable,Action&& i_initialAction);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) noexcept;
+	inline bool forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) const noexcept;
+	inline bool forward_prev_value_in(Sink&& i_sink) const;
 
 protected:
 	const reverse_iterator m_endReverseIterator;
@@ -116,9 +113,9 @@ public:
 	using typename bidirectional_iterable_adaptor<Iterable>::const_pointer;
 
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift, Sink&& i_sink) noexcept;
+	inline bool forward_shift_value_in(int i_shift, Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept;
+	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const;
 };
 
 template<typename Iterable, typename Action>

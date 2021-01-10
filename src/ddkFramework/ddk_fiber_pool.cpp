@@ -141,11 +141,14 @@ void fiber_pool::deallocate(const void* i_object) const
 {
 	if(detail::fiber_impl* acquiredFiber = reinterpret_cast<detail::fiber_impl*>(const_cast<void*>(i_object)))
 	{
-		m_fiberScheduler->unregister_fiber(acquiredFiber->get_id());
+		const fiber_scheduler<>::unregister_fiber_result unregRes = m_fiberScheduler->unregister_fiber(acquiredFiber->get_id());
 
-		lock_guard lg(m_mutex);
+		if(unregRes == success)
+		{
+			lock_guard lg(m_mutex);
 
-		m_fiberCtr.push_back(acquiredFiber);
+			m_fiberCtr.push_back(acquiredFiber);
+		}
 	}
 }
 

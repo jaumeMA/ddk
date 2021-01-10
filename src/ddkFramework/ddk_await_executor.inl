@@ -33,7 +33,12 @@ await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable
 }
 template<typename Return>
 await_executor<Return>::await_executor(const await_executor& other)
-: await_executor(other.m_callable, { other.get_stack_allocator().get_alloc_impl(), other.get_stack_allocator().get_num_max_pages() })
+: await_executor(other,other.get_stack_allocator())
+{
+}
+template<typename Return>
+await_executor<Return>::await_executor(const await_executor& other,const stack_allocator& i_stackAllocator)
+: await_executor(other.m_callable,{ i_stackAllocator.get_alloc_impl(), i_stackAllocator.get_num_max_pages() })
 {
 }
 template<typename Return>

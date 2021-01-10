@@ -124,7 +124,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
 	ddk::tuple_visitor tupleVisitor;
 
-	tupleVisitor <<= provaSumTuple;
+	tupleVisitor <<= provaTuple;
 
 	ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 
@@ -176,4 +176,23 @@ TEST(DDKIterableTest, iterableUnion)
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("current value: %d at %zd\n",**i_value,value_position(i_value)); }) <<=  ddk::concat(fooIterable1,fooIterable2);
     ddk::const_random_access_iterable<A> fooIterableUnion2 = ddk::concat(fooIterable1,fooIterable2,fooIterable3);
     ddk::make_function([](ddk::const_bidirectional_value<const A, const D,const A> i_value){ printf("current values tuple: %d, %d, %d\n",*(i_value->get<0>()),*(i_value->get<1>()),*(i_value->get<2>())); }) <<= ddk::view::order(ddk::iter::reverse_order) <<= ddk::fusion(ddk::concat(fooIterable1,fooIterable2),fooIterable2, ddk::concat(fooIterable1,fooIterable3)), ddk::make_function([](ddk::iter::action_result i_result){ if(i_result != ddk::success) printf("error: %d\n", i_result.error().get_nested_error<ddk::iter::EraseActionError>().getValue()); });
+}
+
+std::vector<int> createLargeVector2(size_t size)
+{
+	std::vector<int> res;
+
+	for(size_t index = 0; index < size; index++)
+	{
+		res.push_back(index);
+	}
+
+	return std::move(res);
+}
+
+std::vector<int> myLargeVector2 = createLargeVector2(1000000);
+
+TEST(DDKIterableTest,directIteration)
+{
+	ddk::make_function([](int i_value) {}) <<= myLargeVector2;
 }

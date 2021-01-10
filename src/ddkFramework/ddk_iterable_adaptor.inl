@@ -32,18 +32,8 @@ bool iterable_adaptor_base<Iterable>::valid() const noexcept
 	return m_currIterator != m_endIterator;
 }
 template<typename Iterable>
-typename iterable_adaptor_base<Iterable>::reference iterable_adaptor_base<Iterable>::get_value() noexcept
-{
-	return *m_currIterator;
-}
-template<typename Iterable>
-typename iterable_adaptor_base<Iterable>::const_reference iterable_adaptor_base<Iterable>::get_value() const noexcept
-{
-	return *m_currIterator;
-}
-template<typename Iterable>
 template<typename Sink>
-bool iterable_adaptor_base<Iterable>::forward_add_value_in(const_reference i_value, Sink&& i_sink) noexcept
+bool iterable_adaptor_base<Iterable>::forward_add_value_in(const_reference i_value, Sink&& i_sink)
 {
 	typedef typename Iterable::value_type value_type;
 
@@ -61,7 +51,7 @@ bool iterable_adaptor_base<Iterable>::forward_add_value_in(const_reference i_val
 }
 template<typename Iterable>
 template<typename Sink>
-bool iterable_adaptor_base<Iterable>::forward_erase_value_in(Sink&& i_sink) noexcept
+bool iterable_adaptor_base<Iterable>::forward_erase_value_in(Sink&& i_sink)
 {
 	iterator itNew = m_iterable.erase(m_currIterator);
 
@@ -101,15 +91,10 @@ bool iterable_adaptor_base<const Iterable>::valid() const noexcept
 {
 	return m_currIterator != m_endIterator;
 }
-template<typename Iterable>
-typename iterable_adaptor_base<const Iterable>::const_reference iterable_adaptor_base<const Iterable>::get_value() const noexcept
-{
-	return *m_currIterator;
-}
 
 template<typename Iterable>
 template<typename Sink>
-bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink) noexcept
+bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink)
 {
 	if(++(this->m_currIterator) != this->m_endIterator)
 	{
@@ -124,7 +109,7 @@ bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink) no
 }
 template<typename Iterable>
 template<typename Sink>
-bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink) const noexcept
+bool forward_iterable_adaptor<Iterable>::forward_next_value_in(Sink&& i_sink) const
 {
 	if(++(this->m_currIterator) != this->m_endIterator)
 	{
@@ -147,7 +132,7 @@ bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterabl
 }
 template<typename Iterable>
 template<typename Sink>
-bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink) noexcept
+bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink)
 {
 	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator)
 	{
@@ -162,7 +147,7 @@ bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_si
 }
 template<typename Iterable>
 template<typename Sink>
-bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink) const noexcept
+bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink) const
 {
 	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator) 
 	{
@@ -178,7 +163,7 @@ bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_si
 
 template<typename Iterable>
 template<typename Sink>
-bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shift, Sink&& i_sink) noexcept
+bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shift, Sink&& i_sink)
 {
 	switch(i_shift)
 	{
@@ -212,7 +197,7 @@ bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shif
 }
 template<typename Iterable>
 template<typename Sink>
-bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shift, Sink&& i_sink) const noexcept
+bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shift, Sink&& i_sink) const
 {
 	switch(i_shift)
 	{

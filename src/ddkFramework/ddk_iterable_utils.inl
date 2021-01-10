@@ -91,7 +91,13 @@ void operator<<=(Function& i_lhs, Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_action<const Container> action;
 
-	ddk::iter::visit_iterator(i_rhs,ddk::forwarding_iterable_value_callable<Function,action>{std::forward<Function>(i_lhs)},action{});
+	try
+	{
+		ddk::iter::visit_iterator(i_rhs,ddk::forwarding_iterable_value_callable<Function,action>{std::forward<Function>(i_lhs)},action{});
+	}
+	catch(const ddk::suspend_exception&)
+	{
+	}
 }
 
 namespace ddk

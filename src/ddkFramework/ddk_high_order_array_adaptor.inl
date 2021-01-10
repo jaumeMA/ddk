@@ -9,18 +9,8 @@ high_order_array_adaptor<T,ranks...>::high_order_array_adaptor(high_order_array<
 	m_currIndex = i_initialAction.shifting();
 }
 template<typename T,size_t ... ranks>
-typename high_order_array_adaptor<T,ranks...>::reference high_order_array_adaptor<T,ranks...>::get_value() noexcept
-{
-	return m_iterable.at(m_currIndex);
-}
-template<typename T,size_t ... ranks>
-typename high_order_array_adaptor<T,ranks...>::const_reference high_order_array_adaptor<T,ranks...>::get_value() const noexcept
-{
-	return m_iterable.at(m_currIndex);
-}
-template<typename T,size_t ... ranks>
 template<typename Sink>
-bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) noexcept
+bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink)
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
@@ -35,7 +25,7 @@ bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) 
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) const noexcept
+bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
@@ -50,7 +40,7 @@ bool high_order_array_adaptor<T,ranks...>::forward_next_value_in(Sink&& i_sink) 
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) noexcept
+bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink)
 {
 	if(m_currIndex > 0)
 	{
@@ -65,7 +55,7 @@ bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) 
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) const noexcept
+bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex > 0)
 	{
@@ -80,7 +70,7 @@ bool high_order_array_adaptor<T,ranks...>::forward_prev_value_in(Sink&& i_sink) 
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Sink&& i_sink) noexcept
+bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Sink&& i_sink)
 {
 	const size_t newIndex = m_currIndex + i_shift;
 
@@ -97,7 +87,7 @@ bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Si
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Sink&& i_sink) const noexcept
+bool high_order_array_adaptor<T,ranks...>::forward_shift_value_in(int i_shift,Sink&& i_sink) const
 {
 	const size_t newIndex = m_currIndex + i_shift;
 
