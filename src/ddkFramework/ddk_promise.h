@@ -40,5 +40,3 @@ class promise<void> : public promise<detail::void_t>
 };
 
 }
-
-#include "ddk_promise.inl"

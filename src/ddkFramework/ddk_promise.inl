@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_reference_wrapper.h"
+#include "ddk_future.inl"
 
 namespace ddk
 {

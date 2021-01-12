@@ -5,8 +5,6 @@
 namespace ddk
 {
 
-const thread_local detail::this_thread_t this_thread = detail::this_thread_t();
-
 thread::thread()
 : m_threadImpl(make_unique_reference<detail::one_shot_thread_impl>())
 {

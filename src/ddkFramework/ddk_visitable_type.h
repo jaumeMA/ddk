@@ -3,13 +3,13 @@
 #include <map>
 #include "ddk_visitable_type_interface.h"
 #include "ddk_macros.h"
+#include "ddk_dynamic_multivisitor.h"
 
 #define DECLARE_TYPE_VISITABLE(_Type_Name, _Type_Interface) \
-template<typename,typename,typename,typename ...> \
-friend class ddk::dynamic_multi_visitor; \
 template<typename,typename> \
 friend inline bool ddk::detail::__expand_type_visitor_layout(); \
 typedef _Type_Interface type_interface; \
+friend inline type_interface __get_type_interface(const _Type_Name&, const _Type_Interface&); \
 static const size_t s_currTypeCounter = ddk::static_counter<type_interface>::get_curr_count(); \
 static const size_t s_nextTypeCounter = ddk::static_counter<type_interface>::get_next_count(); \
 typedef decltype(__get_inherited_type_list(std::declval<type_interface>(),std::declval<ddk::mpl::static_number<s_currTypeCounter>>())) prev_type_list; \

@@ -1,4 +1,6 @@
 
+#include <memory>
+
 namespace ddk
 {
 namespace detail

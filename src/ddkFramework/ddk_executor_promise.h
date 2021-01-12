@@ -3,7 +3,6 @@
 #include "ddk_promise.h"
 #include "ddk_async_executor_interface.h"
 #include "ddk_async_shared_state.h"
-#include "ddk_promise.h"
 
 namespace ddk
 {
@@ -40,5 +39,3 @@ protected:
 };
 
 }
-
-#include "ddk_executor_promise.inl"

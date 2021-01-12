@@ -17,14 +17,14 @@ inline shared_reference_wrapper_impl<T,distributed_reference_counter> __make_sha
 template<typename T, typename TT = T>
 class distribute_from_this
 {
-	template<typename TT,typename TTT>
-	friend inline distributed_reference_wrapper<TTT> distribute(distribute_from_this<TT,TTT>& i_distFromThis);
-	template<typename TT,typename TTT>
-	friend inline distributed_reference_wrapper<const TTT> distribute(const distribute_from_this<TT,TTT>& i_distFromThis);
-	template<typename TT>
-	friend inline distributed_reference_wrapper<TT> as_distributed_reference(TT* i_ptr);
-	template<typename TT>
-	friend inline distributed_reference_wrapper<TT> as_distributed_reference(TT* i_ptr, const tagged_pointer_deleter& i_refDeleter);
+	template<typename TTT,typename TTTT>
+	friend inline distributed_reference_wrapper<TTTT> distribute(distribute_from_this<TTT,TTTT>& i_distFromThis);
+	template<typename TTT,typename TTTT>
+	friend inline distributed_reference_wrapper<const TTTT> distribute(const distribute_from_this<TTT,TTTT>& i_distFromThis);
+	template<typename TTT>
+	friend inline distributed_reference_wrapper<TTT> as_distributed_reference(TTT* i_ptr);
+	template<typename TTT>
+	friend inline distributed_reference_wrapper<TTT> as_distributed_reference(TTT* i_ptr, const tagged_pointer_deleter& i_refDeleter);
 	template<typename TTT>
 	friend inline detail::shared_reference_wrapper_impl<TTT,distributed_reference_counter> detail::__make_shared_reference(TTT*,const tagged_pointer<distributed_reference_counter>&, const tagged_pointer_deleter&);
 

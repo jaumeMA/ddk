@@ -10,6 +10,7 @@
 #include "ddk_thread_yielder.h"
 #include "ddk_fiber_yielder.h"
 #include "ddk_thread_local.h"
+#include "ddk_this_thread.h"
 
 namespace ddk
 {
@@ -65,15 +66,6 @@ private:
 	ddk::function<void()>	m_threadFunc;
 	yielder*				m_yielder;
 	bool					m_started = false;
-};
-
-struct this_thread_t
-{
-public:
-	this_thread_t();
-
-private:
-	execution_context m_execContext;
 };
 
 }

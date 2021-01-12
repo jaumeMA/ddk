@@ -77,7 +77,6 @@ elsif($project eq "Test")
 	$Mode='ALL_Linux';
     }
     
-    $optmode='Debug';
     $Binaries='ddkFrameworkTests';
     $SolutionName='Test';
 }
@@ -110,7 +109,6 @@ elsif($platform eq "iOS")
 }
 else
 {
-	echo $platform
 	showHelp();
 	
 	exit -1;

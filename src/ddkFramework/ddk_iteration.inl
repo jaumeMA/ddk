@@ -1,5 +1,6 @@
 
 #include "ddk_reference_wrapper.h"
+#include "ddk_iterable_exceptions.h"
 
 namespace ddk
 {

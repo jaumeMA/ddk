@@ -189,7 +189,7 @@ variant<Types...>::variant()
 {
 	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 
-	detail::variant_impl< Types...>::construct<0>(first_type{});
+	detail::variant_impl< Types...>::template construct<0>(first_type{});
 }
 template<typename ... Types>
 variant<Types...>::variant(const variant<Types...>& other)
@@ -289,7 +289,7 @@ variant<Types...>& variant<Types...>::operator=(T&& i_value)
 
 	static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
 
-	detail::variant_impl<Types...>::assign<converted_type_pos>(std::forward<T>(i_value));
+	detail::variant_impl<Types...>::template assign<converted_type_pos>(std::forward<T>(i_value));
 
 	return *this;
 }
@@ -307,7 +307,7 @@ bool variant<Types...>::operator==(T&& other) const
 
 		static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
 
-		return detail::variant_impl<Types...>::compare<converted_type_pos>(std::forward<T>(other));
+		return detail::variant_impl<Types...>::template compare<converted_type_pos>(std::forward<T>(other));
 	}
 }
 template<typename ... Types>
@@ -324,13 +324,13 @@ bool variant<Types...>::operator!=(T&& other) const
 
 		static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
 
-		return detail::variant_impl<Types...>::compare<converted_type_pos>(std::forward<T>(other)) == false;
+		return detail::variant_impl<Types...>::template compare<converted_type_pos>(std::forward<T>(other)) == false;
 	}
 }
 
 TEMPLATE(typename Visitor,typename Variant)
 REQUIRED(IS_BASE_OF(detail::static_visitor_base,Visitor),IS_VARIANT(Variant))
-typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor,Variant&& i_variant)
+typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_visitor,Variant&& i_variant)
 {
 	return i_variant.visit(std::forward<Visitor>(i_visitor));
 }

@@ -15,15 +15,6 @@ namespace ddk
 template<typename T>
 class tagged_pointer
 {
-	friend inline T* get_raw_ptr(T* i_ref)
-	{
-		return i_ref;
-	}
-	friend inline void set_raw_ptr(T*& i_ref,T* i_value)
-	{
-		i_ref = i_value;
-	}
-
 	static const short tag_mask = (1 << MASK_NUM_BITS) - 1;
 	static const uintptr_t bitMask = ~tag_mask;
 
@@ -76,8 +67,8 @@ public:
 	static inline interface_ptr tag_pointer(interface_ptr i_ptr, const short i_tag);
 	static inline uintptr_t tag_pointer_as_value(interface_ptr i_ptr, const short i_tag);
 	static inline interface_ptr untag_pointer(interface_ptr i_ptr);
-	static inline short get_tag(interface_ptr i_ptr);
-	static inline bool is_tagged(interface_ptr i_ptr);
+	static inline short get_tag(interface_const_ptr i_ptr);
+	static inline bool is_tagged(interface_const_ptr i_ptr);
 
 private:
     union from_number_to_ptr
@@ -98,6 +89,7 @@ private:
 
 	static inline pointer as_pointer(uintptr_t i_value);
 	static inline uintptr_t as_number(interface_ptr i_ptr);
+	static inline uintptr_t as_const_number(interface_const_ptr i_ptr);
 
 	mutable interface_ptr m_data = nullptr;
 };

@@ -59,6 +59,7 @@ struct running_fiber_comparator
 template<typename Comparator = void>
 class fiber_scheduler : public detail::scheduler_interface, public detail::yielder_interface, protected lend_from_this<fiber_scheduler<Comparator>, detail::scheduler_interface>
 {
+    friend class lend_from_this<fiber_scheduler<Comparator>, detail::scheduler_interface>;
 	typedef std::unordered_map<fiber_id,detail::fiber_impl*> fiber_container;
 	typedef detail::priority_queue<Comparator> running_fiber_container;
 	typedef std::map<fiber_id,ddk::function<void()>> function_container;

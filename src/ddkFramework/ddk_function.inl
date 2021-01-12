@@ -52,7 +52,7 @@ function<Return(Types...),Allocator>::function(Return(*i_call)(Types...), const 
     typedef detail::free_function_impl<Return,Types...> Functor;
 
 	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
-	
+
     Functor* newFuncImpl = new(allocCtxt.second) Functor(i_call);
 
     m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
@@ -120,6 +120,12 @@ Return function<Return(Types...),Allocator>::inline_eval(Args&& ... i_args) cons
 		throw call_function_exception{ "Trying to call empty function" };
 	}
 }
+template<typename Return,typename ... Types,typename Allocator>
+template<typename ... Args>
+Return function<Return(Types...),Allocator>::inline_eval(const function_arguments<Args...>& i_args) const
+{
+    return eval_arguments(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+}
 template<typename Return, typename ... Types, typename Allocator>
 template<typename ... Args>
 resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> function<Return(Types...),Allocator>::operator()(Args&& ... i_args) const
@@ -139,7 +145,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Alloc
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<size_t ... Indexs, typename ... Args>
-Return function<Return(Types...),Allocator>::eval_tuple(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const
+Return function<Return(Types...),Allocator>::eval_arguments(const mpl::sequence<Indexs...>&, const function_arguments<Args...>& i_args) const
 {
     if(m_functionImpl)
     {
@@ -192,7 +198,7 @@ function<Return(),Allocator>::function(T&& i_functor, const Allocator& i_allocat
     typedef detail::functor_impl<typename std::remove_const<typename std::remove_reference<T>::type>::type,Return> Functor;
 
 	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
-	
+
 	Functor* newFuncImpl = new(allocCtxt.second) Functor(std::forward<T>(i_functor));
 
 	m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
@@ -230,7 +236,7 @@ function<Return(),Allocator>::function(const T *i_pRef, Return(T::*i_call)()cons
     typedef detail::relative_function_impl<const T,Return> Functor;
 
 	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
-	
+
 	Functor* newFuncImpl = new(allocCtxt.second) Functor(i_pRef,i_call);
 
     m_functionImpl = as_distributed_reference(newFuncImpl,allocCtxt.first);
@@ -261,6 +267,25 @@ Return function<Return(),Allocator>::inline_eval() const
 		throw call_function_exception{ "Trying to call empty function" };
 	}
 }
+template<typename Return,typename Allocator>
+Return function<Return(),Allocator>::inline_eval(const function_arguments<>& i_args) const
+{
+	if(m_functionImpl)
+	{
+		if constexpr(std::is_same<Return,void>::value)
+		{
+			m_functionImpl->operator()();
+		}
+		else
+		{
+			return m_functionImpl->operator()();
+		}
+	}
+	else
+	{
+		throw call_function_exception{ "Trying to call empty function" };
+	}
+}
 template<typename Return, typename Allocator>
 bool function<Return(),Allocator>::operator==(std::nullptr_t) const
 {
@@ -272,7 +297,7 @@ bool function<Return(),Allocator>::operator!=(std::nullptr_t) const
     return m_functionImpl.empty() == false;
 }
 template<typename Return, typename Allocator>
-Return function<Return(),Allocator>::eval_tuple(const mpl::sequence<>&) const
+Return function<Return(),Allocator>::eval_arguments(const mpl::sequence<>&) const
 {
     if(m_functionImpl)
     {

@@ -2,6 +2,7 @@
 
 #include "ddk_tuple.h"
 #include "ddk_function_template_helper.h"
+#include "ddk_tuple_template_helper.h"
 #include "ddk_function_arguments.h"
 
 namespace ddk

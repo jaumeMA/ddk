@@ -50,8 +50,7 @@ class tuple_impl<mpl::sequence<0>,Type>
 {
     template<typename,typename...>
     friend class tuple_impl;
-	typedef ddk::tuple_adaptor<Type> tuple_adaptor_t;
-	DDK_ITERABLE_TYPE(tuple_impl,tuple_adaptor_t,std::random_access_iterator_tag)
+	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type),std::random_access_iterator_tag)
 
 public:
     tuple_impl() = default;
@@ -86,10 +85,9 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
     template<typename,typename...>
     friend class tuple_impl;
     static const size_t s_total_size = mpl::get_total_size<Type1,Type2,Types...>::value;
-	typedef ddk::tuple_adaptor<Type1,Type2,Types...> tuple_adaptor_t;
-	DDK_ITERABLE_TYPE(tuple_impl,tuple_adaptor_t,std::random_access_iterator_tag)
+	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type1,Type2,Types...),std::random_access_iterator_tag)
 
-public:	
+public:
 	tuple_impl();
     template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args>
     tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args);

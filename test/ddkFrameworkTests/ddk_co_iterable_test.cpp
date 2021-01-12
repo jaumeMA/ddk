@@ -9,6 +9,8 @@ class DDKCoIterableTest : public Test
 {
 };
 
+class MyIterableAdaptor;
+
 template<typename T>
 class MyIterable
 {

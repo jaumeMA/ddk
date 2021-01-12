@@ -19,6 +19,9 @@ class weak_pointer_wrapper;
 namespace detail
 {
 
+template<typename,typename>
+class shared_reference_wrapper_impl;
+
 template<typename T, typename ReferenceCounter>
 class shared_pointer_wrapper_impl
 {
@@ -91,7 +94,6 @@ public:
 
 	shared_pointer_wrapper_impl();
 	shared_pointer_wrapper_impl(std::nullptr_t);
-	shared_pointer_wrapper_impl(T* i_data,const tagged_pointer_deleter& i_refDeleter);
 	shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl& other);
 	shared_pointer_wrapper_impl(shared_pointer_wrapper_impl&& other);
 	template<typename TT>

@@ -84,7 +84,7 @@ bool await_executor<Return>::resume()
 	}
 }
 template<typename Return>
-bool await_executor<Return>::resume(const ddk::function<void(sink_reference)>& i_sink)
+bool await_executor<Return>::resume(const sink_type& i_sink)
 {
 	if(m_callee.resume_from(m_caller) == FiberExecutionState::Done)
 	{
@@ -104,7 +104,7 @@ bool await_executor<Return>::resume(const ddk::function<void(sink_reference)>& i
 		}
 		else
 		{
-			if(typed_yielder_context<Return>* newContext = m_callee.get_typed_context<Return>())
+			if(typed_yielder_context<Return>* newContext = m_caller.get_typed_context<Return>())
 			{
 				eval(i_sink,newContext->get_value());
 			}

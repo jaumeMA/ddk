@@ -1,6 +1,7 @@
 
 #include "ddk_embedded_type.h"
 #include "ddk_rtti.h"
+#include "ddk_static_counter.h"
 
 namespace ddk
 {

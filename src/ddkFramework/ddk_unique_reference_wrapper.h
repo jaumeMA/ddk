@@ -35,17 +35,17 @@ class unique_reference_wrapper : public unique_pointer_wrapper<T>
 
 public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;
-	using typename unique_pointer_wrapper::value_type;
-	using typename unique_pointer_wrapper::const_value_type;
-	using typename unique_pointer_wrapper::reference;
-	using typename unique_pointer_wrapper::const_reference;
-	using typename unique_pointer_wrapper::rreference;
-	using typename unique_pointer_wrapper::pointer;
-	using typename unique_pointer_wrapper::const_pointer;
+	using typename unique_pointer_wrapper<T>::value_type;
+	using typename unique_pointer_wrapper<T>::const_value_type;
+	using typename unique_pointer_wrapper<T>::reference;
+	using typename unique_pointer_wrapper<T>::const_reference;
+	using typename unique_pointer_wrapper<T>::rreference;
+	using typename unique_pointer_wrapper<T>::pointer;
+	using typename unique_pointer_wrapper<T>::const_pointer;
 	typedef unique_reference_wrapper<const_value_type> const_type;
-	using unique_pointer_wrapper::operator*;
-    using unique_pointer_wrapper::operator->;
-    using unique_pointer_wrapper::get;
+	using unique_pointer_wrapper<T>::operator*;
+    using unique_pointer_wrapper<T>::operator->;
+    using unique_pointer_wrapper<T>::get;
 
 	unique_reference_wrapper(const unique_reference_wrapper&) = delete;
 	template<typename TT>

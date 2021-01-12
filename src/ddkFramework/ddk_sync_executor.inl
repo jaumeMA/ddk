@@ -1,3 +1,4 @@
+#include "ddk_executor_promise.inl"
 
 namespace ddk
 {

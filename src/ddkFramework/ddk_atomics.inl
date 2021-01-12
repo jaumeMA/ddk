@@ -52,7 +52,7 @@ atomic8<T>& atomic8<T>::operator=(atomic8&& other)
 template<typename T>
 bool atomic8<T>::empty() const
 {
-	m_arena.empty();
+	return m_arena.empty();
 }
 template<typename T>
 const T& atomic8<T>::get() const

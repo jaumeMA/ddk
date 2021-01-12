@@ -79,12 +79,12 @@ atomic_shared_reference_wrapper_impl<T,ReferenceCounter>& atomic_shared_referenc
 template<typename T,typename ReferenceCounter>
 atomic_shared_reference_wrapper_impl<T,ReferenceCounter>::operator shared_reference_wrapper_impl<T,ReferenceCounter>&()
 {
-	return promote_to_ref(m_ptr);
+	return promote_to_ref(atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::get());
 }
 template<typename T,typename ReferenceCounter>
 atomic_shared_reference_wrapper_impl<T,ReferenceCounter>::operator const shared_reference_wrapper_impl<T,ReferenceCounter>&() const
 {
-	return promote_to_ref(m_ptr);
+	return promote_to_ref(atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::get());
 }
 
 }

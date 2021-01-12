@@ -16,6 +16,7 @@
 #include "ddk_atomic_shared_reference_wrapper.h"
 #include "ddk_atomic_weak_pointer_wrapper.h"
 #include "ddk_smart_ptr_template_helper.h"
+#include "ddk_pointer_defs.h"
 
 namespace ddk
 {

@@ -5,18 +5,13 @@
 #include "ddk_execution_stack.h"
 #include "ddk_ucontext.h"
 
-extern "C"
-{
-	void switch_frame(mcontext_t* i_oldContext,mcontext_t* i_newContext);
-}
-
 #define load_switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
 	set_current_execution_context(i_newCtxt); \
 	\
 	load_switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
 	\
-	switch_frame(&i_oldCtxt.m_context.uc_mcontext,&i_newCtxt.m_context.uc_mcontext);
+	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
 
 #define switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
@@ -24,7 +19,7 @@ extern "C"
 	\
 	switch_execution_stack(i_newCtxt.m_stack) \
 	\
-	switch_frame(&i_oldCtxt.m_context.uc_mcontext,&i_newCtxt.m_context.uc_mcontext);
+	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
 
 #define switch_execution(i_newCtxt) \
 	\

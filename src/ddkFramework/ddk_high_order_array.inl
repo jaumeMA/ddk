@@ -32,7 +32,7 @@ high_order_sub_array<const T,ranks...> high_order_sub_array<T,rank,ranks...>::op
 	{
 		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
 
-		return *(&m_ref + i_index * partialSize);
+		return *(&m_ref + i_index * s_partialSize);
 	}
 	else
 	{

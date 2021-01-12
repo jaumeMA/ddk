@@ -24,6 +24,10 @@ public:
 	void detach_context();
 	execution_context& get_execution_context();
 	const execution_context& get_execution_context() const;
+	yielder_context* get_context() const;
+	template<typename T>
+	typed_yielder_context<T>* get_typed_context() const;
+    void set_typed_context(yielder_context* i_context);
 
 private:
 	execution_context* m_execContext = nullptr;
@@ -50,9 +54,6 @@ public:
 	{
 		return m_state;
 	}
-	yielder_context* get_context() const;
-	template<typename T>
-	typed_yielder_context<T>* get_typed_context() const;
 	const stack_allocator& get_stack_allocator() const;
 	void set_executor(scheduler_interface_lent_ptr i_executor);
 	bool joinable() const;

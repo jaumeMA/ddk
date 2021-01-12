@@ -242,7 +242,7 @@ typename intrusive_node<T,Allocator>::const_reference intrusive_node<T,Allocator
 template<typename T,typename Allocator>
 typename intrusive_node<T,Allocator>::rreference intrusive_node<T,Allocator>::extract() &&
 {
-	if(unique_pointer_wrapper<detail::intrusive_node_impl> impl = std::move(m_impl))
+	if(unique_pointer_wrapper<detail::intrusive_node_impl<T>> impl = std::move(m_impl))
 	{
 		return impl->extract();
 	}

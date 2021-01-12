@@ -38,7 +38,7 @@ std::pair<resource_deleter_const_lent_ref,void*> fixed_size_allocate_or<Allocato
 template<typename Allocator>
 void fixed_size_allocate_or<Allocator>::deallocate(const std::pair<resource_deleter_const_lent_ref,const void*>& i_ptr) const
 {
-	i_ptr.first->deallocate(i_ptr);
+	i_ptr.first->deallocate(i_ptr.second);
 }
 
 }

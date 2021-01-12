@@ -36,11 +36,11 @@ public:
 	}
 	inline lent_reference_wrapper<TT> lend()
 	{
-		return ref_from_this<TT>(*static_cast<T*>(this));
+		return ref_from_this(*static_cast<T*>(this));
 	}
 	inline lent_reference_wrapper<const TT> lend() const
 	{
-		return ref_from_this<TT>(*static_cast<const T*>(this));
+		return ref_from_this(*static_cast<const T*>(this));
 	}
 
 protected:
@@ -65,7 +65,7 @@ protected:
 #endif
 
 private:
-	mutable ddk::unique_reference_counter m_counter;	
+	mutable ddk::unique_reference_counter m_counter;
 };
 
 }

@@ -64,10 +64,8 @@ class future<void> : public future<detail::void_t>
 {
 public:
 	using future<detail::void_t>::future;
-	using future<detail::void_t>::valid;
-	using future<detail::void_t>::wait;
-	using future<detail::void_t>::wait_for;
-	future() = default;
+	future(const future& other) = default;
+	future(future&& other) = default;
 	future(const future<detail::void_t>& other)
 	: future<detail::void_t>(other)
 	{
@@ -77,6 +75,24 @@ public:
 	{
 		future<detail::void_t>::extract_value();
 	}
+	future<void> then(const function<void()>& i_continuation) &&
+	{
+        return static_cast<future<detail::void_t>&&>(*this).then(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }));
+	}
+	template<typename TT>
+	future<void> then_on(const function<void()>& i_continuation, TT&& i_execContext) &&
+	{
+        return static_cast<future<detail::void_t>&&>(*this).then_on(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }),std::forward<TT>(i_execContext));
+	}
+	template<typename TT>
+	future<void> async(const function<void()>& i_continuation, TT&& i_execContext) &&
+	{
+        return static_cast<future<detail::void_t>&&>(*this).async(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }),std::forward<TT>(i_execContext));
+	}
+	future<void> on_error(const function<void(const async_error&)>& i_onError) &&
+	{
+        return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError);
+	}
 };
 
 template<typename T>
@@ -85,6 +101,9 @@ class shared_future: public future<T>
 public:
 	using future<T>::future;
 	using future<T>::get_value;
+    using typename future<T>::reference;
+    using typename future<T>::const_reference;
+	shared_future(const future<T>& i_future);
 	template<typename TT>
 	shared_future(shared_reference_wrapper<TT> i_executor,...);
 
@@ -97,6 +116,40 @@ public:
 	shared_future<T> on_error(const function<void(const async_error&)>& i_onError) && ;
 };
 
-}
+template<>
+class shared_future<void> : public shared_future<detail::void_t>
+{
+public:
+	using shared_future<detail::void_t>::shared_future;
+	shared_future(const shared_future& other) = default;
+	shared_future(shared_future&& other) = default;
+	shared_future(const shared_future<detail::void_t>& other)
+	: shared_future<detail::void_t>(other)
+	{
+	}
+	shared_future(const future<void>& other)
+	: shared_future<detail::void_t>(static_cast<const future<detail::void_t>&>(other))
+	{
+	}
 
-#include "ddk_future.inl"
+	shared_future<void> then(const function<void()>& i_continuation) &&
+	{
+        return static_cast<shared_future<detail::void_t>&&>(*this).then(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }));
+	}
+	template<typename TT>
+	shared_future<void> then_on(const function<void()>& i_continuation,TT&& i_execContext) &&
+	{
+        return static_cast<shared_future<detail::void_t>&&>(*this).then_on(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }),std::forward<TT>(i_execContext));
+	}
+	template<typename TT>
+	shared_future<void> async(const function<void()>& i_continuation,TT&& i_execContext) &&
+	{
+        return static_cast<shared_future<detail::void_t>&&>(*this).async(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }),std::forward<TT>(i_execContext));
+	}
+	shared_future<void> on_error(const function<void(const async_error&)>& i_onError) &&
+	{
+        return static_cast<shared_future<detail::void_t>&&>(*this).on_error(i_onError);
+	}
+};
+
+}

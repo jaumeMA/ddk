@@ -21,7 +21,7 @@ detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr
 }
 TEMPLATE(typename Functor)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
-inline detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor)
+detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor)
 {
 	return { std::forward<Functor>(i_functor) };
 }
@@ -97,7 +97,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 }
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
-inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
+resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
@@ -136,7 +136,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
 template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
 
@@ -166,39 +166,26 @@ function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>&
 template<typename Return, typename Allocator>
 Return eval(const function<Return(),Allocator>& i_function)
 {
-    if(i_function.m_functionImpl)
+    if constexpr (std::is_same<Return,void>::value)
     {
-        if constexpr (std::is_same<Return,void>::value)
-        {
-            i_function.m_functionImpl->operator()();
-        }
-        else
-        {
-            return i_function.m_functionImpl->operator()();
-        }
+        i_function.inline_eval();
     }
     else
     {
-        throw call_function_exception{"Trying to call empty function"};
+        return i_function.inline_eval();
     }
 }
-template<typename Return, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args)
+TEMPLATE(typename Return, typename ... Types, typename Allocator, typename ... Args)
+REQUIRED(is_function_argument<Args>::value==false ...)
+Return eval(const function<Return(Types...),Allocator>& i_function, Args&& ... i_args)
 {
-    if(i_function.m_functionImpl)
+    if constexpr (std::is_same<Return,void>::value)
     {
-        if constexpr (std::is_same<Return,void>::value)
-        {
-            i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
-        }
-        else
-        {
-            return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
-        }
+        i_function.inline_eval(std::forward<Args>(i_args) ...);
     }
     else
     {
-        throw call_function_exception{"Trying to call empty function"};
+        return i_function.inline_eval(std::forward<Args>(i_args) ...);
     }
 }
 template<typename Return, typename ... Types, typename Allocator, typename ... Args>
@@ -206,11 +193,11 @@ Return eval(const function<Return(Types...),Allocator>& i_function, const functi
 {
     if constexpr (std::is_same<Return,void>::value)
     {
-        i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+        i_function.inline_eval(i_args);
     }
     else
     {
-        return i_function.eval_tuple(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+        return i_function.inline_eval(i_args);
     }
 }
 TEMPLATE(typename Function,typename ... Args)
@@ -232,23 +219,24 @@ Return eval_unsafe(const function<Return(),Allocator>& i_function)
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
-		i_function.m_functionImpl->operator()();
+		i_function.inline_eval();
 	}
 	else
 	{
-		return i_function.m_functionImpl->operator()();
+		return i_function.inline_eval();
 	}
 }
-template<typename Return,typename ... Types,typename Allocator,typename Arg,typename ... Args>
-resolved_return_type<Arg,Return> eval_unsafe(const function<Return(Types...),Allocator>& i_function,Arg&& i_arg,Args&& ... i_args)
+TEMPLATE(typename Return,typename ... Types, typename Allocator,typename ... Args)
+REQUIRED(is_function_argumenttion_arguments<Arg>::value==false ...)
+Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args)
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
-		i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+		i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}
 	else
 	{
-		return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+		return i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename ... Args>
@@ -256,11 +244,11 @@ Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const 
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
-		i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+		i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}
 	else
 	{
-		return i_function.m_functionImpl->operator()(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
+		return i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}
 }
 
@@ -301,14 +289,14 @@ detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_co
 
 TEMPLATE(typename ... Functions)
 REQUIRED(IS_CALLABLE(Functions)...)
-inline ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions)
+ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions)
 {
 	return { i_functions ... };
 }
 
 TEMPLATE(typename ... Functions)
 REQUIRED(IS_CALLABLE(Functions)...)
-inline ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions)
+ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions)
 {
 	return { i_functions ... };
 }

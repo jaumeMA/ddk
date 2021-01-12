@@ -161,6 +161,16 @@ const iter::iterable_state& iterable<Traits>::get_state() const
     return m_iterableState;
 }
 template<typename Traits>
+iter::action_state_lent_ref iterable<Traits>::get_action_state()
+{
+    return lend(m_actionState);
+}
+template<typename Traits>
+iter::action_state_const_lent_ref iterable<Traits>::get_action_state() const
+{
+    return lend(m_actionState);
+}
+template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
 {
 	iter::action_result actionResult = m_actionState->get();

@@ -106,7 +106,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	//provaSumTuple <<= ddk::trans::iterable_sum(provaTuplaIterable,provaTuplaIterable,provaTuplaIterable);
 
 	ddk::make_function([](const ddk::variant_const_reference<double,int,float>& i_value)
-	{  
+	{
 		if(i_value.is<const double&>())
 		{
 			printf("curr tupla str value: %f\n",i_value.get<const double&>());
@@ -119,7 +119,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 		{
 			printf("curr tupla float value: %f\n",i_value.get<const float&>());
 		}
-	
+
 	}) <<= provaTuplaIterable;
 
 	ddk::tuple_visitor tupleVisitor;
@@ -133,7 +133,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
 	ddk::thread myThread;
 	((ddk::make_function([](ddk::const_bidirectional_value<int> i_value) { printf("1 current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<= fooIterable) -> attach(std::move(myThread))).then(ddk::make_function([](const ddk::iter::action_result&){}));
-	
+
 	//ddk::algo::swap swaper(ddk::make_function([](int i_value){ return i_value == 4; }),ddk::make_function([](int i_value){ return i_value == 76; }));
 
 	ddk::const_random_access_iterable<int> transformedFoo = ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= foo;

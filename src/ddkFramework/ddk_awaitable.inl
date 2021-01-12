@@ -119,7 +119,7 @@ Result awaitable<T,Result>::resume()
 
 template<typename Result>
 awaitable<void,Result>::awaitable(const ddk::function<void()>& i_function, const detail::this_thread_t& i_thread)
-: m_executor(make_function([i_function]() { i_function(); return _void; }))
+: awaitable<detail::void_t,Result>(make_function([i_function]() { eval(i_function); return _void; }))
 {
 }
 

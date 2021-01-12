@@ -177,8 +177,6 @@ void private_async_state<T>::wait_for(unsigned int i_period) const
 	{
 		m_condVar.wait(m_mutex,std::chrono::seconds(i_period));
 	}
-
-	pthread_mutex_unlock(&m_mutex);
 }
 template<typename T>
 bool private_async_state<T>::ready() const

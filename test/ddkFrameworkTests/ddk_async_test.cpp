@@ -4,6 +4,7 @@
 #include "ddk_async.h"
 #include "test_utils.h"
 #include "ddk_high_order_array.h"
+#include <stdexcept>
 
 using namespace testing;
 
@@ -142,30 +143,30 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	ddk::thread myOtherThread;
 	ddk::future<const char*> myOtherFuture = std::move(myFuture)
 	.then(ddk::make_function([](const int& i_value)
-	{ 
+	{
 		printf("executada la primera part: %d\n", i_value);
 
 		return std::string("hola");
 	}))
 	.on_error(ddk::make_function([](const ddk::async_error&)
-	{ 
-		printf("ep, exception\n"); 
+	{
+		printf("ep, exception\n");
 	}))
-	.then_on(ddk::make_function([](const std::string& i_value) 
+	.then_on(ddk::make_function([](const std::string& i_value)
 	{
 		printf("executada la segon part: %s\n",i_value.c_str());
 
-		throw std::exception{ "hola nens, aixo es una excepcio" };
-												
-		return i_value[0]; 
+		throw std::runtime_error{ "hola nens, aixo es una excepcio" };
+
+		return i_value[0];
 	}),std::move(myThread))
 	.on_error(ddk::make_function([](const ddk::async_error&)
-	{ 
-		printf("ep, segona exception\n"); 
+	{
+		printf("ep, segona exception\n");
 	}))
 	.async(ddk::make_function([](const char& i_value)
 	{
-		return 10;	
+		return 10;
 	}),std::move(myOtherThread))
 	.then(ddk::make_function([](const int& i_value)
 	{

@@ -69,23 +69,16 @@ void segfault_sigaction_bridge(int i_code,siginfo_t* i_sigInfo,void* i_context)
 }
 void ddk::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
 {
-    int tmp = 0;
-    if(std::pair<void*,void*>*& fiberArena = ddk::stack_allocator::get_curr_arena())
-    {
-		if(const stack_allocator_interface* currAllocImpl = stack_allocator::get_curr_alloc_impl())
-		{
-			if(currAllocImpl->reallocate(*fiberArena,i_sigInfo->si_addr))
-			{
-				//every time we receive an exception under a current fiber arena, reset stack limits
-				set_curr_thread_stack_limit(fiberArena->second);
-			}
-			else
-			{
-				DDK_FAIL_OR_LOG("Segfault outside stack scope");
+    detail::execution_context& currFiberContext = get_current_execution_context();
+    detail::execution_stack& currStack = currFiberContext.get_stack();
 
-				exit(0);
-			}
-		}
+    if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
+    {
+        if(currAllocImpl->reallocate(currStack,i_sigInfo->si_addr))
+        {
+            //every time we receive an exception under a current fiber arena, reset stack limits
+            set_curr_thread_stack(&currStack);
+        }
         else
         {
             DDK_FAIL_OR_LOG("Segfault outside stack scope");
@@ -95,7 +88,7 @@ void ddk::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
     }
     else
     {
-        DDK_FAIL_OR_LOG("Received seg fault with no associated arena");
+        DDK_FAIL_OR_LOG("Segfault outside stack scope");
 
         exit(0);
     }
@@ -168,9 +161,9 @@ detail::execution_stack stack_allocator::allocate() const
 	static const thread_local bool _ = initialize_thread_stack();
 
 	void* initStack = m_stackAllocImpl->reserve(m_numMaxPages);
-	std::pair<void*,void*>& fiberAlloc = std::make_pair(initStack,m_stackAllocImpl->allocate(initStack,1));
+	void* endStack = m_stackAllocImpl->allocate(initStack,1);
 
-	return { fiberAlloc.first,fiberAlloc.second,fiberAlloc.second };
+	return { initStack,endStack,endStack };
 }
 void stack_allocator::deallocate(const detail::execution_stack& i_stack) const
 {

@@ -79,8 +79,9 @@ inline function_view<Return(Types...)> lend(const function<Return(Types...),Allo
 //safe version
 template<typename Return, typename Allocator>
 inline Return eval(const function<Return(),Allocator>& i_function);
-template<typename Return, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline resolved_return_type<Arg,Return> eval(const function<Return(Types...),Allocator>& i_function, Arg&& i_arg, Args&& ... i_args);
+TEMPLATE(typename Return, typename ... Types, typename Allocator, typename ... Args)
+REQUIRES_COND(is_function_argument<Args>::value==false ...)
+inline Return eval(const function<Return(Types...),Allocator>& i_function, Args&& ... i_args);
 template<typename Return, typename ... Types, typename Allocator, typename ... Args>
 inline Return eval(const function<Return(Types...),Allocator>& i_function, const function_arguments<Args...>& i_args);
 TEMPLATE(typename Function, typename ... Args)
@@ -90,8 +91,9 @@ inline auto eval(Function&& i_function, Args&& ... i_args);
 //unsafe version
 template<typename Return,typename Allocator>
 inline Return eval_unsafe(const function<Return(),Allocator>& i_function);
-template<typename Return,typename ... Types,typename Allocator,typename Arg,typename ... Args>
-inline resolved_return_type<Arg,Return> eval_unsafe(const function<Return(Types...),Allocator>& i_function,Arg&& i_arg,Args&& ... i_args);
+TEMPLATE(typename Return,typename ... Types,typename Allocator,typename ... Args)
+REQUIRES_COND(is_function_argument<Args>::value==false ...)
+inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args);
 template<typename Return,typename ... Types,typename Allocator,typename ... Args>
 inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
 

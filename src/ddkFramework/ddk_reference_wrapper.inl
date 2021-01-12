@@ -616,7 +616,7 @@ detail::shared_reference_wrapper_impl<T,ReferenceCounter> const_shared_cast(cons
 template<typename T,typename ReferenceCounter>
 detail::shared_pointer_wrapper_impl<T,ReferenceCounter> const_shared_cast(const detail::shared_pointer_wrapper_impl<const T,ReferenceCounter>& i_sharedPtr)
 {
-	return detail::__const_shared_cast(i_sharedRef);
+	return detail::__const_shared_cast(i_sharedPtr);
 }
 
 template<typename T>
@@ -702,22 +702,22 @@ lent_reference_wrapper<T> lend(const detail::shared_reference_wrapper_impl<T,Ref
 template<typename T,typename ReferenceCounter>
 lent_pointer_wrapper<T> lend(detail::atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr)
 {
-	return detail::__lend(static_cast<detail::shared_pointer_wrapper_impl<T>&>(i_sharedPtr));
+	return detail::__lend(static_cast<detail::shared_pointer_wrapper_impl<T,ReferenceCounter>&>(i_sharedPtr));
 }
 template<typename T,typename ReferenceCounter>
 lent_pointer_wrapper<T> lend(const detail::atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr)
 {
-	return detail::__lend(static_cast<const detail::shared_pointer_wrapper_impl<T>&>(i_sharedPtr));
+	return detail::__lend(static_cast<const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>&>(i_sharedPtr));
 }
 template<typename T,typename ReferenceCounter>
 lent_reference_wrapper<T> lend(detail::atomic_shared_reference_wrapper_impl<T,ReferenceCounter>& i_sharedRef)
 {
-	return detail::__lend(static_cast<detail::shared_reference_wrapper_impl<T>&>(i_sharedPtr));
+	return detail::__lend(static_cast<detail::shared_reference_wrapper_impl<T,ReferenceCounter>&>(i_sharedRef));
 }
 template<typename T,typename ReferenceCounter>
 lent_reference_wrapper<T> lend(const detail::atomic_shared_reference_wrapper_impl<T,ReferenceCounter>& i_sharedRef)
 {
-	return detail::__lend(static_cast<const detail::shared_reference_wrapper_impl<T>&>(i_sharedPtr));
+	return detail::__lend(static_cast<const detail::shared_reference_wrapper_impl<T,ReferenceCounter>&>(i_sharedRef));
 }
 
 template<typename T,typename TT>
@@ -755,7 +755,7 @@ template<typename T,typename TT>
 lent_reference_wrapper<const TT> lend(const share_from_this<T,TT>& i_sharedFromThis)
 {
 	#ifdef DDK_DEBUG
-	return detail::__make_lent_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedPtr.m_refCounter);
+	return detail::__make_lent_pointer(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter);
 	#else
 	return static_cast<const TT*>(&i_sharedFromThis);
 	#endif
@@ -794,12 +794,12 @@ atomic_weak_pointer_wrapper<const T> weak(const atomic_shared_pointer_wrapper<T>
 }
 
 template<typename T,typename TT>
-shared_pointer_wrapper<const TT> share(const share_from_this<T,TT>& i_shareFromThis)
+shared_pointer_wrapper<const TT> share(const share_from_this<T,TT>& i_sharedFromThis)
 {
 	return as_shared_reference(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
 }
 template<typename T,typename TT>
-shared_pointer_wrapper<TT> share(share_from_this<T,TT>& i_shareFromThis)
+shared_pointer_wrapper<TT> share(share_from_this<T,TT>& i_sharedFromThis)
 {
 	return as_shared_reference(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
 }

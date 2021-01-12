@@ -8,6 +8,11 @@ namespace ddk
 
 #if defined(WIN32)
 
+extern "C"
+{
+	void __switch_frame(mcontext_t* i_oldContext,mcontext_t* i_newContext);
+}
+
 namespace detail
 {
 
@@ -70,6 +75,19 @@ int set_context(ucontext_t* i_context)
 #else
 
 	return setcontext(i_context);
+
+#endif
+}
+
+void swap_context(ucontext_t* i_oldContext, ucontext_t* i_newContext)
+{
+#if defined(WIN32)
+
+    __switch_frame(&i_oldContext->uc_mcontext,&i_newContext->uc_mcontext)
+
+#else
+
+    swapcontext(i_oldContext,i_newContext);
 
 #endif
 }

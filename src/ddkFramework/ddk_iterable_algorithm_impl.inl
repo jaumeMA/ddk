@@ -50,7 +50,7 @@ void type_access_dumping<Sink>::set(const mpl::sequence<Indexs...>&,const varian
 
 	static const funcType funcTable[] = { &type_access_dumping_t::_set<Indexs> ... };
 
-	(*funcTable[m_currIndex])(m_iterable,m_currValue);
+	(*funcTable[m_currIndex])(m_sink,i_value);
 }
 template<typename Sink>
 template<size_t Index,typename ... T>
@@ -67,7 +67,7 @@ inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_si
 
 	linearized_index_access_dumping<Sink> _dumper(i_sink);
 
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread);
+	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
 }
 
 TEMPLATE(typename Sink,typename Traits)
@@ -78,7 +78,7 @@ inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_si
 
 	dynamic_access_dumping<Sink> _dumper(i_sink);
 
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread);
+	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
 }
 
 TEMPLATE(typename Sink,typename Traits)
@@ -89,7 +89,7 @@ inline future<ddk::iter::action_result> iterable_transformation_dump(Sink&& i_si
 
 	type_access_dumping<Sink> _dumper(i_sink);
 
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread);
+	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
 }
 
 }

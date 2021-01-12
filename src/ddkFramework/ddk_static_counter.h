@@ -22,14 +22,14 @@ struct producer
 	static constexpr size_t value = counter_index(counter_tag<T,N>{});
 };
 
-template<typename T,size_t N,size_t = producer<T,N>::value>
-size_t constexpr consumer(float,const counter_tag<T,N>&,...)
+template<typename T,size_t N,size_t = producer<T,N>::value, typename ... TT>
+size_t constexpr consumer(float,const counter_tag<T,N>&,TT...)
 {
 	return N;
 }
 
-template<typename T,size_t N,size_t V = counter_index(counter_tag<T,N>{}) >
-size_t constexpr consumer(int,const counter_tag<T,N>&,size_t R = consumer<T>(0,counter_tag<T,N + 1> {}))
+template<typename T,size_t N,size_t V = counter_index(counter_tag<T,N>{}), size_t R = consumer<T>(0,counter_tag<T,N + 1> {})>
+size_t constexpr consumer(int,const counter_tag<T,N>&)
 {
 	return R;
 }
@@ -46,30 +46,41 @@ size_t constexpr curr_tag(int,const counter_tag<T,N>&,size_t R = curr_tag<T>(0,c
 	return R;
 }
 
-template<typename T>
-size_t constexpr next_value(size_t R = consumer<T>(0,counter_tag<T,0> {}))
+template<typename T, size_t R = consumer<T>(0,counter_tag<T,0> {})>
+size_t constexpr next_value()
 {
 	return R;
 }
 
-template<typename T>
-size_t constexpr curr_value(size_t R = curr_tag<T>(0,counter_tag<T,0> {}))
+template<typename T, size_t R = curr_tag<T>(0,counter_tag<T,0> {})>
+size_t constexpr curr_value()
 {
 	return R;
 }
+
+template<typename T, size_t R>
+struct query_value_struct
+{
+    static constexpr size_t value()
+    {
+        return R;
+    }
+};
 
 }
 
 template<typename T>
 struct static_counter
 {
-	static constexpr size_t get_next_count(size_t res = detail::next_value<T>())
+    template<size_t R = detail::next_value<T>()>
+	static constexpr size_t get_next_count()
 	{
-		return res;
+		return detail::query_value_struct<T,R>::value();
 	}
-	static constexpr size_t get_curr_count(size_t res = detail::curr_value<T>())
+    template<size_t R = detail::curr_value<T>()>
+	static constexpr size_t get_curr_count()
 	{
-		return res;
+		return detail::query_value_struct<T,R>::value();
 	}
 };
 

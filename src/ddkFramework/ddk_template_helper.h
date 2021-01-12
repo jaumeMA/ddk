@@ -27,6 +27,12 @@ namespace ddk
 namespace mpl
 {
 
+template<bool ... Conds>
+constexpr bool evaluate()
+{
+    return (Conds && ...);
+}
+
 template<bool,typename,typename>
 struct static_if;
 
@@ -101,37 +107,37 @@ private:
 	template<typename TT>
 	static TT* _get(TT*);
 	template<typename TT>
-	static TT* _get(TT&, ...);
+	static TT* _get(const TT&);
 	template<typename TT>
 	static typename TT::const_type _get_const(TT&&,typename TT::const_pointer* = nullptr);
 	template<typename TT>
 	static const TT* _get_const(TT*);
 	template<typename TT>
-	static const TT* _get_const(TT&,...);
+	static const TT* _get_const(const TT&);
 	template<typename TT>
 	static typename TT::pointer _get_pointer(TT&&,typename TT::pointer* = nullptr);
 	template<typename TT>
 	static TT* _get_pointer(TT*);
 	template<typename TT>
-	static TT* _get_pointer(TT&,...);
+	static TT* _get_pointer(const TT&);
 	template<typename TT>
 	static typename TT::const_pointer _get_const_pointer(TT&&,typename TT::const_pointer* = nullptr);
 	template<typename TT>
 	static const TT* _get_const_pointer(TT*);
 	template<typename TT>
-	static const TT* _get_const_pointer(TT&,...);
+	static const TT* _get_const_pointer(const TT&);
 	template<typename TT>
 	static typename TT::reference _get_reference(TT&&,typename TT::reference* = nullptr);
 	template<typename TT>
 	static TT& _get_reference(TT*);
 	template<typename TT>
-	static TT& _get_reference(TT&,...);
+	static TT& _get_reference(const TT&);
 	template<typename TT>
 	static typename TT::reference _get_const_reference(TT&&,typename TT::const_reference* = nullptr);
 	template<typename TT>
 	static const TT& _get_const_reference(TT*);
 	template<typename TT>
-	static const TT& _get_const_reference(TT&,...);
+	static const TT& _get_const_reference(const TT&);
 
 public:
 	typedef decltype(_get(std::declval<T>())) type;
@@ -378,7 +384,7 @@ typedef typename _partial<0>::type type;
 
 template<size_t...>
 struct prod_ranks;
-	
+
 template<>
 struct prod_ranks<>
 {
@@ -548,9 +554,10 @@ struct get_type_match_pos
 private:
 	typedef typename std::remove_const<typename std::remove_reference<Type>::type>::type raw_type;
 
+    static const size_t npos = static_cast<size_t>(-1);
 	static const size_t typePosSame = nth_pos_of_predicate<std::is_same,raw_type,Types...>::value;
 	static const size_t typePosCtr = nth_pos_of_predicate<std::is_constructible,Type,Types...>::value;
-	static const size_t typePos = (typePosSame != -1) ? typePosSame : typePosCtr;
+	static const size_t typePos = (typePosSame != npos) ? typePosSame : typePosCtr;
 
 public:
 	//placeholder

@@ -1,25 +1,15 @@
 
-global set_curr_thread_stack_base
-global set_curr_thread_stack_limit
-global get_curr_thread_stack_base
-global get_curr_thread_stack_limit
+global get_curr_thread_stack
+global set_curr_thread_stack
 global consolidate_frame
 
 section .text
 
-set_curr_thread_stack_base:
+get_curr_thread_stack:
 
 	ret
 
-set_curr_thread_stack_limit:
-
-	ret
-
-get_curr_thread_stack_base:
-
-	ret
-
-get_curr_thread_stack_limit:
+set_curr_thread_stack:
 
 	ret
 

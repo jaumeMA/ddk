@@ -16,6 +16,13 @@ namespace ddk
 namespace detail
 {
 
+template<typename T>
+typed_yielder_context<T>* this_fiber_t::get_typed_context() const
+{
+	return (m_execContext) ? m_execContext->get_typed_context<typed_yielder_context<T>>() : nullptr;
+}
+
+
 template<typename Return>
 inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
@@ -62,11 +69,6 @@ void fiber_impl::start_from(this_fiber_t& other, const ddk::function<Return()>& 
 	m_fiberContext.attach_stack(m_alloc.allocate());
 
 	make_execution_context(m_fiberContext,other.get_execution_context(),&consolidate_frame,&i_function,this,&launch_fiber<Return>);
-}
-template<typename T>
-typed_yielder_context<T>* fiber_impl::get_typed_context() const
-{
-	return m_fiberContext.get_typed_context<typed_yielder_context<T>>();
 }
 
 }

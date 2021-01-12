@@ -32,7 +32,7 @@ template<typename Callable, typename Allocator, typename ... Args>
 using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,detail::unresolved_tuple<tuple<Args...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>,Allocator>;
 
 template<typename Arg, typename T>
-using resolved_return_type = typename std::enable_if<are_function_arguments<Arg>::value==false,T>::type;
+using resolved_return_type = typename std::enable_if<is_function_argument<Arg>::value==false,T>::type;
 
 template<typename Return, typename Allocator>
 class function<Return(),Allocator>
@@ -50,7 +50,7 @@ class function<Return(),Allocator>
 
 public:
 	typedef Return return_type;
-	
+
 	function();
     function(std::nullptr_t);
     function(const function& other) = default;
@@ -72,11 +72,12 @@ public:
     function& operator=(function&& other) = default;
     function& operator=(std::nullptr_t);
 	inline Return inline_eval() const;
+	inline Return inline_eval(const function_arguments<>& i_args) const;
     inline bool operator==(std::nullptr_t) const;
     inline bool operator!=(std::nullptr_t) const;
 
 private:
-    inline Return eval_tuple(const mpl::sequence<>&) const;
+    inline Return eval_arguments(const mpl::sequence<>&) const;
 
     function_base_const_dist_ptr m_functionImpl;
 	fixed_size_allocate_or<Allocator> m_allocator;
@@ -91,18 +92,10 @@ class function<Return(Types...),Allocator>
 	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
     template<typename RReturn, typename ... TTypes, typename AAllocator>
     friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
-    template<typename RReturn, typename ... TTypes, typename AAllocator, typename Arg, typename ... Args>
-    friend inline resolved_return_type<Arg,RReturn> eval(const function<RReturn(TTypes...),AAllocator>& i_function, Arg&& i_arg, Args&& ... i_args);
-    template<typename RReturn, typename ... TTypes, typename AAllocator, typename ... Args>
-    friend inline RReturn eval(const function<RReturn(TTypes...),AAllocator>& i_function, const function_arguments<Args...>& i_args);
-	template<typename RReturn,typename ... TTypes,typename AAllocator,typename Arg,typename ... Args>
-	friend inline resolved_return_type<Arg,RReturn> eval_unsafe(const function<RReturn(TTypes...),AAllocator>& i_function,Arg&& i_arg,Args&& ... i_args);
-	template<typename RReturn,typename ... TTypes,typename AAllocator,typename ... Args>
-	friend inline RReturn eval_unsafe(const function<RReturn(TTypes...),AAllocator>& i_function,const function_arguments<Args...>& i_args);
 
 public:
 	typedef Return return_type;
-	
+
 	function();
     function(std::nullptr_t);
     function(const function& other) = default;
@@ -127,11 +120,13 @@ public:
 	template<typename ... Args>
 	inline Return inline_eval(Args&& ... args) const;
 	template<typename ... Args>
+	inline Return inline_eval(const function_arguments<Args...>& i_args) const;
+	template<typename ... Args>
     inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
 
 private:
     template<size_t ... Indexs, typename ... Args>
-    inline Return eval_tuple(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
+    inline Return eval_arguments(const mpl::sequence<Indexs...>&, const function_arguments<Args...>& i_args) const;
 
     function_base_const_dist_ptr m_functionImpl;
 	fixed_size_allocate_or<Allocator> m_allocator;

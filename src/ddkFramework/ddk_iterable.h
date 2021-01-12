@@ -64,6 +64,8 @@ public:
 private:
     iter::iterable_state& get_state() override;
     const iter::iterable_state& get_state() const override;
+    iter::action_state_lent_ref get_action_state() override;
+    iter::action_state_const_lent_ref get_action_state() const override;
 
     action private_iterate(reference i_value);
     action private_iterate(const_reference i_value) const;

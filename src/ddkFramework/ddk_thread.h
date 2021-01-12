@@ -35,7 +35,7 @@ public:
 	thread& operator=(const thread&) = delete;
 	thread& operator=(thread&&);
 
-	id get_id() const;	
+	id get_id() const;
 	void start(const ddk::function<void()>& i_threadFunc, detail::yielder* i_yielder = nullptr);
 	void stop();
 	bool joinable() const;
@@ -44,7 +44,5 @@ public:
 private:
 	detail::thread_impl_unique_ref m_threadImpl;
 };
-
-extern const thread_local detail::this_thread_t this_thread;
 
 }

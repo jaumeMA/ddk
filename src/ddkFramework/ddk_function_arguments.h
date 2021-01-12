@@ -13,18 +13,28 @@ public:
 };
 
 template<typename>
-struct are_function_arguments;
+struct _is_function_argument;
 
 template<typename T>
-struct are_function_arguments
+struct _is_function_argument
 {
     static const bool value = false;
 };
 
 template<typename ... Types>
-struct are_function_arguments<function_arguments<Types...>>
+struct _is_function_argument<function_arguments<Types...>>
 {
     static const bool value = true;
+};
+
+template<typename T>
+struct is_function_argument
+{
+private:
+    typedef typename std::remove_reference<typename std::remove_const<T>::type>::type raw_type;
+
+public:
+    static const bool value = _is_function_argument<raw_type>::value;
 };
 
 }

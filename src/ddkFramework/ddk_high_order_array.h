@@ -49,11 +49,9 @@ class high_order_array_adaptor;
 template<typename T, size_t rank, size_t ... ranks>
 class high_order_array
 {
-	typedef high_order_array<T,rank,ranks...> high_order_array_t;
-	typedef high_order_array_adaptor<T,rank,ranks...> high_order_array_adaptor_t;
-	DDK_ITERABLE_TYPE(high_order_array,high_order_array_adaptor_t,std::random_access_iterator_tag)
-		
-	static const size_t s_numRanks = mpl::get_num_ranks<rank,ranks...>::value;		
+	DDK_ITERABLE_TYPE(high_order_array,EXPAND_CLASS_TEMPLATE(high_order_array_adaptor,T,rank,ranks...),std::random_access_iterator_tag)
+
+	static const size_t s_numRanks = mpl::get_num_ranks<rank,ranks...>::value;
 	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>::value;
 
 public:

@@ -11,11 +11,11 @@ namespace concepts
 {
 
 template<typename T>
-struct is_variant 
+struct is_variant
 {
 private:
-	template<typename T>
-	static std::true_type _is_variant(const T&,const typename T::variant_tag* = nullptr);
+	template<typename TT>
+	static std::true_type _is_variant(const TT&,const typename TT::variant_tag* = nullptr);
 	static std::false_type _is_variant(...);
 
 public:

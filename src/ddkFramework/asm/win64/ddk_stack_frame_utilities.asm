@@ -91,7 +91,7 @@ frame_get_out PROC
 
 frame_get_out ENDP
 
-switch_frame PROC
+__switch_frame PROC
 
 	push rbp
 	push rbx
@@ -108,7 +108,7 @@ switch_frame PROC
 
 	int 3
 
-switch_frame ENDP
+__switch_frame ENDP
 
 consolidate_frame PROC FRAME
 	pop r8

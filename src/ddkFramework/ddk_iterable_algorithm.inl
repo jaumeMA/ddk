@@ -76,7 +76,7 @@ ddk::future<ddk::iter::action_result> _execute_transform(const ddk::mpl::sequenc
 	typedef typename ddk::detail::intersection_iterable<Iterables...>::related_iterable intersection_iterable_t;
 	typedef typename intersection_iterable_t::iterable_value iterable_value;
 
-	return ddk::trans::detail::iterable_transformation_dump(std::forward<Sink>(i_sink),ddk::view::transform([transform = i_iterables.get_transform()](ddk::values_tuple<typename Iterables::const_reference ...> i_value) { return transform(i_value.get<Indexs>() ...); }) <<= ddk::fusion(i_iterables.template get<Indexs>()...));
+	return ddk::trans::detail::iterable_transformation_dump(std::forward<Sink>(i_sink),ddk::view::transform([transform = i_iterables.get_transform()](ddk::values_tuple<typename Iterables::const_reference ...> i_value) { return transform(i_value.template get<Indexs>() ...); }) <<= ddk::fusion(i_iterables.template get<Indexs>()...));
 }
 template<typename Sink,typename Transform,typename Iterable>
 ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterable>& i_iterables)

@@ -1,4 +1,7 @@
 
+#include "ddk_macros.h"
+#include "ddk_pointer_defs.h"
+
 namespace ddk
 {
 
@@ -179,14 +182,14 @@ typename tagged_pointer<T>::interface_ptr tagged_pointer<T>::untag_pointer(inter
 	return as_pointer(as_number(i_ptr) & bitMask);
 }
 template<typename T>
-short tagged_pointer<T>::get_tag(interface_ptr i_ptr)
+short tagged_pointer<T>::get_tag(interface_const_ptr i_ptr)
 {
-	return as_number(i_ptr) & tag_mask;
+	return as_const_number(i_ptr) & tag_mask;
 }
 template<typename T>
-bool tagged_pointer<T>::is_tagged(interface_ptr i_ptr)
+bool tagged_pointer<T>::is_tagged(interface_const_ptr i_ptr)
 {
-	return (as_number(i_ptr) & tag_mask) != 0;
+	return (as_const_number(i_ptr) & tag_mask) != 0;
 }
 template<typename T>
 typename tagged_pointer<T>::pointer tagged_pointer<T>::as_pointer(uintptr_t i_value)
@@ -199,6 +202,13 @@ template<typename T>
 uintptr_t tagged_pointer<T>::as_number(interface_ptr i_ptr)
 {
 	const from_ptr_to_number res = { get_raw_ptr(i_ptr) };
+
+	return res.dataNumber;
+}
+template<typename T>
+uintptr_t tagged_pointer<T>::as_const_number(interface_const_ptr i_ptr)
+{
+	const from_const_ptr_to_number res = { get_raw_ptr(i_ptr) };
 
 	return res.dataNumber;
 }

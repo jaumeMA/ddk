@@ -30,14 +30,14 @@ class shared_reference_wrapper_impl : public shared_pointer_wrapper_impl<T,Refer
 	using shared_pointer_wrapper_impl<T,ReferenceCounter>::empty;
 
 public:
-	using typename shared_pointer_wrapper_impl::tagged_reference_counter;
-	using typename shared_pointer_wrapper_impl::value_type;
-	using typename shared_pointer_wrapper_impl::const_value_type;
-	using typename shared_pointer_wrapper_impl::reference;
-	using typename shared_pointer_wrapper_impl::const_reference;
-	using typename shared_pointer_wrapper_impl::rreference;
-	using typename shared_pointer_wrapper_impl::pointer;
-	using typename shared_pointer_wrapper_impl::const_pointer;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::tagged_reference_counter;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::value_type;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::const_value_type;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::reference;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::const_reference;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::rreference;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::pointer;
+	using typename shared_pointer_wrapper_impl<T,ReferenceCounter>::const_pointer;
 	typedef shared_pointer_wrapper_impl<const_value_type,ReferenceCounter> const_type;
 	using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator*;
     using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator->;

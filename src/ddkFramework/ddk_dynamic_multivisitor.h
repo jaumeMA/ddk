@@ -13,7 +13,7 @@ namespace detail
 
 template<typename,typename,typename>
 class dynamic_multi_visitor_base;
-	
+
 template<typename MultiVisitor,typename Visitor,typename Type>
 class dynamic_multi_visitor_base : public typed_dynamic_visitor<Type>
 {
@@ -35,7 +35,7 @@ class dynamic_multi_visitor;
 
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes, typename Value, typename ... Values>
 class dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>
-	: public dynamic_visitor<typename Value::type_interface>
+	: public dynamic_visitor<typename Visitor::type_interface>
 	, public detail::dynamic_multi_visitor_base<dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>,Visitor,Types> ...
 {
 public:

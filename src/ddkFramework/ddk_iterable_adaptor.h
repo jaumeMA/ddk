@@ -12,7 +12,7 @@ namespace detail
 
 template<typename>
 class iterable_adaptor_base;
-	
+
 template<typename Iterable>
 class iterable_adaptor_base
 {
@@ -129,7 +129,7 @@ template<typename Iterable, typename Action>
 struct iterable_adaptor
 {
 private:
-	typedef decltype(adaptor_resolver(std::declval<Iterable>(),std::declval<Action>())) raw_type;
+	typedef decltype(adaptor_resolver(std::declval<Iterable&>(),std::declval<Action>())) raw_type;
 
 public:
 	typedef typename std::remove_const<typename std::remove_reference<raw_type>::type>::type type;

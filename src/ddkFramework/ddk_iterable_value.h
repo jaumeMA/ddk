@@ -31,7 +31,7 @@ struct iterable_value : public detail::iterable_value_base
 
 	friend inline size_t value_position(const iterable_value& i_value)
 	{
-		iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
 
 		return currState.position();
 	}
@@ -72,16 +72,16 @@ struct random_accessed_value<T> : public iterable_value<detail::random_access_it
 {
     friend inline std::pair<random_accessed_value,iter::erase_result> erase_value(random_accessed_value i_value)
     {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+        iter::action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver), currState.forward_result_as<iter::erase_result>());
+        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver), currActionState->template forward_result<iter::erase_result>());
     }
     template<typename ... Args>
     friend inline std::pair<random_accessed_value,iter::add_result> add_value(random_accessed_value i_value, Args&& ... i_args)
     {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+        iter::action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currState.forward_result_as<iter::add_result>());
+        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<iter::add_result>());
     }
     friend inline random_accessed_value next_value(random_accessed_value i_value)
     {
@@ -92,13 +92,13 @@ struct random_accessed_value<T> : public iterable_value<detail::random_access_it
     friend inline random_accessed_value prev_value(random_accessed_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_backward_action(currState.position())),i_value.m_resolver };
     }
     friend inline random_accessed_value shift_value(random_accessed_value i_value, int i_shift)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::shift_action(currState.position(),i_shift)),i_value.m_resolver };
     }
 
@@ -128,19 +128,19 @@ struct const_random_accessed_value<T> : public iterable_value<detail::random_acc
     friend inline const_random_accessed_value next_value(const_random_accessed_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_forward_action(currState.position())),i_value.m_resolver };
     }
     friend inline const_random_accessed_value prev_value(const_random_accessed_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_backward_action(currState.position())),i_value.m_resolver };
     }
     friend inline const_random_accessed_value shift_value(const_random_accessed_value i_value, int i_shift)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::shift_action(currState.position(),i_shift)),i_value.m_resolver };
     }
 
@@ -169,27 +169,27 @@ struct bidirectional_value<T> : public iterable_value<detail::bidirectional_iter
 {
     friend inline std::pair<bidirectional_value,iter::erase_result> erase_value(bidirectional_value i_value)
     {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+        iter::action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver ), currState.forward_result_as<iter::erase_result>());
+        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver ), currActionState->template forward_result<iter::erase_result>());
     }
     template<typename ... Args>
     friend inline std::pair<bidirectional_value,iter::add_result> add_value(bidirectional_value i_value, Args&& ... i_args)
     {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+        iter::action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currState.forward_result_as<iter::add_result>());
+        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<iter::add_result>());
     }
     friend inline bidirectional_value next_value(bidirectional_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_forward_action(currState.position())),i_value.m_resolver };
     }
     friend inline bidirectional_value prev_value(bidirectional_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_backward_action(currState.position())),i_value.m_resolver };
     }
 public:
@@ -222,13 +222,13 @@ struct const_bidirectional_value<T> : public iterable_value<detail::bidirectiona
     friend inline const_bidirectional_value next_value(const_bidirectional_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_forward_action(currState.position())),i_value.m_resolver };
     }
     friend inline const_bidirectional_value prev_value(const_bidirectional_value i_value)
     {
 		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+
 		return { eval(i_value.m_resolver,iter::go_backward_action(currState.position())),i_value.m_resolver };
     }
 
@@ -257,21 +257,21 @@ struct forwarded_value<T> : public iterable_value<detail::forward_iterable_trait
 {
     friend inline std::pair<forwarded_value,iter::erase_result> erase_value(forwarded_value i_value)
     {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+        iter::action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(forwarded_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver),currState.forward_result_as<iter::erase_result>());
+        return std::make_pair(forwarded_value(eval(i_value.m_resolver,iter::erase_value),i_value.m_resolver),currActionState->template forward_result<iter::erase_result>());
     }
     template<typename ... Args>
     friend inline std::pair<forwarded_value,iter::add_result> add_value(forwarded_value i_value, Args&& ... i_args)
     {
-        iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+        iter::action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(forwarded_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currState.forward_result_as<iter::add_result>());
+        return std::make_pair(forwarded_value(eval(i_value.m_resolver,iter::add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<iter::add_result>());
     }
     friend inline forwarded_value next_value(forwarded_value i_value)
     {
-		iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+
 		return { eval(i_value.m_resolver,iter::go_forward_action(currState.position())),i_value.m_resolver };
     }
 public:
@@ -307,8 +307,8 @@ struct const_forwarded_value<T> : public iterable_value<detail::forward_iterable
     friend struct const_forwarded_value;
     friend inline const_forwarded_value next_value(const_forwarded_value i_value)
     {
-		iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
-		
+		const iter::iterable_state& currState = i_value.m_iterableInterface.get_state();
+
 		return { eval(i_value.m_resolver,iter::go_forward_action(currState.position())),i_value.m_resolver };
     }
 

@@ -19,19 +19,6 @@ shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(std
 {
 }
 template<typename T, typename ReferenceCounter>
-shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(T* i_data, const tagged_pointer_deleter& i_refDeleter)
-: m_data(i_data)
-, m_refCounter(nullptr)
-, m_deleter(i_refDeleter)
-{
-	if(m_data)
-	{
-		m_refCounter = make_tagged_pointer<reference_counter>(ReferenceAllocationType::Dynamic);
-
-		m_refCounter->incrementSharedReference();
-	}
-}
-template<typename T, typename ReferenceCounter>
 shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl& other)
 : m_data(other.m_data)
 , m_refCounter(other.m_refCounter)
@@ -80,6 +67,17 @@ shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(sha
 	}
 
 	other.m_data = nullptr;
+}
+template<typename T, typename ReferenceCounter>
+shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(T* i_data,const tagged_reference_counter& i_refCounter, const tagged_pointer_deleter& i_refDeleter, bool i_alreadyIncremented)
+: m_data(i_data)
+, m_refCounter(i_refCounter)
+, m_deleter(i_refDeleter)
+{
+	if(m_refCounter && !i_alreadyIncremented)
+	{
+		m_refCounter->incrementSharedReference();
+	}
 }
 template<typename T, typename ReferenceCounter>
 shared_pointer_wrapper_impl<T,ReferenceCounter>::~shared_pointer_wrapper_impl()
@@ -263,17 +261,6 @@ template<typename T, typename ReferenceCounter>
 bool shared_pointer_wrapper_impl<T,ReferenceCounter>::empty() const
 {
 	return m_data == nullptr;
-}
-template<typename T, typename ReferenceCounter>
-shared_pointer_wrapper_impl<T,ReferenceCounter>::shared_pointer_wrapper_impl(T* i_data,const tagged_reference_counter& i_refCounter, const tagged_pointer_deleter& i_refDeleter, bool i_alreadyIncremented)
-: m_data(i_data)
-, m_refCounter(i_refCounter)
-, m_deleter(i_refDeleter)
-{
-	if(m_refCounter && !i_alreadyIncremented)
-	{
-		m_refCounter->incrementSharedReference();
-	}
 }
 template<typename T, typename ReferenceCounter>
 void shared_pointer_wrapper_impl<T,ReferenceCounter>::clearIfCounterVoid(size_t i_currNumRefs)

@@ -86,5 +86,3 @@ public:
 };
 
 }
-
-#include "ddk_sync_executor.inl"

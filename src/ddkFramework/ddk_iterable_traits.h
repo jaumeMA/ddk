@@ -36,11 +36,11 @@ template<typename ... Types>
 struct base_iterable_traits<values_tuple<Types...>>
 {
     typedef values_tuple<Types...> base_type;
-    typedef tuple<typename std::remove_reference<Types>::type ...> value_type;
-    typedef tuple<Types& ...> reference;
-    typedef tuple<typename std::add_const<Types>::type& ...> const_reference;
-    typedef tuple<Types* ...> pointer;
-    typedef tuple<typename std::add_const<Types>::type* ...> const_pointer;
+    typedef values_tuple<typename std::remove_reference<Types>::type ...> value_type;
+    typedef values_tuple<Types& ...> reference;
+    typedef values_tuple<typename std::add_const<Types>::type& ...> const_reference;
+    typedef values_tuple<Types* ...> pointer;
+    typedef values_tuple<typename std::add_const<Types>::type* ...> const_pointer;
 
     static inline pointer get_address(reference i_ref)
     {
@@ -49,7 +49,7 @@ struct base_iterable_traits<values_tuple<Types...>>
     template<size_t ... Indexs>
     static inline pointer get_address(reference i_ref, const mpl::sequence<Indexs...>&)
     {
-        return make_tuple(&i_ref.template get<Indexs>() ...);
+        return make_values_tuple(&i_ref.template get<Indexs>() ...);
     }
     static inline reference get_value(pointer i_ptr)
     {
@@ -58,7 +58,7 @@ struct base_iterable_traits<values_tuple<Types...>>
     template<size_t ... Indexs>
     static inline reference get_value(pointer i_ptr, const mpl::sequence<Indexs...>&)
     {
-        return make_tuple(*i_ptr.template get<Indexs>() ...);
+        return make_values_tuple(*i_ptr.template get<Indexs>() ...);
     }
 };
 
@@ -66,11 +66,11 @@ template<typename ... Types>
 struct base_iterable_traits<const values_tuple<Types...>>
 {
     typedef const values_tuple<Types...> base_type;
-    typedef tuple<typename std::remove_reference<Types>::type ...> value_type;
-    typedef tuple<typename std::add_const<Types>::type& ...> reference;
-    typedef tuple<typename std::add_const<Types>::type& ...> const_reference;
-    typedef tuple<typename std::add_const<Types>::type* ...> pointer;
-    typedef tuple<typename std::add_const<Types>::type* ...> const_pointer;
+    typedef values_tuple<typename std::remove_reference<Types>::type ...> value_type;
+    typedef values_tuple<typename std::add_const<Types>::type& ...> reference;
+    typedef values_tuple<typename std::add_const<Types>::type& ...> const_reference;
+    typedef values_tuple<typename std::add_const<Types>::type* ...> pointer;
+    typedef values_tuple<typename std::add_const<Types>::type* ...> const_pointer;
 
     static inline pointer get_address(reference i_ref)
     {
@@ -79,7 +79,7 @@ struct base_iterable_traits<const values_tuple<Types...>>
     template<size_t ... Indexs>
     static inline pointer get_address(reference i_ref, const mpl::sequence<Indexs...>&)
     {
-        return make_tuple(&i_ref.template get<Indexs>() ...);
+        return make_values_tuple(&i_ref.template get<Indexs>() ...);
     }
     static inline reference get_value(pointer i_ptr)
     {
@@ -88,7 +88,7 @@ struct base_iterable_traits<const values_tuple<Types...>>
     template<size_t ... Indexs>
     static inline reference get_value(pointer i_ptr, const mpl::sequence<Indexs...>&)
     {
-        return make_tuple(*i_ptr.template get<Indexs>() ...);
+        return make_values_tuple(*i_ptr.template get<Indexs>() ...);
     }
 };
 

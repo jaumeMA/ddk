@@ -6,6 +6,6 @@
 #define TEMPLATE(...) template<__VA_ARGS__,
 #define REQUIRES(...) typename = ddk::mpl::type_pack<__VA_ARGS__>>
 #define REQUIRED(...) typename>
-#define REQUIRES_COND(_Cond) \
-	typename = typename std::enable_if<_Cond>::type*>
+#define REQUIRES_COND(...) \
+	typename = ddk::mpl::type_pack<typename std::enable_if<ddk::mpl::evaluate<__VA_ARGS__>()>::type>>
 #define REQUIRED_COND(...) typename>

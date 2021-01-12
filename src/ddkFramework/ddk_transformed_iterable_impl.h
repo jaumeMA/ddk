@@ -24,8 +24,8 @@ template<typename PublicTraits, typename PrivateTraits, typename Return, typenam
 class transformed_iterable_impl : public iterable_impl_interface<typename PublicTraits::iterable_base_traits>
 {
     static_assert(std::is_same<typename PublicTraits::action,typename PrivateTraits::action>::value, "Actions from both public and private traits shall be the same");
-    static_assert(std::is_convertible<typename PrivateTraits::reference,Type>::value, "You shall provider consistent transformations");
-    static_assert(std::is_convertible<Return,typename PublicTraits::reference>::value, "You shall provider consistent transformations");
+    static_assert(std::is_constructible<typename PrivateTraits::reference,Type>::value || std::is_convertible<typename PrivateTraits::reference,Type>::value, "You shall provider consistent transformations");
+    static_assert(std::is_constructible<Return,typename PublicTraits::reference>::value || std::is_convertible<Return,typename PublicTraits::reference>::value, "You shall provider consistent transformations");
 
     typedef typename PrivateTraits::iterable_base_traits private_iterable_base_traits;
     typedef typename PrivateTraits::reference private_reference;

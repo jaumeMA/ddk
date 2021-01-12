@@ -4,6 +4,10 @@
 #include "ddk_crash.h"
 #include "ddk_flagset.h"
 
+#define EXPAND_CLASS_TEMPLATE(_CLASS,...) \
+    _CLASS<__VA_ARGS__>
+
+
 #if defined(WIN32)
 
     #define __TODO(_FILE,_LINE,_TEXT) __pragma(message(_FILE"("#_LINE") : " #_TEXT))

@@ -32,6 +32,17 @@ const execution_context& this_fiber_t::get_execution_context() const
 {
 	return *m_execContext;
 }
+yielder_context* this_fiber_t::get_context() const
+{
+	return (m_execContext) ? m_execContext->get_typed_context<yielder_context>() : nullptr;
+}
+void this_fiber_t::set_typed_context(yielder_context* i_context)
+{
+    if(m_execContext)
+    {
+        m_execContext->set_typed_context(i_context);
+    }
+}
 
 fiber_impl::fiber_impl(yielder_interface& i_yielder)
 : m_id(reinterpret_cast<size_t>(this))
@@ -110,7 +121,7 @@ FiberExecutionState fiber_impl::resume_from(this_fiber_t& other)
 }
 void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 {
-	m_fiberContext.set_typed_context(i_context);
+	other.set_typed_context(i_context);
 
 	execution_context& otherContext = other.get_execution_context();
 
@@ -127,10 +138,6 @@ void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 fiber_id fiber_impl::get_id() const
 {
 	return m_id;
-}
-yielder_context* fiber_impl::get_context() const
-{
-	return m_fiberContext.get_typed_context<yielder_context>();
 }
 void fiber_impl::set_state(FiberExecutionState i_state)
 {

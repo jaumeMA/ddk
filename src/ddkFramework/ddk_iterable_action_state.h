@@ -25,6 +25,8 @@ public:
 	inline typename embedded_type<T>::cref_type get_as() const;
 	template<typename T>
 	inline typename embedded_type<T>::ref_type get_as();
+	template<typename T>
+	inline typename embedded_type<T>::rref_type extract_as() &&;
 	const action_error& error() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;
@@ -46,6 +48,8 @@ public:
 
 	template<typename T>
 	void forward_result(T&& i_result);
+	template<typename T>
+	T&& forward_result();
 	action_result get() const;
 	bool operator==(result_success_t) const;
 	bool operator!=(result_success_t) const;
@@ -57,7 +61,9 @@ private:
 };
 
 typedef lent_reference_wrapper<action_state> action_state_lent_ref;
+typedef lent_reference_wrapper<const action_state> action_state_const_lent_ref;
 typedef lent_pointer_wrapper<action_state> action_state_lent_ptr;
+typedef lent_pointer_wrapper<const action_state> action_state_const_lent_ptr;
 
 }
 }

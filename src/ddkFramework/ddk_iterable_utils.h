@@ -80,8 +80,8 @@ REQUIRES(IS_NOT_ITERABLE(Container))
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container& i_rhs);
 
 TEMPLATE(typename Function,typename Container)
-REQUIRES(IS_CALLABLE(Function,void*),IS_NOT_ITERABLE(Container))
-inline void operator<<=(Function& i_lhs, Container& i_rhs);
+REQUIRES(IS_CALLABLE(Function),IS_NOT_ITERABLE(Container))
+inline void operator<<=(Function&& i_lhs, Container& i_rhs);
 
 namespace ddk
 {

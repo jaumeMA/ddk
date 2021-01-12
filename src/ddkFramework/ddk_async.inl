@@ -1,4 +1,4 @@
-#include "ddk_sync_executor.h"
+#include "ddk_sync_executor.inl"
 
 namespace ddk
 {

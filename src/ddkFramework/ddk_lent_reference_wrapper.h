@@ -51,15 +51,15 @@ class lent_reference_wrapper : public lent_pointer_wrapper<T>
     using lent_pointer_wrapper<T>::operator=;
 
 public:
-	using typename lent_pointer_wrapper::value_type;
-	using typename lent_pointer_wrapper::const_value_type;
-	using typename lent_pointer_wrapper::reference;
-	using typename lent_pointer_wrapper::const_reference;
-	using typename lent_pointer_wrapper::rreference;
-	using typename lent_pointer_wrapper::pointer;
-	using typename lent_pointer_wrapper::const_pointer;
+	using typename lent_pointer_wrapper<T>::value_type;
+	using typename lent_pointer_wrapper<T>::const_value_type;
+	using typename lent_pointer_wrapper<T>::reference;
+	using typename lent_pointer_wrapper<T>::const_reference;
+	using typename lent_pointer_wrapper<T>::rreference;
+	using typename lent_pointer_wrapper<T>::pointer;
+	using typename lent_pointer_wrapper<T>::const_pointer;
 	typedef lent_reference_wrapper<const_value_type> const_type;
-	
+
 	template<typename TT>
 	lent_reference_wrapper(const lent_reference_wrapper<TT>& other, typename std::enable_if<std::is_base_of<T,TT>::value>::type* = NULL)
 	: lent_pointer_wrapper<T>(other)

@@ -4,6 +4,24 @@
 
 namespace ddk
 {
+namespace
+{
+
+thread_local ddk::detail::this_thread_t* g_this_thread = nullptr;
+
+bool initialize_this_thread()
+{
+    static thread_local ddk::detail::this_thread_t s_this_thread;
+
+    g_this_thread = &s_this_thread;
+
+    return g_this_thread != nullptr;
+}
+
+const bool g_mainThreadInitialization = initialize_this_thread();
+
+}
+
 namespace detail
 {
 
@@ -34,6 +52,8 @@ void* threadFunc(void *ptr)
 {
 	if(thread_impl_interface* thread = reinterpret_cast<thread_impl_interface*>(ptr))
 	{
+        initialize_this_thread();
+
 		thread->execute();
 	}
 
@@ -112,11 +132,11 @@ bool one_shot_thread_impl::set_affinity(const cpu_set_t& i_set)
 	return pthread_setaffinity_np(m_thread,sizeof(cpu_set_t),&i_set) == 0;
 }
 
-this_thread_t::this_thread_t()
-: m_execContext(fiber_id(static_cast<size_t>(get_current_thread_id())))
-{
-	set_current_execution_context(m_execContext);
 }
 
+const detail::this_thread_t& this_thread()
+{
+    return *g_this_thread;
 }
+
 }

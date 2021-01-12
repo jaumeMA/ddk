@@ -86,8 +86,8 @@ ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(cons
 	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,traits_t>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_order()));
 }
 TEMPLATE(typename Function,typename Container)
-REQUIRED(IS_CALLABLE(Function,void*),IS_NOT_ITERABLE(Container))
-void operator<<=(Function& i_lhs, Container& i_rhs)
+REQUIRED(IS_CALLABLE(Function),IS_NOT_ITERABLE(Container))
+void operator<<=(Function&& i_lhs, Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_action<const Container> action;
 
@@ -106,13 +106,17 @@ namespace ddk
 template<typename ... Traits>
 detail::iterable<detail::union_iterable_traits<Traits...>> concat(const ddk::detail::iterable<Traits>& ... i_iterables)
 {
-	return ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<Traits>...>>(i_iterables...);
+    typedef detail::iterable<detail::union_iterable_traits<Traits...>> ret_type;
+
+	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<Traits>...>>(i_iterables...) };
 }
 
 template<typename ... Traits>
 detail::iterable<detail::intersection_iterable_traits<Traits...>> fusion(const ddk::detail::iterable<Traits>& ... i_iterables)
 {
-	return ddk::detail::make_iterable_impl<ddk::detail::intersection_iterable_impl<ddk::detail::iterable<Traits> ...>>(i_iterables...);
+    typedef detail::iterable<detail::intersection_iterable_traits<Traits...>> ret_type;
+
+	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::intersection_iterable_impl<ddk::detail::iterable<Traits> ...>>(i_iterables...) };
 }
 
 }

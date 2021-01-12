@@ -223,10 +223,10 @@ struct comparison_visitor : public static_visitor<bool>
 		const val_retriever_visitor<varType,Types...> getter;
 
 		//this reference here is ok by reference collapsing
-		typedef typename mpl::create_range_rank<0,mpl::get_num_types<Types...>::value>::type range_seq_t;
+		typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type seq_t;
 		typedef variant_visitor_invoker<varType,Types...> variant_visitor_t;
 
-		return variant_visitor_t::template inner_invoker(range_seq_t{},getter,m_variant) == otherVal;
+		return variant_visitor_t::template inner_invoker(seq_t{},getter,m_variant) == otherVal;
 	}
 
 private:

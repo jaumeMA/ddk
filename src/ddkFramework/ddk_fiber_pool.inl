@@ -14,7 +14,7 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_sh
 	m_fiberCtr.reserve(i_initialSize);
 	for(size_t fiberIndex=0;fiberIndex<i_initialSize;++fiberIndex)
 	{
-		m_fiberCtr.emplace_back(new detail::fiber_impl(m_stackAllocator));
+		m_fiberCtr.emplace_back(new detail::fiber_impl(m_stackAllocator,*m_fiberScheduler));
 	}
 
 	m_fiberScheduler->start();
@@ -28,7 +28,7 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_sh
 	m_fiberCtr.reserve(i_initialSize);
 	for(size_t fiberIndex=0;fiberIndex<i_initialSize;++fiberIndex)
 	{
-		m_fiberCtr.emplace_back(new detail::fiber_impl(m_stackAllocator));
+		m_fiberCtr.emplace_back(new detail::fiber_impl(m_stackAllocator,*m_fiberScheduler));
 	}
 
 	m_fiberScheduler->start();

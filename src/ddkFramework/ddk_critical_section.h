@@ -52,7 +52,7 @@ public:
 	, m_context(std::move(other.m_context))
 	{
 		other.m_id = k_invalidCriticalAccessIdentifier;
-		other.m_callContext = NULL;
+		other.m_callContext = nullptr;
 	}
 	~critical_section_impl()
 	{
@@ -69,7 +69,7 @@ public:
 		m_id = other.m_id;
 
 		other.m_id = k_invalidCriticalAccessIdentifier;
-		other.m_callContext = NULL;
+		other.m_callContext = nullptr;
 
 		m_context = std::move(other.m_context);
 
@@ -109,6 +109,7 @@ public:
 	}
 
 private:
+	access_call_context* m_callContext;
 	critical_section_identifier m_id;
 	mutable ddk::lendable<critical_context> m_context;
 };
@@ -142,7 +143,7 @@ public:
 	, m_provider(nullptr)
 	{
 		other.m_id = k_invalidCriticalAccessIdentifier;
-		std::swap(m_provider,other.m_provider);		
+		std::swap(m_provider,other.m_provider);
 	}
 	~critical_section_impl()
 	{
@@ -227,7 +228,7 @@ public:
 	, m_context(std::move(other.m_context))
 	{
 		other.m_id = k_invalidCriticalAccessIdentifier;
-		other.m_callContext = NULL;
+		other.m_callContext = nullptr;
 	}
 	const_critical_section_impl(critical_section_impl<Traits,false>&& other)
 	: m_callContext(other.m_callContext)
@@ -235,7 +236,7 @@ public:
 	, m_context(std::move(other.m_context))
 	{
 		other.m_id = k_invalidCriticalAccessIdentifier;
-		other.m_callContext = NULL;
+		other.m_callContext = nullptr;
 	}
 	~const_critical_section_impl()
 	{
@@ -251,7 +252,7 @@ public:
 		m_callContext = other.m_callContext;
 		m_id = other.m_id;
 		other.m_id = k_invalidCriticalAccessIdentifier;
-		other.m_callContext = NULL;
+		other.m_callContext = nullptr;
 
 		m_context = std::move(other.m_context);
 
@@ -337,7 +338,7 @@ public:
 	const_critical_section_impl& operator=(const_critical_section_impl&& other)
 	{
 		m_id = other.m_id;
-		m_provider = other.m_provider
+		m_provider = other.m_provider;
 
 		other.m_id = k_invalidCriticalAccessIdentifier;
 		other.m_callContext = nullptr;
