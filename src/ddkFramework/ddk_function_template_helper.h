@@ -142,11 +142,16 @@ struct is_valid_functor
 {
 private:
     template<typename TT>
+	static std::true_type _resolve(TT&, typename std::add_pointer<decltype(std::declval<TT>().operator()(std::declval<Args>() ...))>::type);
+    template<typename TT>
+	static std::false_type _resolve(TT&, ...);
+
+    template<typename TT>
 	static std::true_type resolve(TT&, typename TT::callable_tag*);
     template<typename TT>
 	static std::true_type resolve(TT&, decltype(&TT::operator()));
     template<typename TT>
-	static std::false_type resolve(TT&, ...);
+	static decltype(_resolve(std::declval<T&>(),nullptr)) resolve(TT&, ...);
 
 public:
     typedef typename static_if<is_function<T>::value,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;
