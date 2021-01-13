@@ -794,12 +794,12 @@ atomic_weak_pointer_wrapper<const T> weak(const atomic_shared_pointer_wrapper<T>
 }
 
 template<typename T,typename TT>
-shared_pointer_wrapper<const TT> share(const share_from_this<T,TT>& i_sharedFromThis)
+shared_reference_wrapper<const TT> share(const share_from_this<T,TT>& i_sharedFromThis)
 {
 	return as_shared_reference(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
 }
 template<typename T,typename TT>
-shared_pointer_wrapper<TT> share(share_from_this<T,TT>& i_sharedFromThis)
+shared_reference_wrapper<TT> share(share_from_this<T,TT>& i_sharedFromThis)
 {
 	return as_shared_reference(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
 }

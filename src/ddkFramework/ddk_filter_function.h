@@ -25,7 +25,7 @@ using resolved_filter_callable = resolved_filter_function<typename mpl::aqcuire_
 template<typename ... Types, typename Allocator>
 class filter_function<bool(Types...),Allocator> : public function<bool(Types...),Allocator>
 {
-    static_assert(mpl::get_num_types<Types...>::value > 0, "You cannot create a filter function with zero arguments");
+    static_assert(mpl::get_num_types<Types...>() > 0, "You cannot create a filter function with zero arguments");
 
 public:
     using function<bool(Types...)>::function;

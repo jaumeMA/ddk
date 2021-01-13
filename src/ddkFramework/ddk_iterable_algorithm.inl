@@ -86,5 +86,5 @@ ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_sink,const ddk::trans
 template<typename Sink, typename Transform,typename ... Iterables>
 ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_iterables)
 {
-	return _execute_transform(typename ddk::mpl::make_sequence<0,ddk::mpl::get_num_types<Iterables...>::value>::type{},std::forward<Sink>(i_sink),i_iterables);
+	return _execute_transform(typename ddk::mpl::make_sequence<0,ddk::mpl::get_num_types<Iterables...>()>::type{},std::forward<Sink>(i_sink),i_iterables);
 }

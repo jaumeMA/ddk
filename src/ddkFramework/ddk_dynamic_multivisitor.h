@@ -2,8 +2,7 @@
 
 #include "ddk_function.h"
 #include "ddk_concepts.h"
-#include "ddk_function_concepts.h"
-#include "ddk_inherited_value.h"
+#include "ddk_inherited_value_concepts.h"
 #include "ddk_any_value.h"
 
 namespace ddk
@@ -73,12 +72,12 @@ private:
 };
 
 TEMPLATE(typename Visitor,typename ... Values)
-REQUIRES(IS_CALLABLE(Visitor),IS_BASE_OF(typename Visitor::type_interface,Values)...)
-inline typename Visitor::return_type visit(const Visitor& i_callable,const inherited_value<Values>& ... i_values);
+REQUIRES(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
+inline typename Visitor::return_type visit(const Visitor& i_callable,const Values& ... i_values);
 
 TEMPLATE(typename Visitor,typename ... Values)
-REQUIRES(IS_CALLABLE(Visitor),IS_BASE_OF(typename Visitor::type_interface,Values)...)
-inline typename Visitor::return_type visit(Visitor& i_callable,const inherited_value<Values>& ... i_values);
+REQUIRES(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
+inline typename Visitor::return_type visit(Visitor& i_callable,const Values& ... i_values);
 
 }
 

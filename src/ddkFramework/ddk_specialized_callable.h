@@ -10,6 +10,8 @@ template<typename Callable, typename ... Args>
 class specialized_callable : public Callable
 {
 public:
+	struct callable_tag;
+
 	specialized_callable(const Callable& i_callable, Args ... i_args);
 	specialized_callable(Callable&& i_callable,Args ... i_args);
 

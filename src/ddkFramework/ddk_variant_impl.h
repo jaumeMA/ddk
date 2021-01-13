@@ -16,7 +16,7 @@ class variant_impl
     friend class variant_impl;
     template<typename,typename ...>
     friend class variant_visitor_invoker;
-    static const int _numTypes = mpl::get_num_types<Types...>::value;
+    static const int _numTypes = mpl::get_num_types<Types...>();
 
 public:
 	static const size_t npos = _numTypes;

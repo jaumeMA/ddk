@@ -124,7 +124,7 @@ template<typename Return,typename ... Types,typename Allocator>
 template<typename ... Args>
 Return function<Return(Types...),Allocator>::inline_eval(const function_arguments<Args...>& i_args) const
 {
-    return eval_arguments(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},i_args);
+    return eval_arguments(typename mpl::make_sequence<0,mpl::get_num_types<Args...>()>::type{},i_args);
 }
 template<typename Return, typename ... Types, typename Allocator>
 template<typename ... Args>

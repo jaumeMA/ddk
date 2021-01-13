@@ -48,23 +48,17 @@ class DDKInheritedValuetTest : public Test
 {
 };
 
-struct DerivedTypeMultiVisitor
+struct DerivedTypeMultiVisitor : public ddk::dynamic_visitor<BaseType>
 {
 	typedef int return_type;
-	typedef BaseType type_interface;
 
-	int operator()(const DerivedBaseType1&,const DerivedBaseType1&) const
+	return_type operator()(const DerivedBaseType1&,const DerivedBaseType1&) const
 	{
 		return 1;
 	}
-	int operator()(const DerivedBaseType1&,const DerivedBaseType2&) const
+	return_type operator()(const DerivedBaseType1&,const DerivedBaseType2&) const
 	{
 		return 1;
-	}
-	template<typename ... T>
-	int operator()(const T& ... i_values) const
-	{
-		return 0;
 	}
 };
 

@@ -23,6 +23,7 @@ class inherited_value
 	friend class inherited_value;
 
 public:
+    typedef T value_type;
 	typedef T* pointer;
 	typedef const T* const_pointer;
 	typedef T& reference;
@@ -69,5 +70,6 @@ private:
 
 }
 
+#include "ddk_inherited_value_concepts.h"
 #include "ddk_inherited_value.inl"
 #include "ddk_dynamic_multivisitor.h"

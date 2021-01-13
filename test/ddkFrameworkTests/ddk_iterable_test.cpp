@@ -60,6 +60,8 @@ namespace ddk
 
 struct tuple_visitor
 {
+    struct callable_tag;
+
 	template<typename T>
 	void operator()(T&& i_value) const
 	{

@@ -65,9 +65,9 @@ public:
 };
 
 template<typename Variant, typename ... Types>
-class variant_interface : public detail::_variant_interface<Variant,mpl::get_num_types<Types...>::value,Types...>
+class variant_interface : public detail::_variant_interface<Variant,mpl::get_num_types<Types...>(),Types...>
 {
-    typedef detail::_variant_interface<Variant,mpl::get_num_types<Types...>::value,Types...> variant_base_t;
+    typedef detail::_variant_interface<Variant,mpl::get_num_types<Types...>(),Types...> variant_base_t;
 
 public:
     using variant_base_t::variant_base_t;

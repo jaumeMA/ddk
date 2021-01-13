@@ -1,12 +1,11 @@
 #pragma once
 
-#include "ddk_iteration.h"
+#include "ddk_iterable.h"
 #include "ddk_union_iterable.h"
 #include "ddk_intersection_iterable.h"
 #include "ddk_transformed_iterable_impl.h"
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
-#include "ddk_iterable.h"
 #include "ddk_concepts.h"
 #include "ddk_iterable_concepts.h"
 

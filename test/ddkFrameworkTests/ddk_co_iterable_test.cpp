@@ -301,7 +301,7 @@ TEST(DDKCoIterableTest, assignIterator)
 std::vector<int> createLargeVector(size_t size)
 {
 	std::vector<int> res;
-		
+
 	for(size_t index = 0; index < size; index++)
 	{
 		res.push_back(index);

@@ -10,7 +10,7 @@ namespace detail
 template<typename Return, typename ... Types>
 class variant_visitor_invoker
 {
-    static const size_t _numTypes = mpl::get_num_types<Types...>::value;
+    static const size_t _numTypes = mpl::get_num_types<Types...>();
 
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(visitor& _visitor, const variant_impl<Types...>& var)

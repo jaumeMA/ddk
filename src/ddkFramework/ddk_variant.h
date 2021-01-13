@@ -3,7 +3,6 @@
 #include "ddk_variant_impl.h"
 #include "ddk_concepts.h"
 #include "ddk_type_concepts.h"
-#include "ddk_variant_concepts.h"
 #include "ddk_function_concepts.h"
 
 namespace ddk
@@ -11,7 +10,7 @@ namespace ddk
 
 template<typename ...>
 class variant;
-	
+
 template<typename Type>
 class variant<Type>
 {
@@ -85,11 +84,10 @@ private:
 template<typename ... Types>
 class variant : public detail::variant_impl<Types...>
 {
-    static_assert(mpl::get_num_types<Types...>::value > 1, "You have to provide at least one type to variant");
-    static_assert(mpl::get_num_types<Types...>::value < 255, "You cannot provide more than 255 types to a variant!");
+    static_assert(mpl::get_num_types<Types...>() > 1, "You have to provide at least one type to variant");
+    static_assert(mpl::get_num_types<Types...>() < 255, "You cannot provide more than 255 types to a variant!");
 
 public:
-	typedef void variant_tag;
 	using detail::variant_impl<Types...>::npos;
 
 	variant();
@@ -148,11 +146,20 @@ variant<Types...>&& as_variant(variant<Types...>&& i_value)
 	return std::move(i_value);
 }
 
+}
+
+
+#include "ddk_variant_concepts.h"
+
+namespace ddk
+{
+
 TEMPLATE(typename Visitor, typename Variant)
-REQUIRES(IS_BASE_OF(detail::static_visitor_base,Visitor),IS_VARIANT(Variant))
+REQUIRES(IS_BASE_OF_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
 inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor, Variant&& i_variant);
 
 }
+
 
 #include "ddk_variant.inl"
 #include "ddk_variant_multi_visitor.h"

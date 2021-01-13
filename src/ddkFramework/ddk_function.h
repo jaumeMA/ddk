@@ -49,6 +49,7 @@ class function<Return(),Allocator>
     friend inline RReturn eval(const function<RReturn(),AAllocator>&, const function_arguments<>&);
 
 public:
+	struct callable_tag;
 	typedef Return return_type;
 
 	function();
@@ -94,6 +95,7 @@ class function<Return(Types...),Allocator>
     friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
 
 public:
+	struct callable_tag;
 	typedef Return return_type;
 
 	function();

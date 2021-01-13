@@ -59,7 +59,7 @@ struct make_tuple<>
 template<typename ... Types>
 struct make_tuple
 {
-	static const size_t size = get_num_types<Types...>::value;
+	static const size_t size = get_num_types<Types...>();
     typedef tuple<Types...> type;
 
     template<template<typename> typename, size_t = 0>
@@ -108,7 +108,7 @@ struct make_tuple<tuple<Types...>> : make_tuple<Types...>
 
 template<size_t,typename>
 struct nth_type_of_tuple;
-	
+
 template<size_t Index,typename ... Types>
 struct nth_type_of_tuple<Index,tuple<Types...>>
 {

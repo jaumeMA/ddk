@@ -7,10 +7,5 @@ namespace ddk
 namespace detail
 {
 
-class dynamic_clone_visitor : public dynamic_visitor
-{
-
-};
-
 }
 }

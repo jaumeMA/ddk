@@ -1,4 +1,3 @@
-#pragma once
 
 namespace ddk
 {
@@ -14,8 +13,8 @@ typename union_iterable_impl<Iterables...>::action navigate(union_iterable_impl<
     typename union_iterable_impl<Iterables...>::action lastAction;
 
     i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction,&i_iterable](reference i_value)
-	{ 
-		lastAction = eval(i_try,i_value); 	
+	{
+		lastAction = eval(i_try,i_value);
 		i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
 	}),i_initialAction);
 
@@ -31,8 +30,8 @@ typename union_iterable_impl<Iterables...>::action navigate(const union_iterable
     typename union_iterable_impl<Iterables...>::action lastAction;
 
     i_iterable.m_iterables.template get<Index>().iterate(make_function([i_try,&lastAction,&i_iterable](const_reference i_value)
-	{ 
-		lastAction = eval(i_try,i_value); 
+	{
+		lastAction = eval(i_try,i_value);
 		i_iterable.m_iterables.template get<Index>().forward_action(lastAction);
 	}),i_initialAction);
 
@@ -190,14 +189,14 @@ template<typename ... Iterables>
 size_t union_iterable_impl<Iterables...>::size() const
 {
 	TODO("Pending");
-	
+
     return 0;
 }
 template<typename ... Iterables>
 bool union_iterable_impl<Iterables...>::empty() const
 {
 	TODO("Pending");
-	
+
 	return true;
 }
 

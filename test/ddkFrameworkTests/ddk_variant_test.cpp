@@ -240,12 +240,12 @@ TEST(DDKVariantTest,visitation)
 	EXPECT_EQ(foo.visit(visitor),0xBB);
 }
 
-struct myMultiVisitor
+struct myMultiVisitor : public ddk::static_visitor<size_t>
 {
 	template<typename ... T>
 	size_t operator()(T&& ... i_values) const
 	{
-		return ddk::mpl::get_num_types<T...>::value;
+		return ddk::mpl::get_num_types<T...>();
 	}
 };
 

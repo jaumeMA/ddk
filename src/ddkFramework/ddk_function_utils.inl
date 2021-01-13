@@ -79,7 +79,7 @@ TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, ty
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...)> res(i_object, i_funcPtr);
 
@@ -89,7 +89,7 @@ TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, ty
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...)> res(i_object,i_funcPtr);
 
@@ -99,7 +99,7 @@ TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typen
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...)> res(i_funcPtr);
 
@@ -109,7 +109,7 @@ TEMPLATE(typename Functor, typename Arg, typename ... Args)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_NOT_ALLOCATOR(Arg))
 resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&& i_functor, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>(), "Unconsistent number of arguments with number of types");
 
     typedef resolved_callable<Functor> function_type;
 
@@ -120,7 +120,7 @@ resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Funct
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...),Allocator> res(i_object, i_funcPtr, i_allocator);
 
@@ -129,7 +129,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...),Allocator> res(i_object,i_funcPtr,i_allocator);
 
@@ -138,7 +138,7 @@ resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types.
 template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
 resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_types<Types...>::value == mpl::get_num_types<Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
     const function<Return(Type,Types...),Allocator> res(i_funcPtr,i_allocator);
 
@@ -148,7 +148,7 @@ TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
 resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>::value, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>(), "Unconsistent number of arguments with number of types");
 
     typedef resolved_callable<Functor,Allocator> function_type;
 

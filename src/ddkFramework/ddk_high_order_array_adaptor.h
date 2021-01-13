@@ -30,7 +30,7 @@ public:
 	inline bool valid() const noexcept;
 
 private:
-	static const size_t s_numRanks = mpl::get_num_ranks<ranks...>::value;
+	static const size_t s_numRanks = mpl::get_num_ranks<ranks...>();
 	static constexpr size_t s_ranks[s_numRanks] = { ranks ... };
 
 	high_order_array<T,ranks ...>& m_iterable;

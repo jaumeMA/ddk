@@ -12,7 +12,7 @@ namespace ddk
 template<typename ... Iterators>
 class multi_iterator
 {
-    static const size_t s_numTypes = mpl::get_num_types<Iterators...>::value;
+    static const size_t s_numTypes = mpl::get_num_types<Iterators...>();
     typedef typename mpl::create_range_rank<0,s_numTypes>::type type_range_rank;
 
 public:

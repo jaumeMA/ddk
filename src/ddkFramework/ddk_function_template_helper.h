@@ -137,63 +137,16 @@ public:
 	static const bool value = _is_function<raw_type>::value;
 };
 
-template<typename T, typename, typename ...>
-struct _is_valid_functor;
-
-template<typename T, typename ... Types>
-struct _is_valid_functor<T,type_pack<Types...>>
-{
-private:
-    template<typename TT>
-	static std::true_type resolve(TT&, typename std::add_pointer<decltype(std::declval<TT>().operator()(std::declval<Types>() ...))>::type);
-    template<typename TT>
-	static std::false_type resolve(TT&, ...);
-
-public:
-    typedef std::false_type type;
-    static const bool value = type::value;
-};
-
-template<typename T, typename ... Types, typename Arg, typename ... Args>
-struct _is_valid_functor<T,type_pack<Types...>,Arg,Args...>
-{
-private:
-    template<typename TT>
-	static std::true_type resolve(TT&, typename std::add_pointer<decltype(std::declval<TT>().operator()(std::declval<Types>() ...))>::type);
-    template<typename TT>
-	static typename _is_valid_functor<T,type_pack<Types...,Arg>,Args...>::type resolve(TT&, ...);
-
-public:
-    typedef decltype(resolve(std::declval<T&>(),nullptr)) type;
-    static const bool value = type::value;
-};
-
-template<typename T, typename ...>
-struct is_valid_functor;
-
 template<typename T, typename ... Args>
 struct is_valid_functor
 {
 private:
     template<typename TT>
-	static std::true_type resolve(TT&, typename std::add_pointer<decltype(std::declval<TT>().operator()(std::declval<Args>() ...))>::type);
-    template<typename TT>
-	static std::false_type resolve(TT&, ...);
-
-public:
-    typedef typename static_if<is_function<T>::value,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;
-    static const bool value = type::value;
-};
-
-template<typename T>
-struct is_valid_functor<T>
-{
-private:
+	static std::true_type resolve(TT&, typename TT::callable_tag*);
     template<typename TT>
 	static std::true_type resolve(TT&, decltype(&TT::operator()));
-    //in case your callable has more than 5 five args template call operator, consider adding more voids here
     template<typename TT>
-	static typename _is_valid_functor<T,type_pack<void*>,void*,void*,void*,void*>::type resolve(TT&, ...);
+	static std::false_type resolve(TT&, ...);
 
 public:
     typedef typename static_if<is_function<T>::value,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;

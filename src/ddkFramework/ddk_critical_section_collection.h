@@ -204,7 +204,7 @@ class CriticalSectionCollector
 	template<typename...>
 	friend class AccessProviderCollector;
 
-	static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
+	static const size_t s_numTypes = mpl::get_num_types<Types...>();
 	typedef std::tuple<typename detail::resolve_critical_access_type<ACCESS,Types>::type ...> tuple_t;
 
 public:
@@ -285,7 +285,7 @@ private:
 template<typename ... Types>
 class AccessProviderCollector
 {
-	static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
+	static const size_t s_numTypes = mpl::get_num_types<Types...>();
 
 public:
 	typedef AccessProviderCollector<Types...> collector_t;

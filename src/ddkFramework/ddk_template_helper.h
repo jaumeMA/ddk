@@ -99,6 +99,12 @@ struct size_of_qualified_type<T*>
 };
 
 template<typename T>
+struct remove_qualifiers
+{
+    typedef typename std::remove_const<typename std::remove_reference<T>::type>::type type;
+};
+
+template<typename T>
 struct get_pointer
 {
 private:
@@ -176,25 +182,18 @@ struct min_rank
 };
 
 //ranks
-template<size_t pos, size_t ... ranks>
-struct nth_rank_of;
-
-template<size_t pos, size_t rank, size_t ... ranks>
-struct nth_rank_of<pos,rank,ranks...>
+template<size_t ... ranks>
+constexpr size_t nth_rank_of(size_t pos)
 {
-    static const size_t value = nth_rank_of<pos-1,ranks...>::value;
-};
+    const size_t s_ranks[] = { ranks ...};
 
-template<size_t rank, size_t ... ranks>
-struct nth_rank_of<0,rank,ranks...>
-{
-    static const size_t value = rank;
+    return s_ranks[pos];
 };
 
 template<size_t ... ranks>
-struct get_num_ranks
+constexpr size_t get_num_ranks()
 {
-	static const size_t value = sizeof...(ranks);
+	return sizeof...(ranks);
 };
 
 template<template<size_t,size_t> class cond, size_t ... ranks>
@@ -239,7 +238,7 @@ struct sequence
     template<size_t ... Indexs>
     struct at<sequence<Indexs...>>
     {
-        typedef sequence<nth_rank_of<Indexs,ranks...>::value ...> type;
+        typedef sequence<nth_rank_of<ranks...>(Indexs) ...> type;
     };
 
     template<size_t Index, size_t Pos = 0>
@@ -269,7 +268,7 @@ struct sequence
         };
 
     public:
-        static const size_t index = found<Index==nth_rank_of<Pos,ranks...>::value,void>::index;
+        static const size_t index = found<Index==nth_rank_of<ranks...>(Pos),void>::index;
     };
 
     static const size_t min = get_cond_rank<min_rank,ranks...>::value;
@@ -382,39 +381,28 @@ struct acc_sequence<rank,ranks...>
 typedef typename _partial<0>::type type;
 };
 
-template<size_t...>
-struct prod_ranks;
-
-template<>
-struct prod_ranks<>
+template<size_t ... ranks>
+constexpr size_t sum_ranks()
 {
-	static const size_t value = 1;
+    return (ranks + ...);
 };
 
-template<size_t rank, size_t ... ranks>
-struct prod_ranks<rank,ranks...>
+template<size_t ... ranks>
+constexpr size_t prod_ranks()
 {
-	static const size_t value = rank * prod_ranks<ranks...>::value;
+    return (ranks * ...);
 };
 
 template<typename ... Types>
-struct get_num_types
+constexpr size_t get_num_types()
 {
-    static const int value = sizeof...(Types);
-};
+    return sizeof...(Types);
+}
 
-template<template<typename> class,typename ...>
-struct get_num_of_types_of;
-
-template<template<typename> class predicate, typename Type, typename ... Types>
-struct get_num_of_types_of<predicate,Type,Types...>
+template<template<typename> class predicate, typename ... Types>
+constexpr size_t get_num_of_types_of()
 {
-    static const int value = predicate<Type>::value + get_num_of_types_of<predicate,Types...>::value;
-};
-template<template<typename> class predicate>
-struct get_num_of_types_of<predicate>
-{
-    static const int value = 0;
+    return (predicate<Types>::value + ...);
 };
 
 template<typename A, typename B>
@@ -640,7 +628,7 @@ struct _acc_sizeof;
 template<size_t ... Indexs>
 struct _acc_sizeof<sequence<Indexs...>>
 {
-    static const size_t value[get_num_ranks<Indexs...>::value];
+    static const size_t value[get_num_ranks<Indexs...>()];
 
     constexpr _acc_sizeof() = default;
 
@@ -655,7 +643,7 @@ struct _acc_sizeof<sequence<Indexs...>>
 };
 
 template<size_t ... Indexs>
-const size_t _acc_sizeof<sequence<Indexs...>>::value[get_num_ranks<Indexs...>::value] = { Indexs ... };
+const size_t _acc_sizeof<sequence<Indexs...>>::value[get_num_ranks<Indexs...>()] = { Indexs ... };
 
 template<typename ... Types>
 struct acc_sizeof

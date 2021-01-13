@@ -39,7 +39,7 @@ template<typename Sink>
 template<typename ... T>
 void type_access_dumping<Sink>::apply(const variant<T...>& i_value) const
 {
-	set(typename mpl::make_sequence<0,mpl::get_num_types<T...>::value>::type{},i_value);
+	set(typename mpl::make_sequence<0,mpl::get_num_types<T...>()>::type{},i_value);
 }
 template<typename Sink>
 template<size_t ... Indexs,typename ... T>

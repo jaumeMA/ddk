@@ -36,7 +36,7 @@ struct constructor_visitor : public static_visitor<void>
     template<size_t PosType, typename Type>
     static detail::void_t construct(Storage& i_storage, Type&& val)
 	{
-		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>::value, "Type out of bounds!");
+		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(), "Type out of bounds!");
 
 		typedef typename mpl::nth_type_of<PosType, Types...>::type TType;
 
@@ -81,7 +81,7 @@ struct destructor_visitor : public static_visitor<void>
     template<size_t PosType>
     void destroy()
 	{
-		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>::value, "Type out of bounds!");
+		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(), "Type out of bounds!");
 
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
 
@@ -223,7 +223,7 @@ struct comparison_visitor : public static_visitor<bool>
 		const val_retriever_visitor<varType,Types...> getter;
 
 		//this reference here is ok by reference collapsing
-		typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type seq_t;
+		typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type seq_t;
 		typedef variant_visitor_invoker<varType,Types...> variant_visitor_t;
 
 		return variant_visitor_t::template inner_invoker(seq_t{},getter,m_variant) == otherVal;

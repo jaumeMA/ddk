@@ -267,9 +267,9 @@ template<typename T>
 inline atomic_weak_pointer_wrapper<const T> weak(const atomic_shared_pointer_wrapper<T>& i_sharedPtr);
 
 template<typename T, typename TT>
-inline shared_pointer_wrapper<const TT> share(const share_from_this<T,TT>& i_shareFromThis);
+inline shared_reference_wrapper<const TT> share(const share_from_this<T,TT>& i_shareFromThis);
 template<typename T, typename TT>
-inline shared_pointer_wrapper<TT> share(share_from_this<T,TT>& i_shareFromThis);
+inline shared_reference_wrapper<TT> share(share_from_this<T,TT>& i_shareFromThis);
 
 template<typename T>
 inline shared_pointer_wrapper<const T> share(const weak_pointer_wrapper<T>& i_weakPtr);

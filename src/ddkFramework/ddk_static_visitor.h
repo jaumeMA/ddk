@@ -5,20 +5,15 @@
 
 namespace ddk
 {
-namespace detail
-{
-
-struct static_visitor_base{};
-
-}
 
 template<typename>
 class static_visitor;
 
 template<typename Return>
-class static_visitor : detail::static_visitor_base
+class static_visitor
 {
 public:
+	struct callable_tag;
 	typedef Return return_type;
 
 	template<typename T>
@@ -39,9 +34,10 @@ public:
 };
 
 template<>
-class static_visitor<void> : detail::static_visitor_base
+class static_visitor<void>
 {
 public:
+	struct callable_tag;
 	typedef detail::void_t return_type;
 
 	template<typename T>

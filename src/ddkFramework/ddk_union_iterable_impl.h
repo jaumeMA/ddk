@@ -45,7 +45,7 @@ private:
 };
 
 template<typename ... Iterables>
-using union_iterable_visitor = union_iterable_visitor_type<typename mpl::make_sequence<0,mpl::get_num_types<Iterables...>::value>::type,Iterables...>;
+using union_iterable_visitor = union_iterable_visitor_type<typename mpl::make_sequence<0,mpl::get_num_types<Iterables...>()>::type,Iterables...>;
 
 template<typename ... Iterables>
 class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>>

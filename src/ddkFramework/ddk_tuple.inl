@@ -7,15 +7,15 @@ namespace detail
 {
 
 template<typename ... Types>
-const std::array<size_t,mpl::get_num_types<Types...>::value> aligned_tuple_storage<Types...>::m_offset = resolve_type_offset(s_total_size);
+const std::array<size_t,mpl::get_num_types<Types...>()> aligned_tuple_storage<Types...>::m_offset = resolve_type_offset(s_total_size);
 
 template<typename ... Types>
-std::array<size_t,mpl::get_num_types<Types...>::value> aligned_tuple_storage<Types...>::resolve_type_offset(size_t i_totalSize)
+std::array<size_t,mpl::get_num_types<Types...>()> aligned_tuple_storage<Types...>::resolve_type_offset(size_t i_totalSize)
 {
 	typedef typename mpl::acc_sizeof<Types...>::type data_align;
-	static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
+	static const size_t s_numTypes = mpl::get_num_types<Types...>();
 
-	std::array<size_t,mpl::get_num_types<Types...>::value> res;
+	std::array<size_t,mpl::get_num_types<Types...>()> res;
 	void* arena = nullptr;
 	size_t spaceLeft = i_totalSize;
 	static const size_t typeSizes[] = { mpl::size_of_qualified_type<Types>::value ...};
@@ -223,8 +223,8 @@ template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typena
 template<size_t ... IIndexs, typename ... Args>
 void tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::set(const mpl::sequence<IIndexs...>&, Args&& ... i_args)
 {
-	static_assert(mpl::get_num_ranks<IIndexs...>::value == mpl::get_num_types<Args...>::value, "Unconsistent provided arguments and sequence");
-	static_assert(mpl::get_num_types<Type1,Type2,Types...>::value == mpl::get_num_types<Args...>::value, "Wrong number of arguments");
+	static_assert(mpl::get_num_ranks<IIndexs...>() == mpl::get_num_types<Args...>(), "Unconsistent provided arguments and sequence");
+	static_assert(mpl::get_num_types<Type1,Type2,Types...>() == mpl::get_num_types<Args...>(), "Wrong number of arguments");
 
 	( assign<typename mpl::nth_type_of<Indexs,Type1,Type2,Types...>::type>(m_storage.template at<IIndexs>(), std::forward<Args>(i_args)) && ... );
 }
@@ -251,7 +251,7 @@ const tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* t
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 constexpr size_t tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::size()
 {
-	return mpl::get_num_types<Type1,Type2,Types...>::value;
+	return mpl::get_num_types<Type1,Type2,Types...>();
 }
 template<size_t Index1,size_t Index2,size_t ... Indexs,typename Type1,typename Type2,typename ... Types>
 bool tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::empty() const
@@ -280,32 +280,32 @@ tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(co
 template<typename ... TypesA, typename ... TypesB>
 tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs)
 {
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>::value>::type sequenceA;
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>::value>::type sequenceB;
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>::value + mpl::get_num_types<TypesB...>::value>::type total_sequence;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>()>::type sequenceA;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>()>::type sequenceB;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>() + mpl::get_num_types<TypesB...>()>::type total_sequence;
 
     return merge<TypesA...,TypesB...>(total_sequence{},total_sequence{},sequenceA{},i_lhs,sequenceB{},i_rhs);
 }
 template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>
 tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs)
 {
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>::value>::type sequenceA;
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>::value>::type sequenceB;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesA...>()>::type sequenceA;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<TypesB...>()>::type sequenceB;
 
     return merge<FinalTypes...>(i_srcSeq,i_destSeq,sequenceA{},const_cast<tuple<TypesA...>&>(i_lhs),sequenceB{},const_cast<tuple<TypesB...>&>(i_rhs));
 }
 template<typename ... Types, typename ... Args>
 tuple<Types...,Args...> merge_args(const tuple<Types...>& i_lhs, Args&& ... i_args)
 {
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value + mpl::get_num_types<Args...>::value>::type total_sequence;
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type sequence_t;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>() + mpl::get_num_types<Args...>()>::type total_sequence;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type sequence_t;
 
     return merge_args<Types...,Args...>(total_sequence{},total_sequence{},sequence_t{},const_cast<tuple<Types...>&>(i_lhs),std::forward<Args>(i_args) ...);
 }
 template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... Types, typename ... Args>
 tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, const tuple<Types...>& i_lhs, Args&& ... i_args)
 {
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type sequence_t;
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type sequence_t;
 
     return merge_args<FinalTypes...>(i_srcSeq,i_destSeq,sequence_t{},const_cast<tuple<Types...>&>(i_lhs),std::forward<Args>(i_args) ...);
 }

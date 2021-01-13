@@ -40,7 +40,7 @@ using unresolved_tuple = typename mpl::make_tuple<Types>::template at<typename p
 template<typename Return, typename ... Types>
 struct function_impl_base<Return, tuple<Types...>> : public distribute_from_this<function_impl_base<Return,tuple<Types...>>>
 {
-    static const size_t s_numTypes = mpl::get_num_types<Types...>::value;
+    static const size_t s_numTypes = mpl::get_num_types<Types...>();
 
     template<typename, typename>
     friend struct function_impl_base;

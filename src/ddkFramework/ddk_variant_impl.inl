@@ -5,7 +5,7 @@
 
 
 #define CREATE_INNER_VISITOR(_visitor,_types) \
-    typedef typename mpl::make_sequence<0,mpl::get_num_types<_types...>::value>::type _range_seq_t; \
+    typedef typename mpl::make_sequence<0,mpl::get_num_types<_types...>()>::type _range_seq_t; \
 	typedef decltype(_visitor) visitor_type; \
 	typedef typename visitor_type::return_type return_type; \
     typedef variant_visitor_invoker<return_type,_types...> _variant_visitor_t;
@@ -510,7 +510,7 @@ template<typename Visitor>
 typename std::remove_reference<Visitor>::type::return_type variant_impl<Types...>::visit(Visitor&& visitor)
 {
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
-	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type range_seq;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),*this);
 }
@@ -519,7 +519,7 @@ template<typename Visitor>
 typename std::remove_reference<Visitor>::type::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
 {
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
-	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type range_seq;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
 }

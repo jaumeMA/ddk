@@ -14,7 +14,7 @@ class intersection_function;
 template<typename Callable, typename ... Callables>
 class intersection_function<Callable,Callables...>
 {
-    static const size_t s_num_callables = 1 + mpl::get_num_types<Callables...>::value;
+    static const size_t s_num_callables = 1 + mpl::get_num_types<Callables...>();
 
     template<typename ... CallablesB>
     friend inline intersection_function<Callable,Callables...,CallablesB...> operator&(const intersection_function<Callable,Callables...>& i_lhs, const intersection_function<CallablesB...>& i_rhs)
@@ -28,6 +28,7 @@ class intersection_function<Callable,Callables...>
     }
 
 public:
+	struct callable_tag;
     typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
     typedef typename mpl::aqcuire_callable_return_type<Callable>::args_type callable_args_type;
 

@@ -329,7 +329,7 @@ bool variant<Types...>::operator!=(T&& other) const
 }
 
 TEMPLATE(typename Visitor,typename Variant)
-REQUIRED(IS_BASE_OF(detail::static_visitor_base,Visitor),IS_VARIANT(Variant))
+REQUIRED(IS_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
 typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_visitor,Variant&& i_variant)
 {
 	return i_variant.visit(std::forward<Visitor>(i_visitor));

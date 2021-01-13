@@ -83,7 +83,7 @@ void make_context(ucontext_t* i_context, ucontext_t* i_resumeContext, void (*i_f
 
 	i_context->uc_link = i_resumeContext;
 
-	makecontext(i_context,i_func,mpl::get_num_types<Args...>::value,i_args...);
+	makecontext(i_context,i_func,mpl::get_num_types<Args...>(),i_args...);
 
 #endif
 }

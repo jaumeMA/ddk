@@ -19,6 +19,10 @@ public:
 	high_order_sub_array(high_order_sub_array&& other) = delete;
 	high_order_sub_array<T,ranks...> operator[](size_t index);
 	high_order_sub_array<const T,ranks...> operator[](size_t index) const;
+    static inline constexpr size_t size()
+    {
+        return rank * high_order_sub_array<T,ranks...>::size();
+    }
 
 private:
 	T& m_ref;
@@ -36,6 +40,10 @@ public:
 	high_order_sub_array& operator=(TT&& i_value);
 	operator T&();
 	operator const T&() const;
+    static inline constexpr size_t size()
+    {
+        return 1;
+    }
 
 private:
 	T& m_ref;
@@ -51,8 +59,8 @@ class high_order_array
 {
 	DDK_ITERABLE_TYPE(high_order_array,EXPAND_CLASS_TEMPLATE(high_order_array_adaptor,T,rank,ranks...),std::random_access_iterator_tag)
 
-	static const size_t s_numRanks = mpl::get_num_ranks<rank,ranks...>::value;
-	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>::value;
+	static const size_t s_numRanks = mpl::get_num_ranks<rank,ranks...>();
+	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>();
 
 public:
 	typedef T value_type;

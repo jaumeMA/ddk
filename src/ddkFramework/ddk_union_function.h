@@ -34,7 +34,7 @@ public:
 template<typename Callable, typename ... Callables>
 class union_function
 {
-    static const size_t s_num_callables = mpl::get_num_types<Callables...>::value + 1;
+    static const size_t s_num_callables = mpl::get_num_types<Callables...>() + 1;
 
     template<typename ... CallablesB>
     friend inline union_function<Callable,Callables...,CallablesB...> operator|(const union_function<Callable,Callables...>& i_lhs, const union_function<CallablesB...>& i_rhs)
@@ -48,6 +48,7 @@ class union_function
     }
 
 public:
+	struct callable_tag;
     typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
     typedef typename mpl::merge_tuples<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
 

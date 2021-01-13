@@ -16,7 +16,7 @@ high_order_sub_array<T,ranks...> high_order_sub_array<T,rank,ranks...>::operator
 {
 	if(i_index < rank)
 	{
-		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+		static const size_t s_partialSize = high_order_sub_array<T,ranks...>::size();
 
 		return *(&m_ref + i_index * s_partialSize);
 	}
@@ -30,7 +30,7 @@ high_order_sub_array<const T,ranks...> high_order_sub_array<T,rank,ranks...>::op
 {
 	if(i_index < rank)
 	{
-		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+		static const size_t s_partialSize = high_order_sub_array<const T,ranks...>::size();
 
 		return *(&m_ref + i_index * s_partialSize);
 	}
@@ -95,7 +95,7 @@ detail::high_order_sub_array<T,ranks...> high_order_array<T,rank,ranks...>::oper
 {
 	if(i_index < rank)
 	{
-		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+		static const size_t s_partialSize = detail::high_order_sub_array<T,ranks...>::size();
 
 		return m_data[i_index * s_partialSize];
 	}
@@ -109,7 +109,7 @@ detail::high_order_sub_array<const T,ranks...> high_order_array<T,rank,ranks...>
 {
 	if(i_index < rank)
 	{
-		static const size_t s_partialSize = mpl::prod_ranks<ranks...>::value;
+		static const size_t s_partialSize = detail::high_order_sub_array<const T,ranks...>::size();
 
 		return m_data[i_index * s_partialSize];
 	}

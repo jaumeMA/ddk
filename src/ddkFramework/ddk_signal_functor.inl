@@ -17,7 +17,7 @@ void signal_functor<void(Types...)>::execute(Args&& ... i_args) const
 template<typename ... Types>
 void signal_functor<void(Types...)>::execute_tuple(const tuple_t& i_args) const
 {
-	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>::value>::type range_seq;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	_execute(i_args,range_seq{});
 }

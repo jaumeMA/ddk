@@ -56,8 +56,8 @@ template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename
 template<typename T>
 void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::typed_visit(T&& i_resolvedValue) const
 {
-	typedef typename mpl::make_sequence<0,mpl::get_num_types<ResolvedTypes...>::value>::type indexs_resolved;
-	typedef typename mpl::make_sequence<0,mpl::get_num_types<Values...>::value>::type indexs_to_resolve;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<ResolvedTypes...>()>::type indexs_resolved;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Values...>()>::type indexs_to_resolve;
 
 	typed_visit(indexs_resolved{},indexs_to_resolve{},std::forward<T>(i_resolvedValue));
 }
@@ -85,30 +85,30 @@ function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<
 }
 
 TEMPLATE(typename Visitor,typename ... Values)
-REQUIRED(IS_CALLABLE(Visitor),IS_BASE_OF(typename Visitor::type_interface,Values)...)
-typename Visitor::return_type visit(const Visitor& i_visitor,const inherited_value<Values>& ... i_values)
+REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
+typename Visitor::return_type visit(const Visitor& i_visitor,const Values& ... i_values)
 {
 	typedef typename Visitor::type_interface type_interface;
 	static const size_t s_numberOfInheritedTypes = ddk::static_counter<type_interface>::get_curr_count();
 	typedef decltype(__get_inherited_type_list(std::declval<type_interface>(),std::declval<mpl::static_number<s_numberOfInheritedTypes>>())) considered_types;
 	typedef typename Visitor::return_type return_type;
 
-	dynamic_multi_visitor<const Visitor,considered_types,mpl::type_pack<>,Values...> multiVisitor(i_visitor,i_values ...);
+	dynamic_multi_visitor<const Visitor,considered_types,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
 
 	const function<return_type()> resolvedFunc = multiVisitor.visit();
 
 	return eval(resolvedFunc);
 }
 TEMPLATE(typename Visitor,typename ... Values)
-REQUIRED(IS_CALLABLE(Visitor),IS_BASE_OF(typename Visitor::type_interface,Values)...)
-typename Visitor::return_type visit(Visitor& i_visitor,const inherited_value<Values>& ... i_values)
+REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
+typename Visitor::return_type visit(Visitor& i_visitor,const Values& ... i_values)
 {
 	typedef typename Visitor::type_interface type_interface;
 	static const size_t s_numberOfInheritedTypes = ddk::static_counter<type_interface>::get_curr_count();
 	typedef decltype(__get_inherited_type_list(std::declval<type_interface>(),std::declval<mpl::static_number<s_numberOfInheritedTypes>>())) considered_types;
 	typedef typename Visitor::return_type return_type;
 
-	dynamic_multi_visitor<Visitor,considered_types,mpl::type_pack<>,Values...> multiVisitor(i_visitor,i_values ...);
+	dynamic_multi_visitor<Visitor,considered_types,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
 
 	const function<return_type()> resolvedFunc = multiVisitor.visit();
 

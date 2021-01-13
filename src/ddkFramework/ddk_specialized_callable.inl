@@ -18,7 +18,7 @@ template<typename Callable,typename ... Args>
 template<typename ... Types>
 auto specialized_callable<Callable,Args...>::operator()(Types&& ... i_args) const
 {
-	return private_call(typename mpl::make_sequence<0,mpl::get_num_types<Args...>::value>::type{},std::forward<Types>(i_args)...);
+	return private_call(typename mpl::make_sequence<0,mpl::get_num_types<Args...>()>::type{},std::forward<Types>(i_args)...);
 }
 template<typename Callable,typename ... Args>
 template<size_t ... Indexs,typename ... Types>

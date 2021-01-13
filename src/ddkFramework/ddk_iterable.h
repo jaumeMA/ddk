@@ -152,6 +152,6 @@ struct iterable_action_type_correspondence<IsConst,std::random_access_iterator_t
 }
 
 #include "ddk_iterable.inl"
-
+#include "ddk_iteration.h"
 #include "ddk_iterable_utils.h"
 #include "ddk_view_utils.h"
