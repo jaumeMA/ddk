@@ -1,15 +1,15 @@
 
+#include "ddk_lock_guard.h"
+
 namespace ddk
 {
 
 template<typename T>
 atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(const atomic_weak_pointer_wrapper& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = other.m_ptr;
-
-	other.m_barrier.unlock();
+    m_ptr = other.m_ptr;
 }
 template<typename T>
 atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(const weak_pointer_wrapper<T>& other)
@@ -19,11 +19,9 @@ atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(const weak_pointer_w
 template<typename T>
 atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(atomic_weak_pointer_wrapper&& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = std::move(other.m_ptr);
-
-	other.m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 }
 template<typename T>
 atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(weak_pointer_wrapper<T>&& other)
@@ -34,11 +32,9 @@ template<typename T>
 template<typename TT>
 atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(const atomic_weak_pointer_wrapper<TT>& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = other.m_ptr;
-
-	other.m_barrier.unlock();
+    m_ptr = other.m_ptr;
 }
 template<typename T>
 template<typename TT>
@@ -50,11 +46,9 @@ template<typename T>
 template<typename TT>
 atomic_weak_pointer_wrapper<T>::atomic_weak_pointer_wrapper(atomic_weak_pointer_wrapper<TT>&& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = std::move(other.m_ptr);
-
-	other.m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 }
 template<typename T>
 template<typename TT>
@@ -69,63 +63,45 @@ atomic_weak_pointer_wrapper<T>::~atomic_weak_pointer_wrapper()
 template<typename T>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(std::nullptr_t)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = nullptr;
-
-	m_barrier.unlock();
+    m_ptr = nullptr;
 
 	return *this;
 }
 template<typename T>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(const atomic_weak_pointer_wrapper& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	m_barrier.lock();
-
-	m_ptr = other.m_ptr;
-
-	m_barrier.unlock();
-
-	other.m_barrier.unlock();
+    m_ptr = other.m_ptr;
 
 	return *this;
 }
 template<typename T>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(const weak_pointer_wrapper<T>& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = other;
-
-	m_barrier.unlock();
+    m_ptr = other;
 
 	return *this;
 }
 template<typename T>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(atomic_weak_pointer_wrapper&& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	m_barrier.lock();
-
-	m_ptr = std::move(other.m_ptr);
-
-	m_barrier.unlock();
-
-	other.m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 
 	return *this;
 }
 template<typename T>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(weak_pointer_wrapper<T>&& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = std::move(other);
-
-	m_barrier.unlock();
+    m_ptr = std::move(other);
 
 	return *this;
 }
@@ -133,15 +109,9 @@ template<typename T>
 template<typename TT>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(const atomic_weak_pointer_wrapper<TT>& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	m_barrier.lock();
-
-	m_ptr = other.m_ptr;
-
-	m_barrier.unlock();
-
-	other.m_barrier.unlock();
+    m_ptr = other.m_ptr;
 
 	return *this;
 }
@@ -149,11 +119,9 @@ template<typename T>
 template<typename TT>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(const weak_pointer_wrapper<TT>& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = other;
-
-	m_barrier.unlock();
+    m_ptr = other;
 
 	return *this;
 }
@@ -161,15 +129,9 @@ template<typename T>
 template<typename TT>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(atomic_weak_pointer_wrapper<TT>&& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	m_barrier.lock();
-
-	m_ptr = std::move(other.m_ptr);
-
-	m_barrier.unlock();
-
-	other.m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 
 	return *this;
 }
@@ -177,11 +139,9 @@ template<typename T>
 template<typename TT>
 atomic_weak_pointer_wrapper<T>& atomic_weak_pointer_wrapper<T>::operator=(weak_pointer_wrapper<TT>&& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = std::move(other);
-
-	m_barrier.unlock();
+    m_ptr = std::move(other);
 
 	return *this;
 }
@@ -203,13 +163,9 @@ atomic_weak_pointer_wrapper<T>::operator weak_pointer_wrapper<T>() const
 template<typename T>
 atomic_shared_pointer_wrapper<T> atomic_weak_pointer_wrapper<T>::share() const
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	atomic_shared_pointer_wrapper<T> res = m_ptr.share();
-
-	m_barrier.unlock();
-
-	return res;
+    return atomic_shared_pointer_wrapper<T>{ m_ptr.share() };
 }
 
 }

@@ -1,5 +1,5 @@
 
-#include <thread>
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
@@ -18,11 +18,9 @@ atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wr
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = other.m_ptr;
-
-	other.m_barrier.unlock();
+    m_ptr = other.m_ptr;
 }
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(const shared_pointer_wrapper_impl<T,ReferenceCounter>& other)
@@ -32,11 +30,9 @@ atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wr
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl&& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = std::move(other.m_ptr);
-
-	other.m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 }
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(shared_pointer_wrapper_impl<T,ReferenceCounter>&& other)
@@ -47,11 +43,9 @@ template<typename T, typename ReferenceCounter>
 template<typename TT>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(const atomic_shared_pointer_wrapper_impl<TT,ReferenceCounter>& other)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = other.m_ptr;
-
-	other.m_barrier.unlock();
+    m_ptr = other.m_ptr;
 }
 template<typename T, typename ReferenceCounter>
 template<typename TT>
@@ -64,11 +58,9 @@ template<typename TT>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::atomic_shared_pointer_wrapper_impl(atomic_shared_pointer_wrapper_impl<TT,ReferenceCounter>&& other)
 : m_barrier(false)
 {
-	other.m_barrier.lock();
+    lockable_guard<spin_lock> lg(other.m_barrier);
 
-	m_ptr = std::move(other.m_ptr);
-
-	other.m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 }
 template<typename T, typename ReferenceCounter>
 template<typename TT>
@@ -83,61 +75,45 @@ atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::~atomic_shared_pointer_w
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(std::nullptr_t)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = nullptr;
-
-	m_barrier.unlock();
+    m_ptr = nullptr;
 
 	return *this;
 }
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(const atomic_shared_pointer_wrapper_impl& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	other.m_barrier.lock();
-
-	m_ptr = other.m_ptr;
-
-	other.m_barrier.unlock();
-
-	m_barrier.unlock();
+    m_ptr = other.m_ptr;
 
 	return *this;
 }
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(const shared_pointer_wrapper_impl<T,ReferenceCounter>& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = other;
+    m_ptr = other;
 
-	m_barrier.unlock();
+    return *this;
 }
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(atomic_shared_pointer_wrapper_impl&& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	other.m_barrier.lock();
-
-	m_ptr = std::move(other.m_ptr);
-
-	other.m_barrier.unlock();
-
-	m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 
 	return *this;
 }
 template<typename T, typename ReferenceCounter>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(shared_pointer_wrapper_impl<T,ReferenceCounter>&& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = std::move(other);
-
-	m_barrier.unlock();
+    m_ptr = std::move(other);
 
 	return *this;
 }
@@ -145,15 +121,9 @@ template<typename T, typename ReferenceCounter>
 template<typename TT>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(const atomic_shared_pointer_wrapper_impl<TT,ReferenceCounter>& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	other.m_barrier.lock();
-
-	m_ptr = other.m_ptr;
-
-	other.m_barrier.unlock();
-
-	m_barrier.unlock();
+    m_ptr = other.m_ptr;
 
 	return *this;
 }
@@ -161,11 +131,9 @@ template<typename T, typename ReferenceCounter>
 template<typename TT>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(const shared_pointer_wrapper_impl<TT,ReferenceCounter>& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = other;
-
-	m_barrier.unlock();
+    m_ptr = other;
 
 	return *this;
 }
@@ -173,15 +141,9 @@ template<typename T, typename ReferenceCounter>
 template<typename TT>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(atomic_shared_pointer_wrapper_impl<TT,ReferenceCounter>&& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock,spin_lock> lg(m_barrier,other.m_barrier);
 
-	other.m_barrier.lock();
-
-	m_ptr = std::move(other.m_ptr);
-
-	other.m_barrier.unlock();
-
-	m_barrier.unlock();
+    m_ptr = std::move(other.m_ptr);
 
 	return *this;
 }
@@ -189,11 +151,9 @@ template<typename T, typename ReferenceCounter>
 template<typename TT>
 atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>::operator=(shared_pointer_wrapper_impl<TT,ReferenceCounter>&& other)
 {
-	m_barrier.lock();
+    lockable_guard<spin_lock> lg(m_barrier);
 
-	m_ptr = std::move(other);
-
-	m_barrier.unlock();
+    m_ptr = std::move(other);
 
 	return *this;
 }

@@ -485,7 +485,7 @@ struct nth_pos_of_predicate<predicate,TType,Type,Types...>
 template<template <class, class...> class predicate, typename Type>
 struct nth_pos_of_predicate<predicate,Type>
 {
-    static const size_t value = -1;
+    static const size_t value = static_cast<size_t>(-1);
 };
 
 template<typename Type, typename ... Types>
@@ -494,11 +494,17 @@ struct nth_pos_of_type
     static const size_t value = nth_pos_of_predicate<is_same_type,Type,Types...>::value;
 };
 
+template<typename Type,typename ... Types>
+inline constexpr size_t nth_pos_of_type_v = nth_pos_of_type<Type,Types...>::value;
+
 template<typename Type, typename ... Types>
 struct is_among_types
 {
     static const bool value = (nth_pos_of_predicate<is_same_type,Type,Types...>::value != -1);
 };
+
+template<typename Type,typename ... Types>
+inline constexpr bool is_among_types_v = is_among_types<Type,Types...>::value;
 
 template<typename Type, typename ... Types>
 struct is_among_convertible_types
@@ -507,10 +513,16 @@ struct is_among_convertible_types
 };
 
 template<typename Type,typename ... Types>
+inline constexpr bool is_among_convertible_types_v = is_among_convertible_types<Type,Types...>::value;
+
+template<typename Type,typename ... Types>
 struct is_among_constructible_types
 {
 	static const bool value = (nth_pos_of_predicate<std::is_constructible,Type,Types...>::value != -1);
 };
+
+template<typename Type,typename ... Types>
+inline constexpr bool is_among_constructible_types_v = is_among_constructible_types<Type,Types...>::value;
 
 template<typename Type, typename ... Types>
 struct get_first_constructible_type
@@ -524,6 +536,9 @@ public:
 	static const size_t value = typePos;
 };
 
+template<typename Type,typename ... Types>
+inline constexpr size_t get_first_constructible_type_v = get_first_constructible_type<Type,Types...>::value;
+
 template<typename Type, typename ... Types>
 struct get_first_convertible_type
 {
@@ -535,6 +550,9 @@ public:
 	typedef typename nth_type_of<typePos,Types...>::type type;
 	static const size_t value = typePos;
 };
+
+template<typename Type,typename ... Types>
+inline constexpr size_t get_first_convertible_type_v = get_first_convertible_type<Type,Types...>::value;
 
 template<typename Type,typename ... Types>
 struct get_type_match_pos
@@ -552,6 +570,9 @@ public:
 	typedef typename nth_type_of<typePos,Types...>::type type;
 	static const size_t value = typePos;
 };
+
+template<typename Type,typename ... Types>
+inline constexpr size_t get_type_match_pos_v = get_type_match_pos<Type,Types...>::value;
 
 template<typename Type>
 struct construct_type
