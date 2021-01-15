@@ -58,7 +58,7 @@ typename Callable::return_type visit(const Callable& i_callable,Variants&& ... i
 {
     typedef typename Callable::return_type return_type;
 
-	detail::multi_visitor<return_type,Callable,tuple<>,Variants...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);
+	detail::multi_visitor<return_type,Callable,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);
 
 	const function<return_type()> resolvedFunction = multiVisitor.visit();
 
