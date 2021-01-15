@@ -4,8 +4,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 struct iterable_state
 {
@@ -28,7 +26,6 @@ private:
 	size_t m_currPos = 0;
 };
 
-}
 }
 
 #include "ddk_iterable_state.inl"

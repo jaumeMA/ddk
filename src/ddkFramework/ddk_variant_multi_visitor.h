@@ -50,9 +50,9 @@ private:
 
 }
 
-TEMPLATE(typename Return,typename Callable,typename ... Variants)
+TEMPLATE(typename Callable,typename ... Variants)
 REQUIRES(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
-inline Return visit(const Callable& i_callable,Variants&& ... i_variants);
+inline typename Callable::return_type visit(const Callable& i_callable,Variants&& ... i_variants);
 
 }
 

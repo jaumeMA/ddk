@@ -82,10 +82,10 @@ inline detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,declt
 }
 
 template<typename Sink,typename Transform,typename Iterable>
-inline ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_lhs,const ddk::trans::detail::iterable_pack<Transform,Iterable>& i_rhs);
+inline ddk::future<ddk::action_result> operator<<=(Sink&& i_lhs,const ddk::trans::detail::iterable_pack<Transform,Iterable>& i_rhs);
 
 template<typename Sink, typename Transform,typename ... Iterables>
-inline ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_lhs,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_rhs);
+inline ddk::future<ddk::action_result> operator<<=(Sink&& i_lhs,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_rhs);
 
 
 #include "ddk_iterable_algorithm.inl"

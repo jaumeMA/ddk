@@ -5,8 +5,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 struct action_shift_visitor : public static_visitor<size_t>
 {
@@ -41,5 +39,4 @@ protected:
 	shift_action m_appliedAction;
 };
 
-}
 }

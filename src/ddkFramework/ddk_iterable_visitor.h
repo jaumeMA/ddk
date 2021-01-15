@@ -6,8 +6,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 namespace detail
 {
 
@@ -106,7 +104,6 @@ public:
 template<typename Iterable, typename Function,typename Action>
 inline void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr);
 
-}
 }
 
 #include "ddk_iterable_visitor.inl"

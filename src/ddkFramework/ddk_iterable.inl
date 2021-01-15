@@ -29,7 +29,7 @@ iterable<Traits>::~iterable()
 {
 }
 template<typename Traits>
-iter::action_result iterable<Traits>::iterate(const function<void(reference)>& i_try, const iter::shift_action& i_initialAction)
+action_result iterable<Traits>::iterate(const function<void(reference)>& i_try, const shift_action& i_initialAction)
 {
 	try
 	{
@@ -49,7 +49,7 @@ iter::action_result iterable<Traits>::iterate(const function<void(reference)>& i
 	return m_actionState->get();
 }
 template<typename Traits>
-iter::action_result iterable<Traits>::iterate(const function<void(const_reference)>& i_try, const iter::shift_action& i_initialAction) const
+action_result iterable<Traits>::iterate(const function<void(const_reference)>& i_try, const shift_action& i_initialAction) const
 {
 	try
 	{
@@ -69,7 +69,7 @@ iter::action_result iterable<Traits>::iterate(const function<void(const_referenc
 	return m_actionState->get();
 }
 template<typename Traits>
-iter::action_result iterable<Traits>::co_iterate(const function<void(iterable_value)>& i_try, const iter::shift_action& i_initialAction)
+action_result iterable<Traits>::co_iterate(const function<void(iterable_value)>& i_try, const shift_action& i_initialAction)
 {
 	m_executor = detail::await_executor<void>(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
 
@@ -99,7 +99,7 @@ iter::action_result iterable<Traits>::co_iterate(const function<void(iterable_va
 	return m_actionState->get();
 }
 template<typename Traits>
-iter::action_result iterable<Traits>::co_iterate(const function<void(iterable_const_value)>& i_try, const iter::shift_action& i_initialAction) const
+action_result iterable<Traits>::co_iterate(const function<void(iterable_const_value)>& i_try, const shift_action& i_initialAction) const
 {
     typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
 
@@ -151,37 +151,37 @@ bool iterable<Traits>::empty() const
     return m_iterableImpl->empty();
 }
 template<typename Traits>
-iter::iterable_state& iterable<Traits>::get_state()
+iterable_state& iterable<Traits>::get_state()
 {
     return m_iterableState;
 }
 template<typename Traits>
-const iter::iterable_state& iterable<Traits>::get_state() const
+const iterable_state& iterable<Traits>::get_state() const
 {
     return m_iterableState;
 }
 template<typename Traits>
-iter::action_state_lent_ref iterable<Traits>::get_action_state()
+action_state_lent_ref iterable<Traits>::get_action_state()
 {
     return lend(m_actionState);
 }
 template<typename Traits>
-iter::action_state_const_lent_ref iterable<Traits>::get_action_state() const
+action_state_const_lent_ref iterable<Traits>::get_action_state() const
 {
     return lend(m_actionState);
 }
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
 {
-	iter::action_result actionResult = m_actionState->get();
+	action_result actionResult = m_actionState->get();
 
 	if(actionResult == success)
 	{
-		if(actionResult.is_base_of<iter::shift_action>())
+		if(actionResult.is_base_of<shift_action>())
 		{
 			//in case of shift action consolidate it against result
-			const iter::shift_action& currReturnedAction = actionResult.get_as<iter::shift_action>();
-			const iter::consolidate_visitor consolidateVisitor(currReturnedAction);
+			const shift_action& currReturnedAction = actionResult.get_as<shift_action>();
+			const consolidate_visitor consolidateVisitor(currReturnedAction);
 
 			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
 			{
@@ -204,15 +204,15 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(const_reference i_value) const
 {
-	const iter::action_result actionResult = m_actionState->get();
+	const action_result actionResult = m_actionState->get();
 
 	if(actionResult == success)
 	{
-		if(actionResult.is_base_of<iter::shift_action>())
+		if(actionResult.is_base_of<shift_action>())
 		{
 			//in case of shift action consolidate it against result
-			const iter::shift_action& currReturnedAction = actionResult.get_as<iter::shift_action>();
-			const iter::consolidate_visitor consolidateVisitor(currReturnedAction);
+			const shift_action& currReturnedAction = actionResult.get_as<shift_action>();
+			const consolidate_visitor consolidateVisitor(currReturnedAction);
 
 			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
 			{

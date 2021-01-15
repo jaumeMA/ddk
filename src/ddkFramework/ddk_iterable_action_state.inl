@@ -1,8 +1,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 template<typename T>
 void action_result::emplace(T&& i_res)
@@ -41,5 +39,4 @@ T&& action_state::forward_result()
     return std::move(m_actionResult).template extract_as<T>();
 }
 
-}
 }

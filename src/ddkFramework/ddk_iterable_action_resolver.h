@@ -4,8 +4,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 namespace detail
 {
 
@@ -27,7 +25,6 @@ private:
 extern const detail::reversable_action_resolver forward_order;
 extern const detail::reversable_action_resolver reverse_order;
 
-}
 }
 
 #include "ddk_iterable_action_resolver.inl"

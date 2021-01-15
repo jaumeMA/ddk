@@ -2,8 +2,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 namespace detail
 {
 
@@ -28,5 +26,4 @@ shift_action reversable_action_resolver::resolve(const shift_action& i_action) c
 const detail::reversable_action_resolver forward_order = detail::reversable_action_resolver(false);
 const detail::reversable_action_resolver reverse_order = detail::reversable_action_resolver(true);
 
-}
 }

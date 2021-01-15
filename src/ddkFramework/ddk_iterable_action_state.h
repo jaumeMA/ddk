@@ -6,8 +6,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 typedef error<ActionError,EraseActionError,AddActionError,ShiftActionError> action_error;
 
@@ -65,7 +63,6 @@ typedef lent_reference_wrapper<const action_state> action_state_const_lent_ref;
 typedef lent_pointer_wrapper<action_state> action_state_lent_ptr;
 typedef lent_pointer_wrapper<const action_state> action_state_const_lent_ptr;
 
-}
 }
 
 #include "ddk_iterable_action_state.inl"

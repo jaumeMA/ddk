@@ -20,7 +20,7 @@ template<typename, typename ...>
 struct union_iterable_visitor_type;
 
 template<size_t ... Indexs, typename ... Iterables>
-struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : public static_visitor<std::pair<size_t,iter::shift_action>>
+struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : public static_visitor<std::pair<size_t,shift_action>>
 {
     static const size_t s_num_iterables = tuple<Iterables...>::size();
     typedef size_t(*size_t_func)(const tuple<Iterables...>&);
@@ -28,12 +28,12 @@ struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : publ
 public:
     union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
 
-	std::pair<size_t,iter::shift_action> visit(const iter::stop_action& i_action) const;
-    std::pair<size_t,iter::shift_action> visit(const iter::erase_action& i_action) const;
-    std::pair<size_t,iter::shift_action> visit(const iter::add_action& i_action) const;
-    std::pair<size_t,iter::shift_action> visit(const iter::go_forward_action& i_action) const;
-    std::pair<size_t,iter::shift_action> visit(const iter::go_backward_action& i_action) const;
-    std::pair<size_t,iter::shift_action> visit(const iter::shift_action& i_action) const;
+	std::pair<size_t,shift_action> visit(const stop_action& i_action) const;
+    std::pair<size_t,shift_action> visit(const erase_action& i_action) const;
+    std::pair<size_t,shift_action> visit(const add_action& i_action) const;
+    std::pair<size_t,shift_action> visit(const go_forward_action& i_action) const;
+    std::pair<size_t,shift_action> visit(const go_backward_action& i_action) const;
+    std::pair<size_t,shift_action> visit(const shift_action& i_action) const;
 
 private:
     template<size_t Index>
@@ -53,9 +53,9 @@ class union_iterable_impl : public iterable_impl_interface<union_iterable_base_t
     static const size_t s_num_iterables = tuple<Iterables...>::size();
     typedef iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>> base_t;
 	template<size_t Index, typename ... IIterables>
-	friend typename union_iterable_impl<IIterables...>::action navigate(union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::reference)>&, const ddk::iter::shift_action&);
+	friend typename union_iterable_impl<IIterables...>::action navigate(union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::reference)>&, const ddk::shift_action&);
 	template<size_t Index, typename ... IIterables>
-	friend typename union_iterable_impl<IIterables...>::action navigate(const union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::const_reference)>&, const ddk::iter::shift_action&);
+	friend typename union_iterable_impl<IIterables...>::action navigate(const union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::const_reference)>&, const ddk::shift_action&);
 
 public:
     using typename base_t::reference;
@@ -69,15 +69,15 @@ public:
     tuple<Iterables...>& get_iterables();
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const override;
+    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
+    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
     size_t size() const override;
     bool empty() const override;
 
     template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr);
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr);
     template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const;
+    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const;
 
     tuple<Iterables...> m_iterables;
 };

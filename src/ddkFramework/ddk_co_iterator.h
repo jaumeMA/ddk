@@ -56,14 +56,14 @@ private:
 	co_forward_iterator(const co_forward_iterator& other,const stack_allocator&);
 	template<typename Iterable>
 	co_forward_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value==false>::type* = nullptr);
-	iter::go_forward_action&& acquire_iterable_value(reference i_value);
+	go_forward_action&& acquire_iterable_value(reference i_value);
 
-	ddk::function<reference(const iter::shift_action&, const detail::relative_function_impl<co_forward_iterator<T>,iter::go_forward_action&&,reference>&)> m_function;
-	iter::iterable_state m_currState;
+	ddk::function<reference(const shift_action&, const detail::relative_function_impl<co_forward_iterator<T>,go_forward_action&&,reference>&)> m_function;
+	iterable_state m_currState;
 	detail::this_fiber_t m_caller;
-	iter::go_forward_action m_currAction = iter::go_no_place;
+	go_forward_action m_currAction = go_no_place;
 	mutable typed_arena<reference> m_iteratorValueContainer;
-	detail::await_executor<T> m_executor;
+	detail::await_executor<reference> m_executor;
 };
 
 template<typename T>
@@ -98,13 +98,13 @@ private:
 	co_bidirectional_iterator(const co_bidirectional_iterator& other,const stack_allocator&);
 	template<typename Iterable>
 	co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
-    iter::bidirectional_action&& acquire_iterable_value(reference i_value);
+    bidirectional_action&& acquire_iterable_value(reference i_value);
 
-	ddk::function<reference(const iter::shift_action&,const detail::relative_function_impl<co_bidirectional_iterator<T>,iter::bidirectional_action&&,reference>&)> m_function;
-	iter::iterable_state m_currState;
+	ddk::function<reference(const shift_action&,const detail::relative_function_impl<co_bidirectional_iterator<T>,bidirectional_action&&,reference>&)> m_function;
+	iterable_state m_currState;
 	detail::this_fiber_t m_caller;
-	iter::shift_action m_currAction;
-	detail::await_executor<T> m_executor;
+	shift_action m_currAction;
+	detail::await_executor<reference> m_executor;
 	mutable typed_arena<reference> m_iteratorValueContainer;
 };
 
@@ -141,42 +141,17 @@ private:
 	co_random_access_iterator(const co_random_access_iterator& other,const stack_allocator&);
 	template<typename Iterable>
 	co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type* = nullptr);
-	iter::shift_action&& acquire_iterable_value(reference i_value);
+	shift_action&& acquire_iterable_value(reference i_value);
 
-	ddk::function<reference(const iter::shift_action&, const detail::relative_function_impl<co_random_access_iterator<T>,iter::shift_action&&,reference>&)> m_function;
-	iter::iterable_state m_currState;
+	ddk::function<reference(const shift_action&, const detail::relative_function_impl<co_random_access_iterator<T>,shift_action&&,reference>&)> m_function;
+	iterable_state m_currState;
 	detail::this_fiber_t m_caller;
-	iter::shift_action m_currAction;
-	detail::await_executor<T> m_executor;
+	shift_action m_currAction;
+	detail::await_executor<reference> m_executor;
 	mutable typed_arena<reference> m_iteratorValueContainer;
 };
 
-namespace detail
-{
-
-template<typename,typename>
-struct co_iterator_type_correspondence;
-
-template<typename T>
-struct co_iterator_type_correspondence<T,std::forward_iterator_tag>
-{
-	typedef co_forward_iterator<T> type;
-	typedef iter::const_input_action action;
-};
-template<typename T>
-struct co_iterator_type_correspondence<T,std::bidirectional_iterator_tag>
-{
-	typedef co_bidirectional_iterator<T> type;
-	typedef iter::const_bidirectional_action action;
-};
-template<typename T>
-struct co_iterator_type_correspondence<T, std::random_access_iterator_tag>
-{
-	typedef co_random_access_iterator<T> type;
-	typedef iter::const_random_access_action action;
-};
-
-}
 }
 
 #include "ddk_co_iterator.inl"
+#include "ddk_co_iterator_resolver.h"

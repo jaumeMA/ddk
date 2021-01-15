@@ -3,8 +3,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 const size_t iterable_state::npos = -1;
 
@@ -29,5 +27,4 @@ bool iterable_state::operator!=(const iterable_state& other) const
     return m_currPos != other.m_currPos;
 }
 
-}
 }

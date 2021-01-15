@@ -8,10 +8,6 @@
 
 namespace ddk
 {
-
-template<typename ...>
-class tuple_adaptor;
-
 namespace detail
 {
 
@@ -50,7 +46,7 @@ class tuple_impl<mpl::sequence<0>,Type>
 {
     template<typename,typename...>
     friend class tuple_impl;
-	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type),std::random_access_iterator_tag)
+//	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type))
 
 public:
     tuple_impl() = default;
@@ -85,7 +81,7 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
     template<typename,typename...>
     friend class tuple_impl;
     static const size_t s_total_size = mpl::get_total_size<Type1,Type2,Types...>::value;
-	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type1,Type2,Types...),std::random_access_iterator_tag)
+//	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type1,Type2,Types...))
 
 public:
 	tuple_impl();

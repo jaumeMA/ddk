@@ -2,8 +2,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 const action_result::nested_result& action_result::get() const
 {
@@ -55,5 +53,4 @@ bool action_state::operator!=(const action_error& i_error) const
 	return m_actionResult != i_error;
 }
 
-}
 }

@@ -71,7 +71,7 @@ detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(ded
 }
 
 template<size_t ... Indexs, typename Sink, typename Transform,typename ... Iterables>
-ddk::future<ddk::iter::action_result> _execute_transform(const ddk::mpl::sequence<Indexs...>&, Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_iterables)
+ddk::future<ddk::action_result> _execute_transform(const ddk::mpl::sequence<Indexs...>&, Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_iterables)
 {
 	typedef typename ddk::detail::intersection_iterable<Iterables...>::related_iterable intersection_iterable_t;
 	typedef typename intersection_iterable_t::iterable_value iterable_value;
@@ -79,12 +79,12 @@ ddk::future<ddk::iter::action_result> _execute_transform(const ddk::mpl::sequenc
 	return ddk::trans::detail::iterable_transformation_dump(std::forward<Sink>(i_sink),ddk::view::transform([transform = i_iterables.get_transform()](ddk::values_tuple<typename Iterables::const_reference ...> i_value) { return transform(i_value.template get<Indexs>() ...); }) <<= ddk::fusion(i_iterables.template get<Indexs>()...));
 }
 template<typename Sink,typename Transform,typename Iterable>
-ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterable>& i_iterables)
+ddk::future<ddk::action_result> operator<<=(Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterable>& i_iterables)
 {
 	return ddk::trans::detail::iterable_transformation_dump(std::forward<Sink>(i_sink),ddk::view::transform([transform = i_iterables.get_transform()](typename Iterable::const_reference i_value) { return transform(i_value); }) <<= i_iterables.template get<0>());
 }
 template<typename Sink, typename Transform,typename ... Iterables>
-ddk::future<ddk::iter::action_result> operator<<=(Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_iterables)
+ddk::future<ddk::action_result> operator<<=(Sink&& i_sink,const ddk::trans::detail::iterable_pack<Transform,Iterables...>& i_iterables)
 {
 	return _execute_transform(typename ddk::mpl::make_sequence<0,ddk::mpl::get_num_types<Iterables...>()>::type{},std::forward<Sink>(i_sink),i_iterables);
 }

@@ -8,8 +8,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 struct base_action
 {
@@ -123,13 +121,12 @@ bool operator!=(const base_action& i_lhs, const base_action& i_rhs);
 bool operator==(const shift_action& i_lhs,const shift_action& i_rhs);
 bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs);
 
-const extern iter::stop_action stop_iteration;
-const extern iter::erase_action erase_value;
-const extern iter::add_action add_value;
-const extern iter::go_forward_action go_next_place;
-const extern iter::go_backward_action go_prev_place;
-const extern iter::shift_action go_to_place;
-const extern iter::shift_action go_no_place;
+const extern stop_action stop_iteration;
+const extern erase_action erase_value;
+const extern add_action add_value;
+const extern go_forward_action go_next_place;
+const extern go_backward_action go_prev_place;
+const extern shift_action go_to_place;
+const extern shift_action go_no_place;
 
-}
 }

@@ -3,11 +3,9 @@
 #include "ddk_iterable_action.h"
 #include "ddk_fiber_utils.h"
 #include "ddk_iterable_exceptions.h"
-#include "ddk_iterable_adaptor.h"
+#include "ddk_iterable_adaptor_resolver.h"
 
 namespace ddk
-{
-namespace iter
 {
 namespace detail
 {
@@ -57,7 +55,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::v
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
 		}
 
 		return false;
@@ -89,7 +87,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
 		{
 			if(this->m_actionStatePtr)
 			{
-				this->m_actionStatePtr->forward_result(action_error(iter::ActionError::RemovalError,EraseActionError::NonExistingValue));
+				this->m_actionStatePtr->forward_result(action_error(ActionError::RemovalError,EraseActionError::NonExistingValue));
 			}
 		}
 	}
@@ -97,7 +95,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
     {
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::RemovalError,EraseActionError::ErasingFromConstantIterable));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::RemovalError,EraseActionError::ErasingFromConstantIterable));
 		}
     }
 
@@ -121,7 +119,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
 		{
 			if(this->m_actionStatePtr)
 			{
-				this->m_actionStatePtr->forward_result(action_error(iter::ActionError::AdditionError,AddActionError::NonConvertibleType));
+				this->m_actionStatePtr->forward_result(action_error(ActionError::AdditionError,AddActionError::NonConvertibleType));
 			}
 		}
     }
@@ -129,7 +127,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
     {
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::AdditionError,AddActionError::AddingToConstantIterable));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::AdditionError,AddActionError::AddingToConstantIterable));
 		}
     }
 
@@ -151,7 +149,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Ada
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
 		}
 
 		return false;
@@ -173,7 +171,7 @@ bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>:
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
 		}
 
 		return false;
@@ -197,7 +195,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Ada
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError{ShiftActionError::ShiftOutOfBounds}));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError{ShiftActionError::ShiftOutOfBounds}));
 		}
 
 		return false;
@@ -221,7 +219,7 @@ bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>:
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(iter::ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
 		}
 
 		return false;
@@ -233,8 +231,8 @@ bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>:
 template<typename Iterable, typename Function, typename Action>
 void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
-	typedef detail::action_visitor<Iterable,Action,Function,Action,typename detail::iterable_adaptor<Iterable,Action>::type> action_visitor_t;
-	action_visitor_t actionVisitor(i_iterable,i_initialAction.template get_as<iter::shift_action>(),std::forward<Function>(i_sink),i_actionStatePtr);
+	typedef detail::action_visitor<Iterable,Action,Function,Action,iterable_adaptor<Iterable>> action_visitor_t;
+	action_visitor_t actionVisitor(i_iterable,i_initialAction.template get_as<shift_action>(),std::forward<Function>(i_sink),i_actionStatePtr);
 
 	if(actionVisitor.valid())
 	{
@@ -244,5 +242,4 @@ void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_ini
 	suspend();
 }
 
-}
 }

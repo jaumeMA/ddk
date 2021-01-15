@@ -3,8 +3,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 template<typename Action>
 void iterable_state::apply(const Action& i_action)
@@ -19,5 +17,4 @@ void iterable_state::apply(const variant<Types...>& i_action)
 	m_currPos = i_action.visit(actionVisitor);
 }
 
-}
 }

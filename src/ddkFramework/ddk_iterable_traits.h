@@ -95,110 +95,110 @@ struct base_iterable_traits<const values_tuple<Types...>>
 template<typename T>
 struct const_input_iterable_traits : base_iterable_traits<T>
 {
-    typedef iter::const_forward_action action;
+    typedef const_forward_action action;
 	template<typename TT>
 	using as = const_input_iterable_traits<TT>;
 
-    static constexpr iter::const_forward_action default_action()
+    static constexpr const_forward_action default_action()
     {
-        return iter::go_next_place;
+        return go_next_place;
     }
 };
 
 template<typename T>
 struct input_iterable_traits: base_iterable_traits<T>
 {
-	typedef iter::forward_action action;
+	typedef forward_action action;
 	template<typename TT>
 	using as = input_iterable_traits<TT>;
 
-	static constexpr iter::forward_action default_action()
+	static constexpr forward_action default_action()
 	{
-		return iter::go_next_place;
+		return go_next_place;
 	}
 };
 
 template<typename T>
 struct const_forward_iterable_traits : base_iterable_traits<T>
 {
-    typedef iter::const_forward_action action;
+    typedef const_forward_action action;
 	typedef std::forward_iterator_tag iterable_tag;
 	template<typename TT>
 	using as = const_forward_iterable_traits<TT>;
 
-    static constexpr iter::const_forward_action default_action()
+    static constexpr const_forward_action default_action()
     {
-        return iter::go_next_place;
+        return go_next_place;
     }
 };
 
 template<typename T>
 struct forward_iterable_traits: base_iterable_traits<T>
 {
-	typedef iter::forward_action action;
+	typedef forward_action action;
 	typedef std::forward_iterator_tag iterable_tag;
 	template<typename TT>
 	using as = forward_iterable_traits<TT>;
 
-	static constexpr iter::forward_action default_action()
+	static constexpr forward_action default_action()
 	{
-		return iter::go_next_place;
+		return go_next_place;
 	}
 };
 
 template<typename T>
 struct const_bidirectional_iterable_traits : base_iterable_traits<T>
 {
-    typedef iter::const_bidirectional_action action;
+    typedef const_bidirectional_action action;
 	typedef std::bidirectional_iterator_tag iterable_tag;
 	template<typename TT>
 	using as = const_bidirectional_iterable_traits<TT>;
 
-    static constexpr iter::const_bidirectional_action default_action()
+    static constexpr const_bidirectional_action default_action()
     {
-        return iter::go_next_place;
+        return go_next_place;
     }
 };
 
 template<typename T>
 struct bidirectional_iterable_traits: base_iterable_traits<T>
 {
-	typedef iter::bidirectional_action action;
+	typedef bidirectional_action action;
 	typedef std::bidirectional_iterator_tag iterable_tag;
 	template<typename TT>
 	using as = bidirectional_iterable_traits<TT>;
 
-	static constexpr iter::bidirectional_action default_action()
+	static constexpr bidirectional_action default_action()
 	{
-		return iter::go_next_place;
+		return go_next_place;
 	}
 };
 
 template<typename T>
 struct const_random_access_iterable_traits : base_iterable_traits<T>
 {
-    typedef iter::const_random_access_action action;
+    typedef const_random_access_action action;
 	typedef std::random_access_iterator_tag iterable_tag;
 	template<typename TT>
 	using as = const_random_access_iterable_traits<TT>;
 
-    static constexpr iter::const_random_access_action default_action()
+    static constexpr const_random_access_action default_action()
     {
-        return iter::go_next_place;
+        return go_next_place;
     }
 };
 
 template<typename T>
 struct random_access_iterable_traits: base_iterable_traits<T>
 {
-	typedef iter::random_access_action action;
+	typedef random_access_action action;
 	typedef std::random_access_iterator_tag iterable_tag;
 	template<typename TT>
 	using as = random_access_iterable_traits<TT>;
 
-	static constexpr iter::random_access_action default_action()
+	static constexpr random_access_action default_action()
 	{
-		return iter::go_next_place;
+		return go_next_place;
 	}
 };
 

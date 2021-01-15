@@ -257,5 +257,5 @@ TEST(DDKVariantTest,multi_visitation)
 	ddk::variant<char,double,float,std::string> foo3;
 
 	myMultiVisitor multiVisitor;
-	const size_t res = ddk::visit<size_t>(multiVisitor,foo1,foo2,foo3);
+	const size_t res = ddk::visit(multiVisitor,foo1,foo2,foo3);
 }

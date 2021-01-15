@@ -52,13 +52,15 @@ function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedT
 
 }
 
-TEMPLATE(typename Return,typename Callable,typename ... Variants)
+TEMPLATE(typename Callable,typename ... Variants)
 REQUIRED(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
-Return visit(const Callable& i_callable,Variants&& ... i_variants)
+typename Callable::return_type visit(const Callable& i_callable,Variants&& ... i_variants)
 {
-	detail::multi_visitor<Return,Callable,tuple<>,Variants...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);
+    typedef typename Callable::return_type return_type;
 
-	const function<Return()> resolvedFunction = multiVisitor.visit();
+	detail::multi_visitor<return_type,Callable,tuple<>,Variants...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);
+
+	const function<return_type()> resolvedFunction = multiVisitor.visit();
 
 	return eval(resolvedFunction);
 }

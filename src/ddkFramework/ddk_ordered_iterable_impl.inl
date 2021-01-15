@@ -22,12 +22,12 @@ ordered_iterable_impl<T,Traits>::ordered_iterable_impl(iterable_impl_shared_ref<
 {
 }
 template<typename T, typename Traits>
-void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr)
+void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
 	m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { return m_actionResolver.resolve(eval(i_try,i_value)); }),m_actionResolver.resolve(i_initialAction),i_actionStatePtr);
 }
 template<typename T, typename Traits>
-void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const
+void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
 {
 	m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { return m_actionResolver.resolve(eval(i_try,i_value)); }),m_actionResolver.resolve(i_initialAction),i_actionStatePtr);
 }

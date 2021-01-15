@@ -13,7 +13,7 @@ class iteration
 	typedef typename Traits::reference reference;
 
 	template<typename TTraits>
-	friend iter::action_result execute_iteration(iteration<TTraits> i_co_iteration);
+	friend action_result execute_iteration(iteration<TTraits> i_co_iteration);
 
 public:
 	template<typename Reference>
@@ -24,11 +24,11 @@ public:
 
 	iteration* operator->();
 	const iteration* operator->() const;
-	iter::action_result execute();
-	iter::action_result execute() const;
+	action_result execute();
+	action_result execute() const;
 	template<typename T>
-	future<iter::action_result> attach(T&& i_execContext);
-	future<iter::action_result> attach(const detail::this_thread_t&);
+	future<action_result> attach(T&& i_execContext);
+	future<action_result> attach(const detail::this_thread_t&);
 
 private:
 	detail::iterable<Traits> m_iterable;
@@ -42,7 +42,7 @@ class co_iteration
     typedef typename Traits::iterable_value iterable_value;
 
     template<typename TTraits>
-    friend iter::action_result execute_co_iteration(co_iteration<TTraits> i_co_iteration);
+    friend action_result execute_co_iteration(co_iteration<TTraits> i_co_iteration);
 
 public:
     template<typename IterableValue>
@@ -53,11 +53,11 @@ public:
 
     co_iteration* operator->();
     const co_iteration* operator->() const;
-    iter::action_result execute();
-    iter::action_result execute() const;
+    action_result execute();
+    action_result execute() const;
 	template<typename T>
-	future<iter::action_result> attach(T&& i_execContext);
-	future<iter::action_result> attach(const detail::this_thread_t&);
+	future<action_result> attach(T&& i_execContext);
+	future<action_result> attach(const detail::this_thread_t&);
 
 private:
     detail::iterable<Traits> m_iterable;

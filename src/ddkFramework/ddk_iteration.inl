@@ -6,13 +6,13 @@ namespace ddk
 {
 
 template<typename Traits>
-iter::action_result execute_co_iteration(co_iteration<Traits> i_co_iteration)
+action_result execute_co_iteration(co_iteration<Traits> i_co_iteration)
 {
     return i_co_iteration.m_iterable.co_iterate(i_co_iteration.m_try);
 }
 
 template<typename Traits>
-iter::action_result execute_iteration(iteration<Traits> i_iteration)
+action_result execute_iteration(iteration<Traits> i_iteration)
 {
 	return i_iteration.m_iterable.iterate(i_iteration.m_try);
 }
@@ -58,7 +58,7 @@ const iteration<Traits>* iteration<Traits>::operator->() const
 	return this;
 }
 template<typename Traits>
-iter::action_result iteration<Traits>::execute()
+action_result iteration<Traits>::execute()
 {
 	if(m_iterable != nullptr)
 	{
@@ -70,7 +70,7 @@ iter::action_result iteration<Traits>::execute()
 	}
 }
 template<typename Traits>
-iter::action_result iteration<Traits>::execute() const
+action_result iteration<Traits>::execute() const
 {
 	if(m_iterable != nullptr)
 	{
@@ -83,14 +83,14 @@ iter::action_result iteration<Traits>::execute() const
 }
 template<typename Traits>
 template<typename T>
-future<iter::action_result> iteration<Traits>::attach(T&& i_execContext)
+future<action_result> iteration<Traits>::attach(T&& i_execContext)
 {
-	shared_reference_wrapper<async_executor<iter::action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+	shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
 
 	return res->attach(std::forward<T>(i_execContext));
 }
 template<typename Traits>
-future<iter::action_result> iteration<Traits>::attach(const detail::this_thread_t&)
+future<action_result> iteration<Traits>::attach(const detail::this_thread_t&)
 {
 	return make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
 }
@@ -136,7 +136,7 @@ const co_iteration<Traits>* co_iteration<Traits>::operator->() const
     return this;
 }
 template<typename Traits>
-iter::action_result co_iteration<Traits>::execute()
+action_result co_iteration<Traits>::execute()
 {
     if(m_iterable != nullptr)
     {
@@ -148,7 +148,7 @@ iter::action_result co_iteration<Traits>::execute()
 	}
 }
 template<typename Traits>
-iter::action_result co_iteration<Traits>::execute() const
+action_result co_iteration<Traits>::execute() const
 {
     if(m_iterable != nullptr)
     {
@@ -161,14 +161,14 @@ iter::action_result co_iteration<Traits>::execute() const
 }
 template<typename Traits>
 template<typename T>
-future<iter::action_result> co_iteration<Traits>::attach(T&& i_execContext)
+future<action_result> co_iteration<Traits>::attach(T&& i_execContext)
 {
-    shared_reference_wrapper<async_executor<iter::action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+    shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
 
     return res->attach(std::forward<T>(i_execContext));
 }
 template<typename Traits>
-future<iter::action_result> co_iteration<Traits>::attach(const detail::this_thread_t&)
+future<action_result> co_iteration<Traits>::attach(const detail::this_thread_t&)
 {
 	return make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
 }

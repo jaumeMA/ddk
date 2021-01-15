@@ -11,12 +11,12 @@ transformed_iterable_action_impl<PublicTraits,PrivateTraits>::transformed_iterab
 {
 }
 template<typename PublicTraits, typename PrivateTraits>
-void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr)
+void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
     m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initialAction,i_actionStatePtr);
 }
 template<typename PublicTraits, typename PrivateTraits>
-void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(const_reference)>& i_try, const iter::shift_action& i_initialAction, iter::action_state_lent_ptr i_actionStatePtr) const
+void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
 {
     m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initialAction,i_actionStatePtr);
 }

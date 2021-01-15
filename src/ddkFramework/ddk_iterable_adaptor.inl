@@ -1,8 +1,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 namespace detail
 {
 
@@ -55,7 +53,7 @@ bool iterable_adaptor_base<Iterable>::forward_erase_value_in(Sink&& i_sink)
 {
 	iterator itNew = m_iterable.erase(m_currIterator);
 
-	if(itNew != this->m_endIterator) 
+	if(itNew != this->m_endIterator)
 	{
 		i_sink(*itNew);
 
@@ -149,7 +147,7 @@ template<typename Iterable>
 template<typename Sink>
 bool bidirectional_iterable_adaptor<Iterable>::forward_prev_value_in(Sink&& i_sink) const
 {
-	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator) 
+	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator)
 	{
 		i_sink(*(this->m_currIterator));
 
@@ -176,7 +174,7 @@ bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shif
 		}
 		break;
 	case -1:
-		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator) 
+		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator)
 		{
 			i_sink(*(this->m_currIterator));
 
@@ -184,7 +182,7 @@ bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shif
 		}
 		break;
 	default:
-		if((this->m_currIterator += i_shift) != this->m_endIterator) 
+		if((this->m_currIterator += i_shift) != this->m_endIterator)
 		{
 			i_sink(*(this->m_currIterator));
 
@@ -230,6 +228,5 @@ bool random_access_iterable_adaptor<Iterable>::forward_shift_value_in(int i_shif
 	return false;
 }
 
-}
 }
 }

@@ -3,8 +3,6 @@
 
 namespace ddk
 {
-namespace iter
-{
 
 void stop_action::operator()() const
 {
@@ -115,13 +113,12 @@ bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs)
 	return i_lhs.shifting() != i_rhs.shifting();
 }
 
-const iter::stop_action stop_iteration = iter::stop_action();
-const iter::erase_action erase_value = iter::erase_action();
-const iter::add_action add_value = iter::add_action();
-const iter::go_forward_action go_next_place = iter::go_forward_action();
-const iter::go_backward_action go_prev_place = iter::go_backward_action();
-const iter::shift_action go_to_place = iter::shift_action(0);
-const iter::shift_action go_no_place = iter::shift_action(0);
+const stop_action stop_iteration = stop_action();
+const erase_action erase_value = erase_action();
+const add_action add_value = add_action();
+const go_forward_action go_next_place = go_forward_action();
+const go_backward_action go_prev_place = go_backward_action();
+const shift_action go_to_place = shift_action(0);
+const shift_action go_no_place = shift_action(0);
 
-}
 }

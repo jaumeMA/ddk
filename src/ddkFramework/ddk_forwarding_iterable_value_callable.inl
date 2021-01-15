@@ -16,7 +16,7 @@ Action forwarding_iterable_value_callable<Function,Action>::operator()(T&& i_val
 {
 	eval(m_function,std::forward<T>(i_value));
 
-	return iter::go_next_place;
+	return go_next_place;
 }
 
 }

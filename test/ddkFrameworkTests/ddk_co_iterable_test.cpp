@@ -9,13 +9,11 @@ class DDKCoIterableTest : public Test
 {
 };
 
-class MyIterableAdaptor;
-
 template<typename T>
 class MyIterable
 {
-	DDK_ITERABLE_TYPE(MyIterable,MyIterableAdaptor,std::forward_iterator_tag)
 public:
+	typedef const size_t value_type;
 	typedef const size_t& reference;
 	typedef const size_t& const_reference;
 
@@ -42,46 +40,56 @@ private:
 class MyIterableAdaptor
 {
 public:
+    typedef typename MyIterable<int>::value_type value_type;
 	typedef typename MyIterable<int>::reference reference;
 	typedef typename MyIterable<int>::const_reference const_reference;
 
-	MyIterableAdaptor(const MyIterable<int>& i_iterable,const ddk::iter::shift_action& i_initialAction);
-	inline const_reference get_value() const noexcept;
+    template<typename T>
+	MyIterableAdaptor(const MyIterable<T>& i_iterable,const ddk::shift_action& i_initialAction)
+    : m_max(i_iterable.get_max())
+    , m_currValue(i_initialAction.shifted())
+	{
+	}
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const noexcept;
-	inline bool valid() const noexcept;
+	inline bool forward_next_value_in(Sink&& i_sink) const
+	{
+        if(m_currValue < m_max)
+        {
+            i_sink(++m_currValue);
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+	}
+	inline bool valid() const
+	{
+        return m_currValue < m_max;
+	}
 
 private:
-	const MyIterable<int>& m_iterable;
+    const size_t m_max = 0;
 	mutable size_t m_currValue = 0;
 };
 
-MyIterableAdaptor::MyIterableAdaptor(const MyIterable<int>& i_iterable,const ddk::iter::shift_action& i_initialAction)
-: m_iterable(i_iterable)
-,m_currValue(i_initialAction.shifted())
+namespace ddk
 {
-}
-bool MyIterableAdaptor::valid() const noexcept
-{
-	return m_currValue != ddk::iter::iterable_state::npos;
-}
-typename MyIterableAdaptor::const_reference MyIterableAdaptor::get_value() const noexcept
-{
-	return m_currValue;
-}
-template<typename Sink>
-bool MyIterableAdaptor::forward_next_value_in(Sink&& i_sink) const noexcept
-{
-	if(m_currValue < m_iterable.get_max())
-	{
-		i_sink(++m_currValue);
 
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+template<typename T>
+class iterable_adaptor<MyIterable<T>> : public MyIterableAdaptor
+{
+public:
+    using MyIterableAdaptor::MyIterableAdaptor;
+};
+template<typename T>
+class iterable_adaptor<const MyIterable<T>> : public MyIterableAdaptor
+{
+public:
+    using MyIterableAdaptor::MyIterableAdaptor;
+};
+
 }
 
 
@@ -324,8 +332,6 @@ TEST(DDKCoIterableTest,stdForwardIteration)
 
 TEST(DDKCoIterableTest,myIterableForwardIteration)
 {
-	typedef ddk::co_iterable<std::vector<int>> iterable;
-	typedef typename iterable::iterator iterator;
 	const size_t initIndex = 0;
 	const size_t maxIndex = 1000000;
 	MyIterable<int> foo(initIndex,maxIndex);

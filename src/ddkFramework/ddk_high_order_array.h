@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_iterable_adaptor.h"
+#include "ddk_iterable_defs.h"
 
 namespace ddk
 {
@@ -51,18 +51,18 @@ private:
 
 }
 
-template<typename,size_t...>
-class high_order_array_adaptor;
-
 template<typename T, size_t rank, size_t ... ranks>
 class high_order_array
 {
-	DDK_ITERABLE_TYPE(high_order_array,EXPAND_CLASS_TEMPLATE(high_order_array_adaptor,T,rank,ranks...),std::random_access_iterator_tag)
+//	DDK_ITERABLE_TYPE(high_order_array,EXPAND_CLASS_TEMPLATE(high_order_array_adaptor,T,rank,ranks...))
 
+    template<typename TT, size_t rrank, size_t ... rranks>
+    friend class high_order_array;
+
+public:
 	static const size_t s_numRanks = mpl::get_num_ranks<rank,ranks...>();
 	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>();
 
-public:
 	typedef T value_type;
 	typedef T& reference;
 	typedef const T& const_reference;
@@ -91,3 +91,4 @@ private:
 }
 
 #include "ddk_high_order_array.inl"
+#include "ddk_high_order_array_adaptor.h"
