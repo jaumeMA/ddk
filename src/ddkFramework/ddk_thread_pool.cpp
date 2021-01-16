@@ -32,7 +32,7 @@ void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder*
 {
 	if (m_state != Running)
 	{
-		lock_guard lg(m_mutex);
+		mutex_guard lg(m_mutex);
 
 		m_funcToExecute = i_callable;
 
@@ -50,7 +50,7 @@ void worker_thread_impl::stop()
 	{
 		//we are using lock/unlock operations just t owait until current function execution ends, s_yielder is thread local theres no need to protect it with mutexes
 		//we set it there just to avoid compiler applies some kind of optimization
-		lock_guard lg(m_mutex);
+		mutex_guard lg(m_mutex);
 	}
 }
 bool worker_thread_impl::joinable() const
@@ -65,7 +65,7 @@ void worker_thread_impl::execute()
 {
 	while(m_state != Stopped)
 	{
-		lock_guard lg(m_mutex);
+		mutex_guard lg(m_mutex);
 
 		if (m_funcToExecute)
 		{
@@ -126,7 +126,7 @@ thread_pool::~thread_pool()
 }
 thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_availableThreads.empty())
 	{
@@ -153,7 +153,7 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 }
 thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_size)
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_availableThreads.size() < i_size)
 	{
@@ -194,7 +194,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 }
 void thread_pool::deallocate(const void* i_object) const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	thread_in_use_container::iterator itThread = m_underUseThreads.find(i_object);
 	for(;itThread!=m_underUseThreads.end();++itThread)

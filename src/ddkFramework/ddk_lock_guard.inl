@@ -20,56 +20,51 @@ private:
     T* m_lock = nullptr;
 };
 
-}
-
 template<typename T>
-lockable_guard<T>::lockable_guard(T& i_lockableObject)
+lock_guard_impl<mpl::sequence<>,T>::lock_guard_impl(T& i_lockableObject)
 : m_lockableObject(i_lockableObject)
 {
     m_lockableObject.lock();
 }
 template<typename T>
-lockable_guard<T>::~lockable_guard()
+lock_guard_impl<mpl::sequence<>,T>::~lock_guard_impl()
 {
     m_lockableObject.unlock();
 }
 
-template<typename T, typename ... TT>
-lockable_guard<T,TT...>::lockable_guard(T& i_lockableObject, TT& ... i_lockableObjects)
+template<size_t ... Indexs,typename T, typename ... TT>
+lock_guard_impl<mpl::sequence<Indexs...>,T,TT...>::lock_guard_impl(T& i_lockableObject, TT& ... i_lockableObjects)
 : m_primaryLock(i_lockableObject)
 {
-   T* lockableObjects[s_numSecondaryLocks] = { &i_lockableObjects ...};
+    static const size_t s_numBytes = (s_numSecondaryLocks / 8) + 1;
+    static const unsigned int allIn = (1 << s_numSecondaryLocks) - 1;
+
+    const void* _[] = { m_secondaryLocks[Indexs] = &i_lockableObjects ... };
 
 acquire_locks:
 
     m_primaryLock.lock();
 
-    for(size_t index=0;index<s_numSecondaryLocks;++index)
+    const unsigned int tryLockRes = ((static_cast<unsigned int>(reinterpret_cast<TT*>(m_secondaryLocks[Indexs])->try_lock()) << Indexs) | ...);
+
+    if(memcmp(&tryLockRes,&allIn,s_numBytes) != 0)
     {
-        if(lockableObjects[index]->try_lock() == false)
-        {
-            for(size_t iindex=index;iindex>0;iindex--)
-            {
-                lockableObjects[iindex-1]->unlock();
-            }
+        ( (static_cast<bool>(tryLockRes & (1 << Indexs)) && reinterpret_cast<detail::lock_unlocker<TT>*>(m_secondaryLocks[Indexs])->unlock()) | ... );
 
-            m_primaryLock.unlock();
+        m_primaryLock.unlock();
 
-            std::this_thread::yield();
+        std::this_thread::yield();
 
-            goto acquire_locks;
-        }
+        goto acquire_locks;
     }
-
-    memmove(m_secondaryLocks,lockableObjects,sizeof(void*) * s_numSecondaryLocks);
 }
-template<typename T, typename ... TT>
-lockable_guard<T,TT...>::~lockable_guard()
+template<size_t ... Indexs,typename T, typename ... TT>
+lock_guard_impl<mpl::sequence<Indexs...>,T,TT...>::~lock_guard_impl()
 {
-    size_t index = s_numSecondaryLocks;
-    bool _[] = { reinterpret_cast<detail::lock_unlocker<TT>*>(m_secondaryLocks[--index])->unlock() ... };
+    ( reinterpret_cast<detail::lock_unlocker<TT>*>(m_secondaryLocks[Indexs])->unlock() | ... );
 
     m_primaryLock.unlock();
 }
 
+}
 }

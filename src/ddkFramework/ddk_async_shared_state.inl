@@ -39,7 +39,7 @@ void private_async_state<T>::detach()
 template<typename T>
 void private_async_state<T>::set_value(sink_type i_value)
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	m_arena = std::forward<sink_type>(i_value);
 
@@ -48,7 +48,7 @@ void private_async_state<T>::set_value(sink_type i_value)
 template<typename T>
 void private_async_state<T>::set_exception(const async_exception& i_exception)
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	m_arena = i_exception;
 
@@ -62,7 +62,7 @@ void private_async_state<T>::signal() const
 template<typename T>
 typename private_async_state<T>::const_reference private_async_state<T>::get_value() const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_arena.template is<detail::none_t>())
 	{
@@ -90,7 +90,7 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 template<typename T>
 typename private_async_state<T>::reference private_async_state<T>::get_value()
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_arena.template is<detail::none_t>())
 	{
@@ -118,7 +118,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 template<typename T>
 embedded_type<T> private_async_state<T>::extract_value()
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_arena.template is<detail::none_t>())
 	{
@@ -151,7 +151,7 @@ embedded_type<T> private_async_state<T>::extract_value()
 template<typename T>
 void private_async_state<T>::wait() const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_arena.template is<detail::none_t>())
 	{
@@ -166,7 +166,7 @@ void private_async_state<T>::wait() const
 template<typename T>
 void private_async_state<T>::wait_for(unsigned int i_period) const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_arena.template is<detail::none_t>())
 	{
@@ -181,7 +181,7 @@ void private_async_state<T>::wait_for(unsigned int i_period) const
 template<typename T>
 bool private_async_state<T>::ready() const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	return (m_arena.template is<detail::none_t>() == false);
 }

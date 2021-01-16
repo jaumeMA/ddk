@@ -23,7 +23,7 @@ fixed_size_allocator::fixed_size_allocator(size_t i_unitSize,size_t i_poolSize)
 	}
 
 #ifdef MEM_CHECK
-	ddk::lock_guard lg(m_poolMutex);
+	ddk::mutex_guard lg(m_poolMutex);
 	m_isAllocated.resize(m_poolSize);
 
 	for(size_t chunkIndex = 0; chunkIndex < m_poolSize - 1; ++chunkIndex)
@@ -55,14 +55,14 @@ void* fixed_size_allocator::allocate() const
 		{
 			return nullptr;
 		}
-	
+
 	}while(atomic_compare_exchange(m_currChunk,currChunk,m_nextChunkArr[currChunk]) == false);
 
 	res = &m_pool[m_unitSize * currChunk];
 
 	#ifdef MEM_CHECK
 	{
-		ddk::lock_guard lg(m_poolMutex);
+		ddk::mutex_guard lg(m_poolMutex);
 		++m_numCurrentAllocations;
 		m_isAllocated[m_currChunk] = true;
 
@@ -92,7 +92,7 @@ void fixed_size_allocator::deallocate(const void* i_address) const
 
 		#ifdef MEM_CHECK
 		{
-			ddk::lock_guard lg(m_poolMutex);
+			ddk::mutex_guard lg(m_poolMutex);
 			if(m_isAllocated[nextChunk] == false)
 			{
 				MAKE_IT_CRASH

@@ -34,7 +34,7 @@ fiber_scheduler<Comparator>::~fiber_scheduler()
 template<typename Comparator>
 typename fiber_scheduler<Comparator>::register_fiber_result fiber_scheduler<Comparator>::register_fiber(fiber& i_fiber)
 {
-	lock_guard lg(m_fiberMutex);
+	mutex_guard lg(m_fiberMutex);
 
 	fiber_container::const_iterator itFiber = m_fibers.find(i_fiber.get_id());
 
@@ -61,7 +61,7 @@ typename fiber_scheduler<Comparator>::register_fiber_result fiber_scheduler<Comp
 template<typename Comparator>
 typename fiber_scheduler<Comparator>::unregister_fiber_result fiber_scheduler<Comparator>::unregister_fiber(fiber_id i_id)
 {
-	lock_guard lg(m_fiberMutex);
+	mutex_guard lg(m_fiberMutex);
 
 	fiber_container::iterator itFiber = m_fibers.find(i_id);
 
@@ -167,7 +167,7 @@ void fiber_scheduler<Comparator>::suspend(detail::yielder_context* i_context)
 template<typename Comparator>
 bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const ddk::function<void()>& i_function)
 {
-	lock_guard lg(m_fiberMutex);
+	mutex_guard lg(m_fiberMutex);
 
 	fiber_container::iterator itFiber = m_fibers.find(i_id);
 	if(itFiber != m_fibers.end())
@@ -188,7 +188,7 @@ bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const ddk::function<vo
 template<typename Comparator>
 bool fiber_scheduler<Comparator>::deactivate(fiber_id i_id)
 {
-	lock_guard lg(m_fiberMutex);
+	mutex_guard lg(m_fiberMutex);
 
 	function_container::iterator itFunction = m_functions.find(i_id);
 	if(itFunction != m_functions.end())
@@ -207,7 +207,7 @@ bool fiber_scheduler<Comparator>::deactivate(fiber_id i_id)
 template<typename Comparator>
 void fiber_scheduler<Comparator>::unregister(fiber_id i_id)
 {
-	lock_guard lg(m_fiberMutex);
+	mutex_guard lg(m_fiberMutex);
 
 	fiber_container::iterator itFiber = m_fibers.find(i_id);
 

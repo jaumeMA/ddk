@@ -30,7 +30,7 @@ bool writer_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 {
 	bool res = false;
 
-	lock_guard lg(m_stateRoomMutex);
+	mutex_guard lg(m_stateRoomMutex);
 
 	if(m_sharedState.try_acquire_lock(Writer) == 0)
 	{

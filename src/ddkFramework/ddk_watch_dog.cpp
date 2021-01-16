@@ -18,13 +18,13 @@ void watch_dog_waiter::unlock()
 }
 void watch_dog_waiter::wait()
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	m_condVar.wait(m_mutex);
 }
 void watch_dog_waiter::wait_until(const function<bool()>& i_predicate)
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	m_condVar.wait_until(m_mutex,i_predicate);
 }

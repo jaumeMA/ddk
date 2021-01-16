@@ -17,7 +17,7 @@ symbol_cache_table::const_reference symbol_cache_table::symbolicate(void* i_addr
 {
 	const size_t symbolKey = reinterpret_cast<size_t>(i_address);
 
-	lock_guard lg(m_refMutex);
+	mutex_guard lg(m_refMutex);
 
 	iterator itSymbol = m_symbolInfo.find(symbolKey);
 

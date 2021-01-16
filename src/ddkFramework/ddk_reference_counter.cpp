@@ -80,7 +80,7 @@ void lent_reference_counter::registerStackTrace(size_t i_id)
 #error "Pending to be implemented for this platform"
 #endif
 
-	lock_guard lg(m_refMutex);
+	mutex_guard lg(m_refMutex);
 
 	stack_entry& currStackTrace = m_stackTraces[i_id];
 
@@ -103,7 +103,7 @@ void lent_reference_counter::registerStackTrace(size_t i_id)
 void lent_reference_counter::unregisterStackTrace(size_t i_id)
 {
 #ifdef TRACK_STACK
-	lock_guard lg(m_refMutex);
+	mutex_guard lg(m_refMutex);
 
 	stack_container::iterator itStackTrace = m_stackTraces.find(i_id);
 	if (itStackTrace != m_stackTraces.end())
@@ -115,11 +115,11 @@ void lent_reference_counter::unregisterStackTrace(size_t i_id)
 void lent_reference_counter::copyStackTrace(size_t i_oldId, size_t i_newId)
 {
 #ifdef TRACK_STACK
-	lock_guard lg(m_refMutex);
+	mutex_guard lg(m_refMutex);
 
 	stack_container::iterator itOldStackTrace = m_stackTraces.find(i_oldId);
 	if (itOldStackTrace != m_stackTraces.end())
-	{		
+	{
 		memcpy(m_stackTraces[i_newId],itOldStackTrace->second,sizeof(void*) * k_maxNumberOfStacks);
 	}
 #endif
@@ -127,7 +127,7 @@ void lent_reference_counter::copyStackTrace(size_t i_oldId, size_t i_newId)
 void lent_reference_counter::reassignStackTrace(size_t i_oldId, size_t i_newId)
 {
 #ifdef TRACK_STACK
-	lock_guard lg(m_refMutex);
+	mutex_guard lg(m_refMutex);
 
 	stack_container::iterator itOldStackTrace = m_stackTraces.find(i_oldId);
 	if (itOldStackTrace != m_stackTraces.end())
@@ -141,7 +141,7 @@ lent_reference_counter::stack_contents lent_reference_counter::dumpStackTrace()
 {
 	stack_contents res;
 
-	lock_guard lg(m_refMutex);
+	mutex_guard lg(m_refMutex);
 
 	stack_container::iterator itStackTrace = m_stackTraces.begin();
 	for(;itStackTrace!=m_stackTraces.end();++itStackTrace)

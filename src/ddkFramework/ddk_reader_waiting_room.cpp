@@ -79,7 +79,7 @@ void reader_waiting_room::_enter_area(Reentrancy i_reentrancy)
 }
 bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 {
-	lock_guard lg(m_stateRoomMutex);
+	mutex_guard lg(m_stateRoomMutex);
 
 	bool res = false;
 
@@ -96,7 +96,7 @@ bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 	{
 		m_sharedState.setCurrentState(Reader);
 		m_numParticipants++;
-	
+
 #ifdef THREAD_ACQUIRE_STACK_TRACE
 		m_sharedState.addStackTrace(Reader);
 #endif
@@ -106,7 +106,7 @@ bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 }
 void reader_waiting_room::_leave_area()
 {
-	lock_guard lg(m_stateRoomMutex);
+	mutex_guard lg(m_stateRoomMutex);
 
 	DDK_ASSERT(m_numParticipants > 0, "Trying to leave non occupied reader waiting room");
 

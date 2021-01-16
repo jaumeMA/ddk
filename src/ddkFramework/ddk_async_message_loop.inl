@@ -13,7 +13,7 @@ detail::connection_base& async_message_loop<BuiltInMessageType>::connect(intrusi
 {
 	detail::connection_base& res = *i_caller;
 
-	lock_guard lg(m_receiverMutex);
+	mutex_guard lg(m_receiverMutex);
 
 	typename linked_list<msg_exchange_room_unique_ref>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_messageQueue](const msg_exchange_room_unique_ref& i_receiver) { return *i_receiver == i_messageQueue->get_id(); });
 
@@ -45,7 +45,7 @@ void async_message_loop<BuiltInMessageType>::disconnect(const detail::connection
 template<typename BuiltInMessageType>
 void async_message_loop<BuiltInMessageType>::clear(receiver_id i_id)
 {
-	lock_guard lg(m_receiverMutex);
+	mutex_guard lg(m_receiverMutex);
 
 	typename linked_list<msg_exchange_room_unique_ref>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const msg_exchange_room_unique_ref& i_receiver) { i_receiver->get_id() == i_id; });
 
@@ -57,14 +57,14 @@ void async_message_loop<BuiltInMessageType>::clear(receiver_id i_id)
 template<typename BuiltInMessageType>
 void async_message_loop<BuiltInMessageType>::clear()
 {
-	lock_guard lg(m_receiverMutex);
+	mutex_guard lg(m_receiverMutex);
 
 	m_receivers.clear();
 }
 template<typename BuiltInMessageType>
 void async_message_loop<BuiltInMessageType>::push_message(const BuiltInMessageType& i_msg)
 {
-	lock_guard lg(m_receiverMutex);
+	mutex_guard lg(m_receiverMutex);
 
 	typename linked_list<msg_exchange_room_unique_ref>::iterator itReceiver = m_receivers.begin();
 	for(; itReceiver != m_receivers.end(); ++itReceiver)

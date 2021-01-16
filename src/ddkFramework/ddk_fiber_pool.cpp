@@ -48,7 +48,7 @@ fiber_pool::~fiber_pool()
 }
 fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_fiberCtr.empty())
 	{
@@ -75,7 +75,7 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 }
 fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	if(m_fiberCtr.size() < i_size)
 	{
@@ -127,13 +127,13 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 }
 bool fiber_pool::empty() const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	return m_fiberCtr.empty() && m_policy == FixedSize;
 }
 size_t fiber_pool::size() const
 {
-	lock_guard lg(m_mutex);
+	mutex_guard lg(m_mutex);
 
 	return m_fiberCtr.size();
 }
@@ -145,7 +145,7 @@ void fiber_pool::deallocate(const void* i_object) const
 
 		if(unregRes == success)
 		{
-			lock_guard lg(m_mutex);
+			mutex_guard lg(m_mutex);
 
 			m_fiberCtr.push_back(acquiredFiber);
 		}

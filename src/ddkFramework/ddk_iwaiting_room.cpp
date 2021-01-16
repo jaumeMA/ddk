@@ -15,7 +15,7 @@
 	{ \
 		const ddk::thread_id_t __currThreadId = ddk::get_current_thread_id(); \
 		const SharedState& thisSharedState = this->getSharedState(); \
-		lock_guard lg(thisSharedState.m_localDataMutex); \
+		mutex_guard lg(thisSharedState.m_localDataMutex); \
 		std::vector<ddk::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ddk::thread_id_t i_threadId){ return ddk::thread_id_equal(i_threadId,__currThreadId); }); \
 		DDK_ASSERT(itThreadId == thisSharedState.m_mutexOwnerThreadId.end(), "It is forbidden reentrancy of the same thread against the same exclusion area"); \
 		thisSharedState.m_mutexOwnerThreadId.push_back(__currThreadId); \
@@ -24,7 +24,7 @@
 	{ \
 		const ddk::thread_id_t __currThreadId = ddk::get_current_thread_id(); \
 		const SharedState& thisSharedState = this->getSharedState(); \
-		lock_guard lg(thisSharedState.m_localDataMutex); \
+		mutex_guard lg(thisSharedState.m_localDataMutex); \
 		std::vector<ddk::thread_id_t>::iterator itThreadId = std::find_if(thisSharedState.m_mutexOwnerThreadId.begin(), thisSharedState.m_mutexOwnerThreadId.end(), [&__currThreadId](const ddk::thread_id_t i_threadId){ return ddk::thread_id_equal(i_threadId,__currThreadId); }); \
 		DDK_ASSERT(itThreadId != thisSharedState.m_mutexOwnerThreadId.end(), "Unexistent thread id!"); \
 		if (itThreadId != thisSharedState.m_mutexOwnerThreadId.end()) \
