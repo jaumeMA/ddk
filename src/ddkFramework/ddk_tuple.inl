@@ -120,78 +120,78 @@ bool tuple_impl<mpl::sequence<0>,Type>::empty() const
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl()
 {
-	construct<Type1>(m_storage.template at<Index1>(), Type1{}) &&
-    construct<Type2>(m_storage.template at<Index2>(), Type2{}) &&
-    ( construct<Types>(m_storage.template at<Indexs>(), Types{}) && ... );
+	const bool _[] = { construct<Type1>(m_storage.template at<Index1>(), Type1{}),
+                        construct<Type2>(m_storage.template at<Index2>(), Type2{}),
+                        construct<Types>(m_storage.template at<Indexs>(), Types{}) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
-	construct<typename mpl::nth_type_of<IIndex1,Type1,Type2,Types...>::type>(m_storage.template at<IIndex1>(), std::forward<Arg1>(i_arg1)) &&
-    construct<typename mpl::nth_type_of<IIndex2,Type1,Type2,Types...>::type>(m_storage.template at<IIndex2>(), std::forward<Arg2>(i_arg2)) &&
-    ( construct<typename mpl::nth_type_of<IIndexs,Type1,Type2,Types...>::type>(m_storage.template at<IIndexs>(), std::forward<Args>(i_args)) && ... );
+	const bool _[] = { construct<typename mpl::nth_type_of<IIndex1,Type1,Type2,Types...>::type>(m_storage.template at<IIndex1>(), std::forward<Arg1>(i_arg1)),
+                        construct<typename mpl::nth_type_of<IIndex2,Type1,Type2,Types...>::type>(m_storage.template at<IIndex2>(), std::forward<Arg2>(i_arg2)),
+                        construct<typename mpl::nth_type_of<IIndexs,Type1,Type2,Types...>::type>(m_storage.template at<IIndexs>(), std::forward<Args>(i_args)) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<typename Arg1, typename Arg2, typename ... Args>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
-    construct<Type1>(m_storage.template at<Index1>(), std::forward<Arg1>(i_arg1)) &&
-    construct<Type2>(m_storage.template at<Index2>(), std::forward<Arg2>(i_arg2)) &&
-    ( construct<Types>(m_storage.template at<Indexs>(), std::forward<Args>(i_args)) && ... );
+    const bool _[] = { construct<Type1>(m_storage.template at<Index1>(), std::forward<Arg1>(i_arg1)),
+                        construct<Type2>(m_storage.template at<Index2>(), std::forward<Arg2>(i_arg2)),
+                        construct<Types>(m_storage.template at<Indexs>(), std::forward<Args>(i_args)) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const tuple_impl& other)
 {
-	construct<Type1>(m_storage.template at<Index1>(), std::forward<Type1>(get<Type1>(other.m_storage.template at<Index1>()))) &&
-    construct<Type2>(m_storage.template at<Index2>(), std::forward<Type2>(get<Type2>(other.m_storage.template at<Index2>()))) &&
-    ( construct<Types>(m_storage.template at<Indexs>(), std::forward<Types>(get<Types>(other.m_storage.template at<Indexs>()))) && ... );
+	const bool _[] = { construct<Type1>(m_storage.template at<Index1>(), std::forward<Type1>(get<Type1>(other.m_storage.template at<Index1>()))),
+                        construct<Type2>(m_storage.template at<Index2>(), std::forward<Type2>(get<Type2>(other.m_storage.template at<Index2>()))),
+                        construct<Types>(m_storage.template at<Indexs>(), std::forward<Types>(get<Types>(other.m_storage.template at<Indexs>()))) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(tuple_impl&& other)
 {
-	construct<Type1>(m_storage.template at<Index1>(), std::forward<typename embedded_type<Type1>::rref_type>(extract<Type1>(other.m_storage.template at<Index1>()))) &&
-    construct<Type2>(m_storage.template at<Index2>(), std::forward<typename embedded_type<Type2>::rref_type>(extract<Type2>(other.m_storage.template at<Index2>()))) &&
-    ( construct<Types>(m_storage.template at<Indexs>(), std::forward<typename embedded_type<Types>::rref_type>(extract<Types>(other.m_storage.template at<Indexs>()))) && ... );
+    const bool _[] = 	{ construct<Type1>(m_storage.template at<Index1>(), std::forward<typename embedded_type<Type1>::rref_type>(extract<Type1>(other.m_storage.template at<Index1>()))),
+                        construct<Type2>(m_storage.template at<Index2>(), std::forward<typename embedded_type<Type2>::rref_type>(extract<Type2>(other.m_storage.template at<Index2>()))),
+                        construct<Types>(m_storage.template at<Indexs>(), std::forward<typename embedded_type<Types>::rref_type>(extract<Types>(other.m_storage.template at<Indexs>()))) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename TType1, typename TType2, typename ... TTypes>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const tuple_impl<mpl::sequence<IIndex1,IIndex2,IIndexs...>,TType1,TType2,TTypes...>& other)
 {
-	construct<Type1>(m_storage.template at<Index1>(), std::forward<TType1>(get<TType1>(other.m_storage.template at<IIndex1>()))) &&
-    construct<Type2>(m_storage.template at<Index2>(), std::forward<TType2>(get<TType2>(other.m_storage.template at<IIndex2>()))) &&
-    ( construct<Types>(m_storage.template at<Indexs>(), std::forward<TTypes>(get<TTypes>(other.m_storage.template at<IIndexs>()))) && ... );
+	const bool _[] = { construct<Type1>(m_storage.template at<Index1>(), std::forward<TType1>(get<TType1>(other.m_storage.template at<IIndex1>()))),
+                        construct<Type2>(m_storage.template at<Index2>(), std::forward<TType2>(get<TType2>(other.m_storage.template at<IIndex2>()))),
+                        construct<Types>(m_storage.template at<Indexs>(), std::forward<TTypes>(get<TTypes>(other.m_storage.template at<IIndexs>()))) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename TType1, typename TType2, typename ... TTypes>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(tuple_impl<mpl::sequence<IIndex1,IIndex2,IIndexs...>,TType1,TType2,TTypes...>&& other)
 {
-	construct<Type1>(m_storage.template at<Index1>(), std::move(extract<TType1>(other.m_storage.template at<IIndex1>()))) &&
-    construct<Type2>(m_storage.template at<Index2>(), std::move(extract<TType2>(other.m_storage.template at<IIndex2>()))) &&
-    ( construct<Types>(m_storage.template at<Indexs>(), std::move(extract<TTypes>(other.m_storage.template at<IIndexs>()))) && ... );
+	const bool _[] = { construct<Type1>(m_storage.template at<Index1>(), std::move(extract<TType1>(other.m_storage.template at<IIndex1>()))),
+                        construct<Type2>(m_storage.template at<Index2>(), std::move(extract<TType2>(other.m_storage.template at<IIndex2>()))),
+                        construct<Types>(m_storage.template at<Indexs>(), std::move(extract<TTypes>(other.m_storage.template at<IIndexs>()))) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::~tuple_impl()
 {
-	destruct<Type1>(m_storage.template at<Index1>()) &&
-    destruct<Type2>(m_storage.template at<Index2>()) &&
-    ( destruct<Types>(m_storage.template at<Indexs>()) && ... );
+	const bool _[] = { destruct<Type1>(m_storage.template at<Index1>()),
+                        destruct<Type2>(m_storage.template at<Index2>()),
+                        destruct<Types>(m_storage.template at<Indexs>()) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>& tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::operator=(const tuple_impl& other)
 {
-	assign<Type1>(m_storage.template at<Index1>(),std::forward<Type1>(get<Type1>(other.m_storage.template at<Index1>()))) &&
-    assign<Type2>(m_storage.template at<Index2>(),std::forward<Type2>(get<Type2>(other.m_storage.template at<Index2>()))) &&
-    ( assign<Types>(m_storage.template at<Indexs>(), std::forward<Types>(get<Types>(other.m_storage.template at<Indexs>()))) && ... );
+	const bool _[] = { assign<Type1>(m_storage.template at<Index1>(),std::forward<Type1>(get<Type1>(other.m_storage.template at<Index1>()))),
+                        assign<Type2>(m_storage.template at<Index2>(),std::forward<Type2>(get<Type2>(other.m_storage.template at<Index2>()))),
+                        assign<Types>(m_storage.template at<Indexs>(), std::forward<Types>(get<Types>(other.m_storage.template at<Indexs>()))) ... };
 
     return *this;
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>& tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::operator=(tuple_impl&& other)
 {
-	assign<Type1>(m_storage.template at<Index1>(),std::move(extract<Type1>(other.m_storage.template at<Index1>()))) &&
-    assign<Type2>(m_storage.template at<Index2>(),std::move(extract<Type2>(other.m_storage.template at<Index2>()))) &&
-    ( assign<Types>(m_storage.template at<Indexs>(), std::move(extract<Types>(other.m_storage.template at<Indexs>()))) && ... );
+	const bool _[] = { assign<Type1>(m_storage.template at<Index1>(),std::move(extract<Type1>(other.m_storage.template at<Index1>()))),
+                        assign<Type2>(m_storage.template at<Index2>(),std::move(extract<Type2>(other.m_storage.template at<Index2>()))),
+                        assign<Types>(m_storage.template at<Indexs>(), std::move(extract<Types>(other.m_storage.template at<Indexs>()))) ... };
 
     return *this;
 }
@@ -226,7 +226,7 @@ void tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::se
 	static_assert(mpl::get_num_ranks<IIndexs...>() == mpl::get_num_types<Args...>(), "Unconsistent provided arguments and sequence");
 	static_assert(mpl::get_num_types<Type1,Type2,Types...>() == mpl::get_num_types<Args...>(), "Wrong number of arguments");
 
-	( assign<typename mpl::nth_type_of<Indexs,Type1,Type2,Types...>::type>(m_storage.template at<IIndexs>(), std::forward<Args>(i_args)) && ... );
+	const bool _[] = { assign<typename mpl::nth_type_of<Indexs,Type1,Type2,Types...>::type>(m_storage.template at<IIndexs>(), std::forward<Args>(i_args)) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex, typename Arg>

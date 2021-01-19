@@ -247,7 +247,7 @@ struct sequence
     template<size_t Index>
     struct find<Index,size>
     {
-        static const size_t index = -1;
+        static const size_t index = static_cast<size_t>(-1);
     };
 
     template<size_t Index, size_t Pos>
@@ -470,7 +470,7 @@ struct _nth_pos_of_predicate <predicate,true,_pos,Type,Types... >
 template<template <class, class...> class predicate, int _pos, typename Type>
 struct _nth_pos_of_predicate<predicate,false,_pos,Type>
 {
-    static const size_t value = -1;
+    static const size_t value = static_cast<size_t>(-1);
 };
 
 template<template <class,class...> class predicate, typename Type, typename ... Types>
@@ -500,7 +500,7 @@ inline constexpr size_t nth_pos_of_type_v = nth_pos_of_type<Type,Types...>::valu
 template<typename Type, typename ... Types>
 struct is_among_types
 {
-    static const bool value = (nth_pos_of_predicate<is_same_type,Type,Types...>::value != -1);
+    static const bool value = (nth_pos_of_predicate<is_same_type,Type,Types...>::value != static_cast<size_t>(-1));
 };
 
 template<typename Type,typename ... Types>
@@ -608,7 +608,7 @@ template<>
 struct check_monotonic_range<>
 {
     static const bool cond = true;
-    static const size_t _rank = -1;
+    static const size_t _rank = static_cast<size_t>(-1);
 };
 
 template<int rankA, int rankB>

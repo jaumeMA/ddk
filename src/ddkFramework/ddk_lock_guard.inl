@@ -37,7 +37,7 @@ lock_guard_impl<mpl::sequence<Indexs...>,T,TT...>::lock_guard_impl(T& i_lockable
 : m_primaryLock(i_lockableObject)
 {
     static const size_t s_numBytes = (s_numSecondaryLocks / 8) + 1;
-    static const unsigned int allIn = (1 << s_numSecondaryLocks) - 1;
+    static const unsigned int s_allIn = (1 << s_numSecondaryLocks) - 1;
 
     const void* _[] = { m_secondaryLocks[Indexs] = &i_lockableObjects ... };
 
@@ -47,7 +47,7 @@ acquire_locks:
 
     const unsigned int tryLockRes = ((static_cast<unsigned int>(reinterpret_cast<TT*>(m_secondaryLocks[Indexs])->try_lock()) << Indexs) | ...);
 
-    if(memcmp(&tryLockRes,&allIn,s_numBytes) != 0)
+    if(memcmp(&tryLockRes,&s_allIn,s_numBytes) != 0)
     {
         ( (static_cast<bool>(tryLockRes & (1 << Indexs)) && reinterpret_cast<detail::lock_unlocker<TT>*>(m_secondaryLocks[Indexs])->unlock()) | ... );
 

@@ -5,24 +5,6 @@
 #include "ddk_macros.h"
 #include "ddk_dynamic_visitor.h"
 
-#define DECLARE_TYPE_VISITABLE(_Type_Name, _Type_Interface) \
-template<typename,typename> \
-friend inline bool ddk::detail::__expand_type_visitor_layout(); \
-typedef _Type_Interface type_interface; \
-friend inline const type_interface& __get_type_interface(const _Type_Name&, const _Type_Interface&); \
-static const size_t s_currTypeCounter = ddk::static_counter<type_interface>::get_curr_count(); \
-static const size_t s_nextTypeCounter = ddk::static_counter<type_interface>::get_next_count(); \
-typedef decltype(__get_inherited_type_list(std::declval<type_interface>(),std::declval<ddk::mpl::static_number<s_currTypeCounter>>())) prev_type_list; \
-friend typename prev_type_list::add<_Type_Name>::type __get_inherited_type_list(const type_interface&,const ddk::mpl::static_number<s_nextTypeCounter>&); \
-typedef ddk::visitable_type<_Type_Name,type_interface> _type_expansion; \
-PUBLISH_TYPE_INFO(_Type_Name,type_interface) \
-static void __expand_type_visitable_type() \
-{ \
-	static const bool __s_static_visitable_type_expansion = ddk::visitable_type<_Type_Name,type_interface>::s_initialized; \
-    \
-    UNUSED(__s_static_visitable_type_expansion); \
-}
-
 namespace ddk
 {
 
@@ -45,7 +27,7 @@ struct agnostic_visitable_type
 	template<typename T>
 	static void nested_visit(const type_interface* i_object, const visitor_interface& i_visitor)
 	{
-		const TypeInfo& typeInfo = rtti<T>();
+		const TypeInfo& typeInfo = rtti::type_info<T>();
 
 		if (const T* finalObjectPtr = static_cast<const T*>(i_object))
 		{
@@ -62,7 +44,7 @@ struct agnostic_visitable_type
 	template<typename T>
 	static void nested_visit(const type_interface* i_object, visitor_interface& i_visitor)
 	{
-		static const TypeInfo typeInfo = rtti<T>();
+		static const TypeInfo typeInfo = rtti::type_info<T>();
 
 		if(const T* finalObjectPtr = static_cast<const T*>(i_object))
 		{
@@ -88,7 +70,7 @@ struct agnostic_visitable_type
 	}
 	static const ddk::TypeInfo& s_categoryTypeInfo()
 	{
-		static const ddk::TypeInfo res = ddk::rtti<type_interface>();;
+		static const ddk::TypeInfo res = ddk::rtti::type_info<type_interface>();;
 
 		return res;
 	}
@@ -107,7 +89,7 @@ struct visitable_type : protected agnostic_visitable_type<Interface>
 	}
 	static inline const TypeInfo& s_type_info()
 	{
-		static const TypeInfo& res = rtti<Type>();
+		static const TypeInfo& res = rtti::type_info<Type>();
 
 		return res;
 	}

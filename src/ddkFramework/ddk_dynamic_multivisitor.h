@@ -18,6 +18,7 @@ class dynamic_multi_visitor_base : public typed_dynamic_visitor<Type>
 {
 public:
 	typedef Type type;
+    typedef typename Visitor::type_interface type_interface;
 
 	dynamic_multi_visitor_base() = default;
 

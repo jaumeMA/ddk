@@ -7,13 +7,15 @@
 #include "ddk_static_counter.h"
 
 #define DECLARE_TYPE_VISITABLE_BASE(_Type_Name) \
-PUBLISH_TYPE_INFO(_Type_Name) \
+typedef _Type_Name type_interface; \
+template<typename> \
+friend const ddk::TypeInfo& ddk::rtti::type_info(); \
+template<typename,typename> \
+friend bool ddk::detail::__expand_type_visitor_layout(); \
 template<typename,typename,typename,typename ...> \
 friend class ddk::dynamic_multi_visitor; \
-typedef _Type_Name type_interface; \
 struct visitable_type_base_tag; \
-static const size_t s_currTypeCounter = ddk::static_counter<type_interface>::get_curr_count(); \
-friend ddk::mpl::type_pack<> __get_inherited_type_list(const type_interface&,const ddk::mpl::static_number<s_currTypeCounter>&); \
+friend ddk::mpl::type_pack<> __get_inherited_type_list(const type_interface&,const ddk::mpl::static_number<0>&); \
 template<typename Visitor> \
 friend inline bool __may_visit(const type_interface& i_value, const Visitor*) \
 { \

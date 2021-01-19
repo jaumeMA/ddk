@@ -5,12 +5,19 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename FinalVisitorType, typename VisitorType>
+inline bool __expand_type_visitor_layout();
+
+}
 
 template<typename Interface>
 class dynamic_visitor
 {
-    template<typename FinalVisitorType, typename VisitorType>
-    friend bool __expand_type_visitor_layout();
+    template<typename,typename>
+    friend bool detail::__expand_type_visitor_layout();
 
 public:
 	struct callable_tag;

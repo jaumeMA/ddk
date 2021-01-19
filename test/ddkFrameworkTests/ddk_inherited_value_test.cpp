@@ -9,63 +9,91 @@
 using namespace testing;
 using testing::Types;
 
-class BaseType
+namespace prova
 {
-	DECLARE_TYPE_VISITABLE_BASE(BaseType)
+
+
+class BaseType1
+{
+	DECLARE_TYPE_VISITABLE_BASE(BaseType1)
 
 public:
-	BaseType(int i_value = 0)
+	BaseType1(int i_value = 0)
 	: m_value(i_value)
 	{
 	}
-	virtual ~BaseType() = default;
-	int getValue() const
-	{
-		return m_value;
-	}
+	virtual ~BaseType1() = default;
 
 private:
 	int m_value;
 };
 
-class DerivedBaseType1 : public BaseType
+class BaseType2
 {
-	DECLARE_TYPE_VISITABLE(DerivedBaseType1,BaseType)
+	DECLARE_TYPE_VISITABLE_BASE(BaseType2)
 
 public:
-	using BaseType::BaseType;
+	BaseType2(int i_value = 0)
+	: m_value(i_value)
+	{
+	}
+	virtual ~BaseType2() = default;
+
+private:
+	int m_value;
 };
 
-class DerivedBaseType2: public BaseType
+class DerivedBaseType1 : public BaseType1, public BaseType2
 {
-	DECLARE_TYPE_VISITABLE(DerivedBaseType2,BaseType)
-
 public:
-	using BaseType::BaseType;
-};
+	DerivedBaseType1(int i_value = 0)
+	: BaseType1(i_value)
+	, BaseType2(i_value)
+	{
+	}
+
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType1,BaseType1,BaseType2);
+
+class DerivedBaseType2: public BaseType1, public BaseType2
+{
+public:
+	DerivedBaseType2(int i_value = 0)
+	: BaseType1(i_value)
+	, BaseType2(i_value)
+	{
+	}
+
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType2,BaseType1,BaseType2);
+
+}
 
 class DDKInheritedValuetTest : public Test
 {
 };
 
-struct DerivedTypeMultiVisitor : public ddk::dynamic_visitor<BaseType>
+struct DerivedTypeMultiVisitor : public ddk::dynamic_visitor<prova::BaseType1>
 {
 	typedef int return_type;
 
-	return_type operator()(const DerivedBaseType1&,const DerivedBaseType1&) const
+	return_type operator()(const prova::DerivedBaseType1&,const prova::DerivedBaseType1&) const
 	{
 		return 1;
 	}
-	return_type operator()(const DerivedBaseType1&,const DerivedBaseType2&) const
+	return_type operator()(const prova::DerivedBaseType1&,const prova::DerivedBaseType2&) const
 	{
 		return 1;
+	}
+	template<typename T1, typename T2>
+	return_type operator()(const T1& i_lhs, const T2& i_rhs)
+	{
+	    return 0;
 	}
 };
 
 TEST(DDKInheritedValuetTest,defaultConstruction)
 {
-	ddk::inherited_value<DerivedBaseType1> foo0 = ddk::make_inherited_value<DerivedBaseType1>(10);
-	ddk::inherited_value<DerivedBaseType2> foo1 = ddk::make_inherited_value<DerivedBaseType2>(10);
+	ddk::inherited_value<prova::DerivedBaseType1> foo0 = ddk::make_inherited_value<prova::DerivedBaseType1>(10);
+	ddk::inherited_value<prova::DerivedBaseType2> foo1 = ddk::make_inherited_value<prova::DerivedBaseType2>(20);
 	DerivedTypeMultiVisitor multiVisitor;
 
 	int a = 0;

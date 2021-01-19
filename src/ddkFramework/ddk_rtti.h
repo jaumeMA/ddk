@@ -4,38 +4,46 @@
 #include "ddk_default_values.h"
 #include "ddk_concepts.h"
 #include "ddk_rtti_concepts.h"
+#include "ddk_static_counter.h"
+#include "ddk_macros.h"
 
-#define PUBLISH_TYPE_INFO(...) \
-template<typename T> \
-friend const ddk::TypeInfo& ddk::rtti(const T&); \
-template<typename T> \
-friend const ddk::TypeInfo& ddk::rtti(); \
-template<typename> \
-friend struct ddk::concepts::is_rtti_available; \
-typedef ddk::detail::rtti_tag_t rtti_tag; \
-static const ddk::TypeInfo& __get_static_rtti_type_info() \
-{ \
-	static const ddk::TypeInfo s_typeInfo = ddk::make_type_info<__VA_ARGS__>(); \
-	\
-	return s_typeInfo; \
-}
+#define _PUBLISH_RTTI_INHERITANCE(_Type_Name,_Type_Interface) \
+    ; const bool ____expand_type_visitable_type##_Type_Name##_Type_Interface = ddk::visitable_type<_Type_Name,_Type_Interface>::s_initialized;\
+    typename decltype(__get_inherited_type_list(std::declval<_Type_Interface>(),std::declval<ddk::mpl::static_number<ddk::static_counter<_Type_Interface>::get_curr_count()>>()))::add<_Type_Name>::type __get_inherited_type_list(const _Type_Interface&,const ddk::mpl::static_number<ddk::static_counter<_Type_Interface>::get_next_count()>&);
 
-#define PUBLISH_TYPE_INFO_BASE(_TYPE_NAME) \
-PUBLISH_TYPE_INFO(_TYPE_NAME) \
-typedef ddk::detail::rtti_tag_t rtti_tag_base;
+#define PUBLISH_RTTI_INHERITANCE(_Type_Name,...) \
+    FOREACH_ARG(_PUBLISH_RTTI_INHERITANCE,_Type_Name,__VA_ARGS__)
 
 namespace ddk
 {
+namespace rtti
+{
+namespace detail
+{
 
 template<typename T>
-const TypeInfo& rtti(const T& i_object)
+struct get_inherited_type_list
 {
-	return i_object.__get_rtti_type_info();
+private:
+	static const size_t s_numberOfInheritedTypes = ddk::static_counter<T>::get_curr_count();
+
+public:
+	typedef decltype(__get_inherited_type_list(std::declval<T>(),std::declval<mpl::static_number<s_numberOfInheritedTypes>>())) type;
+};
+
 }
+
 template<typename T>
-const TypeInfo& rtti()
+using inherited_type_list = typename detail::get_inherited_type_list<T>::type;
+
+template<typename T>
+const TypeInfo& type_info()
 {
-	return T::__get_static_rtti_type_info();
+	static const ddk::TypeInfo s_typeInfo = ddk::make_type_info<T>();
+
+	return s_typeInfo;
+}
+
 }
 
 }
