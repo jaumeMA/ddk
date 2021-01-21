@@ -206,22 +206,18 @@ TEMPLATE(typename TType)
 REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
 variant<Types...>::variant(const variant<TType>& other)
 {
-	static_assert(mpl::is_among_constructible_types<TType,Types...>::value,"You shall provide convertible type");
+	static_assert(mpl::is_among_constructible_types<TType,Types...>,"You shall provide convertible type");
 
-	static const size_t converted_type_pos = mpl::get_type_match_pos<TType,Types...>::value;
-
-	detail::variant_impl<Types...>::template construct<converted_type_pos>(other.m_value);
+	detail::variant_impl<Types...>::template construct<mpl::type_match_pos<TType,Types...>>(other.m_value);
 }
 template<typename ... Types>
 TEMPLATE(typename TType)
 REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
 variant<Types...>::variant(variant<TType>&& other)
 {
-	static_assert(mpl::is_among_constructible_types<TType,Types...>::value,"You shall provide convertible type");
+	static_assert(mpl::is_among_constructible_types<TType,Types...>,"You shall provide convertible type");
 
-	static const size_t converted_type_pos = mpl::get_type_match_pos<TType,Types...>::value;
-
-	detail::variant_impl<Types...>::template construct<converted_type_pos>(std::move(other.m_value));
+	detail::variant_impl<Types...>::template construct<mpl::type_match_pos<TType,Types...>>(std::move(other.m_value));
 }
 template<typename ... Types>
 TEMPLATE(typename ... TTypes)
@@ -242,11 +238,9 @@ TEMPLATE(typename T)
 REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 variant<Types...>::variant(T&& i_value)
 {
-	static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
+	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
 
-	static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
-
-	detail::variant_impl<Types...>::template construct<converted_type_pos>(std::forward<T>(i_value));
+	detail::variant_impl<Types...>::template construct<mpl::type_match_pos<T,Types...>>(std::forward<T>(i_value));
 }
 template<typename ... Types>
 variant<Types...>& variant<Types...>::operator=(const variant<Types...>& other)
@@ -285,11 +279,9 @@ TEMPLATE(typename T)
 REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 variant<Types...>& variant<Types...>::operator=(T&& i_value)
 {
-	static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
+	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
 
-	static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
-
-	detail::variant_impl<Types...>::template assign<converted_type_pos>(std::forward<T>(i_value));
+	detail::variant_impl<Types...>::template assign<mpl::type_match_pos<T,Types...>>(std::forward<T>(i_value));
 
 	return *this;
 }
@@ -303,11 +295,9 @@ bool variant<Types...>::operator==(T&& other) const
 	}
 	else
 	{
-		static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
+		static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
 
-		static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
-
-		return detail::variant_impl<Types...>::template compare<converted_type_pos>(std::forward<T>(other));
+		return detail::variant_impl<Types...>::template compare<mpl::type_match_pos<T,Types...>>(std::forward<T>(other));
 	}
 }
 template<typename ... Types>
@@ -320,11 +310,9 @@ bool variant<Types...>::operator!=(T&& other) const
 	}
 	else
 	{
-		static_assert(mpl::is_among_constructible_types<T,Types...>::value,"You shall provide convertible type");
+		static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
 
-		static const size_t converted_type_pos = mpl::get_type_match_pos<T,Types...>::value;
-
-		return detail::variant_impl<Types...>::template compare<converted_type_pos>(std::forward<T>(other)) == false;
+		return detail::variant_impl<Types...>::template compare<mpl::type_match_pos<T,Types...>>(std::forward<T>(other)) == false;
 	}
 }
 

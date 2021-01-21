@@ -85,11 +85,13 @@ inline void operator<<=(Function&& i_lhs, Container& i_rhs);
 namespace ddk
 {
 
-template<typename ... Traits>
-inline detail::iterable<detail::union_iterable_traits<Traits...>> concat(const ddk::detail::iterable<Traits>& ... i_iterables);
+TEMPLATE(typename ... Iterables)
+REQUIRES_COND(mpl::get_num_types<Iterables...>()!=0)
+inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables);
 
-template<typename ... Traits>
-inline detail::iterable<detail::intersection_iterable_traits<Traits...>> fusion(const ddk::detail::iterable<Traits>& ... i_iterables);
+TEMPLATE(typename ... Iterables)
+REQUIRES_COND(mpl::get_num_types<Iterables...>()!=0)
+inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables);
 
 }
 

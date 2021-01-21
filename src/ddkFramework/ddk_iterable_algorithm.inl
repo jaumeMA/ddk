@@ -66,6 +66,11 @@ detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(ded
 {
 	return detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
 }
+template<typename ... Iterables>
+detail::iterable_pack<detail::div_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_div(const Iterables& ... i_iterables)
+{
+	return detail::iterable_pack<detail::div_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
+}
 
 }
 }

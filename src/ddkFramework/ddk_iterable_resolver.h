@@ -71,8 +71,21 @@ public:
 	typedef const_random_access_iterable<qualified_value_type> type;
 };
 
+template<typename>
+struct _iterable_correspondence;
+template<typename Traits>
+struct _iterable_correspondence<iterable<Traits>>
+{
+    typedef iterable<Traits> type;
+};
 template<typename Iterable>
-using iterable_correspondence = typename iterable_correspondence_resolver<std::is_const<typename std::remove_reference<Iterable>::type>::value,iterable_adaptor_type_correspondence<typename std::remove_reference<Iterable>::type>,iterable_adaptor<typename std::remove_reference<Iterable>::type>>::type;
+struct _iterable_correspondence
+{
+        typedef typename iterable_correspondence_resolver<std::is_const<typename std::remove_reference<Iterable>::type>::value,iterable_adaptor_type_correspondence<typename std::remove_reference<Iterable>::type>,iterable_adaptor<typename std::remove_reference<Iterable>::type>>::type type;
+};
+
+template<typename Iterable>
+using iterable_correspondence = typename _iterable_correspondence<Iterable>::type;
 
 template<bool,typename,typename>
 struct iterable_action_correspondence_resolver;
@@ -106,6 +119,19 @@ template<bool IsConst,typename Adaptor>
 struct iterable_action_correspondence_resolver<IsConst,const_random_access_iterable_type,Adaptor>
 {
 	typedef typename mpl::static_if<IsConst,const_random_access_action,random_access_action>::type type;
+};
+
+template<typename>
+struct _iterable_action_correspondence;
+template<typename Traits>
+struct _iterable_action_correspondence<iterable<Traits>>
+{
+    typedef typename iterable<Traits>::action type;
+};
+template<typename Iterable>
+struct _iterable_action_correspondence
+{
+        typedef typename iterable_action_correspondence_resolver<std::is_const<typename std::remove_reference<Iterable>::type>::value,iterable_adaptor_type_correspondence<typename std::remove_reference<Iterable>::type>,iterable_adaptor<typename std::remove_reference<Iterable>::type>>::type type;
 };
 
 template<typename Iterable>

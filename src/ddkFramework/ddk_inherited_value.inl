@@ -45,7 +45,7 @@ inherited_value<T,Allocator>::inherited_value(Args&& ... i_args)
 {
 	if(void* mem = m_allocator.allocate(1,sizeof(T)))
 	{
-		T* newValue = new(mem) T(std::forward<Args>(i_args) ...);
+		T* newValue = new(mem) typename std::remove_const<T>::type(std::forward<Args>(i_args) ...);
 
 		m_value = as_shared_reference(newValue,get_reference_wrapper_deleter(m_allocator));
 	}

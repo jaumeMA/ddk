@@ -61,7 +61,7 @@ void type_access_dumping<Sink>::_set(Sink& i_sink,const variant<T...>& i_value)
 
 TEMPLATE(typename Sink,typename Traits)
 REQUIRED(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable)
+inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable)
 {
 	typedef typename Traits::iterable_value iterable_value;
 
@@ -72,7 +72,7 @@ inline future<ddk::action_result> iterable_transformation_dump(Sink&& i_sink,con
 
 TEMPLATE(typename Sink,typename Traits)
 REQUIRED(ASSIGNABLE_DYNAMIC_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,void*)
+inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,void*)
 {
 	typedef typename Traits::iterable_value iterable_value;
 
@@ -83,7 +83,7 @@ inline future<ddk::action_result> iterable_transformation_dump(Sink&& i_sink,con
 
 TEMPLATE(typename Sink,typename Traits)
 REQUIRED(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_TYPE_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink&& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,int*)
+inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,int*)
 {
 	typedef typename Traits::iterable_value iterable_value;
 

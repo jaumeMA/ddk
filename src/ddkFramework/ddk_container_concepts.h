@@ -1,10 +1,10 @@
 #pragma once
 
 #define FIXED_SIZE_CONTAINER(_TYPE) \
-	typename std::enable_if<ddk::concepts::is_container_fixed_size<_TYPE>::value>::type*
+	typename std::enable_if<ddk::concepts::is_container_fixed_size<_TYPE>::value>::type
 
 #define DYNAMIC_SIZE_CONTAINER(_TYPE) \
-	typename std::enable_if<ddk::concepts::is_container_dynamic_size<_TYPE>::value>::type*
+	typename std::enable_if<ddk::concepts::is_container_dynamic_size<_TYPE>::value>::type
 
 #define ASSIGNABLE_BY_INDEX_ACCESS(_TYPE,_VALUE) \
 	decltype(std::declval<_TYPE>().at(0) = std::declval<_VALUE>())

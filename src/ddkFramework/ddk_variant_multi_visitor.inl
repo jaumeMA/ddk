@@ -54,11 +54,12 @@ function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedT
 
 TEMPLATE(typename Callable,typename ... Variants)
 REQUIRED(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
-typename Callable::return_type visit(const Callable& i_callable,Variants&& ... i_variants)
+typename std::remove_reference<Callable>::type::return_type visit(Callable&& i_callable,Variants&& ... i_variants)
 {
-    typedef typename Callable::return_type return_type;
+    typedef typename std::remove_reference<Callable>::type callable_t;
+    typedef typename callable_t::return_type return_type;
 
-	detail::multi_visitor<return_type,Callable,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);
+	detail::multi_visitor<return_type,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(i_callable,std::forward<Variants>(i_variants)...);
 
 	const function<return_type()> resolvedFunction = multiVisitor.visit();
 

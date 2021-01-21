@@ -74,11 +74,7 @@ private:
 
 TEMPLATE(typename Visitor,typename ... Values)
 REQUIRES(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-inline typename Visitor::return_type visit(const Visitor& i_callable,const Values& ... i_values);
-
-TEMPLATE(typename Visitor,typename ... Values)
-REQUIRES(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-inline typename Visitor::return_type visit(Visitor& i_callable,const Values& ... i_values);
+inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_callable,const Values& ... i_values);
 
 }
 

@@ -378,9 +378,9 @@ template<typename ... Types>
 template<typename TType>
 bool variant_impl<Types...>::is() const
 {
-	static_assert(mpl::is_among_types<TType, Types...>::value, "Non present type in variant");
+	static_assert(mpl::is_among_types<TType, Types...>, "Non present type in variant");
 
-	static const size_t isPos = mpl::nth_pos_of_type<TType, Types...>::value;
+	static const size_t isPos = mpl::nth_pos_of_type<TType, Types...>;
 
 	return m_currentType == isPos;
 }

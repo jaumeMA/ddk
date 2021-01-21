@@ -53,7 +53,7 @@ public:
 };
 
 template<typename T>
-inline constexpr bool is_non_const_iterable_v = is_non_const_iterable<T>::value;
+inline constexpr bool is_non_const_iterable_v = is_non_const_iterable<typename std::remove_reference<T>::type>::value;
 
 }
 }

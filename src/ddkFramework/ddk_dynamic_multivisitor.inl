@@ -86,25 +86,14 @@ function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<
 
 TEMPLATE(typename Visitor,typename ... Values)
 REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-typename Visitor::return_type visit(const Visitor& i_visitor,const Values& ... i_values)
+typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_visitor,const Values& ... i_values)
 {
-	typedef typename Visitor::type_interface type_interface;
+    typedef typename std::remove_reference<Visitor>::type visitor_t;
+	typedef typename visitor_t::type_interface type_interface;
 
-	dynamic_multi_visitor<const Visitor,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
+	dynamic_multi_visitor<visitor_t,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
 
-	const function<typename Visitor::return_type()> resolvedFunc = multiVisitor.visit();
-
-	return eval(resolvedFunc);
-}
-TEMPLATE(typename Visitor,typename ... Values)
-REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-typename Visitor::return_type visit(Visitor& i_visitor,const Values& ... i_values)
-{
-	typedef typename Visitor::type_interface type_interface;
-
-	dynamic_multi_visitor<Visitor,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
-
-	const function<typename Visitor::return_type()> resolvedFunc = multiVisitor.visit();
+	const function<typename visitor_t::return_type()> resolvedFunc = multiVisitor.visit();
 
 	return eval(resolvedFunc);
 }

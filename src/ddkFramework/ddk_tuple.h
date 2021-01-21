@@ -22,8 +22,8 @@ public:
 	inline const void* at() const;
 
 private:
-	static const size_t s_total_size = mpl::get_total_size<Types...>::value;
-	static const size_t s_total_alignment = mpl::get_total_alignment<Types...>::value;
+	static const size_t s_total_size = mpl::total_size<Types...>;
+	static const size_t s_total_alignment = mpl::total_alignment<Types...>;
 	static const std::array<size_t,mpl::get_num_types<Types...>()> m_offset;
 
 	static inline std::array<size_t,mpl::get_num_types<Types...>()> resolve_type_offset(size_t i_totalSize);
@@ -80,7 +80,7 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
 {
     template<typename,typename...>
     friend class tuple_impl;
-    static const size_t s_total_size = mpl::get_total_size<Type1,Type2,Types...>::value;
+    static const size_t s_total_size = mpl::total_size<Type1,Type2,Types...>;
 //	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type1,Type2,Types...))
 
 public:

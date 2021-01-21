@@ -103,20 +103,22 @@ void operator<<=(Function&& i_lhs, Container& i_rhs)
 namespace ddk
 {
 
-template<typename ... Traits>
-detail::iterable<detail::union_iterable_traits<Traits...>> concat(const ddk::detail::iterable<Traits>& ... i_iterables)
+TEMPLATE(typename ... Iterables)
+REQUIRED_COND(mpl::get_num_types<Iterables...>()!=0)
+detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables)
 {
-    typedef detail::iterable<detail::union_iterable_traits<Traits...>> ret_type;
+    typedef detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
 
-	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<Traits>...>>(i_iterables...) };
+	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>>...>>(deduce_iterable(i_iterables) ...) };
 }
 
-template<typename ... Traits>
-detail::iterable<detail::intersection_iterable_traits<Traits...>> fusion(const ddk::detail::iterable<Traits>& ... i_iterables)
+TEMPLATE(typename ... Iterables)
+REQUIRED_COND(mpl::get_num_types<Iterables...>()!=0)
+detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables)
 {
-    typedef detail::iterable<detail::intersection_iterable_traits<Traits...>> ret_type;
+    typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
 
-	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::intersection_iterable_impl<ddk::detail::iterable<Traits> ...>>(i_iterables...) };
+	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::intersection_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>> ...>>(deduce_iterable(i_iterables)...) };
 }
 
 }
