@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddk_iterable_defs.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -54,8 +56,6 @@ private:
 template<typename T, size_t rank, size_t ... ranks>
 class high_order_array
 {
-//	DDK_ITERABLE_TYPE(high_order_array,EXPAND_CLASS_TEMPLATE(high_order_array_adaptor,T,rank,ranks...))
-
     template<typename TT, size_t rrank, size_t ... rranks>
     friend class high_order_array;
 
@@ -67,10 +67,18 @@ public:
 	typedef T& reference;
 	typedef const T& const_reference;
 
-	high_order_array() = default;
+	constexpr high_order_array() = default;
 	high_order_array(const high_order_array<T,rank,ranks...>& other);
 	template<typename TT>
 	high_order_array(const high_order_array<TT,rank,ranks...>& other);
+    TEMPLATE(typename Arg, typename ... Args)
+    REQUIRES(IS_NOT_SAME_CLASS(Arg,high_order_array),IS_CONSTRUCTIBLE(T,Arg),IS_CONSTRUCTIBLE(T,Args)...)
+    constexpr high_order_array(Arg&& i_arg, Args&& ... i_args)
+    {
+        size_t index = 0;
+
+        ((m_data[0] = i_arg,m_data[++index] = i_args), ...);
+    }
 	~high_order_array() = default;
 	detail::high_order_sub_array<T,ranks...> operator[](size_t index);
 	detail::high_order_sub_array<const T,ranks...> operator[](size_t index) const;

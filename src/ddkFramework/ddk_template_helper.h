@@ -28,7 +28,7 @@ namespace mpl
 {
 
 template<bool ... Conds>
-constexpr bool evaluate()
+inline constexpr bool evaluate()
 {
     return (Conds && ...);
 }
@@ -535,6 +535,7 @@ struct merge_type_packs;
 template<typename ... Types>
 struct type_pack
 {
+    constexpr type_pack() = default;
 	template<typename ... TTypes>
 	struct add
 	{
@@ -551,9 +552,9 @@ struct type_pack
 		typedef typename merge_type_packs<typename static_if<is_among_types<Types,TTypes...>,type_pack<>,type_pack<Types>>::type ...>::type type;
 	};
     template<typename ... TTypes>
-    inline constexpr bool contains(const type_pack<TTypes...>&)
+    inline constexpr bool contains(type_pack<TTypes...>)
     {
-        return evaluate<is_among_types<TTypes,Types...>...>();
+        return (is_among_types<TTypes,Types...> && ...);
     };
 };
 

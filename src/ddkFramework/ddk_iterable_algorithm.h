@@ -80,7 +80,7 @@ template<typename ... Iterables>
 inline detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_prod(const Iterables& ... i_iterables);
 
 template<typename ... Iterables>
-inline detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_div(const Iterables& ... i_iterables);
+inline detail::iterable_pack<detail::div_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_div(const Iterables& ... i_iterables);
 
 }
 }

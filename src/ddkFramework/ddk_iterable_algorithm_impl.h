@@ -24,6 +24,9 @@ private:
 	Sink& m_sink;
 	mutable size_t m_currIndex = 0;
 };
+TEMPLATE(typename Sink,typename ValueType)
+REQUIRES(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_INDEX_ACCESS(Sink,ValueType))
+linearized_index_access_dumping<Sink> iterable_dumper_resolver(Sink&,const ValueType&);
 
 template<typename Sink>
 struct dynamic_access_dumping
@@ -36,6 +39,9 @@ public:
 private:
 	Sink& m_sink;
 };
+TEMPLATE(typename Sink,typename ValueType)
+REQUIRES(ASSIGNABLE_DYNAMIC_CONTAINER_BY_INDEX_ACCESS(Sink,ValueType))
+dynamic_access_dumping<Sink> iterable_dumper_resolver(Sink&,const ValueType&);
 
 template<typename Sink>
 struct type_access_dumping
@@ -54,16 +60,16 @@ private:
 	Sink& m_sink;
 	mutable size_t m_currIndex = 0;
 };
+TEMPLATE(typename Sink,typename ValueType)
+REQUIRES(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_TYPE_ACCESS(Sink,ValueType))
+type_access_dumping<Sink> iterable_dumper_resolver(Sink&,const ValueType&);
 
-TEMPLATE(typename Sink,typename Traits)
-REQUIRES(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
+
+template<typename Sink,typename ValueType>
+using iterable_dumper_type = decltype(iterable_dumper_resolver(std::declval<Sink&>(),std::declval<ValueType>()));
+
+template<typename Sink,typename Traits>
 inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink, const ddk::detail::iterable<Traits>& i_transformedIterable);
-TEMPLATE(typename Sink,typename Traits)
-REQUIRES(ASSIGNABLE_DYNAMIC_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable, void* = nullptr);
-TEMPLATE(typename Sink,typename Traits)
-REQUIRES(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_TYPE_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,int* = nullptr);
 
 }
 }

@@ -59,35 +59,12 @@ void type_access_dumping<Sink>::_set(Sink& i_sink,const variant<T...>& i_value)
 	i_sink.template set<Index>(i_value.template get<Index>());
 }
 
-TEMPLATE(typename Sink,typename Traits)
-REQUIRED(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
+template<typename Sink,typename Traits>
 inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable)
 {
 	typedef typename Traits::iterable_value iterable_value;
 
-	linearized_index_access_dumping<Sink> _dumper(i_sink);
-
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
-}
-
-TEMPLATE(typename Sink,typename Traits)
-REQUIRED(ASSIGNABLE_DYNAMIC_CONTAINER_BY_INDEX_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,void*)
-{
-	typedef typename Traits::iterable_value iterable_value;
-
-	dynamic_access_dumping<Sink> _dumper(i_sink);
-
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
-}
-
-TEMPLATE(typename Sink,typename Traits)
-REQUIRED(ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_TYPE_ACCESS(Sink,typename Traits::value_type))
-inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable,int*)
-{
-	typedef typename Traits::iterable_value iterable_value;
-
-	type_access_dumping<Sink> _dumper(i_sink);
+	iterable_dumper_type<Sink,typename Traits::value_type> _dumper(i_sink);
 
 	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
 }
