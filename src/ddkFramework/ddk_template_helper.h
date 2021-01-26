@@ -552,10 +552,7 @@ struct type_pack
 		typedef typename merge_type_packs<typename static_if<is_among_types<Types,TTypes...>,type_pack<>,type_pack<Types>>::type ...>::type type;
 	};
     template<typename ... TTypes>
-    inline constexpr bool contains(type_pack<TTypes...>)
-    {
-        return (is_among_types<TTypes,Types...> && ...);
-    };
+    static typename static_if<((get_num_types<TTypes...>() == 0) || (is_among_types<TTypes,Types...> && ...)),std::true_type,std::false_type>::type contains(const type_pack<TTypes...>&);
 };
 
 template<typename ... Types, typename ... TTypes,typename ... TTTypes>

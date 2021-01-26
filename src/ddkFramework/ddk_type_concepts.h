@@ -86,11 +86,14 @@
 #define IS_CONSTRUCTIBLE_COND(_TYPE,...) \
 	std::is_constructible<_TYPE,__VA_ARGS__>::value
 
+#define IS_ASSIGNABLE(_TYPE,_ARG) \
+	typename std::enable_if<std::is_assignable<_TYPE,_ARG>::value>::type
+
+#define IS_ASSIGNABLE_COND(_TYPE,_ARG) \
+	std::is_assignable<_TYPE,_ARG>::value
+
 #define IS_EQUALLY_COMPARABLE(_TYPE) \
     decltype(std::declval<_TYPE>() == std::declval<_TYPE>())
-
-#define IS_ASSIGNABLE(_TYPE) \
-    decltype(std::declval<_TYPE>() = std::declval<_TYPE>())
 
 #define IS_COMPARABLE(_TYPE) \
     decltype(std::declval<_TYPE>() < std::declval<_TYPE>())

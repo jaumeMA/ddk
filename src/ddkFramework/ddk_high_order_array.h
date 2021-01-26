@@ -21,10 +21,7 @@ public:
 	high_order_sub_array(high_order_sub_array&& other) = delete;
 	high_order_sub_array<T,ranks...> operator[](size_t index);
 	high_order_sub_array<const T,ranks...> operator[](size_t index) const;
-    static inline constexpr size_t size()
-    {
-        return rank * high_order_sub_array<T,ranks...>::size();
-    }
+    static inline constexpr size_t size();
 
 private:
 	T& m_ref;
@@ -42,10 +39,7 @@ public:
 	high_order_sub_array& operator=(TT&& i_value);
 	operator T&();
 	operator const T&() const;
-    static inline constexpr size_t size()
-    {
-        return 1;
-    }
+    static inline constexpr size_t size();
 
 private:
 	T& m_ref;
@@ -68,24 +62,19 @@ public:
 	typedef const T& const_reference;
 
 	constexpr high_order_array() = default;
-	high_order_array(const high_order_array<T,rank,ranks...>& other);
-	template<typename TT>
-	high_order_array(const high_order_array<TT,rank,ranks...>& other);
+	constexpr high_order_array(const high_order_array<T,rank,ranks...>& other) = default;
     TEMPLATE(typename Arg, typename ... Args)
     REQUIRES(IS_NOT_SAME_CLASS(Arg,high_order_array),IS_CONSTRUCTIBLE(T,Arg),IS_CONSTRUCTIBLE(T,Args)...)
-    constexpr high_order_array(Arg&& i_arg, Args&& ... i_args)
-    {
-        size_t index = 0;
-
-        ((m_data[0] = i_arg,m_data[++index] = i_args), ...);
-    }
+    constexpr high_order_array(Arg&& i_arg, Args&& ... i_args);
+	template<typename TT>
+	high_order_array(const high_order_array<TT,rank,ranks...>& other);
 	~high_order_array() = default;
 	detail::high_order_sub_array<T,ranks...> operator[](size_t index);
 	detail::high_order_sub_array<const T,ranks...> operator[](size_t index) const;
 	reference at(const high_order_array<size_t,s_numRanks>& i_indexs);
 	const_reference at(const high_order_array<size_t,s_numRanks>& i_indexs) const;
-	reference at(size_t i_index);
-	const_reference at(size_t i_index) const;
+	constexpr reference at(size_t i_index);
+	constexpr const_reference at(size_t i_index) const;
 	high_order_array& operator=(const high_order_array<T,rank,ranks...>& other);
 	template<typename TT>
 	high_order_array& operator=(const high_order_array<TT,rank,ranks...>& other);
