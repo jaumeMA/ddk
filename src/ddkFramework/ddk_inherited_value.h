@@ -34,7 +34,7 @@ public:
 	inherited_value(const inherited_value& other) = default;
 	inherited_value(inherited_value&& other) = default;
 	template<typename TT>
-	inherited_value(const shared_pointer_wrapper<TT>& i_value);
+	inherited_value(const distributed_pointer_wrapper<TT>& i_value);
 	template<typename TT>
 	inherited_value(const inherited_value<TT,Allocator>& other);
 	template<typename TT>
@@ -64,7 +64,7 @@ private:
 	explicit inherited_value(Args&& ... i_args);
 
 	TypeInfo m_typeInfo;
-	shared_pointer_wrapper<T> m_value;
+	distributed_pointer_wrapper<T> m_value;
 	Allocator m_allocator;
 };
 

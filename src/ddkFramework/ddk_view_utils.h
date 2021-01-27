@@ -14,12 +14,12 @@ namespace view
 template<typename Return, typename Type, typename Allocator>
 inline detail::iterable_transform<function<Return(Type),Allocator>> transform(const function<Return(Type),Allocator>& i_functor);
 template<typename Functor>
-inline detail::iterable_transform<resolved_callable<Functor>> transform(Functor&& i_functor);
+inline detail::iterable_transform<detail::resolved_callable<Functor>> transform(Functor&& i_functor);
 
 template<typename Type, typename Allocator>
 inline detail::iterable_filter<function<bool(Type),Allocator>> filter(const function<bool(Type),Allocator>& i_functor);
 template<typename Functor>
-inline detail::iterable_filter<resolved_callable<Functor>> filter(Functor&& i_functor);
+inline detail::iterable_filter<detail::resolved_callable<Functor>> filter(Functor&& i_functor);
 
 template<typename T>
 inline detail::iterable_order<T> order(T&& i_order);

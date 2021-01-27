@@ -18,7 +18,7 @@ inherited_value<TT> make_inherited_value(Args&& ... i_args)
 
 template<typename T,typename Allocator>
 template<typename TT>
-inherited_value<T,Allocator>::inherited_value(const shared_pointer_wrapper<TT>& i_value)
+inherited_value<T,Allocator>::inherited_value(const distributed_pointer_wrapper<TT>& i_value)
 : m_typeInfo(rtti::type_info<T>())
 , m_value(i_value)
 {
@@ -47,7 +47,7 @@ inherited_value<T,Allocator>::inherited_value(Args&& ... i_args)
 	{
 		T* newValue = new(mem) typename std::remove_const<T>::type(std::forward<Args>(i_args) ...);
 
-		m_value = as_shared_reference(newValue,get_reference_wrapper_deleter(m_allocator));
+		m_value = as_distributed_reference(newValue,get_reference_wrapper_deleter(m_allocator));
 	}
 	else
 	{

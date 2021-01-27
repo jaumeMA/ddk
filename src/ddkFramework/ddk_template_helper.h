@@ -99,10 +99,7 @@ struct size_of_qualified_type<T*>
 };
 
 template<typename T>
-struct remove_qualifiers
-{
-    typedef typename std::remove_const<typename std::remove_reference<T>::type>::type type;
-};
+using remove_qualifiers = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 
 template<typename T>
 struct get_pointer
@@ -381,6 +378,9 @@ struct acc_sequence<rank,ranks...>
 typedef typename _partial<0>::type type;
 };
 
+template<size_t Index, typename T>
+using index_to_type = T;
+
 template<size_t ... ranks>
 constexpr size_t sum_ranks()
 {
@@ -517,7 +517,7 @@ template<typename Type,typename ... Types>
 inline constexpr size_t first_convertible_type = nth_pos_of_predicate<std::is_convertible,Type,Types...>();
 
 template<typename Type,typename ... Types>
-inline constexpr size_t type_match_pos = (first_same_type<typename remove_qualifiers<Type>::type,Types...> != get_num_types<Types...>()) ? first_same_type<typename remove_qualifiers<Type>::type,Types...> : first_constructible_type<Type,Types...>;
+inline constexpr size_t type_match_pos = (first_same_type<remove_qualifiers<Type>,Types...> != get_num_types<Types...>()) ? first_same_type<remove_qualifiers<Type>,Types...> : first_constructible_type<Type,Types...>;
 
 template<typename Type>
 struct construct_type

@@ -13,6 +13,8 @@
 
 namespace ddk
 {
+namespace detail
+{
 
 template<typename,typename,typename>
 struct get_resolved_function;
@@ -34,89 +36,38 @@ using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_
 template<typename Arg, typename T>
 using resolved_return_type = typename std::enable_if<is_function_argument<Arg>::value==false,T>::type;
 
-template<typename Return, typename Allocator>
-class function<Return(),Allocator>
+template<typename,typename,typename>
+class function_impl;
+
+template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
+class function_impl<Return(Types...),Allocator,FunctionImpl>
 {
-    template<typename,typename>
-    friend class function;
-    typedef detail::function_base_const_dist_ptr<Return,tuple<>> function_base_const_dist_ptr;
-	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
-    template<typename RReturn, typename AAllocator>
-    friend inline function_view<RReturn()> lend(const function<RReturn(),AAllocator>&);
-    template<typename RReturn, typename AAllocator>
-    friend inline RReturn eval(const function<RReturn(),AAllocator>&);
-    template<typename RReturn, typename AAllocator>
-    friend inline RReturn eval(const function<RReturn(),AAllocator>&, const function_arguments<>&);
+    template<typename,typename,typename>
+    friend class function_impl;
 
 public:
 	struct callable_tag;
 	typedef Return return_type;
 
-	function();
-    function(std::nullptr_t);
-    function(const function& other) = default;
-    function(function&& other) = default;
+	function_impl();
+    function_impl(std::nullptr_t);
+    function_impl(const function_impl& other) = default;
+    function_impl(function_impl&& other) = default;
     template<typename AAllocator = Allocator>
-    function(const function<Return(),AAllocator>& other);
+    function_impl(const function_impl<Return(Types...),AAllocator,FunctionImpl>& other);
     template<typename AAllocator = Allocator>
-    function(function<Return(),AAllocator>&& other);
+    function_impl(function_impl<Return(Types...),AAllocator,FunctionImpl>&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_CALLABLE_NOT_FUNCTION(T))
-    function(T&& functor, const Allocator& i_allocator = Allocator());
+	function_impl(T&& functor, const Allocator& i_allocator = Allocator());
     template<typename T>
-    function(T *pRef, Return(T::*call)(), const Allocator& i_allocator = Allocator());
+    function_impl(T *pRef, Return(T::*call)(Types...), const Allocator& i_allocator = Allocator());
     template<typename T>
-    function(const T *pRef, Return(T::*call)()const, const Allocator& i_allocator = Allocator());
-    function(Return(*call)(), const Allocator& i_allocator = Allocator());
-	~function() = default;
-    function& operator=(const function& other) = default;
-    function& operator=(function&& other) = default;
-    function& operator=(std::nullptr_t);
-	inline Return inline_eval() const;
-	inline Return inline_eval(const function_arguments<>& i_args) const;
-    inline bool operator==(std::nullptr_t) const;
-    inline bool operator!=(std::nullptr_t) const;
-
-private:
-    inline Return eval_arguments(const mpl::sequence<>&) const;
-
-    function_base_const_dist_ptr m_functionImpl;
-	fixed_size_allocate_or<Allocator> m_allocator;
-};
-
-template<typename Return, typename ... Types, typename Allocator>
-class function<Return(Types...),Allocator>
-{
-    template<typename,typename>
-    friend class function;
-    typedef detail::function_base_const_dist_ptr<Return,tuple<Types...>> function_base_const_dist_ptr;
-	typedef tagged_pointer<shared_reference_counter> tagged_reference_counter;
-    template<typename RReturn, typename ... TTypes, typename AAllocator>
-    friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
-
-public:
-	struct callable_tag;
-	typedef Return return_type;
-
-	function();
-    function(std::nullptr_t);
-    function(const function& other) = default;
-    function(function&& other) = default;
-    template<typename AAllocator = Allocator>
-    function(const function<Return(Types...),AAllocator>& other);
-    template<typename AAllocator = Allocator>
-    function(function<Return(Types...),AAllocator>&& other);
-	TEMPLATE(typename T)
-	REQUIRES(IS_CALLABLE_NOT_FUNCTION(T))
-	function(T&& functor, const Allocator& i_allocator = Allocator());
-    template<typename T>
-    function(T *pRef, Return(T::*call)(Types...), const Allocator& i_allocator = Allocator());
-    template<typename T>
-    function(const T *pRef, Return(T::*call)(Types...)const, const Allocator& i_allocator = Allocator());
-    function(Return(*call)(Types...), const Allocator& i_allocator = Allocator());
-    function& operator=(const function& other) = default;
-    function& operator=(function&& other) = default;
-    function& operator=(std::nullptr_t);
+    function_impl(const T *pRef, Return(T::*call)(Types...)const, const Allocator& i_allocator = Allocator());
+    function_impl(Return(*call)(Types...), const Allocator& i_allocator = Allocator());
+    function_impl& operator=(const function_impl& other) = default;
+    function_impl& operator=(function_impl&& other) = default;
+    function_impl& operator=(std::nullptr_t);
     inline bool operator==(std::nullptr_t) const;
     inline bool operator!=(std::nullptr_t) const;
 	template<typename ... Args>
@@ -130,8 +81,25 @@ private:
     template<size_t ... Indexs, typename ... Args>
     inline Return eval_arguments(const mpl::sequence<Indexs...>&, const function_arguments<Args...>& i_args) const;
 
-    function_base_const_dist_ptr m_functionImpl;
+protected:
+    FunctionImpl m_functionImpl;
 	fixed_size_allocate_or<Allocator> m_allocator;
+};
+
+}
+
+template<typename Return, typename ... Types>
+using function_impl_const_ptr = detail::function_base_const_dist_ptr<Return,tuple<Types...>>;
+
+template<typename Return, typename ... Types, typename Allocator>
+class function<Return(Types...),Allocator> : public detail::function_impl<Return(Types...),Allocator,function_impl_const_ptr<Return,Types...>>
+{
+    typedef detail::function_impl<Return(Types...),Allocator,function_impl_const_ptr<Return,Types...>> function_base_t;
+    template<typename RReturn, typename ... TTypes, typename AAllocator>
+    friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
+
+public:
+    using function_base_t::function_base_t;
 };
 
 namespace mpl
