@@ -18,7 +18,7 @@ struct multi_visitor;
 template<typename Return, typename Callable, typename ... ResolvedTypes, typename Variant, typename ... Variants>
 struct multi_visitor<Return,Callable,tuple<ResolvedTypes...>,Variant,Variants...> : public static_visitor<function<Return(ResolvedTypes...)>>
 {
-	static_assert(mpl::holds_any_type<concepts::is_variant,Variants...>, "You shall provide variants as objects to visitto visit");
+	static_assert(mpl::holds_any_type<concepts::is_variant,Variants...>(), "You shall provide variants as objects to visitto visit");
 	static_assert(mpl::is_valid_functor<Callable>::value, "You shall provider a valid functor for receiving variant values");
 
 public:

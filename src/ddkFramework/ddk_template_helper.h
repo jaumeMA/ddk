@@ -399,11 +399,17 @@ constexpr size_t get_num_types()
     return sizeof...(Types);
 }
 
+template<typename ... Types>
+inline constexpr size_t num_types = sizeof...(Types);
+
 template<template<typename> class predicate, typename ... Types>
 constexpr size_t get_num_of_types_of()
 {
-    return (predicate<Types>::value + ...);
+    return (static_cast<size_t>(predicate<Types>::value) + ...);
 };
+
+template<template<typename> class predicate, typename ... Types>
+inline constexpr size_t num_types_of = get_num_of_types_of<predicate,Types...>();
 
 template<typename A, typename B>
 struct is_same_type;
@@ -552,7 +558,10 @@ struct type_pack
 		typedef typename merge_type_packs<typename static_if<is_among_types<Types,TTypes...>,type_pack<>,type_pack<Types>>::type ...>::type type;
 	};
     template<typename ... TTypes>
-    static typename static_if<((get_num_types<TTypes...>() == 0) || (is_among_types<TTypes,Types...> && ...)),std::true_type,std::false_type>::type contains(const type_pack<TTypes...>&);
+	static constexpr bool contains(const type_pack<TTypes...>&)
+	{
+		return (num_types<TTypes...> == 0) || (is_among_types<TTypes, Types...> && ...);
+	}
 };
 
 template<typename ... Types, typename ... TTypes,typename ... TTTypes>
@@ -645,7 +654,11 @@ struct _acc_sizeof;
 template<size_t ... Indexs>
 struct _acc_sizeof<sequence<Indexs...>>
 {
-    static const size_t value[get_num_ranks<Indexs...>()];
+private:
+    static const size_t s_numIndexs = get_num_ranks<Indexs...>();
+
+public:
+    static const size_t value[s_numIndexs];
 
     constexpr _acc_sizeof() = default;
 
@@ -660,7 +673,7 @@ struct _acc_sizeof<sequence<Indexs...>>
 };
 
 template<size_t ... Indexs>
-const size_t _acc_sizeof<sequence<Indexs...>>::value[get_num_ranks<Indexs...>()] = { Indexs ... };
+const size_t _acc_sizeof<sequence<Indexs...>>::value[s_numIndexs] = { Indexs ... };
 
 template<typename ... Types>
 struct acc_sizeof

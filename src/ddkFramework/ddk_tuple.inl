@@ -7,10 +7,10 @@ namespace detail
 {
 
 template<typename ... Types>
-const std::array<size_t,mpl::get_num_types<Types...>()> aligned_tuple_storage<Types...>::m_offset = resolve_type_offset(s_total_size);
+const std::array<size_t,mpl::num_types<Types...>> aligned_tuple_storage<Types...>::m_offset = resolve_type_offset(s_total_size);
 
 template<typename ... Types>
-std::array<size_t,mpl::get_num_types<Types...>()> aligned_tuple_storage<Types...>::resolve_type_offset(size_t i_totalSize)
+std::array<size_t,mpl::num_types<Types...>> aligned_tuple_storage<Types...>::resolve_type_offset(size_t i_totalSize)
 {
 	typedef typename mpl::acc_sizeof<Types...>::type data_align;
 	static const size_t s_numTypes = mpl::get_num_types<Types...>();

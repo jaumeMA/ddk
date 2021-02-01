@@ -83,7 +83,7 @@ void swap_context(ucontext_t* i_oldContext, ucontext_t* i_newContext)
 {
 #if defined(WIN32)
 
-    __switch_frame(&i_oldContext->uc_mcontext,&i_newContext->uc_mcontext)
+	__switch_frame(&i_oldContext->uc_mcontext, &i_newContext->uc_mcontext);
 
 #else
 

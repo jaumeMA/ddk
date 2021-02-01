@@ -1,6 +1,5 @@
 
 #include "ddk_embedded_type.h"
-#include "ddk_rtti.h"
 
 namespace ddk
 {

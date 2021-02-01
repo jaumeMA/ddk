@@ -122,8 +122,8 @@ bool operator==(const shift_action& i_lhs,const shift_action& i_rhs);
 bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs);
 
 const extern stop_action stop_iteration;
-const extern erase_action erase_value;
-const extern add_action add_value;
+//const extern erase_action erase_value;
+//const extern add_action add_value;
 const extern go_forward_action go_next_place;
 const extern go_backward_action go_prev_place;
 const extern shift_action go_to_place;
