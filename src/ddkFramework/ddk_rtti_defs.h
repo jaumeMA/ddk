@@ -4,6 +4,9 @@
 
 namespace ddk
 {
+namespace rtti
+{
+
 namespace detail
 {
 
@@ -38,6 +41,10 @@ inline TypeInfo make_type_info();
 template<typename T>
 inline TypeInfo make_type_info();
 
+template<typename T>
+inline const TypeInfo& type_info();
+
+}
 }
 
 #include "ddk_rtti_defs.inl"

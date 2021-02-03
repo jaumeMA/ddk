@@ -6,10 +6,10 @@
 #include "ddk_rtti_concepts.h"
 #include "ddk_static_counter.h"
 #include "ddk_macros.h"
+#include "ddk_visitable_type.h"
 
 #define _PUBLISH_RTTI_INHERITANCE(_Type_Name,_Type_Interface) \
-    ; const bool ____expand_type_visitable_type##_Type_Name##_Type_Interface = ddk::visitable_type<_Type_Name,_Type_Interface>::s_initialized;\
-    typename decltype(__get_inherited_type_list(std::declval<_Type_Interface>(),std::declval<ddk::mpl::static_number<ddk::static_counter<_Type_Interface>::get_curr_count()>>()))::add<_Type_Name>::type __get_inherited_type_list(const _Type_Interface&,const ddk::mpl::static_number<ddk::static_counter<_Type_Interface>::get_next_count()>&);
+    ; typename decltype(__get_inherited_type_list(std::declval<ddk::rtti::detail::static_typed_number<decltype(ddk::mpl::resolve_holder<_Type_Interface>()),ddk::static_counter<decltype(ddk::mpl::resolve_holder<_Type_Interface>())>::get_curr_count()>>()))::add<decltype(ddk::mpl::resolve_holder<_Type_Name>())>::type __get_inherited_type_list(const ddk::rtti::detail::static_typed_number<decltype(ddk::mpl::resolve_holder<_Type_Interface>()),ddk::static_counter<decltype(ddk::mpl::resolve_holder<_Type_Interface>())>::get_next_count()>&);
 
 #define PUBLISH_RTTI_INHERITANCE(_Type_Name,...) \
     FOREACH_ARG(_PUBLISH_RTTI_INHERITANCE,_Type_Name,__VA_ARGS__)
@@ -21,28 +21,83 @@ namespace rtti
 namespace detail
 {
 
+template<typename T, size_t Number>
+struct static_typed_number
+{
+};
+template<typename T>
+struct static_typed_number<T,0>
+{
+    friend inline mpl::type_pack<> __get_inherited_type_list(const static_typed_number&);
+};
+
+template<typename>
+struct get_inherited_type_list;
+
 template<typename T>
 struct get_inherited_type_list
 {
 private:
-	static const size_t s_numberOfInheritedTypes = ddk::static_counter<T>::get_curr_count();
+	static const size_t s_numberOfInheritedTypes = ddk::static_counter<mpl::class_holder<T>>::get_curr_count();
+	typedef decltype(__get_inherited_type_list(std::declval<static_typed_number<mpl::class_holder<T>,s_numberOfInheritedTypes>>())) unresolved_type;
+
+    template<typename ... TTT>
+    static mpl::type_pack<typename TTT::type ...> resolve_types(const mpl::type_pack<TTT...>&);
+
+    template<typename ... TTT>
+    static inline bool initialize_visitable_type(const mpl::type_pack<TTT...>&)
+    {
+        return (ddk::visitable_type<typename TTT::type,T>::s_initialized && ...);
+    }
 
 public:
-	typedef decltype(__get_inherited_type_list(std::declval<T>(),std::declval<mpl::static_number<s_numberOfInheritedTypes>>())) type;
+    static const bool value;
+    typedef decltype(resolve_types(std::declval<unresolved_type>())) type;
 };
+template<typename T>
+const bool get_inherited_type_list<T>::value = get_inherited_type_list<T>::initialize_visitable_type(unresolved_type{});
+
+template<template<typename...> typename T, typename ... TT>
+struct get_inherited_type_list<T<TT...>>
+{
+private:
+	static const size_t s_numberOfInheritedTypes = ddk::static_counter<mpl::template_class_holder<T>>::get_curr_count();
+	typedef decltype(__get_inherited_type_list(std::declval<static_typed_number<mpl::template_class_holder<T>,s_numberOfInheritedTypes>>())) unresolved_type;
+    template<typename,bool>
+    struct resolved_type;
+    template<typename TTT>
+    struct resolved_type<TTT,false>
+    {
+        typedef typename TTT::type type;
+    };
+    template<typename TTT>
+    struct resolved_type<TTT,true>
+    {
+        typedef typename TTT::template type<TT...> type;
+    };
+
+    template<typename ... TTT>
+    static mpl::type_pack<typename resolved_type<TTT,mpl::is_templated_class_holder_v<TTT>>::type ...> resolve_types(const mpl::type_pack<TTT...>&);
+
+    template<typename ... TTT>
+    static inline bool initialize_visitable_type(const mpl::type_pack<TTT...>&)
+    {
+        return (ddk::visitable_type<typename resolved_type<TTT,mpl::is_templated_class_holder_v<TTT>>::type,T<TT...>>::s_initialized && ...);
+    }
+
+public:
+    static const bool value;
+    typedef decltype(resolve_types(std::declval<unresolved_type>())) type;
+};
+template<template<typename...> typename T, typename ... TT>
+const bool get_inherited_type_list<T<TT...>>::value = get_inherited_type_list<T<TT...>>::initialize_visitable_type(unresolved_type{});
 
 }
 
 template<typename T>
 using inherited_type_list = typename detail::get_inherited_type_list<T>::type;
-
 template<typename T>
-const TypeInfo& type_info()
-{
-	static const ddk::TypeInfo s_typeInfo = ddk::make_type_info<T>();
-
-	return s_typeInfo;
-}
+static const bool inherited_type_expansion = detail::get_inherited_type_list<T>::value;
 
 }
 

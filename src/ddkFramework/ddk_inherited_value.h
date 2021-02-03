@@ -48,7 +48,7 @@ public:
 	template<typename TT>
 	inline bool is() const;
 	inline operator bool() const;
-	inline const TypeInfo& get_type_info() const;
+	inline const rtti::TypeInfo& get_type_info() const;
 	inline pointer operator->();
 	inline const_pointer operator->() const;
 	inline reference operator*();
@@ -63,7 +63,7 @@ private:
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
 	explicit inherited_value(Args&& ... i_args);
 
-	TypeInfo m_typeInfo;
+	rtti::TypeInfo m_typeInfo;
 	distributed_pointer_wrapper<T> m_value;
 	Allocator m_allocator;
 };

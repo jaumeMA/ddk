@@ -35,7 +35,7 @@ public:
 	{
 		static_assert(sizeof(T)==0, "You have to provide a visit method for this type");
 	}
-	static size_t get_dynamic_visitor(const TypeInfo& i_typeInfo)
+	static size_t get_dynamic_visitor(const rtti::TypeInfo& i_typeInfo)
 	{
 		std::unordered_map<size_t,size_t>& registeredDynamicVisitors = __get_dynamic_visitor_layout();
 
@@ -45,7 +45,7 @@ public:
 	}
 
 private:
-	static void add_dynamic_visitor(const TypeInfo& i_typeInfo, size_t i_layout)
+	static void add_dynamic_visitor(const rtti::TypeInfo& i_typeInfo, size_t i_layout)
 	{
 		std::unordered_map<size_t,size_t>& registeredDynamicVisitors = __get_dynamic_visitor_layout();
 

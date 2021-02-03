@@ -3,6 +3,8 @@
 
 namespace ddk
 {
+namespace rtti
+{
 
 TypeInfo::TypeInfo(size_t i_id)
 : m_id(i_id)
@@ -21,4 +23,5 @@ bool TypeInfo::empty() const
 	return m_id == s_invalid;
 }
 
+}
 }

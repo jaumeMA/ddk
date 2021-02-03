@@ -7,6 +7,6 @@ namespace ddk
 {
 
 struct visitable_type_t;
-typedef Id<std::pair<TypeInfo,TypeInfo>,visitable_type_t> visitable_type_info;
+typedef Id<std::pair<rtti::TypeInfo,rtti::TypeInfo>,visitable_type_t> visitable_type_info;
 
 }

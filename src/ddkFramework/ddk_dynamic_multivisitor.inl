@@ -1,6 +1,5 @@
 
 #include "ddk_embedded_type.h"
-#include "ddk_rtti.h"
 
 namespace ddk
 {
@@ -14,7 +13,7 @@ bool __expand_type_visitor_layout()
 	typedef typename VisitorType::type_interface type_interface;
 	static const FinalVisitorType* s_finalType = reinterpret_cast<const FinalVisitorType*>(0xFFFF);
 	static const typed_dynamic_visitor<visitor_type>* s_partialType = s_finalType;
-	static const TypeInfo typeInfo = rtti::type_info<visitor_type>();
+	static const rtti::TypeInfo typeInfo = rtti::type_info<visitor_type>();
 
 	dynamic_visitor<type_interface>::add_dynamic_visitor(typeInfo,reinterpret_cast<size_t>(s_partialType) - reinterpret_cast<size_t>(s_finalType));
 
@@ -90,6 +89,7 @@ typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_vis
 {
     typedef typename std::remove_reference<Visitor>::type visitor_t;
 	typedef typename visitor_t::type_interface type_interface;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
 
 	dynamic_multi_visitor<visitor_t,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
 

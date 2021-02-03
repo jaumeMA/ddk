@@ -102,7 +102,7 @@ inherited_value<T,Allocator>::operator bool() const
     return m_typeInfo.empty() == false;
 }
 template<typename T, typename Allocator>
-const TypeInfo& inherited_value<T,Allocator>::get_type_info() const
+const rtti::TypeInfo& inherited_value<T,Allocator>::get_type_info() const
 {
     return m_typeInfo;
 }

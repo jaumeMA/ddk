@@ -27,7 +27,7 @@ struct agnostic_visitable_type
 	template<typename T>
 	static void nested_visit(const type_interface* i_object, const visitor_interface& i_visitor)
 	{
-		const TypeInfo& typeInfo = rtti::type_info<T>();
+		const rtti::TypeInfo& typeInfo = rtti::type_info<T>();
 
 		if (const T* finalObjectPtr = static_cast<const T*>(i_object))
 		{
@@ -44,7 +44,7 @@ struct agnostic_visitable_type
 	template<typename T>
 	static void nested_visit(const type_interface* i_object, visitor_interface& i_visitor)
 	{
-		static const TypeInfo typeInfo = rtti::type_info<T>();
+		static const rtti::TypeInfo typeInfo = rtti::type_info<T>();
 
 		if(const T* finalObjectPtr = static_cast<const T*>(i_object))
 		{
@@ -68,9 +68,9 @@ struct agnostic_visitable_type
 
 		return res;
 	}
-	static const ddk::TypeInfo& s_categoryTypeInfo()
+	static const rtti::TypeInfo& s_categoryTypeInfo()
 	{
-		static const ddk::TypeInfo res = ddk::rtti::type_info<type_interface>();;
+		static const rtti::TypeInfo res = rtti::type_info<type_interface>();;
 
 		return res;
 	}
@@ -81,15 +81,15 @@ struct visitable_type : protected agnostic_visitable_type<Interface>
 {
 	static bool __initializedStaticData()
 	{
-		const TypeInfo& typeInfo = s_type_info();
+		const rtti::TypeInfo& typeInfo = s_type_info();
 
 		agnostic_visitable_type<Interface>::template _initializeStaticData<Type>(typeInfo.get_id());
 
 		return true;
 	}
-	static inline const TypeInfo& s_type_info()
+	static inline const rtti::TypeInfo& s_type_info()
 	{
-		static const TypeInfo& res = rtti::type_info<Type>();
+		static const rtti::TypeInfo& res = rtti::type_info<Type>();
 
 		return res;
 	}

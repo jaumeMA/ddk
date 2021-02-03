@@ -1,6 +1,9 @@
 
 namespace ddk
 {
+namespace rtti
+{
+
 namespace detail
 {
 
@@ -33,4 +36,13 @@ TypeInfo make_type_info()
 	return detail::___get_type_id<T>();
 }
 
+template<typename T>
+const TypeInfo& type_info()
+{
+	static const TypeInfo s_typeInfo = make_type_info<T>();
+
+	return s_typeInfo;
+}
+
+}
 }

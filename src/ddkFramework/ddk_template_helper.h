@@ -48,6 +48,41 @@ struct static_if<false,T,TT>
     typedef TT type;
 };
 
+template<typename T>
+struct class_holder
+{
+    typedef T type;
+};
+
+template<template<typename ...>typename T>
+struct template_class_holder
+{
+    template<typename ... TT>
+    using type = T<TT...>;
+};
+
+template<typename T>
+class_holder<T> resolve_holder();
+
+template<template<typename...> typename T>
+template_class_holder<T> resolve_holder();
+
+template<typename T>
+struct is_templated_class_holder : std::false_type
+{
+};
+template<typename T>
+struct is_templated_class_holder<class_holder<T>> : std::false_type
+{
+};
+template<template<typename...> typename T>
+struct is_templated_class_holder<template_class_holder<T>> : std::true_type
+{
+};
+
+template<typename T>
+inline constexpr bool is_templated_class_holder_v = is_templated_class_holder<T>::value;
+
 template<bool,typename,typename>
 struct which_type;
 
@@ -451,6 +486,9 @@ struct nth_type_of<0,Type,Types...>
 {
     typedef Type type;
 };
+
+template<size_t Pos, typename ... Types>
+using nth_type_of_t = typename nth_type_of<Pos,Types...>::type;
 
 template<template<typename,typename...> typename Predicate, typename Type, typename ... Types>
 inline constexpr size_t nth_pos_of_predicate()
