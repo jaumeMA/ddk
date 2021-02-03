@@ -1,27 +1,35 @@
 
-global set_curr_thread_stack_base
-global set_curr_thread_stack_limit
-global get_curr_thread_stack_base
-global get_curr_thread_stack_limit
+global set_curr_thread_stack
+global get_curr_thread_stack
 global consolidate_frame
 
 section .text
 
-set_curr_thread_stack_base:
+set_curr_thread_stack:
 
 	ret
 
-set_curr_thread_stack_limit:
+get_curr_thread_stack:
 
 	ret
 
-get_curr_thread_stack_base:
+frame_get_out:
 
-	ret
+    pop rdi
+    pop rsi
+    pop rbx
+    pop rbp
 
-get_curr_thread_stack_limit:
+    ret
 
-	ret
+__switch_frame:
+
+    push rbp
+    push rbx
+    push rsi
+    push rdi
+
+    ret
 
 consolidate_frame:
 
