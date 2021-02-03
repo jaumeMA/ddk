@@ -1,24 +1,10 @@
 #pragma once
 
-#include "ddk_signal.h"
 #include "ddk_iaccess_critical_call_context.h"
 #include "ddk_critical_section.h"
 
 namespace ddk
 {
-
-class IAccessProvider
-{
-public:
-	enum Access
-	{
-		READING = 0,
-		WRITING,
-		NONE
-	};
-
-	ddk::signal<void()> sig_onNewDataReceived;
-};
 
 template<typename Traits, IAccessProvider::Access>
 struct AccessCriticalSection;
@@ -33,8 +19,6 @@ public:
 	typedef typename Traits::provider_interface provider_interface;
 	typedef typename Traits::critical_context critical_context;
 	typedef IAccessCriticalCallContext<Traits> access_call_context;
-	using typename IAccessCriticalCallContext<Traits>::const_critical_call_context;
-	using typename IAccessCriticalCallContext<Traits>::critical_call_context;
 
 	template<IAccessProvider::Access ACCESS>
 	typename AccessCriticalSection<Traits,ACCESS>::critical_section enterCriticalSection(Reentrancy i_reentrancy) const

@@ -2,9 +2,21 @@
 
 #include "ddk_scoped_enum.h"
 #include "ddk_type_id.h"
+#include "ddk_signal.h"
 
 namespace ddk
 {
+
+class IAccessProvider
+{
+public:
+	enum Access
+	{
+		READING = 0,
+		WRITING,
+		NONE
+	};
+};
 
 struct critical_access_identifier_t;
 typedef Id<size_t,critical_access_identifier_t> critical_section_identifier;

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ddk_critical_section.h"
-#include "ddk_iaccess_provider.h"
-#include <tuple>
 #include "ddk_reference_counter.h"
 #include "ddk_template_helper.h"
+
+#include <tuple>
 
 namespace ddk
 {

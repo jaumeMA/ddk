@@ -2,7 +2,7 @@
 #if defined(DDK_DEBUG)
     #define SET_CHECK_RESULT(_OBJ,_VALUE) (_OBJ).m_checked = _VALUE;
     #define CHECK_RESULT DDK_ASSERT(m_checked==true, "Unchecked result on destroy!");
-    #define SWAP_CHECK_RESULT(_OBJ_LHS,_OBJ_RHS) std::swap(_OBJ_LHS.m_checked,_OBJ_RHS.m_checked);
+    #define SWAP_CHECK_RESULT(_OBJ_LHS,_OBJ_RHS) std::swap((_OBJ_LHS).m_checked,(_OBJ_RHS).m_checked);
 #else
     #define SET_CHECK_RESULT(_OBJ,_VALUE)
     #define CHECK_RESULT

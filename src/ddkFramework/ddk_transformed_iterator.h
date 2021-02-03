@@ -46,7 +46,7 @@ public:
 private:
 	virtual ReturnType getValue() const override
 	{
-	  return m_transform(*(this->m_privateIterator));
+	  return eval(m_transform,*(this->m_privateIterator));
 	}
 	IIterator<ReturnType,IteratorTag>* clone() const
 	{

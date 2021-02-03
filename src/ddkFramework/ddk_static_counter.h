@@ -37,7 +37,7 @@ size_t constexpr consumer(int,const counter_tag<T,N>&)
 template<typename T,size_t N, size_t V = 0, typename ... TT>
 size_t constexpr curr_tag(float,const counter_tag<T,N>&,TT...)
 {
-	return N - 1;
+	return N-1;
 }
 
 template<typename T,size_t N,size_t V = counter_index(counter_tag<T,N>{}), size_t R  = curr_tag<T>(0,counter_tag<T,N + 1> {})>

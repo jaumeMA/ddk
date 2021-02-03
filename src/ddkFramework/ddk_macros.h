@@ -21,7 +21,7 @@
 
         #define DDK_ASSERT(__cond,__msg) \
             { \
-                if((__cond) == false) \
+                if(static_cast<bool>(__cond) == false) \
                 { \
                     ddk::detail::Assert assertion(#__cond,__FILE__,__LINE__,"Assert",__msg); \
                     if (assertion.raise() == ddk::detail::Assert::Break) \
