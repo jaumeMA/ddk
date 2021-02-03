@@ -2,6 +2,7 @@
 
 #include "ddk_thread_utils.h"
 #include "ddk_critical_call_context.h"
+#include "ddk_critical_section_context.h"
 #include "ddk_intrusive_stack.h"
 #include "ddk_intrusive_node.h"
 #include "ddk_thread_local.h"
