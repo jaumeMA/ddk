@@ -24,9 +24,9 @@ public:
 private:
 	static const size_t s_total_size = mpl::total_size<Types...>;
 	static const size_t s_total_alignment = mpl::total_alignment<Types...>;
-	static const std::array<size_t,mpl::get_num_types<Types...>()> m_offset;
+	static const std::array<size_t,mpl::num_types<Types...>> m_offset;
 
-	static inline std::array<size_t,mpl::get_num_types<Types...>()> resolve_type_offset(size_t i_totalSize);
+	static inline std::array<size_t,mpl::num_types<Types...>> resolve_type_offset(size_t i_totalSize);
 
 	arena<s_total_size,s_total_alignment> m_arena;
 };
@@ -166,7 +166,7 @@ private:
 }
 
 template<typename ... Types>
-using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type,Types...>;
+using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::num_types<Types...>>::type,Types...>;
 
 template<typename ... Types>
 tuple<Types...> make_tuple(Types&& ... vals);

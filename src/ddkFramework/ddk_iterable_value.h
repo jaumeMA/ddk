@@ -74,14 +74,14 @@ struct random_accessed_value<T> : public iterable_value<detail::random_access_it
     {
         action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,erase_value),i_value.m_resolver), currActionState->template forward_result<erase_result>());
+        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,erase_place),i_value.m_resolver), currActionState->template forward_result<erase_result>());
     }
     template<typename ... Args>
     friend inline std::pair<random_accessed_value,add_result> add_value(random_accessed_value i_value, Args&& ... i_args)
     {
         action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<add_result>());
+        return std::make_pair(random_accessed_value(eval(i_value.m_resolver,add_place(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<add_result>());
     }
     friend inline random_accessed_value next_value(random_accessed_value i_value)
     {
@@ -171,14 +171,14 @@ struct bidirectional_value<T> : public iterable_value<detail::bidirectional_iter
     {
         action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,erase_value),i_value.m_resolver ), currActionState->template forward_result<erase_result>());
+        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,erase_place),i_value.m_resolver ), currActionState->template forward_result<erase_result>());
     }
     template<typename ... Args>
     friend inline std::pair<bidirectional_value,add_result> add_value(bidirectional_value i_value, Args&& ... i_args)
     {
         action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<add_result>());
+        return std::make_pair(bidirectional_value(eval(i_value.m_resolver,add_place(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<add_result>());
     }
     friend inline bidirectional_value next_value(bidirectional_value i_value)
     {
@@ -259,14 +259,14 @@ struct forwarded_value<T> : public iterable_value<detail::forward_iterable_trait
     {
         action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(forwarded_value(eval(i_value.m_resolver,erase_value),i_value.m_resolver),currActionState->template forward_result<erase_result>());
+        return std::make_pair(forwarded_value(eval(i_value.m_resolver,erase_place),i_value.m_resolver),currActionState->template forward_result<erase_result>());
     }
     template<typename ... Args>
     friend inline std::pair<forwarded_value,add_result> add_value(forwarded_value i_value, Args&& ... i_args)
     {
         action_state_lent_ptr currActionState = i_value.m_iterableInterface.get_action_state();
 
-        return std::make_pair(forwarded_value(eval(i_value.m_resolver,add_value(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<add_result>());
+        return std::make_pair(forwarded_value(eval(i_value.m_resolver,add_place(std::forward<Args>(i_args) ...)),i_value.m_resolver), currActionState->template forward_result<add_result>());
     }
     friend inline forwarded_value next_value(forwarded_value i_value)
     {

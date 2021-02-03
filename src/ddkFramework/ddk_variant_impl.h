@@ -16,10 +16,10 @@ class variant_impl
     friend class variant_impl;
     template<typename,typename ...>
     friend class variant_visitor_invoker;
-    static const int _numTypes = mpl::get_num_types<Types...>();
+    static const size_t s_numTypes = mpl::get_num_types<Types...>();
 
 public:
-	static const size_t npos = _numTypes;
+	static const size_t npos = s_numTypes;
 
     variant_impl();
     inline void construct(const variant_impl& other);

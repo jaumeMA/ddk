@@ -251,7 +251,6 @@ struct myMultiVisitor : public ddk::static_visitor<size_t>
 
 TEST(DDKVariantTest,multi_visitation)
 {
-	TestVisitor visitor;
 	ddk::variant<std::string,int,size_t,nonCopyConstructibleType> foo1;
 	ddk::variant<DefaultType,std::vector<int>> foo2;
 	ddk::variant<char,double,float,std::string> foo3;

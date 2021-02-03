@@ -3,7 +3,7 @@
 #include <utility>
 #include <string>
 #include "test_utils.h"
-#include "ddk_visitable_type.h"
+#include "ddk_rtti.h"
 #include "ddk_any_value.h"
 
 using namespace testing;
