@@ -91,7 +91,6 @@ void one_shot_thread_impl::stop()
 	if(m_started)
 	{
 		m_started = false;
-		m_threadFunc = nullptr;
 
 		void *res = nullptr;
 		thread_id_t prova = get_id();
@@ -108,7 +107,16 @@ thread_id_t one_shot_thread_impl::get_id() const
 }
 void one_shot_thread_impl::setExiting(bool i_exiting)
 {
-	m_started = !i_exiting;
+	if(i_exiting)
+	{
+		m_started = false;
+
+		m_threadFunc = nullptr;
+
+		thread_impl_interface::clear_yielder();
+
+		m_yielder = nullptr;
+	}
 }
 void one_shot_thread_impl::execute()
 {
@@ -120,11 +128,7 @@ void one_shot_thread_impl::execute()
 
 		eval(m_threadFunc);
 
-		thread_impl_interface::clear_yielder();
-
-		m_yielder = nullptr;
-
-		pthread_cleanup_pop(0);
+		pthread_cleanup_pop(1);
 	}
 }
 bool one_shot_thread_impl::set_affinity(const cpu_set_t& i_set)

@@ -293,7 +293,10 @@ void shared_pointer_wrapper_impl<T,ReferenceCounter>::clearIfCounterVoid(size_t 
 				m_data->~T();
 			}
 
-			m_deleter->deallocate(allocator_address_reference_wrapper(m_data));
+			if(m_deleter)
+			{
+				m_deleter->deallocate(allocator_address_reference_wrapper(m_data));
+			}
 		}
 		else
 		{

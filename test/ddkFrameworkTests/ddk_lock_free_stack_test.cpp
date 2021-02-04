@@ -176,12 +176,14 @@ TEST(DDKLockFreeStackTest,multipleProducerMultipleConsumer)
 	{
 		while(stop2 == false || lockFreeStack.empty() == false)
 		{
-			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
+			while(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
 			{
 				DefaultType currValue = *currValueOpt;
 
 				EXPECT_GT(currValue,0);
 			}
+
+			ddk::sleep(1000);
 		}
 	};
 

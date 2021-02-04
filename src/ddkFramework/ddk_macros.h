@@ -50,7 +50,7 @@
         #define DDK_FAIL(msg)
         #define DDK_ASSERT_OR_LOG(__cond,__msg) \
             { \
-                if((__cond) == false) \
+                if(static_cast<bool>(__cond) == false) \
                 { \
                     DDK_LOG_ERROR(__msg); \
                 } \
@@ -72,7 +72,7 @@
         #include "ddk_assert.h"
 
         #define DDK_ASSERT(__cond,__msg) \
-            if((__cond) == false) \
+            if(static_cast<bool>(__cond) == false) \
             { \
                 ddk::detail::Assert assertion(#__cond,__FILE__,__LINE__,"Assert",__msg); \
                 if (assertion.raise() == ddk::detail::Assert::Break) \
@@ -101,7 +101,7 @@
         #define DDK_FAIL(__msg)
         #define DDK_ASSERT_OR_LOG(__cond,__msg) \
             { \
-                if((__cond) == false) \
+                if(static_cast<bool>(__cond) == false) \
                 { \
                     DDK_LOG_ERROR(__msg); \
                 } \
@@ -123,7 +123,7 @@
 
         #define DDK_ASSERT(__cond,__msg) \
             { \
-                if((__cond) == false) \
+                if(static_cast<bool>(__cond) == false) \
                 { \
                     raise(SIGTRAP); \
                 } \
@@ -143,7 +143,7 @@
         #define DDK_FAIL(msg)
         #define DDK_ASSERT_OR_LOG(__cond,__msg) \
             { \
-                if((__cond) == false) \
+                if(static_cast<bool>(__cond) == false) \
                 { \
                     DDK_LOG_ERROR(__msg); \
                 } \
