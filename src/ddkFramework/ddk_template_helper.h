@@ -561,7 +561,7 @@ template<typename Type,typename ... Types>
 inline constexpr size_t first_convertible_type = nth_pos_of_predicate<std::is_convertible,Type,Types...>();
 
 template<typename Type,typename ... Types>
-inline constexpr size_t type_match_pos = (first_same_type<remove_qualifiers<Type>,Types...> != get_num_types<Types...>()) ? first_same_type<remove_qualifiers<Type>,Types...> : first_constructible_type<Type,Types...>;
+inline constexpr size_t type_match_pos = (first_same_type<remove_qualifiers<Type>,remove_qualifiers<Types>...> != get_num_types<Types...>()) ? first_same_type<remove_qualifiers<Type>,remove_qualifiers<Types>...> : first_constructible_type<Type,Types...>;
 
 template<typename Type>
 struct construct_type

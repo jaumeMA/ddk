@@ -88,21 +88,19 @@ public:
 	{
 		return m_data;
 	}
-    template<typename Type>
-	inline static bool construct(void* address, Type&& val)
+	inline static bool construct(void* address, T& val)
 	{
-	  return new(address)embedded_type(std::forward<Type>(val)) != nullptr;
+	  return new(address)embedded_type(val) != nullptr;
 	}
 	inline static bool destroy(void* address)
 	{
 		//in references nothing needs to be done
 		return true;
 	}
-    template<typename Type>
-	inline static bool assign(void* address, Type&& val)
+	inline static bool assign(void* address, T& val)
 	{
 		//references must be reconstructed every time
-		return new(address)embedded_type(std::forward<Type>(val)) != nullptr;
+		return new(address)embedded_type(val) != nullptr;
 	}
 	inline static bool swap(void* addressA, internal_type& valA, void* addressB, internal_type& valB)
 	{
@@ -186,8 +184,7 @@ public:
 	{
 		return m_data;
 	}
-    template<typename Type>
-	inline static bool construct(void* address, Type&& val)
+	inline static bool construct(void* address, T&& val)
 	{
 	  return new(address) embedded_type(std::move(val)) != nullptr;
 	}
@@ -196,12 +193,11 @@ public:
 		//in references nothing needs to be done
 		return true;
 	}
-    template<typename Type>
-	inline static bool assign(void* address, Type&& val)
+	inline static bool assign(void* address, T&& val)
 	{
 		//references must be reconstructed every time
 
-		return construct<Type>(address, std::forward<Type>(val));
+		return construct<Type>(address, std::move(val));
 	}
 	inline static bool swap(void* addressA, internal_type&& valA, void* addressB, internal_type&& valB)
 	{
