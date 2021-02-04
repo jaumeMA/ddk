@@ -26,7 +26,7 @@ struct static_typed_number
 {
 };
 template<typename T>
-struct static_typed_number<T,-1>
+struct static_typed_number<T,0>
 {
     friend inline mpl::type_pack<> __get_inherited_type_list(const static_typed_number&);
 };
