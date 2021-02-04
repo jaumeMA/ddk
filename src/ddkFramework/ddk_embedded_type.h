@@ -106,7 +106,7 @@ public:
 	{
 		internal_type& tmp = valA;
 
-		return construct<internal_type&>(addressA, valB) && construct<internal_type&>(addressB, tmp);
+		return construct(addressA, valB) && construct(addressB, tmp);
 	}
 
 private:
@@ -197,13 +197,13 @@ public:
 	{
 		//references must be reconstructed every time
 
-		return construct<Type>(address, std::move(val));
+		return construct(address, std::move(val));
 	}
 	inline static bool swap(void* addressA, internal_type&& valA, void* addressB, internal_type&& valB)
 	{
 		internal_type&& tmp = std::move(valA);
 
-		return construct<internal_type&&>(addressA, std::move(valB)) && construct<internal_type&&>(addressB, std::move(tmp));
+		return construct(addressA, std::move(valB)) && construct(addressB, std::move(tmp));
 	}
 
 private:
