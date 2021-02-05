@@ -210,7 +210,7 @@ void unique_pointer_wrapper<T>::clearIfCounterVoid(bool i_hasRefs)
 			refCounter->~unique_reference_counter();
 		}
 
-		if(m_deleter)
+		if(const resource_deleter_interface* deleter = m_deleter.get_pointer())
 		{
 			const short allocCategory = m_deleter.get_tag();
 
@@ -219,7 +219,7 @@ void unique_pointer_wrapper<T>::clearIfCounterVoid(bool i_hasRefs)
 				m_data->~T();
 			}
 
-			m_deleter->deallocate(allocator_address_reference_wrapper(m_data));
+			deleter->deallocate(allocator_address_reference_wrapper(m_data));
 		}
 		else
 		{

@@ -284,7 +284,7 @@ void shared_pointer_wrapper_impl<T,ReferenceCounter>::clearIfCounterVoid(size_t 
 			}
 		}
 
-		if(m_deleter)
+		if(const resource_deleter_interface* deleter = m_deleter.get_pointer())
 		{
 			const short allocCategory = m_deleter.get_tag();
 
@@ -293,10 +293,7 @@ void shared_pointer_wrapper_impl<T,ReferenceCounter>::clearIfCounterVoid(size_t 
 				m_data->~T();
 			}
 
-			if(m_deleter)
-			{
-				m_deleter->deallocate(allocator_address_reference_wrapper(m_data));
-			}
+			deleter->deallocate(allocator_address_reference_wrapper(m_data));
 		}
 		else
 		{
