@@ -601,8 +601,8 @@ lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper<T>& i_
 
 #ifdef DDK_DEBUG
 
-template<typename T>
-lent_reference_wrapper<T> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
+template<typename TT, typename T>
+lent_reference_wrapper<TT> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
 {
 	return detail::__make_lent_reference(reinterpret_cast<TT*>(i_lentRef.m_data),i_lentRef.m_refCounter);
 }

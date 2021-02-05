@@ -197,8 +197,8 @@ inline lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper
 
 #ifdef DDK_DEBUG
 
-template<typename T>
-inline lent_reference_wrapper<T> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef);
+template<typename TT, typename T>
+inline lent_reference_wrapper<TT> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef);
 
 #endif
 
