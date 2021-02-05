@@ -115,6 +115,7 @@ thread_event_driven_executor::thread_event_driven_executor(unsigned int i_sleepI
 , m_stopped(true)
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
+, m_testFunc([=]() { return m_pendingWork; })
 {
 }
 thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMS)
@@ -124,6 +125,7 @@ thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread,
 , m_updateThread(std::move(i_thread))
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
+, m_testFunc([=]() { return m_pendingWork; })
 {
 }
 thread_event_driven_executor::thread_event_driven_executor(thread_event_driven_executor&& other)

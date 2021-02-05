@@ -15,8 +15,6 @@ namespace prova
 
 class BaseType1
 {
-	DECLARE_TYPE_VISITABLE_BASE(BaseType1)
-
 public:
 	BaseType1(int i_value = 0)
 	: m_value(i_value)
@@ -30,8 +28,6 @@ private:
 
 class BaseType2
 {
-	DECLARE_TYPE_VISITABLE_BASE(BaseType2)
-
 public:
 	BaseType2(int i_value = 0)
 	: m_value(i_value)

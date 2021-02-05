@@ -100,4 +100,28 @@ struct visitable_type : protected agnostic_visitable_type<Interface>
 template<typename Type,typename Interface>
 const bool visitable_type<Type,Interface>::s_initialized = visitable_type<Type,Interface>::__initializedStaticData();
 
+template<typename T,typename Visitor>
+inline bool __may_visit(const T& i_value,const Visitor*)
+{
+	static const ddk::rtti::TypeInfo s_catInfo = ddk::agnostic_visitable_type<T>::s_categoryTypeInfo();
+
+	return s_catInfo == ddk::agnostic_visitable_type<T>::s_categoryTypeInfo();
+}
+template<typename T,typename Visitor>
+inline void __visit(const ddk::rtti::TypeInfo& i_typeInfo,const T& i_value,const Visitor& i_visitor)
+{
+	if(typename ddk::agnostic_visitable_type<T>::const_visitor_func funcPtr = ddk::agnostic_visitable_type<T>::s_const_visitor_funcs()[i_typeInfo.get_id()])
+	{
+		(*funcPtr)(&i_value,i_visitor);
+	}
+}
+template<typename T,typename Visitor>
+inline void __visit(const ddk::rtti::TypeInfo& i_typeInfo,const T& i_value,Visitor& i_visitor)
+{
+	if(typename ddk::agnostic_visitable_type<T>::visitor_func funcPtr = ddk::agnostic_visitable_type<T>::s_visitor_funcs()[i_typeInfo.get_id()])
+	{
+		(*funcPtr)(&i_value,i_visitor);
+	}
+}
+
 }

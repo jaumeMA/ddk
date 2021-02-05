@@ -541,11 +541,21 @@ lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentR
 	static_assert(std::is_base_of<T,TT>::value || std::is_base_of<TT,T>::value,"Trying to cast unrelated classes");
 
 	#ifdef DDK_DEBUG
-	return detail::__make_lent_pointer(static_cast<TT*>(const_cast<T*>(i_lentRef.m_data)),i_lentRef.m_refCounter);
+	return detail::__make_lent_pointer(static_cast<TT*>(i_lentRef.m_data),i_lentRef.m_refCounter);
 	#else
 	return static_cast<TT*>(const_cast<T*>(i_lentRef));
 	#endif
 }
+
+#ifdef DDK_DEBUG
+
+template<typename TT,typename T>
+lent_reference_wrapper<TT> static_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
+{
+	return detail::__make_lent_reference(static_cast<TT*>(i_lentRef.m_data),i_lentRef.m_refCounter);
+}
+
+#endif
 
 template<typename TT,typename T,typename ReferenceCounter>
 detail::shared_pointer_wrapper_impl<TT,ReferenceCounter> reinterpret_shared_cast(const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr)
@@ -562,7 +572,7 @@ detail::shared_reference_wrapper_impl<TT,ReferenceCounter> reinterpret_shared_ca
 template<typename TT,typename T>
 unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_uniquePtr)
 {
-	unique_pointer_wrapper<TT> res = detail::__make_unique_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_uniquePtr.m_data)),i_uniquePtr.m_refCounter,i_uniquePtr.m_deleter);
+	unique_pointer_wrapper<TT> res = detail::__make_unique_pointer(reinterpret_cast<TT*>(i_uniquePtr.m_data),i_uniquePtr.m_refCounter,i_uniquePtr.m_deleter);
 
 	i_uniquePtr.clear();
 
@@ -572,7 +582,7 @@ unique_pointer_wrapper<TT> reinterpret_unique_cast(unique_pointer_wrapper<T> i_u
 template<typename TT,typename T>
 unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wrapper<T> i_uniqueRef)
 {
-	unique_reference_wrapper<TT> res = detail::__make_unique_reference(reinterpret_cast<TT*>(const_cast<T*>(i_uniqueRef.m_data)),i_uniqueRef.m_refCounter,i_uniqueRef.m_deleter);
+	unique_reference_wrapper<TT> res = detail::__make_unique_reference(reinterpret_cast<TT*>(i_uniqueRef.m_data),i_uniqueRef.m_refCounter,i_uniqueRef.m_deleter);
 
 	i_uniqueRef.clear();
 
@@ -583,11 +593,21 @@ template<typename TT,typename T>
 lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper<T>& i_lentRef)
 {
 	#ifdef DDK_DEBUG
-	return detail::__make_lent_pointer(reinterpret_cast<TT*>(const_cast<T*>(i_lentRef.m_data)),i_lentRef.m_refCounter);
+	return detail::__make_lent_pointer(reinterpret_cast<TT*>(i_lentRef.m_data),i_lentRef.m_refCounter);
 	#else
 	return reinterpret_cast<TT*>(const_cast<T*>(i_lentRef));
 	#endif
 }
+
+#ifdef DDK_DEBUG
+
+template<typename T>
+lent_reference_wrapper<T> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef)
+{
+	return detail::__make_lent_reference(reinterpret_cast<TT*>(i_lentRef.m_data),i_lentRef.m_refCounter);
+}
+
+#endif
 
 template<typename T>
 unique_pointer_wrapper<T> const_unique_cast(unique_pointer_wrapper<const T> i_uniquePtr)

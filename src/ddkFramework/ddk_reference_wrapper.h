@@ -173,6 +173,13 @@ inline unique_pointer_wrapper<TT> static_unique_cast(unique_pointer_wrapper<T> i
 template<typename TT, typename T>
 inline lent_pointer_wrapper<TT> static_lent_cast(const lent_pointer_wrapper<T>& i_lentRef);
 
+#ifdef DDK_DEBUG
+
+template<typename TT, typename T>
+inline lent_reference_wrapper<TT> static_lent_cast(const lent_reference_wrapper<T>& i_lentRef);
+
+#endif
+
 template<typename TT, typename T, typename ReferenceCounter>
 inline detail::shared_pointer_wrapper_impl<TT,ReferenceCounter> reinterpret_shared_cast(const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr);
 
@@ -187,6 +194,13 @@ inline unique_reference_wrapper<TT> reinterpret_unique_cast(unique_reference_wra
 
 template<typename TT, typename T>
 inline lent_pointer_wrapper<TT> reinterpret_lent_cast(const lent_pointer_wrapper<T>& i_lentRef);
+
+#ifdef DDK_DEBUG
+
+template<typename T>
+inline lent_reference_wrapper<T> reinterpret_lent_cast(const lent_reference_wrapper<T>& i_lentRef);
+
+#endif
 
 template<typename T>
 inline unique_pointer_wrapper<T> const_unique_cast(unique_pointer_wrapper<const T> i_uniquePtr);
