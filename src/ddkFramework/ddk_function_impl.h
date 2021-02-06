@@ -140,7 +140,7 @@ private:
 
 //functor (lambdas) case
 template<typename T, typename Return, typename ... Types>
-class functor_impl : public function_impl_base<Return, tuple<Types...>>
+class aggregated_functor_impl : public function_impl_base<Return, tuple<Types...>>
 {
     using function_impl_base<Return, tuple<Types...>>::s_numTypes;
     using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
@@ -148,8 +148,8 @@ class functor_impl : public function_impl_base<Return, tuple<Types...>>
 public:
 	typedef Return return_type;
 
-	functor_impl(const T& i_functor);
-	functor_impl(T&& i_functor);
+	aggregated_functor_impl(const T& i_functor);
+	aggregated_functor_impl(T&& i_functor);
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
@@ -159,7 +159,7 @@ private:
     template<size_t ... Indexs>
     Return apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const;
 
-    mutable T m_functor;
+	mutable T m_functor;
 };
 
 template<typename,typename,typename>
@@ -167,7 +167,7 @@ struct get_resolved_functor;
 template<typename Functor, typename Return,typename ... Types>
 struct get_resolved_functor<Functor,Return,tuple<Types...>>
 {
-	typedef functor_impl<Functor,Return,Types...> type;
+	typedef aggregated_functor_impl<Functor,Return,Types...> type;
 };
 
 template<typename Callable, typename Return,typename Type>
@@ -175,6 +175,32 @@ using resolved_functor = typename get_resolved_functor<Callable,Return,Type>::ty
 
 template<typename Callable>
 using resolved_functor_impl = resolved_functor<Callable,typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type>;
+
+template<typename T,typename Return,typename ... Types>
+class inherited_functor_impl : public function_impl_base<Return,tuple<Types...>>
+{
+	using function_impl_base<Return,tuple<Types...>>::s_numTypes;
+	using typename function_impl_base<Return,tuple<Types...>>::tuple_args;
+	friend inline std::true_type is_base_of_inherited_functor_impl_f(const inherited_functor_impl&);
+
+public:
+	typedef Return return_type;
+
+	inherited_functor_impl() = default;
+	inherited_functor_impl(inherited_functor_impl&&) = default;
+
+	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+
+private:
+	Return apply(const tuple_args& i_tuple) const final;
+	template<size_t ... Indexs>
+	Return apply(const mpl::sequence<Indexs...>&,const tuple_args& i_tuple) const;
+};
+
+std::false_type is_base_of_inherited_functor_impl_f(...);
+
+template<typename T>
+inline constexpr bool is_base_of_inherited_functor_impl = decltype(is_base_of_inherited_functor_impl_f(std::declval<T>()))::value;
 
 }
 }

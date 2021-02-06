@@ -189,17 +189,17 @@ Return free_function_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>
 }
 
 template<typename T, typename Return, typename ... Types>
-functor_impl<T,Return,Types...>::functor_impl(const T& i_functor)
+aggregated_functor_impl<T,Return,Types...>::aggregated_functor_impl(const T& i_functor)
 : m_functor(i_functor)
 {
 }
-template<typename T, typename Return, typename ... Types>
-functor_impl<T,Return,Types...>::functor_impl(T&& i_functor)
+template<typename T,typename Return,typename ... Types>
+aggregated_functor_impl<T,Return,Types...>::aggregated_functor_impl(T&& i_functor)
 : m_functor(std::move(i_functor))
 {
 }
 template<typename T,typename Return,typename ... Types>
-inline Return functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return aggregated_functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
@@ -211,7 +211,7 @@ inline Return functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_
 	}
 }
 template<typename T, typename Return, typename ... Types>
-Return functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+Return aggregated_functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
@@ -223,7 +223,7 @@ Return functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::
     }
 }
 template<typename T, typename Return, typename ... Types>
-Return functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const
+Return aggregated_functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -238,7 +238,7 @@ Return functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const
 }
 template<typename T, typename Return, typename ... Types>
 template<size_t ... Indexs>
-Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const
+Return aggregated_functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, const tuple_args& i_tuple) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
@@ -247,6 +247,46 @@ Return functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&, c
     else
     {
         return m_functor(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
+    }
+}
+
+template<typename T,typename Return,typename ... Types>
+Return inherited_functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+{
+    if constexpr(std::is_same<Return,void>::value)
+    {
+        this->operator()(std::forward<decltype(args)>(args)...);
+    }
+    else
+    {
+        return this->operator()(std::forward<decltype(args)>(args)...);
+    }
+}
+template<typename T,typename Return,typename ... Types>
+Return inherited_functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
+
+    if constexpr(std::is_same<Return,void>::value)
+    {
+        apply(types_sequence{},i_tuple);
+    }
+    else
+    {
+        return apply(types_sequence{},i_tuple);
+    }
+}
+template<typename T,typename Return,typename ... Types>
+template<size_t ... Indexs>
+Return inherited_functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&,const tuple_args& i_tuple) const
+{
+    if constexpr(std::is_same<Return,void>::value)
+    {
+        this->operator()(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
+    }
+    else
+    {
+        return this->operator()(const_cast<tuple_args&>(i_tuple).template get<Indexs>()...);
     }
 }
 

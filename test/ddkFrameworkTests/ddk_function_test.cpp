@@ -10,6 +10,28 @@
 using namespace testing;
 using testing::Types;
 
+template<typename Return, typename ... Types>
+struct inherited_functor : ddk::detail::inherited_functor_impl<const inherited_functor<Return,Types...>&,Return,Types...>
+{
+public:
+    inherited_functor(inherited_functor&& other)
+    : m_content(std::move(other.m_content))
+    {
+    }
+    inherited_functor(const std::string& i_content)
+    : m_content(i_content)
+    {
+    }
+   
+    Return operator()(Types ... i_args) const
+    {
+        return Return{};
+    }
+
+private:
+    const std::string m_content;
+};
+
 class DDKFunctionTest : public Test
 {
 };
@@ -35,6 +57,12 @@ public:
 
 TEST(DDKFunctionTest,defaultConstruction)
 {
+    auto cucu = ddk::make_function(inherited_functor<int,int>{ "hola nen" });
+
+    auto caca = cucu(10);
+
+    eval(caca);
+
     ddk::function<int(int,std::string,float,double,char)> foo;
 
     ddk::function<void(const ddk::unique_pointer_wrapper<int>&)> foo2 = ddk::make_function([](const ddk::unique_pointer_wrapper<int>& i_value){});
