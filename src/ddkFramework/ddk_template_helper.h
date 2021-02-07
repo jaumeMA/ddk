@@ -228,6 +228,9 @@ constexpr size_t get_num_ranks()
 	return sizeof...(ranks);
 };
 
+template<size_t ... ranks>
+inline constexpr size_t num_ranks = sizeof...(ranks);
+
 template<template<size_t,size_t> class cond, size_t ... ranks>
 struct get_cond_rank;
 

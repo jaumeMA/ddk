@@ -4,10 +4,11 @@ namespace ddk
 {
 
 template<typename T>
-struct constant_function
+struct constant_callable
 {
 public:
-    constant_function(T i_value);
+    template<typename ... Args>
+    constant_callable(Args&& ... i_args);
 
     template<typename ... Args>
     T operator()(Args&& ... i_args) const;
@@ -17,3 +18,5 @@ private:
 };
 
 }
+
+#include "ddk_constant_callable.inl"

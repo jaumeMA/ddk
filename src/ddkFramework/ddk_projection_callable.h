@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ddk_template_helper.h"
+
 namespace ddk
 {
 
@@ -10,7 +12,9 @@ public:
     projection_callable() = default;
 
     template<typename ... Args>
-    inline typename mpl::nth_type_of<Component,Args...>::type operator(Args&& ... i_args) const;
+    inline mpl::nth_type_of_t<Component,Args...> operator()(Args&& ... i_args) const;
 };
 
 }
+
+#include "ddk_projection_callable.inl"
