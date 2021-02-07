@@ -81,10 +81,16 @@
 	(std::is_class<_TYPE>::value == false)
 
 #define IS_CONSTRUCTIBLE(_TYPE,...) \
-	typename std::enable_if<std::is_constructible<_TYPE,__VA_ARGS__>::value>::type
+	typename std::enable_if<std::is_constructible_v<_TYPE,__VA_ARGS__>>::type
 
 #define IS_CONSTRUCTIBLE_COND(_TYPE,...) \
-	std::is_constructible<_TYPE,__VA_ARGS__>::value
+	std::is_constructible_v<_TYPE,__VA_ARGS__>
+
+#define IS_CONVERTIBLE(_TYPE,...) \
+	typename std::enable_if<std::is_convertible_v<_TYPE,__VA_ARGS__>>::type
+
+#define IS_CONVERTIBLE_COND(_TYPE,...) \
+	std::is_convertible_v<_TYPE,__VA_ARGS__>
 
 #define IS_ASSIGNABLE(_TYPE,_ARG) \
 	typename std::enable_if<std::is_assignable<_TYPE,_ARG>::value>::type
