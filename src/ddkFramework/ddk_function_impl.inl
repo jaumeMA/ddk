@@ -250,8 +250,8 @@ Return aggregated_functor_impl<T,Return,Types...>::apply(const mpl::sequence<Ind
     }
 }
 
-template<typename T,typename Return,typename ... Types>
-Return inherited_functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+template<typename Return,typename ... Types>
+Return inherited_functor_impl<Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
 {
     if constexpr(std::is_same<Return,void>::value)
     {
@@ -262,8 +262,8 @@ Return inherited_functor_impl<T,Return,Types...>::inline_eval(typename mpl::stat
         return this->operator()(std::forward<decltype(args)>(args)...);
     }
 }
-template<typename T,typename Return,typename ... Types>
-Return inherited_functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const
+template<typename Return,typename ... Types>
+Return inherited_functor_impl<Return,Types...>::apply(const tuple_args& i_tuple) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type types_sequence;
 
@@ -276,9 +276,9 @@ Return inherited_functor_impl<T,Return,Types...>::apply(const tuple_args& i_tupl
         return apply(types_sequence{},i_tuple);
     }
 }
-template<typename T,typename Return,typename ... Types>
+template<typename Return,typename ... Types>
 template<size_t ... Indexs>
-Return inherited_functor_impl<T,Return,Types...>::apply(const mpl::sequence<Indexs...>&,const tuple_args& i_tuple) const
+Return inherited_functor_impl<Return,Types...>::apply(const mpl::sequence<Indexs...>&,const tuple_args& i_tuple) const
 {
     if constexpr(std::is_same<Return,void>::value)
     {

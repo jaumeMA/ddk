@@ -11,7 +11,7 @@ using namespace testing;
 using testing::Types;
 
 template<typename Return, typename ... Types>
-struct inherited_functor : ddk::detail::inherited_functor_impl<const inherited_functor<Return,Types...>&,Return,Types...>
+struct inherited_functor : ddk::detail::inherited_functor_impl<Return,Types...>
 {
 public:
     inherited_functor(inherited_functor&& other)
