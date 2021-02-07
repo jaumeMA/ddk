@@ -77,14 +77,26 @@ constexpr size_t high_order_sub_array<T>::size()
 }
 
 template<typename T,size_t rank,size_t ... ranks>
+T& high_order_array<T,rank,ranks...>::storage::operator[](size_t i_index)
+{
+	return m_data[i_index];
+}
+template<typename T,size_t rank,size_t ... ranks>
+const T& high_order_array<T,rank,ranks...>::storage::operator[](size_t i_index) const
+{
+	return m_data[i_index];
+}
+
+template<typename T,size_t rank,size_t ... ranks>
 TEMPLATE(typename Arg, typename ... Args)
 REQUIRED(IS_NOT_SAME_CLASS(Arg,high_order_array),IS_CONSTRUCTIBLE(T,Arg),IS_CONSTRUCTIBLE(T,Args)...)
 constexpr high_order_array<T,rank,ranks...>::high_order_array(Arg&& i_arg, Args&& ... i_args)
-: m_data({i_arg,i_args...})
+: m_data({ i_arg,i_args... })
 {
 }
 template<typename T,size_t rank,size_t ... ranks>
-template<typename TT>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
 high_order_array<T,rank,ranks...>::high_order_array(const high_order_array<TT,rank,ranks...>& other)
 {
 	for(size_t index = 0; index < s_totalSize; ++index)

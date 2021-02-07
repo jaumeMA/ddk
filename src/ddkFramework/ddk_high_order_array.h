@@ -53,9 +53,17 @@ class high_order_array
     template<typename TT, size_t rrank, size_t ... rranks>
     friend class high_order_array;
 
+	struct storage
+	{
+		T& operator[](size_t i_index);
+		const T& operator[](size_t i_index) const;
+
+		T m_data[mpl::prod_ranks<rank,ranks...>];
+	};
+
 public:
-	static const size_t s_numRanks = mpl::get_num_ranks<rank,ranks...>();
-	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>();
+	static const size_t s_numRanks = mpl::num_ranks<rank,ranks...>;
+	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>;
 
 	typedef T value_type;
 	typedef T& reference;
@@ -66,7 +74,8 @@ public:
     TEMPLATE(typename Arg, typename ... Args)
     REQUIRES(IS_NOT_SAME_CLASS(Arg,high_order_array),IS_CONSTRUCTIBLE(T,Arg),IS_CONSTRUCTIBLE(T,Args)...)
     constexpr high_order_array(Arg&& i_arg, Args&& ... i_args);
-	template<typename TT>
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONSTRUCTIBLE(T,TT))
 	high_order_array(const high_order_array<TT,rank,ranks...>& other);
 	~high_order_array() = default;
 	detail::high_order_sub_array<T,ranks...> operator[](size_t index);
@@ -82,7 +91,7 @@ public:
 	bool empty() const;
 
 private:
-	T m_data[s_totalSize];
+	storage m_data;
 };
 
 }

@@ -420,16 +420,22 @@ template<size_t Index, typename T>
 using index_to_type = T;
 
 template<size_t ... ranks>
-constexpr size_t sum_ranks()
+constexpr size_t get_sum_ranks()
 {
     return (ranks + ...);
-};
+}
 
 template<size_t ... ranks>
-constexpr size_t prod_ranks()
+inline constexpr size_t sum_ranks = (ranks + ...);
+
+template<size_t ... ranks>
+constexpr size_t get_prod_ranks()
 {
     return (ranks * ...);
-};
+}
+
+template<size_t ... ranks>
+inline constexpr size_t prod_ranks = (ranks * ...);
 
 template<typename ... Types>
 constexpr size_t get_num_types()
