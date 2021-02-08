@@ -42,12 +42,11 @@ public:
 	}
 };
 
-
 using testing::Types;
 
 TEST(DDKVariantTest,defaultConstruction)
 {
-	ddk::variant<int,char,std::string> foo;
+	ddk::variant<int,char,std::string> foo = 10;
 
 	EXPECT_EQ(foo.is<0>(),true);
 }

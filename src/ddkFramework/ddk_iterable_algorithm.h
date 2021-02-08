@@ -1,10 +1,16 @@
 #pragma once
 
+#if defined(WIN32)
+
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE
+
+#endif
+
+#include "ddk_tuple.h"
 #include "ddk_iterable.h"
 #include "ddk_iterable_value.h"
 #include "ddk_iterable_algorithm_impl.h"
 #include "ddk_iterable_utils.h"
-#include "ddk_tuple.h"
 
 namespace ddk
 {

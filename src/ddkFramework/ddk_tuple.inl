@@ -48,14 +48,16 @@ const void* aligned_tuple_storage<Types...>::at() const
 
 
 template<typename Type>
-template<size_t IIndex, typename Arg>
+TEMPLATE(size_t IIndex,typename Arg)
+REQUIRED(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
 tuple_impl<mpl::sequence<0>,Type>::tuple_impl(const mpl::sequence<IIndex>&, Arg&& i_arg)
 : m_val(std::forward<Arg>(i_arg))
 {
 	static_assert(IIndex==0, "Index out of bounds");
 }
 template<typename Type>
-template<typename Arg>
+TEMPLATE(typename Arg)
+REQUIRED(IS_CONSTRUCTIBLE(Type,Arg))
 tuple_impl<mpl::sequence<0>,Type>::tuple_impl(Arg&& i_val)
 : m_val(std::forward<Arg>(i_val))
 {
@@ -125,7 +127,8 @@ tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_i
                         construct<Types>(m_storage.template at<Indexs>(), Types{}) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
-template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args>
+TEMPLATE(size_t IIndex1,size_t IIndex2,size_t ... IIndexs,typename Arg1,typename Arg2,typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(nth_type<IIndex1>,Arg1),IS_CONSTRUCTIBLE(nth_type<IIndex2>,Arg2),IS_CONSTRUCTIBLE(nth_type<IIndexs>,Args)...)
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
 	const bool _[] = { construct<typename mpl::nth_type_of<IIndex1,Type1,Type2,Types...>::type>(m_storage.template at<IIndex1>(), std::forward<Arg1>(i_arg1)),
@@ -133,7 +136,8 @@ tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_i
                         construct<typename mpl::nth_type_of<IIndexs,Type1,Type2,Types...>::type>(m_storage.template at<IIndexs>(), std::forward<Args>(i_args)) ... };
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
-template<typename Arg1, typename Arg2, typename ... Args>
+TEMPLATE(typename Arg1,typename Arg2,typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Type1,Arg1),IS_CONSTRUCTIBLE(Type2,Arg2),IS_CONSTRUCTIBLE(Types,Args)...)
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
     const bool _[] = { construct<Type1>(m_storage.template at<Index1>(), std::forward<Arg1>(i_arg1)),

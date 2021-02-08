@@ -1,9 +1,12 @@
 #pragma once
 
+#include "ddk_arena.h"
 #include "ddk_embedded_type.h"
 #include "ddk_template_helper.h"
-#include "ddk_arena.h"
 #include "ddk_iterable_defs.h"
+#include "ddk_concepts.h"
+#include "ddk_type_concepts.h"
+#include "ddk_rank_concepts.h"
 #include <array>
 
 namespace ddk
@@ -46,13 +49,14 @@ class tuple_impl<mpl::sequence<0>,Type>
 {
     template<typename,typename...>
     friend class tuple_impl;
-//	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type))
 
 public:
     tuple_impl() = default;
-    template<size_t IIndex, typename Arg>
+    TEMPLATE(size_t IIndex, typename Arg)
+    REQUIRES(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
     tuple_impl(const mpl::sequence<IIndex>&, Arg&& i_arg);
-    template<typename Arg>
+    TEMPLATE(typename Arg)
+    REQUIRES(IS_CONSTRUCTIBLE(Type,Arg))
     explicit tuple_impl(Arg&& i_val);
     template<typename TType>
     tuple_impl(const tuple_impl<mpl::sequence<0>,TType>& other);
@@ -81,13 +85,16 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
     template<typename,typename...>
     friend class tuple_impl;
     static const size_t s_total_size = mpl::total_size<Type1,Type2,Types...>;
-//	DDK_ITERABLE_TYPE(tuple_impl,EXPAND_CLASS_TEMPLATE(ddk::tuple_adaptor,Type1,Type2,Types...))
+    template<size_t Index>
+    using nth_type = typename mpl::nth_type_of<Index,Type1,Type2,Types...>::type;
 
 public:
 	tuple_impl();
-    template<size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args>
+    TEMPLATE(size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args)
+    REQUIRES(IS_CONSTRUCTIBLE(nth_type<IIndex1>,Arg1),IS_CONSTRUCTIBLE(nth_type<IIndex2>,Arg2),IS_CONSTRUCTIBLE(nth_type<IIndexs>,Args)...)
     tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args);
-    template<typename Arg1, typename Arg2, typename ... Args>
+    TEMPLATE(typename Arg1, typename Arg2, typename ... Args)
+    REQUIRES(IS_CONSTRUCTIBLE(Type1,Arg1),IS_CONSTRUCTIBLE(Type2,Arg2),IS_CONSTRUCTIBLE(Types,Args)...)
     explicit tuple_impl(Arg1&& i_arg1, Arg2&& i_arg2, Args&& ...vals);
     tuple_impl(const tuple_impl& other);
     tuple_impl(tuple_impl&& other);
