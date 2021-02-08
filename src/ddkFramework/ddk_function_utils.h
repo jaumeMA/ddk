@@ -51,24 +51,24 @@ inline detail::resolved_callable<Functor,Allocator> make_function(Functor&&, con
 //no allocator specified, args specified
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Arg, typename ... Args)
 REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_NOT_ALLOCATOR(Arg))
 inline detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&&, Arg&& i_arg, Args&& ... i_args);
 
 //allocator specified, args specified
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
 REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor))
 inline detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
@@ -98,9 +98,9 @@ template<typename Return,typename ... Types,typename Allocator,typename ... Args
 inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
 
 template<typename Return,typename ... Types,typename Allocator,typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args);
 template<typename Return,typename ... Types,typename Allocator,typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
 TEMPLATE(typename Functor, typename ... Args)
 REQUIRES(IS_CALLABLE(Functor))
 inline specialized_callable<typename std::remove_reference<Functor>::type,Args...> specialize(Functor&& i_functor, Args&& ... i_args);

@@ -29,16 +29,16 @@ using function_base_const_lent_ptr = lent_pointer_wrapper<const function_impl_ba
 template<typename Sequence, typename ... Types>
 using types_at_indexs = typename mpl::make_tuple<Types...>::template at<Sequence>::type;
 template<typename TTypes, typename ... Types>
-using place_holder_types = typename mpl::make_tuple<Types...>::template at<typename mpl::pos_place_holder<0,TTypes>::type>::type;
+using place_holder_types = typename mpl::type_pack<Types...>::template at<typename mpl::pos_place_holder<0,TTypes>::type>::type;
 template<typename TTypes>
 using place_holders_at_indexs = typename mpl::pos_place_holder<0,TTypes>::type;
 template<typename TTypes, typename ... Types>
-using unresolved_types = typename mpl::make_tuple<Types...>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
+using unresolved_types = typename mpl::type_pack<Types...>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 template<typename TTypes, typename Types>
-using unresolved_tuple = typename mpl::make_tuple<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
+using unresolved_tuple = typename mpl::type_pack<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 
 template<typename Return, typename ... Types>
-struct function_impl_base<Return, tuple<Types...>> : public distribute_from_this<function_impl_base<Return,tuple<Types...>>>
+struct function_impl_base<Return, mpl::type_pack<Types...>> : public distribute_from_this<function_impl_base<Return,mpl::type_pack<Types...>>>
 {
     static const size_t s_numTypes = mpl::get_num_types<Types...>();
 
@@ -49,7 +49,7 @@ struct function_impl_base<Return, tuple<Types...>> : public distribute_from_this
 	struct specialized_impl;
 
 	template<size_t ... specIndexs, size_t ... notSpecIndexs>
-	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::make_tuple<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
+	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::type_pack<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
 	{
 #ifndef _WIN32
 		static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs, Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
@@ -59,13 +59,13 @@ struct function_impl_base<Return, tuple<Types...>> : public distribute_from_this
 
         specialized_impl() = default;
         template<typename ... Args>
-		specialized_impl(const function_base_const_dist_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args);
+		specialized_impl(const function_base_const_dist_ref<Return,mpl::type_pack<Types...>>& i_object, tuple<Args...>&& i_args);
 
     private:
 		Return operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const override;
         Return apply(const vars_tuple& i_tuple) const override;
 
-        function_base_const_dist_ref<Return,tuple<Types...>> m_object;
+        function_base_const_dist_ref<Return,mpl::type_pack<Types...>> m_object;
 		mutable args_tuple m_specArgs;
 	};
 
@@ -77,7 +77,7 @@ struct function_impl_base<Return, tuple<Types...>> : public distribute_from_this
 	virtual ~function_impl_base() = default;
 
 	template<typename Allocator, typename ... Args>
-	function_base_const_dist_ref<Return,unresolved_types<tuple<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
+	function_base_const_dist_ref<Return,unresolved_types<mpl::type_pack<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
 	virtual Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const = 0;
 
@@ -87,13 +87,13 @@ private:
 
 //non static member function case
 template<typename ObjectType, typename Return, typename ... Types>
-class relative_function_impl : public function_impl_base<Return, tuple<Types...>>
+class relative_function_impl : public function_impl_base<Return,mpl::type_pack<Types...>>
 {
     typedef Return(ObjectType::*NonConstFuncPointerType)(Types...);
     typedef Return(ObjectType::*ConstFuncPointerType)(Types...)const;
     typedef typename mpl::static_if<std::is_const<ObjectType>::value,ConstFuncPointerType,NonConstFuncPointerType>::type FuncPointerType;
-    using function_impl_base<Return, tuple<Types...>>::s_numTypes;
-    using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
+    using function_impl_base<Return,mpl::type_pack<Types...>>::s_numTypes;
+    using typename function_impl_base<Return,mpl::type_pack<Types...>>::tuple_args;
 
 public:
 	typedef Return return_type;
@@ -116,11 +116,11 @@ private:
 
 //static member function or free function case
 template<typename Return, typename ... Types>
-class free_function_impl : public function_impl_base<Return, tuple<Types...>>
+class free_function_impl : public function_impl_base<Return,mpl::type_pack<Types...>>
 {
     typedef Return(*FuncPointerType)(Types...);
-    using function_impl_base<Return, tuple<Types...>>::s_numTypes;
-    using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
+    using function_impl_base<Return,mpl::type_pack<Types...>>::s_numTypes;
+    using typename function_impl_base<Return,mpl::type_pack<Types...>>::tuple_args;
 
 public:
 	typedef Return return_type;
@@ -140,10 +140,10 @@ private:
 
 //functor (lambdas) case
 template<typename T, typename Return, typename ... Types>
-class aggregated_functor_impl : public function_impl_base<Return, tuple<Types...>>
+class aggregated_functor_impl : public function_impl_base<Return,mpl::type_pack<Types...>>
 {
-    using function_impl_base<Return, tuple<Types...>>::s_numTypes;
-    using typename function_impl_base<Return, tuple<Types...>>::tuple_args;
+    using function_impl_base<Return,mpl::type_pack<Types...>>::s_numTypes;
+    using typename function_impl_base<Return,mpl::type_pack<Types...>>::tuple_args;
 
 public:
 	typedef Return return_type;
@@ -165,7 +165,7 @@ private:
 template<typename,typename,typename>
 struct get_resolved_functor;
 template<typename Functor, typename Return,typename ... Types>
-struct get_resolved_functor<Functor,Return,tuple<Types...>>
+struct get_resolved_functor<Functor,Return,mpl::type_pack<Types...>>
 {
 	typedef aggregated_functor_impl<Functor,Return,Types...> type;
 };
@@ -177,10 +177,10 @@ template<typename Callable>
 using resolved_functor_impl = resolved_functor<Callable,typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type>;
 
 template<typename Return,typename ... Types>
-class inherited_functor_impl : public function_impl_base<Return,tuple<Types...>>
+class inherited_functor_impl : public function_impl_base<Return,mpl::type_pack<Types...>>
 {
-	using function_impl_base<Return,tuple<Types...>>::s_numTypes;
-	using typename function_impl_base<Return,tuple<Types...>>::tuple_args;
+	using function_impl_base<Return,mpl::type_pack<Types...>>::s_numTypes;
+	using typename function_impl_base<Return,mpl::type_pack<Types...>>::tuple_args;
 	friend inline std::true_type is_base_of_inherited_functor_impl_f(const inherited_functor_impl&);
 
 public:

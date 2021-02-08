@@ -102,6 +102,11 @@ struct make_tuple
 };
 
 template<typename ... Types>
+struct make_tuple<type_pack<Types...>> : make_tuple<Types...>
+{
+};
+
+template<typename ... Types>
 struct make_tuple<tuple<Types...>> : make_tuple<Types...>
 {
 };

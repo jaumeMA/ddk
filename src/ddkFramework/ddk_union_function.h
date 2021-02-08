@@ -16,7 +16,7 @@ struct sequence_composer;
 template<size_t Index>
 struct sequence_composer<Index>
 {
-    typedef tuple<> type;
+    typedef mpl::type_pack<> type;
 };
 
 template<size_t Index, typename CallableArgs, typename ... CallablesArgs>
@@ -27,7 +27,7 @@ private:
     typedef typename sequence_composer<Index+CallableArgs::size(),CallablesArgs...>::type next_composed_sequence;
 
 public:
-    typedef typename mpl::merge_tuples<tuple<curr_sequence>,next_composed_sequence>::type type;
+    typedef typename mpl::merge_type_packs<mpl::type_pack<curr_sequence>,next_composed_sequence>::type type;
 };
 
 
@@ -50,7 +50,7 @@ class union_function
 public:
 	struct callable_tag;
     typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
-    typedef typename mpl::merge_tuples<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
+    typedef typename mpl::merge_type_packs<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
 
     union_function(const Callable& i_callable, const Callables& ... i_callables);
     union_function(const tuple<Callable,Callables...>& i_callables);

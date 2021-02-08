@@ -19,7 +19,7 @@ namespace detail
 template<typename,typename,typename>
 struct get_resolved_function;
 template<typename Return,typename ... Types,typename Allocator>
-struct get_resolved_function<Return,tuple<Types...>,Allocator>
+struct get_resolved_function<Return,mpl::type_pack<Types...>,Allocator>
 {
     typedef function<Return(Types...),Allocator> type;
 };
@@ -31,7 +31,7 @@ template<typename Callable, typename Allocator = system_allocator>
 using resolved_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type,Allocator>;
 
 template<typename Callable, typename Allocator, typename ... Args>
-using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,detail::unresolved_tuple<tuple<Args...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>,Allocator>;
+using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<Callable>::return_type,detail::unresolved_tuple<mpl::type_pack<Args...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>,Allocator>;
 
 template<typename Arg, typename T>
 using resolved_return_type = typename std::enable_if<is_function_argument<Arg>::value==false,T>::type;
@@ -75,7 +75,7 @@ public:
 	template<typename ... Args>
 	inline Return inline_eval(const function_arguments<Args...>& i_args) const;
 	template<typename ... Args>
-    inline resolved_function<Return,detail::unresolved_types<tuple<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
+    inline resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
 
 private:
     template<size_t ... Indexs, typename ... Args>
@@ -89,7 +89,7 @@ protected:
 }
 
 template<typename Return, typename ... Types>
-using function_impl_const_ptr = detail::function_base_const_dist_ptr<Return,tuple<Types...>>;
+using function_impl_const_ptr = detail::function_base_const_dist_ptr<Return,mpl::type_pack<Types...>>;
 
 template<typename Return, typename ... Types, typename Allocator>
 class function<Return(Types...),Allocator> : public detail::function_impl<Return(Types...),Allocator,function_impl_const_ptr<Return,Types...>>
@@ -109,7 +109,7 @@ template<typename Return, typename ... Types>
 struct aqcuire_callable_return_type<function<Return(Types...)>>
 {
 	typedef Return return_type;
-	typedef tuple<Types...> args_type;
+	typedef mpl::type_pack<Types...> args_type;
 };
 
 }

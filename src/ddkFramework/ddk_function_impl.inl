@@ -11,14 +11,14 @@ namespace detail
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
 template<typename ... Args>
-function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::specialized_impl(const function_base_const_dist_ref<Return,tuple<Types...>>& i_object, tuple<Args...>&& i_args)
+function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::specialized_impl(const function_base_const_dist_ref<Return,mpl::type_pack<Types...>>& i_object, tuple<Args...>&& i_args)
 : m_object(i_object)
 , m_specArgs(std::move(i_args).template extract<specIndexs>() ...)
 {
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
-Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const
+Return function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const
 {
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
@@ -34,7 +34,7 @@ Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequen
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
-Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::apply(const vars_tuple& i_tuple) const
+Return function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::apply(const vars_tuple& i_tuple) const
 {
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
@@ -51,11 +51,11 @@ Return function_impl_base<Return, tuple<Types...>>::specialized_impl<mpl::sequen
 
 template<typename Return, typename ... Types>
 template<typename Allocator, typename ... Args>
-function_base_const_dist_ref<Return,unresolved_types<tuple<Args...>,Types...>> function_impl_base<Return, tuple<Types...>>::specialize(const Allocator& i_allocator, Args&& ... args) const
+function_base_const_dist_ref<Return,unresolved_types<mpl::type_pack<Args...>,Types...>> function_impl_base<Return,mpl::type_pack<Types...>>::specialize(const Allocator& i_allocator, Args&& ... args) const
 {
-    typedef typename mpl::pos_place_holder<0,tuple<Args...>>::type not_spec_indexs;
+    typedef typename mpl::pos_place_holder<0,mpl::type_pack<Args...>>::type not_spec_indexs;
     typedef typename mpl::dual_sequence<not_spec_indexs>::template at<0,s_numTypes>::type spec_sequence;
-    typedef typename not_spec_indexs::template at<typename mpl::sequence_place_holder<tuple<Args...>>::type>::type not_spec_sequence;
+    typedef typename not_spec_indexs::template at<typename mpl::sequence_place_holder<mpl::type_pack<Args...>>::type>::type not_spec_sequence;
     typedef specialized_impl<spec_sequence,not_spec_sequence> spec_func_type;
 
 	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = i_allocator.allocate(sizeof(spec_func_type));

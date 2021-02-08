@@ -609,6 +609,18 @@ struct type_pack
 	{
 		return (num_types<TTypes...> == 0) || (is_among_types<TTypes, Types...> && ...);
 	}
+    template<typename>
+    struct at;
+
+    template<size_t ... Indexs>
+    struct at<sequence<Indexs...>>
+    {
+        typedef type_pack<typename nth_type_of<Indexs,Types...>::type ...> type;
+    };
+    static constexpr size_t size()
+    {
+        return num_types<Types...>;
+    }
 };
 
 template<typename ... Types, typename ... TTypes,typename ... TTTypes>
