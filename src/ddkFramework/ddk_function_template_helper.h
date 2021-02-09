@@ -114,27 +114,9 @@ struct aqcuire_callable_return_type
 	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::args_type args_type;
 };
 
-template<typename>
-struct _is_function;
-
+std::false_type _is_function(...);
 template<typename T>
-struct _is_function: public std::false_type
-{
-};
-template<typename Return,typename ... Types,typename Allocator>
-struct _is_function<function<Return(Types...),Allocator>> : public std::true_type
-{
-};
-
-template<typename T>
-struct is_function
-{
-private:
-	typedef typename std::remove_const<typename std::remove_reference<T>::type>::type raw_type;
-
-public:
-	static const bool value = _is_function<raw_type>::value;
-};
+inline constexpr bool is_function = decltype(_is_function(std::declval<T>()))::value;
 
 template<typename T, typename ... Args>
 struct is_valid_functor
@@ -153,7 +135,7 @@ private:
 	static decltype(_resolve(std::declval<T&>(),nullptr)) resolve(TT&, ...);
 
 public:
-    typedef typename static_if<is_function<T>::value,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;
+    typedef typename static_if<is_function<T>,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;
     static const bool value = type::value;
 };
 

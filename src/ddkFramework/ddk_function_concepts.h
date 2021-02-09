@@ -3,10 +3,10 @@
 #include "ddk_function_template_helper.h"
 
 #define IS_FUNCTION(_TYPE) \
-	typename std::enable_if<ddk::mpl::is_function<_TYPE>::value>::type
+	typename std::enable_if<ddk::mpl::is_function<_TYPE>>::type
 
 #define IS_NOT_FUNCTION(_TYPE) \
-	typename std::enable_if<ddk::mpl::is_function<_TYPE>::value==false>::type
+	typename std::enable_if<ddk::mpl::is_function<_TYPE> == false>::type
 
 #define IS_CALLABLE(_TYPE, ...) \
 	typename std::enable_if<ddk::mpl::is_valid_functor<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value>::type

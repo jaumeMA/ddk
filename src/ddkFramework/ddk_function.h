@@ -46,6 +46,7 @@ class function_impl<Return(Types...),Allocator,FunctionImpl>
     friend class function_impl;
     template<typename RReturn,typename ... TTypes,typename AAllocator, typename FFunctionImpl>
     friend function_view<RReturn(TTypes...)> lend(const detail::function_impl<RReturn(TTypes...),AAllocator,FFunctionImpl>&);
+    friend std::true_type _is_function(const function_impl&);
 
 public:
 	struct callable_tag;
