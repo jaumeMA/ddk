@@ -44,6 +44,8 @@ class function_impl<Return(Types...),Allocator,FunctionImpl>
 {
     template<typename,typename,typename>
     friend class function_impl;
+    template<typename RReturn,typename ... TTypes,typename AAllocator, typename FFunctionImpl>
+    friend function_view<RReturn(TTypes...)> lend(const detail::function_impl<RReturn(TTypes...),AAllocator,FFunctionImpl>&);
 
 public:
 	struct callable_tag;
@@ -95,8 +97,6 @@ template<typename Return, typename ... Types, typename Allocator>
 class function<Return(Types...),Allocator> : public detail::function_impl<Return(Types...),Allocator,function_impl_const_ptr<Return,Types...>>
 {
     typedef detail::function_impl<Return(Types...),Allocator,function_impl_const_ptr<Return,Types...>> function_base_t;
-    template<typename RReturn, typename ... TTypes, typename AAllocator>
-    friend inline function_view<RReturn(TTypes...)> lend(const function<RReturn(TTypes...),AAllocator>& i_function);
 
 public:
     using function_base_t::function_base_t;

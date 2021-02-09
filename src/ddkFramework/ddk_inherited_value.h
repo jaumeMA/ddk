@@ -21,6 +21,10 @@ class inherited_value
 	friend inherited_value<TT> make_inherited_value(Args&& ... i_args);
 	template<typename,typename>
 	friend class inherited_value;
+	friend inline lent_pointer_wrapper<T> lend(const inherited_value& i_value)
+	{
+		lend(i_value.m_value);
+	}
 
 public:
     typedef T value_type;
@@ -39,6 +43,9 @@ public:
 	inherited_value(const inherited_value<TT,Allocator>& other);
 	template<typename TT>
 	inherited_value(inherited_value<TT,Allocator>&& other);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+	inherited_value(Args&& ... i_args);
 	inherited_value& operator=(const inherited_value& other);
 	inherited_value& operator=(inherited_value&& other);
 	template<typename TT>
@@ -59,10 +66,6 @@ public:
 	void visit(Visitor&& i_visitor) const;
 
 private:
-	TEMPLATE(typename ... Args)
-	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-	explicit inherited_value(Args&& ... i_args);
-
 	rtti::TypeInfo m_typeInfo;
 	distributed_pointer_wrapper<T> m_value;
 	Allocator m_allocator;

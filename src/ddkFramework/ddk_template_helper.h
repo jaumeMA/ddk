@@ -609,6 +609,11 @@ struct type_pack
 	{
 		return (num_types<TTypes...> == 0) || (is_among_types<TTypes, Types...> && ...);
 	}
+    template<typename ... TTypes>
+    static constexpr bool contains(const TTypes& ...)
+    {
+        return num_types<TTypes...> > 0 && num_types<TTypes...> < num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
+    }
     template<typename>
     struct at;
 

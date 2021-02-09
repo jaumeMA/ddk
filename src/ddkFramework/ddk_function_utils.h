@@ -11,6 +11,13 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
+inline function_view<Return(Types...)> lend(const function_impl<Return(Types...),Allocator,FunctionImpl>& i_function);
+
+}
 
 //impl
 template<typename Object,typename Return,typename ... Types>
@@ -73,34 +80,31 @@ TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
 REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor))
 inline detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
-template<typename Return, typename ... Types, typename Allocator>
-inline function_view<Return(Types...)> lend(const function<Return(Types...),Allocator>& i_function);
-
 //safe version
-template<typename Return, typename Allocator>
-inline Return eval(const function<Return(),Allocator>& i_function);
-TEMPLATE(typename Return, typename ... Types, typename Allocator, typename ... Args)
+template<typename Return, typename Allocator, typename FunctionImpl>
+inline Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
+TEMPLATE(typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args)
 REQUIRES_COND(is_function_argument<Args>::value==false ...)
-inline Return eval(const function<Return(Types...),Allocator>& i_function, Args&& ... i_args);
-template<typename Return, typename ... Types, typename Allocator, typename ... Args>
-inline Return eval(const function<Return(Types...),Allocator>& i_function, const function_arguments<Args...>& i_args);
+inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args);
+template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args>
+inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args);
 TEMPLATE(typename Function, typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function))
 inline auto eval(Function&& i_function, Args&& ... i_args);
 
 //unsafe version
-template<typename Return,typename Allocator>
-inline Return eval_unsafe(const function<Return(),Allocator>& i_function);
-TEMPLATE(typename Return,typename ... Types,typename Allocator,typename ... Args)
+template<typename Return,typename Allocator, typename FunctionImpl>
+inline Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
+TEMPLATE(typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args)
 REQUIRES_COND(is_function_argument<Args>::value==false ...)
-inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args);
-template<typename Return,typename ... Types,typename Allocator,typename ... Args>
-inline Return eval_unsafe(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
+inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 
-template<typename Return,typename ... Types,typename Allocator,typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,Args&& ... i_args);
-template<typename Return,typename ... Types,typename Allocator,typename ... Args>
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const function<Return(Types...),Allocator>& i_function,const function_arguments<Args...>& i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 TEMPLATE(typename Functor, typename ... Args)
 REQUIRES(IS_CALLABLE(Functor))
 inline specialized_callable<typename std::remove_reference<Functor>::type,Args...> specialize(Functor&& i_functor, Args&& ... i_args);
