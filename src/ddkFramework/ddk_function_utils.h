@@ -11,13 +11,6 @@
 
 namespace ddk
 {
-namespace detail
-{
-
-template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
-inline function_view<Return(Types...)> lend(const function_impl<Return(Types...),Allocator,FunctionImpl>& i_function);
-
-}
 
 //impl
 template<typename Object,typename Return,typename ... Types>
@@ -108,6 +101,9 @@ inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<
 TEMPLATE(typename Functor, typename ... Args)
 REQUIRES(IS_CALLABLE(Functor))
 inline specialized_callable<typename std::remove_reference<Functor>::type,Args...> specialize(Functor&& i_functor, Args&& ... i_args);
+
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
+inline function_view<Return(Types...)> lend(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function);
 
 template<typename ... Callables>
 inline detail::intersection_function<Callables...> make_intersection(const Callables& ... i_callables);

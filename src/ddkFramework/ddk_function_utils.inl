@@ -7,7 +7,7 @@ namespace detail
 {
 
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
-function_view<Return(Types...)> lend(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function)
+function_view<Return(Types...)> _lend(const function_impl<Return(Types...),Allocator,FunctionImpl>& i_function)
 {
 	return lend(i_function.m_functionImpl);
 }
@@ -271,6 +271,12 @@ REQUIRED(IS_CALLABLE(Functor))
 specialized_callable<typename std::remove_reference<Functor>::type,Args...> specialize(Functor&& i_functor,Args&& ... i_args)
 {
 	return specialized_callable<typename std::remove_reference<Functor>::type,Args...>(std::forward<Functor>(i_functor),std::forward<Args>(i_args)...);
+}
+
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
+function_view<Return(Types...)> lend(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function)
+{
+	return _lend(i_function);
 }
 
 template<typename ... Callables>

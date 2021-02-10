@@ -45,7 +45,7 @@ class function_impl<Return(Types...),Allocator,FunctionImpl>
     template<typename,typename,typename>
     friend class function_impl;
     template<typename RReturn,typename ... TTypes,typename AAllocator, typename FFunctionImpl>
-    friend function_view<RReturn(TTypes...)> lend(const detail::function_impl<RReturn(TTypes...),AAllocator,FFunctionImpl>&);
+    friend function_view<RReturn(TTypes...)> _lend(const function_impl<RReturn(TTypes...),AAllocator,FFunctionImpl>&);
     friend std::true_type _is_function(const function_impl&);
 
 public:

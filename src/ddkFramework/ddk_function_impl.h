@@ -71,9 +71,6 @@ struct function_impl_base<Return, mpl::type_pack<Types...>> : public distribute_
 
     typedef tuple<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> tuple_args;
 
-	function_impl_base() = default;
-	function_impl_base(const function_impl_base&) = delete;
-	function_impl_base(function_impl_base&&) = default;
 	virtual ~function_impl_base() = default;
 
 	template<typename Allocator, typename ... Args>
