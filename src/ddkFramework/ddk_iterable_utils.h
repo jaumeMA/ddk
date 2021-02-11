@@ -32,6 +32,9 @@ TEMPLATE(typename Container)
 REQUIRES(IS_NOT_BASE_OF_ITERABLE(Container))
 inline resolved_iterable<Container> deduce_iterable(Container&& i_iterable);
 
+template<typename T>
+using deduced_iterable = decltype(deduce_iterable(std::declval<const T&>()));
+
 template<typename>
 struct transformed_traits_resolver;
 template<template<typename> typename Traits>

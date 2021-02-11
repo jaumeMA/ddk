@@ -71,22 +71,22 @@ BINARY_ITERABLE_TRANSFORM(div,/)
 
 TEMPLATE(typename Transform, typename ... Iterables)
 REQUIRES(IS_CALLABLE(Transform))
-inline detail::iterable_pack<Transform,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_transform(Transform&& i_transform, const Iterables& ... i_iterables);
+inline detail::iterable_pack<Transform,deduced_iterable<Iterables>...> iterable_transform(Transform&& i_transform, const Iterables& ... i_iterables);
 
 template<typename Iterable>
-inline detail::iterable_pack<detail::neg_iterable_transform<Iterable>,decltype(deduce_iterable(std::declval<const Iterable&>()))> iterable_neg(const Iterable& i_iterable);
+inline detail::iterable_pack<detail::neg_iterable_transform<Iterable>,deduced_iterable<Iterable>> iterable_neg(const Iterable& i_iterable);
 
 template<typename ... Iterables>
-inline detail::iterable_pack<detail::sum_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_sum(const Iterables& ... i_iterables);
+inline detail::iterable_pack<detail::sum_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_sum(const Iterables& ... i_iterables);
 
 template<typename ... Iterables>
-inline detail::iterable_pack<detail::subs_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_subs(const Iterables& ... i_iterables);
+inline detail::iterable_pack<detail::subs_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_subs(const Iterables& ... i_iterables);
 
 template<typename ... Iterables>
-inline detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_prod(const Iterables& ... i_iterables);
+inline detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_prod(const Iterables& ... i_iterables);
 
 template<typename ... Iterables>
-inline detail::iterable_pack<detail::div_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_div(const Iterables& ... i_iterables);
+inline detail::iterable_pack<detail::div_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_div(const Iterables& ... i_iterables);
 
 }
 }

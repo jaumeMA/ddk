@@ -42,34 +42,34 @@ Transform iterable_pack<Transform,Iterables...>::get_transform() const
 
 TEMPLATE(typename Transform,typename ... Iterables)
 REQUIRED(IS_CALLABLE(Transform))
-detail::iterable_pack<Transform,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_transform(Transform&& i_transform,const Iterables& ... i_iterables)
+detail::iterable_pack<Transform,deduced_iterable<Iterables>...> iterable_transform(Transform&& i_transform,const Iterables& ... i_iterables)
 {
-	return detail::iterable_pack<Transform,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ std::forward<Transform>(i_transform), deduce_iterable(i_iterables) ... };
+	return detail::iterable_pack<Transform,deduced_iterable<Iterables>...>{ std::forward<Transform>(i_transform), deduce_iterable(i_iterables) ... };
 }
 template<typename Iterable>
-detail::iterable_pack<detail::neg_iterable_transform<Iterable>,decltype(deduce_iterable(std::declval<const Iterable&>()))> iterable_neg(const Iterable& i_iterable)
+detail::iterable_pack<detail::neg_iterable_transform<Iterable>,deduced_iterable<Iterable>> iterable_neg(const Iterable& i_iterable)
 {
-	return detail::iterable_pack<detail::neg_iterable_transform<Iterable>,decltype(deduce_iterable(std::declval<const Iterable&>()))>{ deduce_iterable(i_iterable) };
+	return detail::iterable_pack<detail::neg_iterable_transform<Iterable>,deduced_iterable<Iterable>>{ deduce_iterable(i_iterable) };
 }
 template<typename ... Iterables>
-detail::iterable_pack<detail::sum_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_sum(const Iterables& ... i_iterables)
+detail::iterable_pack<detail::sum_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_sum(const Iterables& ... i_iterables)
 {
-	return detail::iterable_pack<detail::sum_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
+	return detail::iterable_pack<detail::sum_iterable_transform<Iterables...>,deduced_iterable<Iterables>...>{ deduce_iterable(i_iterables) ... };
 }
 template<typename ... Iterables>
-detail::iterable_pack<detail::subs_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_subs(const Iterables& ... i_iterables)
+detail::iterable_pack<detail::subs_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_subs(const Iterables& ... i_iterables)
 {
-	return detail::iterable_pack<detail::subs_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
+	return detail::iterable_pack<detail::subs_iterable_transform<Iterables...>,deduced_iterable<Iterables>...>{ deduce_iterable(i_iterables) ... };
 }
 template<typename ... Iterables>
-detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_prod(const Iterables& ... i_iterables)
+detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_prod(const Iterables& ... i_iterables)
 {
-	return detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
+	return detail::iterable_pack<detail::prod_iterable_transform<Iterables...>,deduced_iterable<Iterables>...>{ deduce_iterable(i_iterables) ... };
 }
 template<typename ... Iterables>
-detail::iterable_pack<detail::div_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...> iterable_div(const Iterables& ... i_iterables)
+detail::iterable_pack<detail::div_iterable_transform<Iterables...>,deduced_iterable<Iterables>...> iterable_div(const Iterables& ... i_iterables)
 {
-	return detail::iterable_pack<detail::div_iterable_transform<Iterables...>,decltype(deduce_iterable(std::declval<const Iterables&>()))...>{ deduce_iterable(i_iterables) ... };
+	return detail::iterable_pack<detail::div_iterable_transform<Iterables...>,deduced_iterable<Iterables>...>{ deduce_iterable(i_iterables) ... };
 }
 
 }
