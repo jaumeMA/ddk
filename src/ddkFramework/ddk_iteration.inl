@@ -31,6 +31,7 @@ iteration<Traits>::iteration(const iteration& other)
 , m_try(other.m_try)
 , m_received(true)
 {
+	other.m_received = true;
 }
 template<typename Traits>
 iteration<Traits>::iteration(iteration&& other)
@@ -109,6 +110,7 @@ co_iteration<Traits>::co_iteration(const co_iteration& other)
 , m_try(other.m_try)
 , m_received(true)
 {
+	other.m_received = true;
 }
 template<typename Traits>
 co_iteration<Traits>::co_iteration(co_iteration&& other)
