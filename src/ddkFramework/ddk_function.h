@@ -51,6 +51,7 @@ class function_impl<Return(Types...),Allocator,FunctionImpl>
 public:
 	struct callable_tag;
 	typedef Return return_type;
+    typedef mpl::type_pack<Types...> args_type;
 
 	function_impl();
     function_impl(std::nullptr_t);

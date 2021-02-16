@@ -3,34 +3,34 @@
 #include "ddk_template_helper.h"
 
 #define IS_NUMBER_OF_ARGS(_NUM,...) \
-    typename std::enable_if<ddk::mpl::get_num_types<__VA_ARGS__>() == _NUM>::type
+    typename std::enable_if<ddk::mpl::num_types<__VA_ARGS__> == _NUM>::type
 
 #define IS_NUMBER_OF_ARGS_COND(_NUM,...) \
-    (ddk::mpl::get_num_types<__VA_ARGS__>() == _NUM)
+    (ddk::mpl::num_types<__VA_ARGS__>() == _NUM)
 
 #define IS_NUMBER_OF_ARGS_GREATER(_NUM,...) \
-    typename std::enable_if<ddk::mpl::get_num_types<__VA_ARGS__>() > _NUM>::type
+    typename std::enable_if<ddk::mpl::num_types<__VA_ARGS__> >= (_NUM+1)>::type
 
 #define IS_NUMBER_OF_ARGS_GREATER_COND(_NUM,...) \
-    (ddk::mpl::get_num_types<__VA_ARGS__>() > _NUM)
+    (ddk::mpl::num_types<__VA_ARGS__>() > _NUM)
 
 #define IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(_NUM,...) \
-    typename std::enable_if<ddk::mpl::get_num_types<__VA_ARGS__>() >= _NUM>::type
+    typename std::enable_if<ddk::mpl::num_types<__VA_ARGS__> >= _NUM>::type
 
 #define IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL_COND(_NUM,...) \
-    (ddk::mpl::get_num_types<__VA_ARGS__>() >= _NUM)
+    (ddk::mpl::num_types<__VA_ARGS__>() >= _NUM)
 
 #define IS_NUMBER_OF_ARGS_LESSER(_NUM,...) \
-    typename std::enable_if<ddk::mpl::get_num_types<__VA_ARGS__>() < _NUM>::type
+    typename std::enable_if<(ddk::mpl::num_types<__VA_ARGS__>+1) <= _NUM>::type
 
 #define IS_NUMBER_OF_ARGS_LESSER_COND(_NUM,...) \
-    (ddk::mpl::get_num_types<__VA_ARGS__>() <= _NUM)
+    ((ddk::mpl::num_types<__VA_ARGS__>+1) <= _NUM)
 
 #define IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL(_NUM,...) \
-    typename std::enable_if<ddk::mpl::get_num_types<__VA_ARGS__>() < _NUM>::type
+    typename std::enable_if<ddk::mpl::num_types<__VA_ARGS__> <= _NUM>::type
 
 #define IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL_COND(_NUM,...) \
-    (ddk::mpl::get_num_types<__VA_ARGS__>() <= _NUM)
+    (ddk::mpl::num_types<__VA_ARGS__>() <= _NUM)
 
 #define IS_AMONG_CONSTRUCTIBLE_TYPES(_TYPE,...) \
 	typename std::enable_if<ddk::mpl::is_among_constructible_types<_TYPE,__VA_ARGS__>>::type
@@ -103,3 +103,6 @@
 
 #define IS_COMPARABLE(_TYPE) \
     decltype(std::declval<_TYPE>() < std::declval<_TYPE>())
+
+#define IS_NUMERIC(_TYPE) \
+	typename std::enable_if<std::is_numeric_v<_TYPE>>::type

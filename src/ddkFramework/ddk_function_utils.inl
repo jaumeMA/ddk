@@ -15,23 +15,23 @@ function_view<Return(Types...)> _lend(const function_impl<Return(Types...),Alloc
 }
 
 template<typename Object,typename Return,typename ... Types>
-detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...))
+constexpr detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...))
 {
 	return std::move(detail::relative_function_impl<Object,Return,Types...>(i_object,i_funcPtr));
 }
 template<typename Object,typename Return,typename ... Types>
-detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const)
+constexpr detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const)
 {
 	return std::move(detail::relative_function_impl<const Object,Return,Types...>(i_object,i_funcPtr));
 }
 template<typename Return,typename ... Types>
-detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...))
+constexpr detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...))
 {
 	return std::move(detail::free_function_impl<Return,Types...>(i_funcPtr));
 }
 TEMPLATE(typename Functor)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
-detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor)
+constexpr detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor)
 {
 	return { std::forward<Functor>(i_functor) };
 }

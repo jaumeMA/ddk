@@ -95,9 +95,9 @@ class relative_function_impl : public function_impl_base<Return,mpl::type_pack<T
 public:
 	typedef Return return_type;
 
-	relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
-	relative_function_impl(const relative_function_impl&) = delete;
-	relative_function_impl(relative_function_impl&& other);
+	constexpr relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
+	constexpr relative_function_impl(const relative_function_impl&) = delete;
+	constexpr relative_function_impl(relative_function_impl&& other);
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
@@ -122,7 +122,8 @@ class free_function_impl : public function_impl_base<Return,mpl::type_pack<Types
 public:
 	typedef Return return_type;
 
-	free_function_impl(FuncPointerType i_funcPointer);
+	constexpr free_function_impl(FuncPointerType i_funcPointer);
+	constexpr free_function_impl(free_function_impl&&) = default;
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
@@ -145,8 +146,8 @@ class aggregated_functor_impl : public function_impl_base<Return,mpl::type_pack<
 public:
 	typedef Return return_type;
 
-	aggregated_functor_impl(const T& i_functor);
-	aggregated_functor_impl(T&& i_functor);
+	constexpr aggregated_functor_impl(const T& i_functor);
+	constexpr aggregated_functor_impl(T&& i_functor);
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
 	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
@@ -183,8 +184,8 @@ class inherited_functor_impl : public function_impl_base<Return,mpl::type_pack<T
 public:
 	typedef Return return_type;
 
-	inherited_functor_impl() = default;
-	inherited_functor_impl(inherited_functor_impl&&) = default;
+	constexpr inherited_functor_impl() = default;
+	constexpr inherited_functor_impl(inherited_functor_impl&&) = default;
 
 	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
 

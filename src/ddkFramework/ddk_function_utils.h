@@ -14,14 +14,14 @@ namespace ddk
 
 //impl
 template<typename Object,typename Return,typename ... Types>
-inline detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...));
+constexpr inline detail::relative_function_impl<Object,Return,Types...> make_member_function(Object* i_object,Return(Object::*i_funcPtr)(Types...));
 template<typename Object,typename Return,typename ... Types>
-inline detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const);
+constexpr inline detail::relative_function_impl<const Object,Return,Types...> make_member_function(const Object* i_object,Return(Object::*i_funcPtr)(Types...)const);
 template<typename Return,typename ... Types>
-inline detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...));
+constexpr inline detail::free_function_impl<Return,Types...> make_free_function(Return(*i_funcPtr)(Types...));
 TEMPLATE(typename Functor)
 REQUIRES(IS_CLASS(Functor),IS_CALLABLE(Functor))
-inline detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor);
+constexpr inline detail::resolved_functor_impl<Functor> make_functor_function(Functor&& i_functor);
 
 //no allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types>

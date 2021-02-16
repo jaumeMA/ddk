@@ -87,6 +87,8 @@ public:
 	high_order_array& operator=(const high_order_array<T,rank,ranks...>& other);
 	template<typename TT>
 	high_order_array& operator=(const high_order_array<TT,rank,ranks...>& other);
+	bool operator==(const high_order_array& other) const;
+	bool operator!=(const high_order_array& other) const;
 	size_t size() const;
 	bool empty() const;
 

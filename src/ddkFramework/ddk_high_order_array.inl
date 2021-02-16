@@ -197,6 +197,32 @@ high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(
 	}
 }
 template<typename T,size_t rank,size_t ... ranks>
+bool high_order_array<T,rank,ranks...>::operator==(const high_order_array& other) const
+{
+	for(size_t index = 0; index < s_totalSize; ++index)
+	{
+		if(m_data[index] != other.m_data[index])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+template<typename T,size_t rank,size_t ... ranks>
+bool high_order_array<T,rank,ranks...>::operator!=(const high_order_array& other) const
+{
+	for(size_t index = 0; index < s_totalSize; ++index)
+	{
+		if(m_data[index] != other.m_data[index])
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+template<typename T,size_t rank,size_t ... ranks>
 size_t high_order_array<T,rank,ranks...>::size() const
 {
 	return s_totalSize;

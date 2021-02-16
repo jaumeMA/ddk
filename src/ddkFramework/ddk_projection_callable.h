@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddk_template_helper.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -11,7 +13,8 @@ struct projection_callable
 public:
     projection_callable() = default;
 
-    template<typename ... Args>
+    TEMPLATE(typename ... Args)
+    REQUIRES(IS_NUMBER_OF_ARGS_GREATER(Component,Args...))
     inline mpl::nth_type_of_t<Component,Args...> operator()(Args&& ... i_args) const;
 };
 
