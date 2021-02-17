@@ -10,9 +10,6 @@ namespace ddk
 namespace detail
 {
 
-template<typename,typename,typename>
-class dynamic_multi_visitor_base;
-
 template<typename MultiVisitor,typename Visitor,typename Type>
 class dynamic_multi_visitor_base : public typed_dynamic_visitor<Type>
 {

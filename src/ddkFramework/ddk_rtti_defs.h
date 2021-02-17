@@ -44,6 +44,9 @@ inline TypeInfo make_type_info();
 template<typename T>
 inline const TypeInfo& type_info();
 
+template<typename T, typename TT>
+inline const TypeInfo& type_info();
+
 }
 }
 

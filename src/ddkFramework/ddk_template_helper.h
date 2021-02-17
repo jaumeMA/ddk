@@ -54,11 +54,20 @@ struct class_holder
     typedef T type;
 };
 
+template<typename ... Types>
+struct type_pack;
+
 template<template<typename ...>typename T>
 struct template_class_holder
 {
+private:
+    static detail::void_t resolve_template_class(...);
     template<typename ... TT>
-    using type = T<TT...>;
+    static T<TT...> resolve_template_class(const type_pack<TT...>&);
+
+public:
+    template<typename ... TT>
+    using type = decltype(resolve_template_class(std::declval<type_pack<TT...>>()));
 };
 
 template<typename T>
@@ -660,7 +669,10 @@ struct intersect_type_packs<type_pack<Types...>>
 template<typename ... Types>
 using type_pack_intersection = typename intersect_type_packs<Types...>::type;
 
-template<typename ... Types>
+template<typename>
+struct is_type_pack;
+    
+template<typename T>
 struct is_type_pack
 {
     static const bool value = false;
@@ -670,6 +682,7 @@ template<typename ... Types>
 struct is_type_pack<type_pack<Types...>>
 {
     static const bool value = true;
+    static const size_t num_types = mpl::num_types<Types...>;
     template<typename Type>
     inline constexpr bool is_among_types()
     {

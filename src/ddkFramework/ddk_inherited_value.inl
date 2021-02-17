@@ -19,7 +19,7 @@ inherited_value<TT> make_inherited_value(Args&& ... i_args)
 template<typename T,typename Allocator>
 template<typename TT>
 inherited_value<T,Allocator>::inherited_value(const distributed_pointer_wrapper<TT>& i_value)
-: m_typeInfo(rtti::type_info<T>())
+: m_typeInfo(rtti::type_info<TT,T>())
 , m_value(i_value)
 {
 }

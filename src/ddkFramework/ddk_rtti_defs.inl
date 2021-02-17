@@ -44,5 +44,13 @@ const TypeInfo& type_info()
 	return s_typeInfo;
 }
 
+template<typename T,typename TT>
+const TypeInfo& type_info()
+{
+	static const TypeInfo s_typeInfo = make_type_info<T,TT>();
+
+	return s_typeInfo;
+}
+
 }
 }

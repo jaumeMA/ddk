@@ -11,7 +11,7 @@ class function_view;
 template<typename Return, typename ... Types>
 class function_view<Return(Types...)>
 {
-    typedef detail::function_base_const_lent_ptr<Return,mpl::type_pack<Types...>> function_base_const_lent_ptr;
+    typedef detail::function_base_const_lent_ptr<Return,Types...> function_base_const_lent_ptr;
 
 public:
 	function_view() = default;

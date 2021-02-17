@@ -89,7 +89,7 @@ public:
     static const bool value;
     typedef decltype(resolve_types(std::declval<unresolved_type>())) type;
 };
-template<template<typename...> typename T, typename ... TT>
+template<template<typename...> typename T,typename ... TT>
 const bool get_inherited_type_list<T<TT...>>::value = get_inherited_type_list<T<TT...>>::initialize_visitable_type(unresolved_type{});
 
 }

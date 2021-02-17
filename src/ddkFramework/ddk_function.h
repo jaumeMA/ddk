@@ -93,7 +93,7 @@ protected:
 }
 
 template<typename Return, typename ... Types>
-using function_impl_const_ptr = detail::function_base_const_dist_ptr<Return,mpl::type_pack<Types...>>;
+using function_impl_const_ptr = detail::function_base_const_dist_ptr<Return,Types...>;
 
 template<typename Return, typename ... Types, typename Allocator>
 class function<Return(Types...),Allocator> : public detail::function_impl<Return(Types...),Allocator,function_impl_const_ptr<Return,Types...>>
