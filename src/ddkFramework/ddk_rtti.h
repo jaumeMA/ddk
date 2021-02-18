@@ -44,18 +44,15 @@ private:
     template<typename ... TTT>
     static mpl::type_pack<typename TTT::type ...> resolve_types(const mpl::type_pack<TTT...>&);
 
+public:
     template<typename ... TTT>
     static inline bool initialize_visitable_type(const mpl::type_pack<TTT...>&)
     {
-        return (ddk::visitable_type<typename TTT::type,T>::s_initialized && ...);
+        return (ddk::visitable_type<TTT,T>::s_initialized && ...);
     }
 
-public:
-    static const bool value;
     typedef decltype(resolve_types(std::declval<unresolved_type>())) type;
 };
-template<typename T>
-const bool get_inherited_type_list<T>::value = get_inherited_type_list<T>::initialize_visitable_type(unresolved_type{});
 
 template<template<typename...> typename T, typename ... TT>
 struct get_inherited_type_list<T<TT...>>
@@ -79,25 +76,23 @@ private:
     template<typename ... TTT>
     static mpl::type_pack<typename resolved_type<TTT,mpl::is_templated_class_holder_v<TTT>>::type ...> resolve_types(const mpl::type_pack<TTT...>&);
 
+public:
+
     template<typename ... TTT>
     static inline bool initialize_visitable_type(const mpl::type_pack<TTT...>&)
     {
-        return (ddk::visitable_type<typename resolved_type<TTT,mpl::is_templated_class_holder_v<TTT>>::type,T<TT...>>::s_initialized && ...);
+        return (ddk::visitable_type<TTT,T<TT...>>::s_initialized && ...);
     }
 
-public:
-    static const bool value;
     typedef decltype(resolve_types(std::declval<unresolved_type>())) type;
 };
-template<template<typename...> typename T,typename ... TT>
-const bool get_inherited_type_list<T<TT...>>::value = get_inherited_type_list<T<TT...>>::initialize_visitable_type(unresolved_type{});
 
 }
 
 template<typename T>
-using inherited_type_list = typename detail::get_inherited_type_list<T>::type;
+using inherited_type_list = typename detail::get_inherited_type_list<T>::type::template drop_if<typename mpl::not_predicate<std::is_base_of,T>::type>::type;
 template<typename T>
-static const bool inherited_type_expansion = detail::get_inherited_type_list<T>::value;
+static const bool inherited_type_expansion = detail::get_inherited_type_list<T>::template initialize_visitable_type(inherited_type_list<T>{});
 
 }
 

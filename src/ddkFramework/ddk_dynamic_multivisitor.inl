@@ -91,7 +91,7 @@ typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_vis
 	typedef typename visitor_t::type_interface type_interface;
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
 
-	dynamic_multi_visitor<visitor_t,typename rtti::inherited_type_list<type_interface>::template drop<detail::void_t>::type,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
+	dynamic_multi_visitor<visitor_t,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
 
 	const function<typename visitor_t::return_type()> resolvedFunc = multiVisitor.visit();
 

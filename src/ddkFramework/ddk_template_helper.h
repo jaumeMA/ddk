@@ -479,6 +479,30 @@ struct is_same_type<A,A>
     static const bool value = true;
 };
 
+template<template<typename...>typename Predicate, typename ... T>
+struct not_predicate
+{
+
+template<typename ... TT>
+struct _not_predicate
+{
+    static const bool value = (Predicate<TT...>::value == false);
+};
+
+template<typename ... TT>
+using type = _not_predicate<T...,TT...>;
+
+};
+
+template<template<typename...> typename Predicate, typename ... T>
+struct predicate
+{
+
+template<typename ... TT>
+using type = Predicate<T...,TT...>;
+
+};
+
 template<typename ...>
 struct homogeneous_types;
 
@@ -613,6 +637,11 @@ struct type_pack
 	{
 		typedef typename merge_type_packs<typename static_if<is_among_types<Types,TTypes...>,type_pack<>,type_pack<Types>>::type ...>::type type;
 	};
+    template<template<typename> typename Predicate>
+    struct drop_if
+    {
+        typedef typename merge_type_packs<typename static_if<Predicate<Types>::value,type_pack<>,type_pack<Types>>::type ...>::type type;
+    };
     template<typename ... TTypes>
 	static constexpr bool contains(const type_pack<TTypes...>&)
 	{

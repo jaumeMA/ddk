@@ -20,12 +20,9 @@ struct agnostic_visitable_type
 	template<typename T>
 	static void _initializeStaticData(size_t i_typeId)
 	{
-		if constexpr(std::is_same<T,detail::void_t>::value == false)
-		{
-			s_categoryTypeInfo();
-			s_visitor_funcs()[i_typeId] = &nested_visit<T>;
-			s_const_visitor_funcs()[i_typeId] = &nested_visit<T>;
-		}
+		s_categoryTypeInfo();
+		s_visitor_funcs()[i_typeId] = &nested_visit<T>;
+		s_const_visitor_funcs()[i_typeId] = &nested_visit<T>;
 	}
 	template<typename T>
 	static void nested_visit(const type_interface* i_object, const visitor_interface& i_visitor)

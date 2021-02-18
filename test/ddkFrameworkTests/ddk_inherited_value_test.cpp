@@ -88,8 +88,8 @@ struct DerivedTypeMultiVisitor : public ddk::dynamic_visitor<prova::BaseType1>
 
 TEST(DDKInheritedValuetTest,defaultConstruction)
 {
-	ddk::inherited_value<prova::DerivedBaseType1> foo0 = ddk::make_inherited_value<prova::DerivedBaseType1>(10);
-	ddk::inherited_value<prova::DerivedBaseType2> foo1 = ddk::make_inherited_value<prova::DerivedBaseType2>(20);
+	ddk::inherited_value<prova::BaseType1> foo0 = ddk::make_inherited_value<prova::DerivedBaseType1>(10);
+	ddk::inherited_value<prova::BaseType1> foo1 = ddk::make_inherited_value<prova::DerivedBaseType2>(20);
 	DerivedTypeMultiVisitor multiVisitor;
 
 	int a = 0;
