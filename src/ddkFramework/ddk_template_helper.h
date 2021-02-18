@@ -484,13 +484,7 @@ struct not_predicate
 {
 
 template<typename ... TT>
-struct _not_predicate
-{
-    static const bool value = (Predicate<TT...>::value == false);
-};
-
-template<typename ... TT>
-using type = _not_predicate<T...,TT...>;
+using type = typename static_if<Predicate<T...,TT...>::value,std::false_type,std::true_type>::type;;
 
 };
 
@@ -499,7 +493,7 @@ struct predicate
 {
 
 template<typename ... TT>
-using type = Predicate<T...,TT...>;
+using type = typename static_if<Predicate<T...,TT...>::value,std::true_type,std::false_type>::type;;
 
 };
 
