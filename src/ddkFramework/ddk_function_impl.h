@@ -36,6 +36,8 @@ template<typename TTypes, typename ... Types>
 using unresolved_types = typename mpl::type_pack<Types...>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 template<typename TTypes, typename Types>
 using unresolved_tuple = typename mpl::type_pack<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
+template<typename T>
+using forwarded_arg = typename mpl::static_if<std::is_copy_constructible<T>::value,T,typename std::add_rvalue_reference<T>::type>::type;
 
 template<typename Return, typename ... Types>
 struct function_impl_base<Return, mpl::type_pack<Types...>> : public distribute_from_this<function_impl_base<Return,mpl::type_pack<Types...>>>
@@ -62,14 +64,14 @@ struct function_impl_base<Return, mpl::type_pack<Types...>> : public distribute_
 		specialized_impl(const function_impl_base_const_dist_ref<Return,mpl::type_pack<Types...>>& i_object, tuple<Args...>&& i_args);
 
     private:
-		Return operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const override;
+		Return operator()(forwarded_arg<typename mpl::nth_type_of<notSpecIndexs,Types...>::type> ... i_args) const override;
         Return apply(const vars_tuple& i_tuple) const override;
 
         const function_impl_base_const_dist_ref<Return,mpl::type_pack<Types...>> m_object;
 		mutable args_tuple m_specArgs;
 	};
 
-    typedef tuple<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...> tuple_args;
+    typedef tuple<forwarded_arg<Types>...> tuple_args;
 	typedef Return return_type;
 	typedef mpl::type_pack<Types...> args_type;
 
@@ -78,7 +80,7 @@ struct function_impl_base<Return, mpl::type_pack<Types...>> : public distribute_
 	template<typename Allocator, typename ... Args>
 	function_impl_base_const_dist_ref<Return,unresolved_types<mpl::type_pack<Args...>,Types...>> specialize(const Allocator& i_allocator, Args&& ... args) const;
 
-	virtual Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const = 0;
+	virtual Return operator()(forwarded_arg<Types> ... args) const = 0;
 
 private:
     virtual Return apply(const tuple_args& i_tuple) const = 0;
@@ -116,8 +118,8 @@ public:
 	constexpr relative_function_impl(const relative_function_impl&) = delete;
 	constexpr relative_function_impl(relative_function_impl&& other);
 
-	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
+	inline Return inline_eval(forwarded_arg<Types> ... args) const;
+	Return operator()(forwarded_arg<Types> ... args) const final;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -142,8 +144,8 @@ public:
 	constexpr free_function_impl(FuncPointerType i_funcPointer);
 	constexpr free_function_impl(free_function_impl&&) = default;
 
-	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
+	inline Return inline_eval(forwarded_arg<Types> ... args) const;
+	Return operator()(forwarded_arg<Types> ... args) const final;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -166,8 +168,8 @@ public:
 	constexpr aggregated_functor_impl(const T& i_functor);
 	constexpr aggregated_functor_impl(T&& i_functor);
 
-	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
-	Return operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const final;
+	inline Return inline_eval(forwarded_arg<Types> ... args) const;
+	Return operator()(forwarded_arg<Types> ... args) const final;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -204,7 +206,7 @@ public:
 	constexpr inherited_functor_impl() = default;
 	constexpr inherited_functor_impl(inherited_functor_impl&&) = default;
 
-	inline Return inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const;
+	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 
 private:
 	Return apply(const tuple_args& i_tuple) const final;

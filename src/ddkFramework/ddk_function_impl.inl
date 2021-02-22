@@ -18,18 +18,18 @@ function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl::seque
 }
 template<typename Return, typename ... Types>
 template<size_t ... specIndexs, size_t ... notSpecIndexs>
-Return function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::operator()(typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ... i_args) const
+Return function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::operator()(forwarded_arg<typename mpl::nth_type_of<notSpecIndexs,Types...>::type> ... i_args) const
 {
     typedef typename mpl::merge_sequence<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>>::type total_indexs;
     typedef typename mpl::inverse_sequence<total_indexs>::type inverse_total_indexs;
 
     if constexpr (std::is_same<Return,void>::value)
     {
-        m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type>(i_args) ...));
+        m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,forwarded_arg<typename mpl::nth_type_of<notSpecIndexs,Types...>::type> ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<forwarded_arg<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>>(i_args) ...));
     }
     else
     {
-        return m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<typename mpl::static_if<std::is_copy_constructible<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::value,typename mpl::nth_type_of<notSpecIndexs,Types...>::type,typename std::add_rvalue_reference<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>::type>::type>(i_args) ...));
+        return m_object->apply(merge_args<typename mpl::nth_type_of<specIndexs,Types...>::type ...,forwarded_arg<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>...>(total_indexs{},inverse_total_indexs{},m_specArgs,std::forward<forwarded_arg<typename mpl::nth_type_of<notSpecIndexs,Types...>::type>>(i_args) ...));
     }
 }
 template<typename Return, typename ... Types>
@@ -41,11 +41,11 @@ Return function_impl_base<Return,mpl::type_pack<Types...>>::specialized_impl<mpl
 
     if constexpr (std::is_same<Return,void>::value)
     {
-        m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
+        m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,forwarded_arg<Types>...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
     }
     else
     {
-        return m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
+        return m_object->apply(merge<typename mpl::nth_type_of<specIndexs,Types...>::type ...,typename mpl::nth_type_of<notSpecIndexs,forwarded_arg<Types>...>::type ...>(total_indexs{},inverse_total_indexs{},m_specArgs,i_tuple));
     }
 }
 
@@ -80,27 +80,27 @@ constexpr relative_function_impl<ObjectType,Return,Types...>::relative_function_
 	other.m_funcPointer = nullptr;
 }
 template<typename ObjectType,typename Return,typename ... Types>
-inline Return relative_function_impl<ObjectType,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return relative_function_impl<ObjectType,Return,Types...>::inline_eval(forwarded_arg<Types> ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
-		(m_object->*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+		(m_object->*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
 	}
 	else
 	{
-		return (m_object->*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+		return (m_object->*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
 	}
 }
 template<typename ObjectType, typename Return, typename ... Types>
-Return relative_function_impl<ObjectType,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+Return relative_function_impl<ObjectType,Return,Types...>::operator()(forwarded_arg<Types> ... args) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
-        (m_object->*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+        (m_object->*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
     }
     else
     {
-        return (m_object->*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+        return (m_object->*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
     }
 }
 template<typename ObjectType, typename Return, typename ... Types>
@@ -137,27 +137,27 @@ constexpr free_function_impl<Return,Types...>::free_function_impl(FuncPointerTyp
 {
 }
 template<typename Return,typename ... Types>
-inline Return free_function_impl<Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return free_function_impl<Return,Types...>::inline_eval(forwarded_arg<Types> ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
-		(*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+		(*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
 	}
 	else
 	{
-		return (*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+		return (*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
 	}
 }
 template<typename Return, typename ... Types>
-Return free_function_impl<Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+Return free_function_impl<Return,Types...>::operator()(forwarded_arg<Types> ... args) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
-        (*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+        (*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
     }
     else
     {
-        return (*m_funcPointer)(std::forward<typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type>(args)...);
+        return (*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
     }
 }
 template<typename Return, typename ... Types>
@@ -199,7 +199,7 @@ constexpr aggregated_functor_impl<T,Return,Types...>::aggregated_functor_impl(T&
 {
 }
 template<typename T,typename Return,typename ... Types>
-inline Return aggregated_functor_impl<T,Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+inline Return aggregated_functor_impl<T,Return,Types...>::inline_eval(forwarded_arg<Types> ... args) const
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
@@ -211,7 +211,7 @@ inline Return aggregated_functor_impl<T,Return,Types...>::inline_eval(typename m
 	}
 }
 template<typename T, typename Return, typename ... Types>
-Return aggregated_functor_impl<T,Return,Types...>::operator()(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+Return aggregated_functor_impl<T,Return,Types...>::operator()(forwarded_arg<Types> ... args) const
 {
     if constexpr (std::is_same<Return,void>::value)
     {
@@ -251,7 +251,7 @@ Return aggregated_functor_impl<T,Return,Types...>::apply(const mpl::sequence<Ind
 }
 
 template<typename Return,typename ... Types>
-Return inherited_functor_impl<Return,Types...>::inline_eval(typename mpl::static_if<std::is_copy_constructible<Types>::value,Types,typename std::add_rvalue_reference<Types>::type>::type ... args) const
+Return inherited_functor_impl<Return,Types...>::inline_eval(forwarded_arg<Types> ... args) const
 {
     if constexpr(std::is_same<Return,void>::value)
     {

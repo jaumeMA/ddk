@@ -4,6 +4,7 @@
 #include "ddk_function_template_helper.h"
 #include "ddk_tuple_template_helper.h"
 #include "ddk_function_arguments.h"
+#include "ddk_function_impl.h"
 
 namespace ddk
 {
@@ -30,42 +31,44 @@ public:
     typedef typename mpl::merge_type_packs<mpl::type_pack<curr_sequence>,next_composed_sequence>::type type;
 };
 
+template<typename,typename,typename>
+class union_function_executor;
+
+template<typename SuperClass,typename Return, typename ... Types>
+class union_function_executor<SuperClass,Return,mpl::type_pack<Types...>> : public inherited_functor_impl<Return,Types...>
+{
+public:
+    union_function_executor() = default;
+    Return operator()(forwarded_arg<Types> ... i_args) const;
+
+private:
+    template<size_t ... Indexs, typename ... Args>
+    inline Return execute(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
+    template<typename Callable, size_t ... Indexs, typename ... Args>
+    inline auto execute(const Callable& i_callable, const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
+};
 
 template<typename Callable, typename ... Callables>
-class union_function
+class union_function : public union_function_executor<union_function<Callable,Callables...>,function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...>,typename mpl::merge_type_packs<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type>
 {
     static const size_t s_num_callables = mpl::get_num_types<Callables...>() + 1;
+    typedef typename sequence_composer<0,typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type...>::type composed_sequence_t;
 
-    template<typename ... CallablesB>
-    friend inline union_function<Callable,Callables...,CallablesB...> operator|(const union_function<Callable,Callables...>& i_lhs, const union_function<CallablesB...>& i_rhs)
-    {
-        return union_function<Callable,Callables...,CallablesB...>{merge(i_lhs.m_callables,i_rhs.m_callables)};
-    }
-    template<typename CallableB>
-    friend inline union_function<Callable,Callables...,CallableB> operator|(const union_function<Callable,Callables...>& i_lhs, const CallableB& i_rhs)
-    {
-        return union_function<Callable,Callables...,CallableB>{merge_args(i_lhs.m_callables,i_rhs)};
-    }
+    template<typename,typename,typename>
+    friend class union_function_executor;
 
 public:
-	struct callable_tag;
     typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
     typedef typename mpl::merge_type_packs<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
 
     union_function(const Callable& i_callable, const Callables& ... i_callables);
     union_function(const tuple<Callable,Callables...>& i_callables);
-    union_function(const union_function<Callable,Callables...>& other) = default;
-    union_function(union_function<Callable,Callables...>&& other) = default;
-	template<typename ... Args>
-    callable_return_type operator()(Args&& ... i_args) const;
+    union_function(tuple<Callable,Callables...>&& i_callables);
+    union_function(const union_function<Callable,Callables...>& other);
+    union_function(union_function<Callable,Callables...>&& other);
 
 private:
-    template<size_t ... Indexs, typename ... Args>
-    inline callable_return_type execute(const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
-    template<typename CCallable, size_t ... Indexs, typename ... Args>
-    inline typename mpl::aqcuire_callable_return_type<CCallable>::return_type execute(const CCallable& i_callable, const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const;
-
-	tuple<Callable,Callables...> m_callables;
+	const tuple<Callable,Callables...> m_callables;
 };
 
 }
