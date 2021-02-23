@@ -1,4 +1,6 @@
 
+#include "ddk_function_utils.h"
+
 namespace ddk
 {
 namespace detail
@@ -13,7 +15,7 @@ composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::composed_funct
 template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
 ReturnDst composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::operator()(TypesSrc ... i_args) const
 {
-    return eval(m_lhs,eval(m_rhs,std::forward<TypesSrc>(i_args) ...));
+    return ddk::eval(m_lhs,eval(m_rhs,std::forward<TypesSrc>(i_args) ...));
 }
 
 }

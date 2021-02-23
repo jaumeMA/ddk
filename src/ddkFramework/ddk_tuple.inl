@@ -128,7 +128,7 @@ tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_i
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 TEMPLATE(size_t IIndex1,size_t IIndex2,size_t ... IIndexs,typename Arg1,typename Arg2,typename ... Args)
-REQUIRED(IS_CONSTRUCTIBLE(nth_type<IIndex1>,Arg1),IS_CONSTRUCTIBLE(nth_type<IIndex2>,Arg2),IS_CONSTRUCTIBLE(nth_type<IIndexs>,Args)...)
+REQUIRED(IS_CONSTRUCTIBLE(nth_coordinate<IIndex1>,Arg1),IS_CONSTRUCTIBLE(nth_coordinate<IIndex2>,Arg2),IS_CONSTRUCTIBLE(nth_coordinate<IIndexs>,Args)...)
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args)
 {
 	const bool _[] = { construct<typename mpl::nth_type_of<IIndex1,Type1,Type2,Types...>::type>(m_storage.template at<IIndex1>(), std::forward<Arg1>(i_arg1)),
@@ -203,25 +203,19 @@ template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typena
 template<size_t IIndex>
 typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::cref_type tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::get() const
 {
-    typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
-
-	return get<nth_type>(m_storage.template at<IIndex>());
+	return get<nth_coordinate<IIndex>>(m_storage.template at<IIndex>());
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t IIndex>
 typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::ref_type tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::get()
 {
-    typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
-
-	return get<nth_type>(m_storage.template at<IIndex>());
+	return get<nth_coordinate<IIndex>>(m_storage.template at<IIndex>());
 }
 template<size_t Index1,size_t Index2,size_t ... Indexs,typename Type1,typename Type2,typename ... Types>
 template<size_t IIndex>
 typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::rref_type tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::extract() &&
 {
-	typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
-
-	return extract<nth_type>(m_storage.template at<IIndex>());
+	return extract<nth_coordinate<IIndex>>(m_storage.template at<IIndex>());
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 template<size_t ... IIndexs, typename ... Args>
@@ -236,11 +230,9 @@ template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typena
 template<size_t IIndex, typename Arg>
 typename embedded_type<typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type>::ref_type tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::set(Arg&& i_arg)
 {
-    typedef typename mpl::nth_type_of<IIndex,Type1,Type2,Types...>::type nth_type;
+	assign<nth_coordinate<IIndex>>(m_storage.template at<IIndex>(), std::forward<Arg>(i_arg));
 
-	assign<nth_type>(m_storage.template at<IIndex>(), std::forward<Arg>(i_arg));
-
-    return get<nth_type>(m_storage.template at<IIndex>());
+    return get<nth_coordinate<IIndex>>(m_storage.template at<IIndex>());
 }
 template<size_t Index1, size_t Index2, size_t ... Indexs, typename Type1, typename Type2, typename ... Types>
 tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>* tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>::operator->()

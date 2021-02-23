@@ -104,18 +104,22 @@ namespace ddk
 {
 
 TEMPLATE(typename ... Iterables)
-REQUIRED_COND(mpl::get_num_types<Iterables...>()!=0)
+REQUIRED(IS_NOT_CALLABLE(Iterables)...)
 detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables)
 {
+    static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
+
     typedef detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
 
 	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>>...>>(deduce_iterable(i_iterables) ...) };
 }
 
 TEMPLATE(typename ... Iterables)
-REQUIRED_COND(mpl::get_num_types<Iterables...>()!=0)
+REQUIRED(IS_NOT_CALLABLE(Iterables)...)
 detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables)
 {
+    static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
+
     typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
 
 	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::intersection_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>> ...>>(deduce_iterable(i_iterables)...) };

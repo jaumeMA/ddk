@@ -89,11 +89,11 @@ namespace ddk
 {
 
 TEMPLATE(typename ... Iterables)
-REQUIRES_COND(mpl::get_num_types<Iterables...>()!=0)
+REQUIRES(IS_NOT_CALLABLE(Iterables)...)
 inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables);
 
 TEMPLATE(typename ... Iterables)
-REQUIRES_COND(mpl::get_num_types<Iterables...>()!=0)
+REQUIRES(IS_NOT_CALLABLE(Iterables)...)
 inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables);
 
 }

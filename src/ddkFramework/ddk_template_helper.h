@@ -532,6 +532,9 @@ struct nth_type_of<0,Type,Types...>
 template<size_t Pos, typename ... Types>
 using nth_type_of_t = typename nth_type_of<Pos,Types...>::type;
 
+template<size_t Pos, typename T>
+using nth_coordinate_of_t = typename T::template nth_coordinate<Pos>;
+
 template<template<typename,typename...> typename Predicate, typename Type, typename ... Types>
 inline constexpr size_t nth_pos_of_predicate()
 {
@@ -694,7 +697,7 @@ using type_pack_intersection = typename intersect_type_packs<Types...>::type;
 
 template<typename>
 struct is_type_pack;
-    
+
 template<typename T>
 struct is_type_pack
 {

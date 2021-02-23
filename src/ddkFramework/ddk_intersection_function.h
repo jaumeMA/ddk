@@ -42,6 +42,9 @@ public:
     intersection_function(const intersection_function<Callable,Callables...>& other);
     intersection_function(intersection_function<Callable,Callables...>&& other);
 
+    template<size_t Index>
+    const mpl::nth_type_of_t<Index,Callable,Callables...>& get_callable() const;
+
 private:
 	const tuple<Callable,Callables...> m_callables;
 };

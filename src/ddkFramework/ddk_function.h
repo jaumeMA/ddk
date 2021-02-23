@@ -57,9 +57,9 @@ public:
     function_impl(std::nullptr_t);
     function_impl(const function_impl& other) = default;
     function_impl(function_impl&& other) = default;
-    template<typename AAllocator = Allocator>
+    template<typename AAllocator>
     function_impl(const function_impl<Return(Types...),AAllocator,FunctionImpl>& other);
-    template<typename AAllocator = Allocator>
+    template<typename AAllocator>
     function_impl(function_impl<Return(Types...),AAllocator,FunctionImpl>&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_CALLABLE_NOT_FUNCTION(T))
@@ -107,8 +107,14 @@ public:
 namespace mpl
 {
 
-template<typename Return, typename ... Types>
-struct aqcuire_callable_return_type<function<Return(Types...)>>
+template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
+struct aqcuire_callable_return_type<detail::function_impl<Return(Types...),Allocator,FunctionImpl>>
+{
+	typedef Return return_type;
+	typedef mpl::type_pack<Types...> args_type;
+};
+template<typename Return, typename ... Types, typename Allocator>
+struct aqcuire_callable_return_type<function<Return(Types...),Allocator>>
 {
 	typedef Return return_type;
 	typedef mpl::type_pack<Types...> args_type;

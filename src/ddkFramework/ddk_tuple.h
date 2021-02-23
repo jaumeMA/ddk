@@ -41,6 +41,10 @@ template<>
 class tuple_impl<mpl::sequence<>>
 {
 public:
+    template<size_t Index>
+    using nth_coordinate = void;
+    static constexpr size_t num_coordinates = 0;
+
     tuple_impl() = default;
 };
 
@@ -51,6 +55,10 @@ class tuple_impl<mpl::sequence<0>,Type>
     friend class tuple_impl;
 
 public:
+    template<size_t Index>
+    using nth_coordinate = typename std::enable_if<(Index==0),Type>::type;
+    static constexpr size_t num_coordinates = 1;
+
     tuple_impl() = default;
     TEMPLATE(size_t IIndex, typename Arg)
     REQUIRES(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
@@ -85,13 +93,15 @@ class tuple_impl<mpl::sequence<Index1,Index2,Indexs...>,Type1,Type2,Types...>
     template<typename,typename...>
     friend class tuple_impl;
     static const size_t s_total_size = mpl::total_size<Type1,Type2,Types...>;
-    template<size_t Index>
-    using nth_type = typename mpl::nth_type_of<Index,Type1,Type2,Types...>::type;
 
 public:
+    template<size_t Index>
+    using nth_coordinate = mpl::nth_type_of_t<Index,Type1,Type2,Types...>;
+    static constexpr size_t num_coordinates = s_total_size;
+
 	tuple_impl();
     TEMPLATE(size_t IIndex1, size_t IIndex2, size_t ... IIndexs, typename Arg1, typename Arg2, typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(nth_type<IIndex1>,Arg1),IS_CONSTRUCTIBLE(nth_type<IIndex2>,Arg2),IS_CONSTRUCTIBLE(nth_type<IIndexs>,Args)...)
+    REQUIRES(IS_CONSTRUCTIBLE(nth_coordinate<IIndex1>,Arg1),IS_CONSTRUCTIBLE(nth_coordinate<IIndex2>,Arg2),IS_CONSTRUCTIBLE(nth_coordinate<IIndexs>,Args)...)
     tuple_impl(const mpl::sequence<IIndex1,IIndex2,IIndexs...>&, Arg1&& i_arg1, Arg2&& i_arg2, Args&& ... i_args);
     TEMPLATE(typename Arg1, typename Arg2, typename ... Args)
     REQUIRES(IS_CONSTRUCTIBLE(Type1,Arg1),IS_CONSTRUCTIBLE(Type2,Arg2),IS_CONSTRUCTIBLE(Types,Args)...)

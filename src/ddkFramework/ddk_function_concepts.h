@@ -11,6 +11,15 @@
 #define IS_CALLABLE(_TYPE, ...) \
 	typename std::enable_if<ddk::mpl::is_valid_functor<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value>::type
 
+#define IS_CALLABLE_COND(_TYPE, ...) \
+	ddk::mpl::is_valid_functor<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value
+
+#define IS_NOT_CALLABLE(_TYPE, ...) \
+	typename std::enable_if<ddk::mpl::is_valid_functor<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value==false>::type
+
+#define IS_NOT_CALLABLE_COND(_TYPE, ...) \
+	ddk::mpl::is_valid_functor<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value==false
+
 #define IS_RETURN_TYPE_CONVERTIBLE_TO(_TYPE,_RETURN) \
 	typename std::enable_if<std::is_convertible<typename ddk::mpl::aqcuire_callable_return_type<_TYPE>::type,_RETURN>::value>::type
 

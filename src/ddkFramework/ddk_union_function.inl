@@ -1,4 +1,6 @@
 
+#include "ddk_function_utils.h"
+
 namespace ddk
 {
 namespace detail
@@ -21,7 +23,7 @@ template<typename SuperClass,typename Return, typename ... Types>
 template<typename Callable, size_t ... Indexs, typename ... Args>
 auto union_function_executor<SuperClass,Return,mpl::type_pack<Types...>>::execute(const Callable& i_callable, const mpl::sequence<Indexs...>&, const tuple<Args...>& i_args) const
 {
-	return eval(i_callable,i_args.template get<Indexs>() ...);
+	return ddk::eval(i_callable,i_args.template get<Indexs>() ...);
 }
 
 template<typename Callable, typename ... Callables>

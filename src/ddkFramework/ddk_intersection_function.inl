@@ -1,4 +1,6 @@
 
+#include "ddk_function_utils.h"
+
 namespace ddk
 {
 namespace detail
@@ -13,7 +15,7 @@ template<typename SuperClass,typename Return, typename ... Types>
 template<size_t ... Indexs>
 Return intersection_function_executor<SuperClass,Return,mpl::type_pack<Types...>>::execute(const mpl::sequence<Indexs...>&, forwarded_arg<Types> ... i_args) const
 {
-	return Return{ eval(static_cast<const SuperClass*>(this)->m_callables.template get<Indexs>(),std::forward<forwarded_arg<Types>>(i_args) ...) ... };
+	return Return{ ddk::eval(static_cast<const SuperClass*>(this)->m_callables.template get<Indexs>(),std::forward<forwarded_arg<Types>>(i_args) ...) ... };
 }
 
 template<typename Callable, typename ... Callables>
@@ -40,6 +42,12 @@ template<typename Callable, typename ... Callables>
 intersection_function<Callable,Callables...>::intersection_function(intersection_function<Callable,Callables...>&& other)
 : m_callables(std::move(other.m_callables))
 {
+}
+template<typename Callable, typename ... Callables>
+template<size_t Index>
+const mpl::nth_type_of_t<Index,Callable,Callables...>& intersection_function<Callable,Callables...>::get_callable() const
+{
+    return m_callables.template get<Index>();
 }
 
 }

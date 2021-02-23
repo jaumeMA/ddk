@@ -1,9 +1,5 @@
 #pragma once
 
-#include "ddk_intersection_function.h"
-#include "ddk_union_function.h"
-#include "ddk_composed_function.h"
-#include "ddk_specialized_callable.h"
 #include "ddk_concepts.h"
 #include "ddk_function_concepts.h"
 #include "ddk_allocator_concepts.h"
@@ -94,6 +90,16 @@ inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
 inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 
+}
+
+#include "ddk_intersection_function.h"
+#include "ddk_union_function.h"
+#include "ddk_composed_function.h"
+#include "ddk_specialized_callable.h"
+
+namespace ddk
+{
+
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
 inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> specialize(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
@@ -114,13 +120,21 @@ inline detail::union_function<Callables...> make_union(const Callables& ... i_ca
 template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
 inline detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_composition(const function<ReturnDst(TypesDst...)>& i_fuscDst, const function<ReturnSrc(TypesSrc...)>& i_funcSrc);
 
-TEMPLATE(typename ... Functions)
-REQUIRES(IS_CALLABLE(Functions)...)
-inline ddk::detail::intersection_function<Functions...> fusion(const Functions& ... i_functions);
+TEMPLATE(typename Function)
+REQUIRES(IS_CALLABLE(Function))
+inline Function fusion(const Function& i_function);
 
 TEMPLATE(typename ... Functions)
 REQUIRES(IS_CALLABLE(Functions)...)
-inline ddk::detail::union_function<Functions...> concat(const Functions& ... i_functions);
+inline detail::intersection_function<Functions...> fusion(const Functions& ... i_functions);
+
+TEMPLATE(typename Function)
+REQUIRES(IS_CALLABLE(Function))
+inline Function concat(const Function& i_function);
+
+TEMPLATE(typename ... Functions)
+REQUIRES(IS_CALLABLE(Functions)...)
+inline detail::union_function<Functions...> concat(const Functions& ... i_functions);
 
 }
 

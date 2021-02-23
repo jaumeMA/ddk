@@ -106,3 +106,26 @@
 
 #define IS_NUMERIC(_TYPE) \
 	typename std::enable_if<std::is_numeric_v<_TYPE>>::type
+
+#define IS_COORDINATE(_TYPE) \
+    typename std::enable_if<ddk::concepts::is_coordinate_type<_TYPE>>::type
+
+#define IS_COORDINATE_COND(_TYPE) \
+    ddk::concepts::is_coordinate_type<_TYPE>
+
+
+namespace ddk
+{
+namespace concepts
+{
+
+template<typename T>
+std::false_type is_coordinate_type_impl(const T&, ...);
+template<typename T, typename = typename T::template nth_coordinate<0>, size_t = T::num_coordinates>
+std::true_type is_coordinate_type_impl(T&);
+
+template<typename T>
+inline constexpr bool is_coordinate_type = decltype(is_coordinate_type_impl(std::declval<T&>()))::value;
+
+}
+}
