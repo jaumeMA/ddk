@@ -298,7 +298,7 @@ detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_co
 }
 
 TEMPLATE(typename Function)
-REQUIRES(IS_CALLABLE(Function))
+REQUIRED(IS_CALLABLE(Function))
 inline Function fusion(const Function& i_function)
 {
     return i_function;
@@ -312,7 +312,7 @@ detail::intersection_function<Functions...> fusion(const Functions& ... i_functi
 }
 
 TEMPLATE(typename Function)
-REQUIRES(IS_CALLABLE(Function))
+REQUIRED(IS_CALLABLE(Function))
 Function concat(const Function& i_function)
 {
     return i_function;

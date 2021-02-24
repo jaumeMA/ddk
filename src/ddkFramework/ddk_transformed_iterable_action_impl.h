@@ -19,7 +19,7 @@ public:
     typedef typename PublicTraits::const_reference const_reference;
     typedef typename PublicTraits::action action;
 
-    transformed_iterable_action_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<action(private_action)>& i_transform);
+    transformed_iterable_action_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<private_action(action)>& i_transform);
 
 private:
     void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
@@ -28,7 +28,7 @@ private:
     bool empty() const override;
 
     iterable_impl_shared_ref<private_iterable_base_traits> m_iterableRef;
-    const function<action(private_action)> m_transform;
+    const function<private_action(action)> m_transform;
 };
 
 }

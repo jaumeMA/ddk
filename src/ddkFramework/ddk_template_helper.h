@@ -28,9 +28,14 @@ namespace mpl
 {
 
 template<bool ... Conds>
-inline constexpr bool evaluate()
+inline constexpr bool evaluate_and()
 {
     return (Conds && ...);
+}
+template<bool ... Conds>
+inline constexpr bool evaluate_or()
+{
+    return (Conds || ...);
 }
 
 template<bool,typename,typename>

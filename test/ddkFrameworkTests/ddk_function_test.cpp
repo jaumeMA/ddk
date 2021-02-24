@@ -5,6 +5,7 @@
 #include "test_utils.h"
 #include <map>
 #include "ddk_function_ops.h"
+#include "ddk_projection_callable.h"
 #include "ddk_unique_pointer_wrapper.h"
 
 using namespace testing;

@@ -63,7 +63,7 @@ class high_order_array
 
 public:
     template<size_t Index, size_t ... Indexs>
-    using nth_coordinate = typename std::enable_if<mpl::evaluate<(Index<rank),(Index < ranks) ...>(),T>::type;
+    using nth_coordinate = typename std::enable_if<mpl::evaluate_and<(Index<rank),(Index < ranks) ...>(),T>::type;
     static constexpr size_t num_coordinates = mpl::prod_ranks<rank,ranks...>;
 	static const size_t s_numRanks = mpl::num_ranks<rank,ranks...>;
 	static const size_t s_totalSize = mpl::prod_ranks<rank,ranks...>;

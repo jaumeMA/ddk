@@ -13,9 +13,9 @@ composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::composed_funct
 {
 }
 template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
-ReturnDst composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::operator()(TypesSrc ... i_args) const
+ReturnDst composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>::operator()(forwarded_arg<TypesSrc> ... i_args) const
 {
-    return ddk::eval(m_lhs,eval(m_rhs,std::forward<TypesSrc>(i_args) ...));
+    return ddk::eval(m_lhs,eval(m_rhs,std::forward<forwarded_arg<TypesSrc>>(i_args) ...));
 }
 
 }

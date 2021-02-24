@@ -5,7 +5,7 @@ namespace detail
 {
 
 template<typename PublicTraits, typename PrivateTraits>
-transformed_iterable_action_impl<PublicTraits,PrivateTraits>::transformed_iterable_action_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<action(private_action)>& i_transform)
+transformed_iterable_action_impl<PublicTraits,PrivateTraits>::transformed_iterable_action_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<private_action(action)>& i_transform)
 : m_iterableRef(i_iterableRef)
 , m_transform(i_transform)
 {

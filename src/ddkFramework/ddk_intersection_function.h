@@ -17,7 +17,7 @@ class intersection_function_executor<SuperClass,Return,mpl::type_pack<Types...>>
 {
 public:
     intersection_function_executor() = default;
-    Return operator()(forwarded_arg<Types> ... i_args) const;
+    Return operator()(forwarded_arg<Types> ... i_args) const final override;
 
 private:
     template<size_t ... Indexs>
