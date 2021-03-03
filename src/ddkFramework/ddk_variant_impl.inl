@@ -506,8 +506,9 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 	}
 }
 template<typename ... Types>
-template<typename Visitor>
-typename std::remove_reference<Visitor>::type::return_type variant_impl<Types...>::visit(Visitor&& visitor)
+TEMPLATE(typename Visitor)
+REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
+typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor)
 {
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
@@ -515,13 +516,25 @@ typename std::remove_reference<Visitor>::type::return_type variant_impl<Types...
 	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),*this);
 }
 template<typename ... Types>
-template<typename Visitor>
-typename std::remove_reference<Visitor>::type::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
+TEMPLATE(typename Visitor)
+REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
+typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
 {
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+}
+template<typename ... Types>
+template<typename Visitor,typename ... Args>
+typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Args&& ... i_args) const
+{
+	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
+
+	const Visitor _visitor(std::forward<Args>(i_args)...);
+
+	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},_visitor,*this);
 }
 
 }

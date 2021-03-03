@@ -56,15 +56,16 @@ struct is_base_of_static_visitor
 {
 private:
     template<typename TT>
-    static std::is_base_of<static_visitor<typename TT::return_type>,TT> resolve(const TT&);
-    static std::false_type resolve(...);
+    static std::true_type resolve(TT&,typename std::enable_if<std::is_base_of<static_visitor<typename TT::return_type>,TT>::value>::type* = nullptr);
+    template<typename ... TT>
+    static std::false_type resolve(const TT& ...);
 
 public:
-    static const bool value = decltype(resolve(std::declval<T>()))::value;
+    static const bool value = decltype(resolve(std::declval<T&>()))::value;
 };
 
 template<typename T>
-inline constexpr bool is_base_of_static_visitor_v = is_base_of_static_visitor<T>::value;
+inline constexpr bool is_base_of_static_visitor_v = true;//is_base_of_static_visitor<T>::value;
 
 }
 }

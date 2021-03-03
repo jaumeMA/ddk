@@ -93,6 +93,6 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	DerivedTypeMultiVisitor multiVisitor;
 
 	int a = 0;
-	int res = ddk::visit(multiVisitor,foo0,foo1);
+	int res = ddk::visit<DerivedTypeMultiVisitor>(foo0,foo1);
 	int b = 0;
 }

@@ -107,12 +107,17 @@
 #define IS_NUMERIC(_TYPE) \
 	typename std::enable_if<std::is_numeric_v<_TYPE>>::type
 
-#define IS_COORDINATE(_TYPE) \
+#define IS_INDEXED(_TYPE) \
     typename std::enable_if<ddk::concepts::is_coordinate_type<_TYPE>>::type
 
-#define IS_COORDINATE_COND(_TYPE) \
+#define IS_INDEXED_COND(_TYPE) \
     ddk::concepts::is_coordinate_type<_TYPE>
 
+#define TYPE_CONTAINS_SYMBOL(_TYPE,_SYMBOL) \
+	typename std::enable_if<contains_symbol_##_SYMBOL<_TYPE>::value>::type
+
+#define TYPE_CONTAINS_SYMBOL_COND(_TYPE,_SYMBOL) \
+	contains_symbol_##_SYMBOL<_TYPE>::value
 
 namespace ddk
 {
@@ -121,7 +126,7 @@ namespace concepts
 
 template<typename T>
 std::false_type is_coordinate_type_impl(const T&, ...);
-template<typename T, typename = typename T::template nth_coordinate<0>, size_t = T::num_coordinates>
+template<typename T, typename = typename T::place_type, size_t = T::num_places>
 std::true_type is_coordinate_type_impl(T&);
 
 template<typename T>

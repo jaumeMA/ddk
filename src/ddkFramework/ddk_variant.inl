@@ -172,16 +172,26 @@ char variant<Type>::which() const
 	return 0;
 }
 template<typename Type>
-template<typename Visitor>
+TEMPLATE(typename Visitor)
+REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
 typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Visitor&& visitor)
 {
 	return visitor.visit(m_value);
 }
 template<typename Type>
-template<typename Visitor>
+TEMPLATE(typename Visitor)
+REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
 typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Visitor&& visitor) const
 {
 	return visitor.visit(m_value);
+}
+template<typename Type>
+template<typename Visitor, typename ... Args>
+typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Args&& ... i_args) const
+{
+	const Visitor _visitor(std::forward<Args>(i_args)...);
+
+	return _visitor.visit(m_value);
 }
 
 template<typename ... Types>
@@ -321,6 +331,15 @@ REQUIRED(IS_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
 typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_visitor,Variant&& i_variant)
 {
 	return i_variant.visit(std::forward<Visitor>(i_visitor));
+}
+
+TEMPLATE(typename Visitor,typename Variant)
+REQUIRED(IS_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
+typename std::remove_reference<Visitor>::type::return_type visit(Variant&& i_variant)
+{
+	const Visitor _visitor;
+
+	return i_variant.visit(_visitor);
 }
 
 }

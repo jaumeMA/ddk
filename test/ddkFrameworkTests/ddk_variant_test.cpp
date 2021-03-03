@@ -20,23 +20,23 @@ class DDKVariantTest : public Test
 class TestVisitor : public ddk::static_visitor<int>
 {
 public:
-	int visit(const DefaultType& i_value)
+	int visit(const DefaultType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonCopyConstructibleType& i_value)
+	int visit(const nonCopyConstructibleType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonMoveConstructibleType& i_value)
+	int visit(const nonMoveConstructibleType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonCopyAssignableType& i_value)
+	int visit(const nonCopyAssignableType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonMoveAssignableType& i_value)
+	int visit(const nonMoveAssignableType& i_value) const
 	{
 		return i_value.getValue();
 	}
@@ -216,7 +216,7 @@ TEST(DDKVariantTest,visitation)
 	DefaultType nestedValue1(0xFF);
 	foo = nestedValue1;
 
-	EXPECT_EQ(foo.visit(visitor),0xFF);
+	EXPECT_EQ(foo.visit<TestVisitor>(),0xFF);
 
 	nonCopyConstructibleType nestedValue2(0xEE);
 	foo = std::move(nestedValue2);

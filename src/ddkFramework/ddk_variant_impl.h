@@ -3,6 +3,9 @@
 #include "ddk_embedded_type.h"
 #include "ddk_template_helper.h"
 #include "ddk_arena.h"
+#include "ddk_static_visitor.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -70,10 +73,14 @@ public:
     inline bool is() const;
     inline char which() const;
     inline void swap(variant_impl<Types...>& other);
-    template<typename Visitor>
-	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor);
-    template<typename Visitor>
-	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor) const;
+    TEMPLATE(typename Visitor)
+    REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type>,mpl::remove_qualifiers<Visitor>))
+    inline typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor);
+    TEMPLATE(typename Visitor)
+    REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type>,mpl::remove_qualifiers<Visitor>))
+    inline typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor) const;
+    template<typename Visitor, typename ... Args>
+    inline typename mpl::remove_qualifiers<Visitor>::return_type visit(Args&& ... i_args) const;
 
 private:
     typedef typename mpl::max_type<embedded_type<Types>...>::type dominantType;

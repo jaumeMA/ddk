@@ -71,10 +71,14 @@ public:
 	template<size_t Pos>
 	inline bool is() const;
 	inline char which() const;
-	template<typename Visitor>
+	TEMPLATE(typename Visitor)
+	REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
 	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor);
-	template<typename Visitor>
+	TEMPLATE(typename Visitor)
+	REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
 	inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor) const;
+	template<typename Visitor, typename ... Args>
+	inline typename std::remove_reference<Visitor>::type::return_type visit(Args&& ... i_args) const;
 
 private:
 	Type m_value;
@@ -157,6 +161,10 @@ namespace ddk
 TEMPLATE(typename Visitor, typename Variant)
 REQUIRES(IS_BASE_OF_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
 inline typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor, Variant&& i_variant);
+
+TEMPLATE(typename Visitor,typename Variant)
+REQUIRES(IS_BASE_OF_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
+inline typename std::remove_reference<Visitor>::type::return_type visit(Variant&& i_variant);
 
 }
 
