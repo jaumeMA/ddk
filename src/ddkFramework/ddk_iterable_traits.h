@@ -74,7 +74,9 @@ struct base_iterable_traits<const values_tuple<Types...>>
 
     static inline pointer get_address(reference i_ref)
     {
-        return get_address(i_ref,typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{});
+        static const auto _indexs = typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{};
+
+        return get_address(i_ref,_indexs);
     }
     template<size_t ... Indexs>
     static inline pointer get_address(reference i_ref, const mpl::sequence<Indexs...>&)
@@ -83,7 +85,9 @@ struct base_iterable_traits<const values_tuple<Types...>>
     }
     static inline reference get_value(pointer i_ptr)
     {
-        return get_value(i_ptr,typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{});
+        static const auto _indexs = typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{};
+
+        return get_value(i_ptr,_indexs);
     }
     template<size_t ... Indexs>
     static inline reference get_value(pointer i_ptr, const mpl::sequence<Indexs...>&)

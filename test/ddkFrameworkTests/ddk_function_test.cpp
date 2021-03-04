@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
-#include "ddk_function_view.h"
+#include "ddk_function.h"
 #include <utility>
 #include <string>
 #include "test_utils.h"
 #include <map>
-#include "ddk_function_ops.h"
 #include "ddk_projection_callable.h"
 #include "ddk_unique_pointer_wrapper.h"
 

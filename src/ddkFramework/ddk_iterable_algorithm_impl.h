@@ -2,8 +2,8 @@
 
 #include "ddk_future.h"
 #include "ddk_iterable.h"
-#include "ddk_concepts.h"
 #include "ddk_container_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {

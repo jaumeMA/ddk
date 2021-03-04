@@ -99,3 +99,4 @@ inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_t
 }
 
 #include "ddk_iterable_utils.inl"
+#include "ddk_iterable_algorithm.h"

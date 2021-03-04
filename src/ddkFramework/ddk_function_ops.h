@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ddk_function.h"
-
 #define DEFINE_HIGHER_ORDER_UNARY_FUNCTION(NAME,OP) \
 \
 template<typename Return> \
@@ -59,4 +57,15 @@ DEFINE_HIGHER_ORDER_BINARY_FUNCTION(and,&&)
 DEFINE_HIGHER_ORDER_BINARY_FUNCTION(or,||)
 DEFINE_HIGHER_ORDER_BINARY_FUNCTION(xor,^)
 
+template<typename T>
+inline auto sum(const std::initializer_list<T>& i_values);
+template<typename T>
+inline auto prod(const std::initializer_list<T>& i_values);
+
+extern const function<float(float)> sqrt;
+extern const function<float(float)> sin;
+extern const function<float(float)> cos;
+
 }
+
+#include "ddk_function_ops.inl"

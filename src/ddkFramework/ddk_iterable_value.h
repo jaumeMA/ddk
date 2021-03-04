@@ -247,6 +247,7 @@ template<typename Type, typename ... Types>
 struct const_bidirectional_value<Type,Types...> : public const_bidirectional_value<values_tuple<Type,Types...>>
 {
     using const_bidirectional_value<values_tuple<Type,Types...>>::const_bidirectional_value;
+    const_bidirectional_value(const values_tuple<Type,Types...> i_value);
 };
 
 template<typename...>

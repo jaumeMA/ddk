@@ -205,7 +205,7 @@ Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>
     }
 }
 TEMPLATE(typename Function,typename ... Args)
-REQUIRED(IS_NOT_FUNCTION(Function))
+REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE(Function,Args...))
 auto eval(Function&& i_function,Args&& ... i_args)
 {
 	if constexpr (std::is_same<void,decltype(std::declval<Function>().operator()(std::declval<Args>() ...))>::value)

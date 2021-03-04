@@ -204,6 +204,7 @@ public:
 	typedef Return return_type;
 
 	constexpr inherited_functor_impl() = default;
+	constexpr inherited_functor_impl(const inherited_functor_impl&) = default;
 	constexpr inherited_functor_impl(inherited_functor_impl&&) = default;
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
