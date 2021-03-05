@@ -25,7 +25,7 @@ private:
 };
 
 template<typename Callable, typename ... Callables>
-class intersection_function : public intersection_function_executor<intersection_function<Callable,Callables...>,function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...>,typename mpl::aqcuire_callable_return_type<Callable>::args_type>
+class intersection_function : public intersection_function_executor<intersection_function<Callable,Callables...>,function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::type, typename mpl::aqcuire_callable_return_type<Callables>::type ...>,typename mpl::aqcuire_callable_args_type<Callable>::type>
 {
     static const size_t s_num_callables = 1 + mpl::get_num_types<Callables...>();
 
@@ -33,8 +33,8 @@ class intersection_function : public intersection_function_executor<intersection
     friend class intersection_function_executor;
 
 public:
-    typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
-    typedef typename mpl::aqcuire_callable_return_type<Callable>::args_type callable_args_type;
+    typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::type, typename mpl::aqcuire_callable_return_type<Callables>::type ...> callable_return_type;
+    typedef typename mpl::aqcuire_callable_args_type<Callable>::type callable_args_type;
 
     intersection_function(const Callable& i_callable, const Callables& ... i_callables);
     intersection_function(const tuple<Callable,Callables...>& i_callables);

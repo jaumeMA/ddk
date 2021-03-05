@@ -119,7 +119,7 @@ TEMPLATE(typename Functor, typename Arg, typename ... Args)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_NOT_ALLOCATOR(Arg))
 detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&& i_functor, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::num_types<Arg,Args...>, "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_args_type<Functor>::type::size() == mpl::num_types<Arg,Args...>, "Unconsistent number of arguments with number of types");
 
     typedef detail::resolved_callable<Functor> function_type;
 
@@ -158,7 +158,7 @@ TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
 detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
-	static_assert(mpl::aqcuire_callable_return_type<Functor>::args_type::size() == mpl::get_num_types<Arg,Args...>(), "Unconsistent number of arguments with number of types");
+	static_assert(mpl::aqcuire_callable_args_type<Functor>::type::size() == mpl::get_num_types<Arg,Args...>(), "Unconsistent number of arguments with number of types");
 
     typedef detail::resolved_callable<Functor,Allocator> function_type;
 

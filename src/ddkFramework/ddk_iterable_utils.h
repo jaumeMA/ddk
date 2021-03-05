@@ -8,6 +8,7 @@
 #include "ddk_ordered_iterable_impl.h"
 #include "ddk_concepts.h"
 #include "ddk_iterable_concepts.h"
+#include "ddk_container_concepts.h"
 
 namespace ddk
 {
@@ -52,48 +53,26 @@ using transformed_traits = typename transformed_traits_resolver<Traits>::type;
 
 }
 
-//for regular iterables
-template<typename Return, typename Type, typename Allocator, template<typename> typename Traits, typename IterableValue>
-inline ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::iterable<Traits<IterableValue>>& i_rhs);
-
-template<typename Type, typename Allocator, typename Traits>
-inline ddk::detail::iterable<Traits> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs);
-
-template<typename T, typename Traits>
-inline ddk::detail::iterable<Traits> operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs);
-
-template<typename IterableValue, typename Allocator, typename Traits>
-inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<Traits>,ddk::iteration<Traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::iterable<Traits>& i_rhs);
-
-template<typename IterableValue, typename Allocator, typename Traits>
-inline typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<Traits>,ddk::iteration<Traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs);
-
-//for containers
-TEMPLATE(typename Return,typename Type,typename Allocator, typename Container)
-REQUIRES(IS_NOT_BASE_OF_ITERABLE(Container))
+template<typename Return,typename Type,typename Allocator, typename Container>
 inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, Container& i_rhs);
 
-TEMPLATE(typename Type,typename Allocator,typename Container)
-REQUIRES(IS_NOT_BASE_OF_ITERABLE(Container))
+template<typename Type,typename Allocator,typename Container>
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs,Container& i_rhs);
 
-TEMPLATE(typename T,typename Container)
-REQUIRES(IS_NOT_BASE_OF_ITERABLE(Container))
+template<typename T,typename Container>
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container& i_rhs);
 
-TEMPLATE(typename Function,typename Container)
-REQUIRES(IS_CALLABLE(Function),IS_NOT_BASE_OF_ITERABLE(Container))
-inline void operator<<=(Function&& i_lhs, Container& i_rhs);
+TEMPLATE(typename Function,typename Iterable)
+REQUIRES(IS_CALLABLE(Function))
+inline auto operator<<=(Function&& i_lhs, Iterable&i_rhs);
 
 namespace ddk
 {
 
-TEMPLATE(typename ... Iterables)
-REQUIRES(IS_NOT_CALLABLE(Iterables)...)
+template<typename ... Iterables>
 inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables);
 
-TEMPLATE(typename ... Iterables)
-REQUIRES(IS_NOT_CALLABLE(Iterables)...)
+template<typename ... Iterables>
 inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables);
 
 }

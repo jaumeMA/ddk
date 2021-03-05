@@ -548,7 +548,13 @@ inline constexpr size_t nth_pos_of_predicate()
 }
 
 template<template<typename,typename> typename Predicate, typename Type, typename ... Types>
-inline constexpr bool holds_type_any_type()
+inline constexpr bool holds_type_for_any_type()
+{
+    return (Predicate<Types,Type>::value && ...);
+}
+
+template<template<typename,typename> typename Predicate,typename Type,typename ... Types>
+inline constexpr bool holds_type_for_by_type()
 {
     return (Predicate<Type,Types>::value && ...);
 }
@@ -560,9 +566,15 @@ inline constexpr bool holds_any_type()
 }
 
 template<template<typename,typename> typename Predicate, typename Type, typename ... Types>
-inline constexpr bool holds_type_some_type()
+inline constexpr bool holds_type_for_some_type()
 {
     return (Predicate<Types,Type>::value || ...);
+}
+
+template<template<typename,typename> typename Predicate,typename Type,typename ... Types>
+inline constexpr bool holds_type_by_some_type()
+{
+    return (Predicate<Type,Types>::value || ...);
 }
 
 template<template<typename> typename Predicate, typename ... Types>
@@ -575,22 +587,22 @@ template<typename Type, typename ... Types>
 inline constexpr size_t nth_pos_of_type = nth_pos_of_predicate<is_same_type,Type,Types...>();
 
 template<typename Type,typename ... Types>
-inline constexpr bool is_among_types = holds_type_some_type<is_same_type,Type,Types...>();
+inline constexpr bool is_among_types = holds_type_for_some_type<is_same_type,Type,Types...>();
 
 template<typename Type,typename ... Types>
-inline constexpr bool is_not_among_types = (holds_type_some_type<is_same_type,Type,Types...>() == false);
+inline constexpr bool is_not_among_types = (holds_type_for_some_type<is_same_type,Type,Types...>() == false);
 
 template<typename Type,typename ... Types>
-inline constexpr bool is_among_convertible_types = holds_type_some_type<std::is_convertible,Type,Types...>();
+inline constexpr bool is_among_convertible_types = holds_type_for_some_type<std::is_convertible,Type,Types...>();
 
 template<typename Type,typename ... Types>
-inline constexpr bool is_not_among_convertible_types = (holds_type_some_type<std::is_convertible,Type,Types...>() == false);
+inline constexpr bool is_not_among_convertible_types = (holds_type_for_some_type<std::is_convertible,Type,Types...>() == false);
 
 template<typename Type,typename ... Types>
-inline constexpr bool is_among_constructible_types = holds_type_some_type<std::is_constructible,Type,Types...>();
+inline constexpr bool is_among_constructible_types = holds_type_for_some_type<std::is_constructible,Type,Types...>();
 
 template<typename Type,typename ... Types>
-inline constexpr bool is_not_among_constructible_types = (holds_type_some_type<std::is_constructible,Type,Types...>() == false);
+inline constexpr bool is_not_among_constructible_types = (holds_type_for_some_type<std::is_constructible,Type,Types...>() == false);
 
 template<typename Type,typename ... Types>
 inline constexpr size_t first_same_type = nth_pos_of_predicate<is_same_type,Type,Types...>();
@@ -647,7 +659,7 @@ struct type_pack
 		return (num_types<TTypes...> == 0) || (is_among_types<TTypes, Types...> && ...);
 	}
     template<typename ... TTypes>
-    static constexpr bool contains(const TTypes& ...)
+    static constexpr bool contains()
     {
         return num_types<TTypes...> > 0 && num_types<TTypes...> < num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
     }
@@ -659,6 +671,10 @@ struct type_pack
     {
         typedef type_pack<typename nth_type_of<Indexs,Types...>::type ...> type;
     };
+
+    template<size_t Index>
+    using nth_type = typename nth_type_of<Index,Types...>::type;
+
     static constexpr size_t size()
     {
         return num_types<Types...>;

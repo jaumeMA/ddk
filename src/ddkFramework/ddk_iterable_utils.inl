@@ -35,33 +35,7 @@ resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 
 }
 
-template<typename Return, typename Type, typename Allocator, template<typename> typename Traits, typename IterableValue>
-ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, const ddk::detail::iterable<Traits<IterableValue>>& i_rhs)
-{
-    return ddk::detail::iterable<ddk::transformed_traits<Traits<Return>>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<Traits<Return>>,Traits<IterableValue>,Return,Type>>(share(i_rhs),i_lhs.get_transform()));
-}
-template<typename Type, typename Allocator, typename Traits>
-ddk::detail::iterable<Traits> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
-{
-    return ddk::detail::iterable<Traits>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<Traits>>(share(i_rhs),i_lhs.get_filter()));
-}
-template<typename T, typename Traits>
-ddk::detail::iterable<Traits> operator<<=(const ddk::detail::iterable_order<T>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
-{
-	return ddk::detail::iterable<Traits>(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,Traits>>(share(i_rhs), i_lhs.get_order()));
-}
-template<typename IterableValue, typename Allocator, typename Traits>
-typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<Traits>,ddk::iteration<Traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, ddk::detail::iterable<Traits>& i_rhs)
-{
-	return { i_rhs,i_lhs };
-}
-template<typename IterableValue, typename Allocator, typename Traits>
-typename ddk::mpl::static_if<std::is_base_of<ddk::detail::iterable_value_base,IterableValue>::value,ddk::co_iteration<Traits>,ddk::iteration<Traits>>::type operator<<=(const ddk::function<void(IterableValue),Allocator>& i_lhs, const ddk::detail::iterable<Traits>& i_rhs)
-{
-	return { i_rhs,i_lhs };
-}
-TEMPLATE(typename Return,typename Type,typename Allocator, typename Container)
-REQUIRED(IS_NOT_BASE_OF_ITERABLE(Container))
+template<typename Return,typename Type,typename Allocator, typename Container>
 ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_traits<Container> traits_t;
@@ -69,42 +43,42 @@ ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<C
 
 	return ddk::detail::iterable<ddk::transformed_traits<return_traits_t>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<return_traits_t>,traits_t,Return,Type>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_transform()));
 }
-TEMPLATE(typename Type,typename Allocator,typename Container)
-REQUIRED(IS_NOT_BASE_OF_ITERABLE(Container))
+template<typename Type,typename Allocator,typename Container>
 ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs,Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_traits<Container> traits_t;
 
 	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<traits_t>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_filter()));
 }
-TEMPLATE(typename T,typename Container)
-REQUIRED(IS_NOT_BASE_OF_ITERABLE(Container))
+template<typename T,typename Container>
 ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_traits<Container> traits_t;
 
 	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,traits_t>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_order()));
 }
-TEMPLATE(typename Function,typename Container)
-REQUIRED(IS_CALLABLE(Function),IS_NOT_BASE_OF_ITERABLE(Container))
-void operator<<=(Function&& i_lhs, Container& i_rhs)
+TEMPLATE(typename Function, typename Iterable)
+REQUIRED(IS_CALLABLE(Function))
+auto operator<<=(Function&& i_lhs,Iterable& i_rhs)
 {
-	typedef ddk::resolved_iterable_action<const Container> action;
+	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
+	{
+		typedef typename Iterable::traits traits_t;
 
-	try
-	{
-		ddk::visit_iterator(i_rhs,ddk::forwarding_iterable_value_callable<Function,action>{std::forward<Function>(i_lhs)},action{});
+		typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<typename traits_t::iterable_value,Function>,ddk::co_iteration<Iterable,Function>,ddk::iteration<Iterable,Function>>::type ret_type;
+
+		return ret_type{ i_rhs,std::forward<Function>(i_lhs) };
 	}
-	catch(const ddk::suspend_exception&)
+	else
 	{
+		return ddk::iteration<Iterable,Function>{ i_rhs,std::forward<Function>(i_lhs) };
 	}
 }
 
 namespace ddk
 {
 
-TEMPLATE(typename ... Iterables)
-REQUIRED(IS_NOT_CALLABLE(Iterables)...)
+template<typename ... Iterables>
 detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
@@ -114,8 +88,7 @@ detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterable
 	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>>...>>(deduce_iterable(i_iterables) ...) };
 }
 
-TEMPLATE(typename ... Iterables)
-REQUIRED(IS_NOT_CALLABLE(Iterables)...)
+template<typename ... Iterables>
 detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");

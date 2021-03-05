@@ -92,7 +92,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	ddk::make_function([](size_t i_value){printf("cur high order value: %d\n",i_value);}) <<= highOrderIterable;
 
 	std::vector<size_t> highOrderProvaSuma;
-	const auto res = ddk::iter::sqrt <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2 * i_value; }) <<= foo,foo,foo);
+	const auto res = ddk::iter::sqrt <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
 	highOrderProvaSuma <<= ddk::iter::inv(foo);
 	int provaSuma = ddk::iter::sum(foo);
 	int provaSuma2 = ddk::sum({10,4,-25,1897,76});

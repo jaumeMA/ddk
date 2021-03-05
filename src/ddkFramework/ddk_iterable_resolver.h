@@ -78,10 +78,15 @@ struct _iterable_correspondence<iterable<Traits>>
 {
     typedef iterable<Traits> type;
 };
+template<typename Traits>
+struct _iterable_correspondence<const iterable<Traits>>
+{
+    typedef iterable<Traits> type;
+};
 template<typename Iterable>
 struct _iterable_correspondence
 {
-        typedef typename iterable_correspondence_resolver<std::is_const<typename std::remove_reference<Iterable>::type>::value,iterable_adaptor_type_correspondence<typename std::remove_reference<Iterable>::type>,iterable_adaptor<typename std::remove_reference<Iterable>::type>>::type type;
+        typedef typename iterable_correspondence_resolver<std::is_const<Iterable>::value,iterable_adaptor_type_correspondence<mpl::remove_qualifiers<Iterable>>,iterable_adaptor<mpl::remove_qualifiers<Iterable>>>::type type;
 };
 
 template<typename Iterable>
@@ -131,11 +136,11 @@ struct _iterable_action_correspondence<iterable<Traits>>
 template<typename Iterable>
 struct _iterable_action_correspondence
 {
-        typedef typename iterable_action_correspondence_resolver<std::is_const<typename std::remove_reference<Iterable>::type>::value,iterable_adaptor_type_correspondence<typename std::remove_reference<Iterable>::type>,iterable_adaptor<typename std::remove_reference<Iterable>::type>>::type type;
+        typedef typename iterable_action_correspondence_resolver<std::is_const<Iterable>::value,iterable_adaptor_type_correspondence<mpl::remove_qualifiers<Iterable>>,iterable_adaptor<mpl::remove_qualifiers<Iterable>>>::type type;
 };
 
 template<typename Iterable>
-using iterable_action_correspondence = typename iterable_action_correspondence_resolver<std::is_const<typename std::remove_reference<Iterable>::type>::value,iterable_adaptor_type_correspondence<typename std::remove_reference<Iterable>::type>,iterable_adaptor<typename std::remove_reference<Iterable>::type>>::type;
+using iterable_action_correspondence = typename iterable_action_correspondence_resolver<std::is_const<Iterable>::value,iterable_adaptor_type_correspondence<mpl::remove_qualifiers<Iterable>>,iterable_adaptor<mpl::remove_qualifiers<Iterable>>>::type;
 
 }
 }

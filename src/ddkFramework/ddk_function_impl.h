@@ -191,7 +191,7 @@ template<typename Callable, typename Return,typename Type>
 using resolved_functor = typename get_resolved_functor<Callable,Return,Type>::type;
 
 template<typename Callable>
-using resolved_functor_impl = resolved_functor<Callable,typename mpl::aqcuire_callable_return_type<Callable>::return_type,typename mpl::aqcuire_callable_return_type<Callable>::args_type>;
+using resolved_functor_impl = resolved_functor<Callable,typename mpl::aqcuire_callable_return_type<Callable>::type,typename mpl::aqcuire_callable_args_type<Callable>::type>;
 
 template<typename Return,typename ... Types>
 class inherited_functor_impl : public function_base<Return,Types...>

@@ -28,9 +28,9 @@ struct iterable_transform
 	struct _NAME##_iterable_transform : iterable_transform \
 	{ \
 		template<typename Iterable> \
-		friend inline auto operator<<=(const _NAME##_iterable_transform& i_lhs,const Iterable& i_rhs) \
+		friend inline auto operator<<=(const _NAME##_iterable_transform& i_lhs,Iterable&& i_rhs) \
 		{ \
-			return i_lhs() <<= i_rhs; \
+			return i_lhs() <<= std::forward<Iterable>(i_rhs); \
 		} \
 		template<typename,typename...> \
 		struct impl; \
@@ -202,7 +202,8 @@ FUNC_ITERABLE_TRANSFORM(cos,ddk::cos)
 }
 }
 
-template<typename Sink,typename Iterable>
+TEMPLATE(typename Sink,typename Iterable)
+REQUIRES(IS_CONTAINER(Sink))
 inline auto operator<<=(Sink& i_lhs,const Iterable& i_rhs);
 
 #include "ddk_iterable_algorithm.inl"

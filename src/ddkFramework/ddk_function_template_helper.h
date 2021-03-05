@@ -92,26 +92,61 @@ struct aqcuire_callable_return_type;
 template<typename Return, typename ... Args>
 struct aqcuire_callable_return_type<Return(*)(Args...)>
 {
-	typedef Return return_type;
-	typedef type_pack<Args...> args_type;
+	typedef Return type;
 };
 template<typename Return, typename T, typename ... Args>
 struct aqcuire_callable_return_type<Return(T::*)(Args...) const>
 {
-	typedef Return return_type;
-	typedef type_pack<Args...> args_type;
+	typedef Return type;
 };
 template<typename Return,typename T,typename ... Args>
 struct aqcuire_callable_return_type<Return(T::*)(Args...)>
 {
-	typedef Return return_type;
-	typedef type_pack<Args...> args_type;
+	typedef Return type;
 };
 template<typename Functor>
 struct aqcuire_callable_return_type
 {
-	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::return_type return_type;
-	typedef typename aqcuire_callable_return_type<decltype(&Functor::operator())>::args_type args_type;
+private:
+    template<typename T, typename TT = decltype(&Functor::operator())>
+    static typename aqcuire_callable_return_type<TT>::type resolve(T&);
+    template<typename T>
+    static typename T::return_type resolve(const T&, ...);
+
+public:
+    typedef decltype(resolve(std::declval<Functor&>())) type;
+};
+
+template<typename>
+struct aqcuire_callable_args_type;
+
+template<typename Return,typename ... Args>
+struct aqcuire_callable_args_type<Return(*)(Args...)>
+{
+    typedef type_pack<Args...> type;
+};
+template<typename Return,typename T,typename ... Args>
+struct aqcuire_callable_args_type<Return(T::*)(Args...) const>
+{
+    typedef type_pack<Args...> type;
+};
+template<typename Return,typename T,typename ... Args>
+struct aqcuire_callable_args_type<Return(T::*)(Args...)>
+{
+    typedef type_pack<Args...> type;
+};
+template<typename Functor>
+struct aqcuire_callable_args_type
+{
+private:
+    template<typename T,typename TT = decltype(&Functor::operator())>
+    static typename aqcuire_callable_args_type<TT>::type resolve(T&);
+    template<typename T>
+    static typename T::args_type resolve(const T&,...);
+    static void resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Functor&>())) type;
 };
 
 std::false_type _is_function(...);

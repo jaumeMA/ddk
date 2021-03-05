@@ -5,142 +5,174 @@
 namespace ddk
 {
 
-template<typename Traits>
-action_result execute_co_iteration(co_iteration<Traits> i_co_iteration)
+template<typename Iterable, typename Function>
+action_result execute_co_iteration(co_iteration<Iterable,Function> i_co_iteration)
 {
     return i_co_iteration.m_iterable.co_iterate(i_co_iteration.m_try);
 }
 
-template<typename Traits>
-action_result execute_iteration(iteration<Traits> i_iteration)
+template<typename Iterable, typename Function>
+action_result execute_iteration(iteration<Iterable,Function> i_iteration)
 {
 	return i_iteration.m_iterable.iterate(i_iteration.m_try);
 }
 
-template<typename Traits>
-template<typename Reference>
-iteration<Traits>::iteration(const detail::iterable<Traits>& i_iterable,const function<void(Reference)>& i_try)
+template<typename Iterable, typename Function>
+iteration<Iterable,Function>::iteration(Iterable& i_iterable, const Function& i_try)
 : m_iterable(i_iterable)
-, m_try(make_function([i_try](reference i_value) { eval(i_try,std::forward<reference>(i_value)); }))
+, m_try(i_try)
 , m_received(false)
 {
 }
-template<typename Traits>
-iteration<Traits>::iteration(const iteration& other)
+template<typename Iterable, typename Function>
+iteration<Iterable,Function>::iteration(const iteration& other)
 : m_iterable(other.m_iterable)
 , m_try(other.m_try)
 , m_received(true)
 {
 	other.m_received = true;
 }
-template<typename Traits>
-iteration<Traits>::iteration(iteration&& other)
+template<typename Iterable, typename Function>
+iteration<Iterable,Function>::iteration(iteration&& other)
 : m_iterable(std::move(other.m_iterable))
 , m_try(std::move(other.m_try))
 , m_received(other.m_received)
 {
 }
-template<typename Traits>
-iteration<Traits>::~iteration()
+template<typename Iterable, typename Function>
+iteration<Iterable,Function>::~iteration()
 {
 	if(m_received == false)
 	{
 		execute();
 	}
 }
-template<typename Traits>
-iteration<Traits>* iteration<Traits>::operator->()
+template<typename Iterable, typename Function>
+iteration<Iterable,Function>* iteration<Iterable,Function>::operator->()
 {
 	return this;
 }
-template<typename Traits>
-const iteration<Traits>* iteration<Traits>::operator->() const
+template<typename Iterable, typename Function>
+const iteration<Iterable,Function>* iteration<Iterable,Function>::operator->() const
 {
 	return this;
 }
-template<typename Traits>
-action_result iteration<Traits>::execute()
+template<typename Iterable, typename Function>
+action_result iteration<Iterable,Function>::execute()
 {
-	if(m_iterable != nullptr)
+	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
-		return m_iterable.iterate(m_try);
+		if(m_iterable != nullptr)
+		{
+			return m_iterable.iterate(m_try);
+		}
+		else
+		{
+			throw iteration_exception{"exeuting empty iteration" };
+		}
 	}
 	else
 	{
-		throw iteration_exception{"exeuting empty iteration" };
+		typedef ddk::resolved_iterable_action<const Iterable> action;
+
+		try
+		{
+			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Function,action>{m_try},action{});
+		}
+		catch(const ddk::suspend_exception&)
+		{
+		}
+
+		return {};
 	}
 }
-template<typename Traits>
-action_result iteration<Traits>::execute() const
+template<typename Iterable, typename Function>
+action_result iteration<Iterable,Function>::execute() const
 {
-	if(m_iterable != nullptr)
+	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
-		return m_iterable.iterate(m_try);
+		if(m_iterable != nullptr)
+		{
+			return m_iterable.iterate(m_try);
+		}
+		else
+		{
+			throw iteration_exception{ "exeuting empty iteration" };
+		}
 	}
 	else
 	{
-		throw iteration_exception{ "exeuting empty iteration" };
+		typedef ddk::resolved_iterable_action<const Iterable> action;
+
+		try
+		{
+			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Function,action>{m_try},action{});
+		}
+		catch(const ddk::suspend_exception&)
+		{
+		}
+
+		return {};
 	}
 }
-template<typename Traits>
+template<typename Iterable, typename Function>
 template<typename T>
-future<action_result> iteration<Traits>::attach(T&& i_execContext)
+future<action_result> iteration<Iterable,Function>::attach(T&& i_execContext)
 {
-	shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+	shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Function>,*this));
 
 	return res->attach(std::forward<T>(i_execContext));
 }
-template<typename Traits>
-future<action_result> iteration<Traits>::attach(const detail::this_thread_t&)
+template<typename Iterable, typename Function>
+future<action_result> iteration<Iterable,Function>::attach(const detail::this_thread_t&)
 {
-	return make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Function>,*this));
 }
 
-template<typename Traits>
-template<typename IterableValue>
-co_iteration<Traits>::co_iteration(const detail::iterable<Traits>& i_iterable, const function<void(IterableValue)>& i_try)
+template<typename Iterable, typename Function>
+co_iteration<Iterable,Function>::co_iteration(Iterable& i_iterable, const Function& i_try)
 : m_iterable(i_iterable)
-, m_try(make_function([i_try](iterable_value i_value){ eval(i_try,IterableValue(std::move(i_value))); }))
+, m_try(i_try)
 , m_received(false)
 {
 }
-template<typename Traits>
-co_iteration<Traits>::co_iteration(const co_iteration& other)
+template<typename Iterable, typename Function>
+co_iteration<Iterable,Function>::co_iteration(const co_iteration& other)
 : m_iterable(other.m_iterable)
 , m_try(other.m_try)
 , m_received(true)
 {
 	other.m_received = true;
 }
-template<typename Traits>
-co_iteration<Traits>::co_iteration(co_iteration&& other)
+template<typename Iterable, typename Function>
+co_iteration<Iterable,Function>::co_iteration(co_iteration&& other)
 : m_iterable(std::move(other.m_iterable))
 , m_try(std::move(other.m_try))
 , m_received(other.m_received)
 {
 }
-template<typename Traits>
-co_iteration<Traits>::~co_iteration()
+template<typename Iterable, typename Function>
+co_iteration<Iterable,Function>::~co_iteration()
 {
     if(m_received == false)
     {
         execute();
     }
 }
-template<typename Traits>
-co_iteration<Traits>* co_iteration<Traits>::operator->()
+template<typename Iterable, typename Function>
+co_iteration<Iterable,Function>* co_iteration<Iterable,Function>::operator->()
 {
     return this;
 }
-template<typename Traits>
-const co_iteration<Traits>* co_iteration<Traits>::operator->() const
+template<typename Iterable, typename Function>
+const co_iteration<Iterable,Function>* co_iteration<Iterable,Function>::operator->() const
 {
     return this;
 }
-template<typename Traits>
-action_result co_iteration<Traits>::execute()
+template<typename Iterable, typename Function>
+action_result co_iteration<Iterable,Function>::execute()
 {
-    if(m_iterable != nullptr)
+	if(m_iterable != nullptr)
     {
         return m_iterable.co_iterate(m_try);
     }
@@ -149,8 +181,8 @@ action_result co_iteration<Traits>::execute()
 		throw iteration_exception{"Trying to execute empty iteration"};
 	}
 }
-template<typename Traits>
-action_result co_iteration<Traits>::execute() const
+template<typename Iterable, typename Function>
+action_result co_iteration<Iterable,Function>::execute() const
 {
     if(m_iterable != nullptr)
     {
@@ -161,18 +193,18 @@ action_result co_iteration<Traits>::execute() const
 		throw iteration_exception{ "Trying to execute empty iteration" };
 	}
 }
-template<typename Traits>
+template<typename Iterable, typename Function>
 template<typename T>
-future<action_result> co_iteration<Traits>::attach(T&& i_execContext)
+future<action_result> co_iteration<Iterable,Function>::attach(T&& i_execContext)
 {
-    shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+    shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Function>,*this));
 
     return res->attach(std::forward<T>(i_execContext));
 }
-template<typename Traits>
-future<action_result> co_iteration<Traits>::attach(const detail::this_thread_t&)
+template<typename Iterable, typename Function>
+future<action_result> co_iteration<Iterable,Function>::attach(const detail::this_thread_t&)
 {
-	return make_async_executor(make_function(&ddk::execute_co_iteration<Traits>,*this));
+	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Function>,*this));
 }
 
 }

@@ -49,17 +49,17 @@ private:
 };
 
 template<typename Callable, typename ... Callables>
-class union_function : public union_function_executor<union_function<Callable,Callables...>,function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...>,typename mpl::merge_type_packs<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type>
+class union_function : public union_function_executor<union_function<Callable,Callables...>,function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::type, typename mpl::aqcuire_callable_return_type<Callables>::type ...>,typename mpl::merge_type_packs<typename mpl::aqcuire_callable_args_type<Callable>::type,typename mpl::aqcuire_callable_args_type<Callables>::type ...>::type>
 {
     static const size_t s_num_callables = mpl::get_num_types<Callables...>() + 1;
-    typedef typename sequence_composer<0,typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type...>::type composed_sequence_t;
+    typedef typename sequence_composer<0,typename mpl::aqcuire_callable_args_type<Callable>::type,typename mpl::aqcuire_callable_args_type<Callables>::type...>::type composed_sequence_t;
 
     template<typename,typename,typename>
     friend class union_function_executor;
 
 public:
-    typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::return_type, typename mpl::aqcuire_callable_return_type<Callables>::return_type ...> callable_return_type;
-    typedef typename mpl::merge_type_packs<typename mpl::aqcuire_callable_return_type<Callable>::args_type,typename mpl::aqcuire_callable_return_type<Callables>::args_type ...>::type callable_args_type;
+    typedef function_arguments<typename mpl::aqcuire_callable_return_type<Callable>::type, typename mpl::aqcuire_callable_return_type<Callables>::type ...> callable_return_type;
+    typedef typename mpl::merge_type_packs<typename mpl::aqcuire_callable_args_type<Callable>::type,typename mpl::aqcuire_callable_args_type<Callables>::type ...>::type callable_args_type;
 
     union_function(const Callable& i_callable, const Callables& ... i_callables);
     union_function(const tuple<Callable,Callables...>& i_callables);

@@ -13,11 +13,16 @@ namespace view
 
 template<typename Type, typename Allocator>
 inline detail::iterable_filter<function<bool(Type),Allocator>> filter(const function<bool(Type),Allocator>& i_functor);
-template<typename Functor>
+TEMPLATE(typename Functor)
+REQUIRES(IS_CALLABLE(Functor))
 inline detail::iterable_filter<detail::resolved_callable<Functor>> filter(Functor&& i_functor);
 
 template<typename T>
 inline detail::iterable_order<T> order(T&& i_order);
+
+TEMPLATE(typename Iterable, typename ... Predicates)
+REQUIRES(IS_CALLABLE(Predicates)...)
+inline auto group_by(Iterable&& i_lhs, Predicates&& ... i_predicates);
 
 }
 }

@@ -50,10 +50,18 @@ public:
     iterable(const iterable<TTraits>& other);
 	~iterable();
 
-    action_result iterate(const function<void(reference)>& i_try, const shift_action& i_initialAction = go_to_place);
-    action_result iterate(const function<void(const_reference)>& i_try, const shift_action& i_initialAction = go_to_place) const;
-	action_result co_iterate(const function<void(iterable_value)>& i_try,const shift_action& i_initialAction = go_to_place);
-	action_result co_iterate(const function<void(iterable_const_value)>& i_try,const shift_action& i_initialAction = go_to_place) const;
+    TEMPLATE(typename Function)
+    REQUIRES(IS_CALLABLE(Function))        
+    action_result iterate(Function&& i_try, const shift_action& i_initialAction = go_to_place);
+    TEMPLATE(typename Function)
+    REQUIRES(IS_CALLABLE(Function))
+    action_result iterate(Function&& i_try, const shift_action& i_initialAction = go_to_place) const;
+    TEMPLATE(typename Function)
+    REQUIRES(IS_CALLABLE(Function))
+    action_result co_iterate(Function&& i_try,const shift_action& i_initialAction = go_to_place);
+    TEMPLATE(typename Function)
+    REQUIRES(IS_CALLABLE(Function))
+    action_result co_iterate(Function&& i_try,const shift_action& i_initialAction = go_to_place) const;
 	bool inline forward_action(action i_action) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;

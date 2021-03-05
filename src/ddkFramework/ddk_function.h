@@ -28,10 +28,10 @@ template<typename Return, typename Type, typename Allocator = system_allocator>
 using resolved_function = typename get_resolved_function<Return,Type,typename std::enable_if<concepts::is_allocator<Allocator>::value,Allocator>::type>::type;
 
 template<typename Callable, typename Allocator = system_allocator>
-using resolved_callable = resolved_function<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::return_type,typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::args_type,Allocator>;
+using resolved_callable = resolved_function<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::type,typename mpl::aqcuire_callable_args_type<mpl::remove_qualifiers<Callable>>::type,Allocator>;
 
 template<typename Callable, typename Allocator, typename ... Args>
-using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::return_type,detail::unresolved_tuple<mpl::type_pack<Args...>,typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::args_type>,Allocator>;
+using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::type,detail::unresolved_tuple<mpl::type_pack<Args...>,typename mpl::aqcuire_callable_args_type<mpl::remove_qualifiers<Callable>>::type>,Allocator>;
 
 template<typename Arg, typename T>
 using resolved_return_type = typename std::enable_if<is_function_argument<Arg>::value==false,T>::type;
@@ -110,14 +110,22 @@ namespace mpl
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 struct aqcuire_callable_return_type<detail::function_impl<Return(Types...),Allocator,FunctionImpl>>
 {
-	typedef Return return_type;
-	typedef mpl::type_pack<Types...> args_type;
+	typedef Return type;
+};
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
+struct aqcuire_callable_args_type<detail::function_impl<Return(Types...),Allocator,FunctionImpl>>
+{
+    typedef mpl::type_pack<Types...> type;
 };
 template<typename Return, typename ... Types, typename Allocator>
 struct aqcuire_callable_return_type<function<Return(Types...),Allocator>>
 {
-	typedef Return return_type;
-	typedef mpl::type_pack<Types...> args_type;
+	typedef Return type;
+};
+template<typename Return,typename ... Types,typename Allocator>
+struct aqcuire_callable_args_type<function<Return(Types...),Allocator>>
+{
+    typedef mpl::type_pack<Types...> type;
 };
 
 }

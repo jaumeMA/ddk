@@ -7,17 +7,14 @@
 namespace ddk
 {
 
-template<typename Traits>
+template<typename Iterable, typename Function>
 class iteration
 {
-	typedef typename Traits::reference reference;
-
-	template<typename TTraits>
-	friend action_result execute_iteration(iteration<TTraits> i_co_iteration);
+	template<typename IIterable, typename FFunction>
+	friend action_result execute_iteration(iteration<IIterable,FFunction> i_co_iteration);
 
 public:
-	template<typename Reference>
-	iteration(const detail::iterable<Traits>& i_iterable,const function<void(Reference)>& i_try);
+	iteration(Iterable& i_iterable, const Function& i_try);
 	iteration(const iteration&);
 	iteration(iteration&&);
 	~iteration();
@@ -31,22 +28,19 @@ public:
 	future<action_result> attach(const detail::this_thread_t&);
 
 private:
-	detail::iterable<Traits> m_iterable;
-	const function<void(reference)> m_try;
+	Iterable m_iterable;
+	const Function m_try;
 	mutable bool m_received;
 };
 
-template<typename Traits>
+template<typename Iterable, typename Function>
 class co_iteration
 {
-    typedef typename Traits::iterable_value iterable_value;
-
-    template<typename TTraits>
-    friend action_result execute_co_iteration(co_iteration<TTraits> i_co_iteration);
+    template<typename IIterable, typename FFunction>
+    friend action_result execute_co_iteration(co_iteration<IIterable,FFunction> i_co_iteration);
 
 public:
-    template<typename IterableValue>
-    co_iteration(const detail::iterable<Traits>& i_iterable, const function<void(IterableValue)>& i_try);
+    co_iteration(Iterable& i_iterable, const Function& i_try);
     co_iteration(const co_iteration&);
     co_iteration(co_iteration&&);
     ~co_iteration();
@@ -60,8 +54,8 @@ public:
 	future<action_result> attach(const detail::this_thread_t&);
 
 private:
-    detail::iterable<Traits> m_iterable;
-    const function<void(iterable_value)> m_try;
+    Iterable m_iterable;
+    const Function m_try;
     mutable bool m_received;
 };
 

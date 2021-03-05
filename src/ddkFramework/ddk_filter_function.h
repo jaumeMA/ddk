@@ -11,7 +11,7 @@ class filter_function;
 template<typename,typename>
 struct get_resolved_filter_function;
 template<typename ... Types,typename Allocator>
-struct get_resolved_filter_function<tuple<Types...>,Allocator>
+struct get_resolved_filter_function<mpl::type_pack<Types...>,Allocator>
 {
     typedef filter_function<bool(Types...),Allocator> type;
 };
@@ -20,7 +20,7 @@ template<typename Type, typename Allocator = system_allocator>
 using resolved_filter_function = typename get_resolved_filter_function<Type,typename std::enable_if<mpl::is_allocator<Allocator>::value,Allocator>::type>::type;
 
 template<typename Callable, typename Allocator = system_allocator>
-using resolved_filter_callable = resolved_filter_function<typename mpl::aqcuire_callable_return_type<Callable>::args_type,Allocator>;
+using resolved_filter_callable = resolved_filter_function<typename mpl::aqcuire_callable_args_type<Callable>::type,Allocator>;
 
 template<typename ... Types, typename Allocator>
 class filter_function<bool(Types...),Allocator> : public function<bool(Types...),Allocator>
