@@ -10,7 +10,7 @@ detail::function_impl<Return(Types...),Allocator,FunctionImpl> deduce_function(c
 	return i_function;
 }
 TEMPLATE(typename Callable)
-REQUIRES(IS_CALLABLE(Callable))
+REQUIRED(IS_CALLABLE(Callable))
 auto deduce_function(Callable&& i_callable)
 {
 	return make_function(i_callable);
