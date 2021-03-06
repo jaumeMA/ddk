@@ -24,9 +24,9 @@ detail::iterable_order<T> order(T&& i_order)
 }
 TEMPLATE(typename Iterable,typename ... Predicates)
 REQUIRED(IS_CALLABLE(Predicates)...)
-auto group_by(Iterable&& i_lhs, Predicates&& ... i_predicates)
+std::initializer_list<decltype(deduce_iterable(std::declval<Iterable>()))> group_by(Iterable& i_lhs, Predicates&& ... i_predicates)
 {
-	return { (filter(std::forward<Predicates>(i_predicates)) <<= i_lhs) ...};
+	return { filter(deduce_function(i_predicates)) <<= i_lhs ..., filter((!deduce_function(i_predicates) && ...)) <<= i_lhs};
 }
 
 }

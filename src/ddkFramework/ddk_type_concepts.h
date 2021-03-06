@@ -80,6 +80,12 @@
 #define IS_NOT_CLASS_COND(_TYPE) \
 	(std::is_class<_TYPE>::value == false)
 
+#define IS_DEFAULT_CONSTRUCTIBLE(_TYPE) \
+	typename std::enable_if<std::is_default_constructible_v<_TYPE>>::type
+
+#define IS_DEFAULT_CONSTRUCTIBLE_COND(_TYPE) \
+	std::is_default_constructible_v<_TYPE>
+
 #define IS_CONSTRUCTIBLE(_TYPE,...) \
 	typename std::enable_if<std::is_constructible_v<_TYPE,__VA_ARGS__>>::type
 
@@ -107,12 +113,6 @@
 #define IS_NUMERIC(_TYPE) \
 	typename std::enable_if<std::is_numeric_v<_TYPE>>::type
 
-#define IS_INDEXED(_TYPE) \
-    typename std::enable_if<ddk::concepts::is_coordinate_type<_TYPE>>::type
-
-#define IS_INDEXED_COND(_TYPE) \
-    ddk::concepts::is_coordinate_type<_TYPE>
-
 #define TYPE_CONTAINS_SYMBOL(_TYPE,_SYMBOL) \
 	typename std::enable_if<contains_symbol_##_SYMBOL<_TYPE>::value>::type
 
@@ -123,14 +123,6 @@ namespace ddk
 {
 namespace concepts
 {
-
-template<typename T>
-std::false_type is_coordinate_type_impl(const T&, ...);
-template<typename T, typename = typename T::place_type, size_t = T::num_places>
-std::true_type is_coordinate_type_impl(T&);
-
-template<typename T>
-inline constexpr bool is_coordinate_type = decltype(is_coordinate_type_impl(std::declval<T&>()))::value;
 
 }
 }

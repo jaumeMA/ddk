@@ -61,18 +61,9 @@ TEMPLATE(typename Function, typename Iterable)
 REQUIRED(IS_CALLABLE(Function))
 auto operator<<=(Function&& i_lhs,Iterable& i_rhs)
 {
-	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
-	{
-		typedef typename Iterable::traits traits_t;
+	typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<Iterable,Function>,ddk::co_iteration<Iterable,Function>,ddk::iteration<Iterable,Function>>::type ret_type;
 
-		typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<typename traits_t::iterable_value,Function>,ddk::co_iteration<Iterable,Function>,ddk::iteration<Iterable,Function>>::type ret_type;
-
-		return ret_type{ i_rhs,std::forward<Function>(i_lhs) };
-	}
-	else
-	{
-		return ddk::iteration<Iterable,Function>{ i_rhs,std::forward<Function>(i_lhs) };
-	}
+	return ret_type{ i_rhs,std::forward<Function>(i_lhs) };
 }
 
 namespace ddk

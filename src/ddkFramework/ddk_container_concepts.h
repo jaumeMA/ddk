@@ -30,6 +30,12 @@
 #define ASSIGNABLE_FIXED_SIZE_CONTAINER_BY_TYPE_ACCESS(_TYPE,_VALUE) \
 	FIXED_SIZE_CONTAINER(_TYPE),ASSIGNABLE_BY_TYPE_ACCESS(_TYPE,_VALUE)
 
+#define IS_INDEXED(_TYPE) \
+    typename std::enable_if<ddk::concepts::is_coordinate_type<_TYPE>>::type
+
+#define IS_INDEXED_COND(_TYPE) \
+    ddk::concepts::is_coordinate_container<_TYPE>
+
 namespace ddk
 {
 namespace concepts
@@ -40,12 +46,18 @@ struct is_container
 {
 private:
 	template<typename T>
-	static std::true_type _check(T&,decltype(std::declval<T>().size())* = nullptr);
+	static std::true_type sized_type(T&,decltype(std::declval<T>().size())* = nullptr,decltype(std::declval<T>().empty())* = nullptr);
 	template<typename T>
-	static std::false_type _check(const T&,...);
+	static std::false_type sized_type(const T&,...);
+	template<typename T>
+	static std::true_type iterable_type(T&,decltype(std::declval<T>().begin())* = nullptr,decltype(std::declval<T>().end())* = nullptr);
+	template<typename T>
+	static std::false_type iterable_type(const T&,...);
 
 public:
-	static const bool value = decltype(_check(std::declval<Container&>(),nullptr))::value;
+	static const bool value = decltype(sized_type(std::declval<Container&>(),nullptr))::value && 
+							  decltype(iterable_type(std::declval<Container&>(),nullptr))::value && 
+							  std::is_default_constructible<Container>::value;
 };
 
 template<typename Container>
@@ -66,6 +78,14 @@ struct is_container_fixed_size
 {
 	static const bool value = is_container<Container>::value && (is_container_dynamic_size<Container>::value == false);
 };
+
+template<typename T>
+std::false_type is_coordinate_container_impl(const T&,...);
+template<typename T,typename = typename T::place_type,size_t = T::num_places>
+std::true_type is_coordinate_container_impl(T&);
+
+template<typename T>
+inline constexpr bool is_coordinate_container = decltype(is_coordinate_container_impl(std::declval<T&>()))::value;
 
 }
 }

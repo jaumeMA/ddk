@@ -57,6 +57,12 @@ DEFINE_HIGHER_ORDER_BINARY_FUNCTION(and,&&)
 DEFINE_HIGHER_ORDER_BINARY_FUNCTION(or,||)
 DEFINE_HIGHER_ORDER_BINARY_FUNCTION(xor,^)
 
+template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
+inline detail::function_impl<Return(Types...),Allocator,FunctionImpl> deduce_function(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function);
+TEMPLATE(typename Callable)
+REQUIRES(IS_CALLABLE(Callable))
+inline auto deduce_function(Callable&& i_callable);
+
 template<typename T>
 inline auto sum(const std::initializer_list<T>& i_values);
 template<typename T>

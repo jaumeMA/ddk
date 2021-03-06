@@ -69,15 +69,15 @@ inline constexpr bool is_non_const_iterable_v = is_non_const_iterable<typename s
 
 template<typename IterableValue,typename T,size_t ... Indexs>
 typename mpl::static_if<mpl::holds_type_for_some_type<std::is_constructible,IterableValue&&,typename T::template nth_type<Indexs>...>(),std::true_type,std::false_type>::type _resolve_iterable_valued_function(const mpl::sequence<Indexs...>&);
-template<typename IterableValue,typename Function,typename T = mpl::aqcuire_callable_args_type<Function>::type>
-decltype(_resolve_iterable_valued_function<IterableValue,T>(typename mpl::make_sequence<0,T::size()>::type{})) resolve_iterable_valued_function(const IterableValue&,Function&);
-template<typename IterableValue,typename Function,typename = decltype(std::declval<Function>()(std::declval<IterableValue>()))>
-std::true_type resolve_iterable_valued_function(const IterableValue&,const Function&);
+template<typename Iterable,typename Function,typename T = mpl::aqcuire_callable_args_type<Function>::type>
+decltype(_resolve_iterable_valued_function<typename Iterable::iterable_value,T>(typename mpl::make_sequence<0,T::size()>::type{})) resolve_iterable_valued_function(const Iterable&,Function&);
+template<typename Iterable,typename Function,typename = decltype(std::declval<Function>()(std::declval<typename Iterable::iterable_value>()))>
+std::true_type resolve_iterable_valued_function(const Iterable&,const Function&);
 template<typename ... T>
 std::false_type resolve_iterable_valued_function(const T& ...);
 
-template<typename IterableValue,typename Function>
-inline constexpr bool is_iterable_valued_function = decltype(resolve_iterable_valued_function(std::declval<IterableValue>(),std::declval<mpl::remove_qualifiers<Function>&>()))::value;
+template<typename Iterable,typename Function>
+inline constexpr bool is_iterable_valued_function = decltype(resolve_iterable_valued_function(std::declval<Iterable>(),std::declval<mpl::remove_qualifiers<Function>&>()))::value;
 
 }
 }

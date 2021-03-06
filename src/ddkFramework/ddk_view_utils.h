@@ -22,7 +22,7 @@ inline detail::iterable_order<T> order(T&& i_order);
 
 TEMPLATE(typename Iterable, typename ... Predicates)
 REQUIRES(IS_CALLABLE(Predicates)...)
-inline auto group_by(Iterable&& i_lhs, Predicates&& ... i_predicates);
+inline std::initializer_list<decltype(deduce_iterable(std::declval<Iterable>()))> group_by(Iterable& i_lhs, Predicates&& ... i_predicates);
 
 }
 }
