@@ -5,6 +5,7 @@
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
 #include "ddk_iterable_action_resolver.h"
+#include <array>
 
 namespace ddk
 {
@@ -22,7 +23,7 @@ inline detail::iterable_order<T> order(T&& i_order);
 
 TEMPLATE(typename Iterable, typename ... Predicates)
 REQUIRES(IS_CALLABLE(Predicates)...)
-inline std::initializer_list<decltype(deduce_iterable(std::declval<Iterable>()))> group_by(Iterable& i_lhs, Predicates&& ... i_predicates);
+inline std::array<decltype(deduce_iterable(std::declval<Iterable>())),mpl::num_types<Predicates...>+1> group_by(Iterable& i_lhs, Predicates&& ... i_predicates);
 
 }
 }

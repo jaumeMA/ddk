@@ -29,7 +29,7 @@ class iterable : protected iterable_interface
     {
         return lend(i_iterable.m_iterableImpl);
     }
-    friend inline iterable_impl_shared_ref<typename Traits::iterable_base_traits> share(const iterable<Traits>& i_iterable)
+    friend inline iterable_impl_dist_ref<typename Traits::iterable_base_traits> share(const iterable<Traits>& i_iterable)
     {
         return i_iterable.m_iterableImpl;
     }
@@ -44,7 +44,7 @@ public:
     typedef typename Traits::action action;
     typedef Traits traits;
 
-    iterable(iterable_impl_shared_ref<iterable_base_traits> i_iterableImpl);
+    iterable(iterable_impl_dist_ref<iterable_base_traits> i_iterableImpl);
     iterable(const iterable&);
     template<typename TTraits>
     iterable(const iterable<TTraits>& other);
@@ -80,7 +80,7 @@ private:
     const_reference resolve_action(const action&) const;
 
 	mutable lendable<action_state> m_actionState;
-    iterable_impl_shared_ref<iterable_base_traits> m_iterableImpl;
+    iterable_impl_dist_ref<iterable_base_traits> m_iterableImpl;
     mutable iterable_state m_iterableState;
 	mutable detail::await_executor<void> m_executor;
 	mutable typed_arena<reference> m_iterableValueContainer;

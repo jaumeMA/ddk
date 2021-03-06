@@ -13,7 +13,7 @@ Iterable make_iterable(IIterable&& i_iterable)
 {
     typedef typename Iterable::traits traits;
 
-    return Iterable{ make_shared_reference<detail::iterable_impl<traits,IIterable>>(std::forward<IIterable>(i_iterable)) };
+    return Iterable{ make_distributed_reference<detail::iterable_impl<traits,IIterable>>(std::forward<IIterable>(i_iterable)) };
 }
 
 TEMPLATE(typename Iterable)
@@ -30,7 +30,7 @@ resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 	typedef resolved_iterable<Container> iterable_type;
 	typedef typename iterable_type::traits traits;
 
-	return iterable_type{ make_shared_reference<detail::iterable_impl<traits,Container>>(std::forward<Container>(i_iterable)) };
+	return iterable_type{ make_distributed_reference<detail::iterable_impl<traits,Container>>(std::forward<Container>(i_iterable)) };
 }
 
 }

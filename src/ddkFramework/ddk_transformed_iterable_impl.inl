@@ -16,7 +16,7 @@ Function iterable_transform<Function>::get_transform() const
 }
 
 template<typename PublicTraits, typename PrivateTraits, typename Return, typename Type>
-transformed_iterable_impl<PublicTraits,PrivateTraits,Return,Type>::transformed_iterable_impl(iterable_impl_shared_ref<private_iterable_base_traits> i_iterableRef, const function<Return(Type)>& i_transform)
+transformed_iterable_impl<PublicTraits,PrivateTraits,Return,Type>::transformed_iterable_impl(iterable_impl_dist_ref<private_iterable_base_traits> i_iterableRef, const function<Return(Type)>& i_transform)
 : m_iterableRef(i_iterableRef)
 , m_transform(i_transform)
 {

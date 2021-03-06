@@ -16,7 +16,7 @@ const T& iterable_order<T>::get_order() const
 }
 
 template<typename T, typename Traits>
-ordered_iterable_impl<T,Traits>::ordered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const T& i_actionResolver)
+ordered_iterable_impl<T,Traits>::ordered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const T& i_actionResolver)
 : m_iterableRef(i_iterableRef)
 , m_actionResolver(i_actionResolver)
 {

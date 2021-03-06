@@ -30,13 +30,13 @@ public:
 };
 
 template<typename Traits>
-using iterable_impl_shared_ref = shared_reference_wrapper<iterable_impl_interface<Traits>>;
+using iterable_impl_dist_ref = distributed_reference_wrapper<iterable_impl_interface<Traits>>;
 template<typename Traits>
-using iterable_impl_const_shared_ref = shared_reference_wrapper<const iterable_impl_interface<Traits>>;
+using iterable_impl_const_dist_ref = distributed_reference_wrapper<const iterable_impl_interface<Traits>>;
 template<typename Traits>
-using iterable_impl_shared_ptr = shared_pointer_wrapper<iterable_impl_interface<Traits>>;
+using iterable_impl_dist_ptr = distributed_pointer_wrapper<iterable_impl_interface<Traits>>;
 template<typename Traits>
-using iterable_impl_const_shared_ptr = shared_pointer_wrapper<const iterable_impl_interface<Traits>>;
+using iterable_impl_const_dist_ptr = distributed_pointer_wrapper<const iterable_impl_interface<Traits>>;
 
 template<typename Traits>
 using iterable_impl_lent_ref = lent_reference_wrapper<iterable_impl_interface<Traits>>;
@@ -51,13 +51,13 @@ template<typename T>
 using forward_iterable_impl_interface = iterable_impl_interface<detail::forward_iterable_traits<T>>;
 
 template<typename T>
-using forward_iterable_impl_shared_ref = shared_reference_wrapper<iterable_impl_interface<detail::forward_iterable_traits<T>>>;
+using forward_iterable_impl_dist_ref = distributed_reference_wrapper<iterable_impl_interface<detail::forward_iterable_traits<T>>>;
 template<typename T>
-using forward_iterable_impl_const_shared_ref = shared_reference_wrapper<const iterable_impl_interface<detail::forward_iterable_traits<T>>>;
+using forward_iterable_impl_const_dist_ref = distributed_reference_wrapper<const iterable_impl_interface<detail::forward_iterable_traits<T>>>;
 template<typename T>
-using forward_iterable_impl_shared_ptr = shared_pointer_wrapper<iterable_impl_interface<detail::forward_iterable_traits<T>>>;
+using forward_iterable_impl_dist_ptr = distributed_pointer_wrapper<iterable_impl_interface<detail::forward_iterable_traits<T>>>;
 template<typename T>
-using forward_iterable_impl_const_shared_ptr = shared_pointer_wrapper<const iterable_impl_interface<detail::forward_iterable_traits<T>>>;
+using forward_iterable_impl_const_dist_ptr = distributed_pointer_wrapper<const iterable_impl_interface<detail::forward_iterable_traits<T>>>;
 
 template<typename T>
 using forward_iterable_impl_lent_ref = lent_reference_wrapper<iterable_impl_interface<detail::forward_iterable_traits<T>>>;
@@ -69,7 +69,7 @@ template<typename T>
 using forward_iterable_impl_const_lent_ptr = lent_pointer_wrapper<const iterable_impl_interface<detail::forward_iterable_traits<T>>>;
 
 template<typename IterableImpl, typename ... Args>
-inline shared_reference_wrapper<IterableImpl> make_iterable_impl(Args&& ... i_args);
+inline distributed_reference_wrapper<IterableImpl> make_iterable_impl(Args&& ... i_args);
 
 }
 }

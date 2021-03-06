@@ -176,9 +176,9 @@ TEST(DDKIterableTest, iterableUnion)
 	ddk::tuple<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> fooIterable4(fooIterable1,fooIterable2);
 	ddk::detail::union_iterable_impl<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> unionIterable(fooIterable1,fooIterable2);
 
-	for(const auto& iterable : ddk::view::group_by(fooIterable1,[](const A& i_value){ return *i_value < 100; }))
+	for(const auto& iterable : ddk::view::group_by(ddk::concat(fooIterable1,fooIterable2),[](const A& i_value){ return *i_value > 100; },[](const A& i_value){ return *i_value < 50; }))
 	{
-		//ddk::make_function([](const A& i_value) { printf("current value: %d\n",*i_value); }) <<= iterable;
+		ddk::make_function([](const A& i_value) { printf("current value: %d\n",*i_value); }) <<= iterable;
 		printf("done\n");
 	}
 

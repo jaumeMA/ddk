@@ -28,7 +28,7 @@ public:
 	typedef typename Traits::const_reference const_reference;
 	typedef typename Traits::action action;
 
-	ordered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const T& i_actionResolver);
+	ordered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const T& i_actionResolver);
 
 private:
 	void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
@@ -36,7 +36,7 @@ private:
 	size_t size() const override;
 	bool empty() const override;
 
-	iterable_impl_shared_ref<iterable_base_traits> m_iterableRef;
+	iterable_impl_dist_ref<iterable_base_traits> m_iterableRef;
 	const T m_actionResolver;
 };
 

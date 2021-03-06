@@ -7,9 +7,9 @@ namespace detail
 {
 
 template<typename IterableImpl, typename ... Args>
-shared_reference_wrapper<IterableImpl> make_iterable_impl(Args&& ... i_args)
+distributed_reference_wrapper<IterableImpl> make_iterable_impl(Args&& ... i_args)
 {
-    return make_shared_reference<IterableImpl>(std::forward<Args>(i_args) ...);
+    return make_distributed_reference<IterableImpl>(std::forward<Args>(i_args) ...);
 }
 
 }

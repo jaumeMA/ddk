@@ -8,7 +8,7 @@ namespace detail
 {
 
 template<typename Traits>
-iterable<Traits>::iterable(iterable_impl_shared_ref<iterable_base_traits> i_iterableImpl)
+iterable<Traits>::iterable(iterable_impl_dist_ref<iterable_base_traits> i_iterableImpl)
 : m_iterableImpl(std::move(i_iterableImpl))
 {
 }

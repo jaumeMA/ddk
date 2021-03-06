@@ -18,7 +18,7 @@ Function iterable_filter<Function>::get_filter() const
 }
 
 template<typename Traits>
-filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<bool(const_reference)>& i_filter)
+filtered_iterable_impl<Traits>::filtered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const function<bool(const_reference)>& i_filter)
 : m_iterableRef(i_iterableRef)
 , m_filter(i_filter)
 {
@@ -38,7 +38,7 @@ size_t filtered_iterable_impl<Traits>::size() const
 {
     size_t res = 0;
 
-    auto sizeChecker = [&res,this](const_reference i_value) mutable -> action
+    const auto sizeChecker = [&](const_reference i_value) mutable -> action
                         {
                             if(eval(m_filter,i_value))
                             {
@@ -58,7 +58,7 @@ bool filtered_iterable_impl<Traits>::empty() const
 {
     bool res = true;
 
-    auto emptyChecker = [&res,this](const_reference i_value) mutable -> action
+    const auto emptyChecker = [&](const_reference i_value) mutable -> action
                         {
                             if(eval(m_filter,i_value))
                             {

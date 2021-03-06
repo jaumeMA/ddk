@@ -19,13 +19,13 @@ public:
     typedef typename Traits::const_reference const_reference;
     typedef typename Traits::action action;
 
-    async_iterable_impl(iterable_impl_shared_ref<iterable_base_traits> i_iterableRef, const function<reference(private_reference)>& i_transform);
+    async_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const function<reference(private_reference)>& i_transform);
 
 private:
     void iterate_impl(const function<action(reference)>& i_try) override;
     void iterate_impl(const function<action(const_reference)>& i_try) const override;
 
-    iterable_impl_shared_ref<private_iterable_base_traits> m_iterableRef;
+    iterable_impl_dist_ref<private_iterable_base_traits> m_iterableRef;
 
 };
 
