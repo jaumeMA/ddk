@@ -26,7 +26,7 @@ TEMPLATE(typename Iterable,typename ... Predicates)
 REQUIRED(IS_CALLABLE(Predicates)...)
 std::initializer_list<decltype(deduce_iterable(std::declval<Iterable>()))> group_by(Iterable& i_lhs, Predicates&& ... i_predicates)
 {
-	return { filter(deduce_function(i_predicates)) <<= i_lhs ..., filter((!deduce_function(i_predicates) && ...)) <<= i_lhs};
+	return { filter(deduce_function(i_predicates)) <<= deduce_iterable(i_lhs) ..., filter((!deduce_function(i_predicates) && ...)) <<= deduce_iterable(i_lhs)};
 }
 
 }
