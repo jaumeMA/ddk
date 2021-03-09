@@ -23,6 +23,8 @@ public:
 	inline bool valid() const noexcept;
 
 protected:
+	typedef typename Adaptor::difference_type difference_type;
+
 	Adaptor m_adaptor;
 	action_state_lent_ptr m_actionStatePtr;
 	mutable FinalAction m_currAction;

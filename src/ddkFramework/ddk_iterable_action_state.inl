@@ -38,5 +38,17 @@ T&& action_state::forward_result()
 {
     return std::move(m_actionResult).template extract_as<T>();
 }
+template<typename Visitor>
+typename Visitor::return_type action_state::visit(Visitor& i_visitor) const
+{
+	if constexpr(std::is_same<void,typename Visitor::return_type>::value)
+	{
+		m_actionResult.error().visit(i_visitor);
+	}
+	else
+	{
+		return m_actionResult.error().visit(i_visitor);
+	}
+}
 
 }

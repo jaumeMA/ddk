@@ -5,46 +5,35 @@ namespace detail
 {
 
 template<typename Error>
-error_impl<Error>::error_impl(const Error& i_errorCode)
-: m_errorCode(i_errorCode)
+error_impl<Error>::error_impl(const Error& i_error)
+: m_error(i_error)
 {
 }
 template<typename Error>
-error_impl<Error>::error_impl(const typename Error::__val__& i_errorCode)
-: m_errorCode(i_errorCode)
-{
-}
-template<typename Error>
-error_impl<Error>::error_impl(const Error& i_errorCode, const std::string& i_errorDesc)
-: m_errorCode(i_errorCode)
+error_impl<Error>::error_impl(const Error& i_error, const std::string& i_errorDesc)
+: m_error(i_error)
 , m_errorDesc(i_errorDesc)
 {
 }
 template<typename Error>
-error_impl<Error>::error_impl(const typename Error::__val__& i_errorCode,const std::string& i_errorDesc)
-: m_errorCode(i_errorCode)
-,m_errorDesc(i_errorDesc)
+Error error_impl<Error>::get_error() const
 {
+    return m_error;
 }
 template<typename Error>
-Error error_impl<Error>::get_code() const
-{
-    return m_errorCode;
-}
-template<typename Error>
-std::string error_impl<Error>::get_description() const
+const std::string& error_impl<Error>::get_description() const
 {
     return m_errorDesc;
 }
 template<typename Error>
 bool error_impl<Error>::operator==(const error_impl<Error>& i_error) const
 {
-    return m_errorCode == i_error.m_errorCode;
+    return m_error == i_error.m_error;
 }
 template<typename Error>
 bool error_impl<Error>::operator!=(const error_impl<Error>& i_error) const
 {
-    return m_errorCode == i_error.m_errorCode;
+    return m_error == i_error.m_error;
 }
 
 template<typename Error, typename ... NestedErrors>
@@ -69,7 +58,7 @@ const NestedError& error_impl<Error,NestedErrors...>::get_nested_error() const
 }
 template<typename Error, typename ... NestedErrors>
 template<typename Visitor>
-typename Visitor::result_type error_impl<Error,NestedErrors...>::visit(Visitor&& i_visitor)
+typename mpl::remove_qualifiers<Visitor>::return_type error_impl<Error,NestedErrors...>::visit(Visitor&& i_visitor) const
 {
     return m_nestedErrors.visit(i_visitor);
 }

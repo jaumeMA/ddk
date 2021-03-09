@@ -13,20 +13,21 @@ class iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>
 
 public:
     typedef variant<T...> value_type;
+	typedef long long difference_type;
 
 	iterable_adaptor(tuple<T...>& i_iterable,const ddk::shift_action& i_initialAction);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink);
+	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const;
+	inline difference_type forward_next_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink);
+	inline difference_type forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) const;
+	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink);
+	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const;
+	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
 	inline bool valid() const noexcept;
 
 private:
@@ -53,20 +54,21 @@ class iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>
 
 public:
     typedef variant<T...> value_type;
+	typedef long long difference_type;
 
 	iterable_adaptor(const tuple<T...>& i_iterable,const ddk::shift_action& i_initialAction);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink);
+	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const;
+	inline difference_type forward_next_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink);
+	inline difference_type forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) const;
+	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink);
+	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const;
+	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
 	inline bool valid() const noexcept;
 
 private:

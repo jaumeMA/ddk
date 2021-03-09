@@ -25,11 +25,19 @@ class iterable : protected iterable_interface
     template<typename TTraits>
     friend class iterable;
 	friend typename Traits::iterable_tag iterable_tag_resolver(const iterable&);
-	friend inline iterable_impl_lent_ref<typename Traits::iterable_base_traits> lend(const iterable<Traits>& i_iterable)
+	friend inline iterable_impl_lent_ref<typename Traits::iterable_base_traits> lend(iterable<Traits>& i_iterable)
     {
         return lend(i_iterable.m_iterableImpl);
     }
-    friend inline iterable_impl_dist_ref<typename Traits::iterable_base_traits> share(const iterable<Traits>& i_iterable)
+    friend inline const iterable_impl_lent_ref<typename Traits::iterable_base_traits> lend(const iterable<Traits>& i_iterable)
+    {
+        return lend(i_iterable.m_iterableImpl);
+    }
+    friend inline iterable_impl_dist_ref<typename Traits::iterable_base_traits> share(iterable<Traits>& i_iterable)
+    {
+        return i_iterable.m_iterableImpl;
+    }
+    friend inline const iterable_impl_dist_ref<typename Traits::iterable_base_traits> share(const iterable<Traits>& i_iterable)
     {
         return i_iterable.m_iterableImpl;
     }
@@ -62,7 +70,7 @@ public:
     TEMPLATE(typename Function)
     REQUIRES(IS_CALLABLE(Function))
     action_result co_iterate(Function&& i_try,const shift_action& i_initialAction = go_to_place) const;
-	bool inline forward_action(action i_action) const;
+    bool inline forward_action(action i_action) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;
     size_t inline size() const;

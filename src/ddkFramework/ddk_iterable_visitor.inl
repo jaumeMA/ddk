@@ -42,7 +42,9 @@ void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::operator()(T&& 
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::visit(const go_forward_action& i_action)
 {
-	if(this->m_adaptor.forward_next_value_in(*this))
+	const difference_type pendingShift = this->m_adaptor.forward_next_value_in(*this);
+
+	if(pendingShift == 0)
 	{
 		if(this->m_actionStatePtr)
 		{
@@ -55,7 +57,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::v
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
 		}
 
 		return false;
@@ -136,7 +138,9 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::visit(const go_backward_action& i_action)
 {
-	if(this->m_adaptor.forward_prev_value_in(*this))
+	const difference_type pendingShift = this->m_adaptor.forward_prev_value_in(*this);
+
+	if(pendingShift == 0)
 	{
 		if(this->m_actionStatePtr)
 		{
@@ -149,7 +153,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Ada
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
 		}
 
 		return false;
@@ -158,7 +162,9 @@ bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Ada
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::visit(const go_backward_action& i_action)
 {
-	if(this->m_adaptor.forward_prev_value_in(*this))
+	const difference_type pendingShift = this->m_adaptor.forward_prev_value_in(*this);
+
+	if(pendingShift == 0)
 	{
 		if(this->m_actionStatePtr)
 		{
@@ -171,7 +177,7 @@ bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>:
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
 		}
 
 		return false;
@@ -180,9 +186,10 @@ bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>:
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Adaptor>::visit(const shift_action& i_action)
 {
-	const int currShift = i_action.shifting();
+	const difference_type currShift = i_action.shifting();
+	const difference_type pendingShift = this->m_adaptor.forward_shift_value_in(currShift,*this);
 
-	if(this->m_adaptor.forward_shift_value_in(currShift,*this))
+	if(pendingShift == 0)
 	{
 		if(this->m_actionStatePtr)
 		{
@@ -195,7 +202,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Ada
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError{ShiftActionError::ShiftOutOfBounds}));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
 		}
 
 		return false;
@@ -204,9 +211,10 @@ bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Ada
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
 bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>::visit(const shift_action& i_action)
 {
-	const int currShift = i_action.shifting();
+	const difference_type currShift = i_action.shifting();
+	const difference_type pendingShift = this->m_adaptor.forward_shift_value_in(currShift,*this);
 
-	if(this->m_adaptor.forward_shift_value_in(currShift,*this))
+	if(pendingShift == 0)
 	{
 		if(this->m_actionStatePtr)
 		{
@@ -219,7 +227,7 @@ bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>:
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError::ShiftOutOfBounds));
+			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
 		}
 
 		return false;

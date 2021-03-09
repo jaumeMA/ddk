@@ -22,6 +22,7 @@ public:
 	typedef typename Iterable::const_reference const_reference;
 	typedef typename Iterable::pointer pointer;
 	typedef typename Iterable::const_pointer const_pointer;
+	typedef typename long long difference_type;
 
 	template<typename Action>
 	iterable_adaptor_base(Iterable& i_iterable, Action&& i_initialAction);
@@ -49,6 +50,7 @@ public:
 	typedef typename Iterable::const_reference const_reference;
 	typedef typename Iterable::const_pointer pointer;
 	typedef typename Iterable::const_pointer const_pointer;
+	typedef typename long long difference_type;
 
 	template<typename Action>
 	iterable_adaptor_base(const Iterable& i_iterable,Action&& i_initialAction);
@@ -71,11 +73,12 @@ public:
 	using typename iterable_adaptor_base<Iterable>::const_reference;
 	using typename iterable_adaptor_base<Iterable>::pointer;
 	using typename iterable_adaptor_base<Iterable>::const_pointer;
+	using typename iterable_adaptor_base<Iterable>::difference_type;
 
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink);
+	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const;
+	inline difference_type forward_next_value_in(Sink&& i_sink) const;
 };
 
 template<typename Iterable>
@@ -89,13 +92,14 @@ public:
 	using typename forward_iterable_adaptor<Iterable>::const_reference;
 	using typename forward_iterable_adaptor<Iterable>::pointer;
 	using typename forward_iterable_adaptor<Iterable>::const_pointer;
+	using typename forward_iterable_adaptor<Iterable>::difference_type;
 
 	template<typename Action>
 	bidirectional_iterable_adaptor(Iterable& i_iterable,Action&& i_initialAction);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink);
+	inline difference_type forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_prev_value_in(Sink&& i_sink) const;
+	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
 
 protected:
 	const reverse_iterator m_endReverseIterator;
@@ -114,11 +118,12 @@ public:
 	using typename bidirectional_iterable_adaptor<Iterable>::const_reference;
 	using typename bidirectional_iterable_adaptor<Iterable>::pointer;
 	using typename bidirectional_iterable_adaptor<Iterable>::const_pointer;
+	using typename bidirectional_iterable_adaptor<Iterable>::difference_type;
 
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift, Sink&& i_sink);
+	inline difference_type forward_shift_value_in(difference_type i_shift, Sink&& i_sink);
 	template<typename Sink>
-	inline bool forward_shift_value_in(int i_shift,Sink&& i_sink) const;
+	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
 };
 
 }

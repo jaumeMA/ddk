@@ -10,7 +10,7 @@ iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_ad
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink)
+typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink)
 {
 	if(m_currIndex < s_numTypes)
 	{
@@ -18,7 +18,7 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
@@ -27,7 +27,7 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink) const
+typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex < s_numTypes)
 	{
@@ -35,16 +35,16 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return 1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink)
+typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink)
 {
 	if(m_currIndex >= 0)
 	{
@@ -52,16 +52,16 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return -1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink) const
+typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex >= 0)
 	{
@@ -69,18 +69,18 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return -1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(int i_shift,Sink&& i_sink)
+typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink)
 {
-	size_t newIndex = m_currIndex + i_shift;
+	const difference_type newIndex = m_currIndex + i_shift;
 
 	if(0 <= newIndex && newIndex < s_numTypes)
 	{
@@ -88,18 +88,18 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return (newIndex > 0) ? newIndex - (s_numTypes - 1) : newIndex;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(int i_shift,Sink&& i_sink) const
+typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const
 {
-	size_t newIndex = m_currIndex + i_shift;
+	const difference_type newIndex = m_currIndex + i_shift;
 
 	if(0 <= newIndex && newIndex < s_numTypes)
 	{
@@ -107,11 +107,11 @@ bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return (newIndex > 0) ? newIndex - (s_numTypes - 1) : newIndex;
 	}
 }
 template<size_t ... Indexs, typename ... T>
@@ -163,7 +163,7 @@ iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::itera
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink)
+typename iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink)
 {
 	if(m_currIndex < s_numTypes)
 	{
@@ -171,16 +171,16 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return 1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink) const
+typename iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_next_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex < s_numTypes)
 	{
@@ -188,16 +188,16 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return 1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink)
+typename iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink)
 {
 	if(m_currIndex >= 0)
 	{
@@ -205,16 +205,16 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return -1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink) const
+typename iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_prev_value_in(Sink&& i_sink) const
 {
 	if(m_currIndex >= 0)
 	{
@@ -222,18 +222,18 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return -1;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(int i_shift,Sink&& i_sink)
+typename iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink)
 {
-	size_t newIndex = m_currIndex + i_shift;
+	const difference_type newIndex = m_currIndex + i_shift;
 
 	if(0 <= newIndex && newIndex < s_numTypes)
 	{
@@ -241,18 +241,18 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return (newIndex > 0) ? newIndex - (s_numTypes - 1) : newIndex;
 	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(int i_shift,Sink&& i_sink) const
+typename iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::difference_type iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const
 {
-	size_t newIndex = m_currIndex + i_shift;
+	const difference_type newIndex = m_currIndex + i_shift;
 
 	if(0 <= newIndex && newIndex < s_numTypes)
 	{
@@ -260,11 +260,11 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 
 		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
 
-		return true;
+		return 0;
 	}
 	else
 	{
-		return false;
+		return (newIndex > 0) ? newIndex - (s_numTypes - 1) : newIndex;
 	}
 }
 template<size_t ... Indexs, typename ... T>

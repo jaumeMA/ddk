@@ -62,14 +62,17 @@ typedef ddk::result<void,AddActionError> add_result;
 struct shift_action : base_action
 {
 public:
+    typedef long long difference_type;
+
 	shift_action() = default;
 	shift_action(const shift_action&) = default;
 	shift_action(shift_action&& other);
-	shift_action(int i_targetShift, int i_currShift = 0, bool i_stepByStep = false);
+	shift_action(difference_type i_targetShift,difference_type i_currShift = 0, bool i_stepByStep = false);
 
-    int shifted() const;
-	int shifting() const;
-	shift_action operator()(int i_targetShift,int i_currShift = 0) const;
+    difference_type shifted() const;
+    difference_type target_shift() const;
+    difference_type shifting() const;
+	shift_action operator()(difference_type i_targetShift,difference_type i_currShift = 0) const;
 	bool apply(const shift_action& i_appliedAction);
 	void set_step_by_step(bool i_cond);
 	bool step_by_step() const;
@@ -78,13 +81,24 @@ public:
 	operator bool() const;
 
 private:
-    int m_targetShift = 0;
-	int m_currShift = 0;
+    difference_type m_targetShift = 0;
+	difference_type m_currShift = 0;
 	bool m_stepByStep = false;
 };
-SCOPED_ENUM_DECL(ShiftActionError,
-				 ShiftOutOfBounds,
-				 ItemFiltered);
+
+struct ShiftActionError
+{
+public:
+    typedef long long difference_type;
+
+    ShiftActionError(difference_type i_pendingShift);
+
+    difference_type get_pending_shift() const;
+
+private:
+    difference_type m_pendingShift;
+};
+
 typedef result<void,ShiftActionError> shift_result;
 
 struct go_forward_action : public shift_action

@@ -49,6 +49,8 @@ public:
 	template<typename T>
 	T&& forward_result();
 	action_result get() const;
+	template<typename Visitor>
+	typename Visitor::return_type visit(Visitor& i_visitor) const;
 	bool operator==(result_success_t) const;
 	bool operator!=(result_success_t) const;
 	bool operator==(const action_error& i_error) const;

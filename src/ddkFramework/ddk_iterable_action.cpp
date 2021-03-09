@@ -9,7 +9,7 @@ void stop_action::operator()() const
 	suspend();
 }
 
-shift_action::shift_action(int i_targetShift,int i_currShift,bool i_stepByStep)
+shift_action::shift_action(difference_type i_targetShift,difference_type i_currShift,bool i_stepByStep)
 : m_targetShift(i_targetShift)
 , m_currShift(i_currShift)
 , m_stepByStep(i_stepByStep)
@@ -22,11 +22,15 @@ shift_action::shift_action(shift_action&& other)
 {
 	other.m_currShift = other.m_targetShift;
 }
-int shift_action::shifted() const
+typename shift_action::difference_type shift_action::shifted() const
 {
     return m_currShift;
 }
-int shift_action::shifting() const
+typename shift_action::difference_type shift_action::target_shift() const
+{
+	return m_targetShift;
+}
+typename shift_action::difference_type shift_action::shifting() const
 {
 	if(m_stepByStep && m_targetShift != m_currShift)
 	{
@@ -37,7 +41,7 @@ int shift_action::shifting() const
 		return m_targetShift - m_currShift;
 	}
 }
-shift_action shift_action::operator()(int i_targetShift,int i_currShift) const
+shift_action shift_action::operator()(difference_type i_targetShift,difference_type i_currShift) const
 {
     return shift_action(i_targetShift,i_currShift);
 }
@@ -49,7 +53,15 @@ bool shift_action::apply(const shift_action& i_appliedAction)
 }
 void shift_action::set_step_by_step(bool i_cond)
 {
-	m_stepByStep = i_cond;
+	if(m_stepByStep != i_cond)
+	{
+		m_stepByStep = i_cond;
+
+		if(i_cond && m_targetShift == 0)
+		{
+			m_targetShift = 1;
+		}
+	}
 }
 bool shift_action::step_by_step() const
 {
@@ -120,5 +132,14 @@ const go_forward_action go_next_place = go_forward_action();
 const go_backward_action go_prev_place = go_backward_action();
 const shift_action go_to_place = shift_action(0);
 const shift_action go_no_place = shift_action(0);
+
+ShiftActionError::ShiftActionError(difference_type i_pendingShift)
+: m_pendingShift(i_pendingShift)
+{
+}
+typename ShiftActionError::difference_type ShiftActionError::get_pending_shift() const
+{
+	return m_pendingShift;
+}
 
 }

@@ -43,6 +43,7 @@ public:
     typedef typename MyIterable<int>::value_type value_type;
 	typedef typename MyIterable<int>::reference reference;
 	typedef typename MyIterable<int>::const_reference const_reference;
+	typedef long long difference_type;
 
     template<typename T>
 	MyIterableAdaptor(const MyIterable<T>& i_iterable,const ddk::shift_action& i_initialAction)
@@ -51,17 +52,17 @@ public:
 	{
 	}
 	template<typename Sink>
-	inline bool forward_next_value_in(Sink&& i_sink) const
+	inline difference_type forward_next_value_in(Sink&& i_sink) const
 	{
         if(m_currValue < m_max)
         {
             i_sink(++m_currValue);
 
-            return true;
+            return 0;
         }
         else
         {
-            return false;
+            return 1;
         }
 	}
 	inline bool valid() const

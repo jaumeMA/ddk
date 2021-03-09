@@ -25,14 +25,7 @@ void suspend()
 {
 	ddk::detail::execution_context& currFiberContext = get_current_execution_context();
 
-	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
-	{
-		currYielder->suspend(nullptr);
-	}
-	else
-	{
-		throw suspend_exception{ currFiberContext.get_id() };
-	}
+	throw suspend_exception{ currFiberContext.get_id() };
 }
 void yield()
 {

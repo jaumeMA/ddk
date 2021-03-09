@@ -26,14 +26,13 @@ struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : publ
     typedef size_t(*size_t_func)(const tuple<Iterables...>&);
 
 public:
+    using static_visitor<std::pair<size_t,shift_action>>::return_type;
+
     union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
 
-	std::pair<size_t,shift_action> visit(const stop_action& i_action) const;
-    std::pair<size_t,shift_action> visit(const erase_action& i_action) const;
-    std::pair<size_t,shift_action> visit(const add_action& i_action) const;
-    std::pair<size_t,shift_action> visit(const go_forward_action& i_action) const;
-    std::pair<size_t,shift_action> visit(const go_backward_action& i_action) const;
-    std::pair<size_t,shift_action> visit(const shift_action& i_action) const;
+    std::pair<size_t,shift_action> visit(const ShiftActionError& i_action) const;
+    template<typename T>
+    std::pair<size_t,shift_action> visit(const T& i_action) const;
 
 private:
     template<size_t Index>
@@ -52,10 +51,6 @@ class union_iterable_impl : public iterable_impl_interface<union_iterable_base_t
 {
     static const size_t s_num_iterables = tuple<Iterables...>::size();
     typedef iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>> base_t;
-	template<size_t Index, typename ... IIterables>
-	friend typename union_iterable_impl<IIterables...>::action navigate(union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::reference)>&, const ddk::shift_action&);
-	template<size_t Index, typename ... IIterables>
-	friend typename union_iterable_impl<IIterables...>::action navigate(const union_iterable_impl<IIterables...>& i_iterable, const function<typename union_iterable_impl<IIterables...>::action(typename union_iterable_impl<IIterables...>::const_reference)>&, const ddk::shift_action&);
 
 public:
     using typename base_t::reference;
