@@ -12,6 +12,9 @@ public:
     using tuple<Types...>::tuple;
 };
 
+template<typename Arg, typename ... Args>
+inline function_arguments<Arg,Args...> make_function_arguments(Arg&& i_arg, Args&& ... i_args);
+
 template<typename>
 struct _is_function_argument;
 
@@ -38,3 +41,5 @@ public:
 };
 
 }
+
+#include "ddk_function_arguments.inl"

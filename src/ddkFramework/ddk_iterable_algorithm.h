@@ -38,9 +38,9 @@ struct iterable_transform
 		struct impl<mpl::sequence<Indexs...>,Args...> \
 		{ \
 			template<typename Iterable> \
-			friend inline auto operator<<=(const impl& i_lhs,const Iterable& i_rhs) \
+			friend inline auto operator<<=(const impl& i_lhs, Iterable&& i_rhs) \
 			{ \
-				return i_lhs(i_rhs); \
+				return i_lhs(std::forward<Iterable>(i_rhs)); \
 			} \
 			\
 			constexpr impl(Args ... i_args) \
@@ -68,7 +68,9 @@ struct iterable_transform
 		inline auto operator()(Args&& ... i_args) const \
 		{ \
 			typedef impl<typename mpl::make_sequence<0,mpl::num_types<Args...>>::type,Args...> __iterable_impl; \
-			static const __iterable_impl _impl; \
+			\
+			static const __iterable_impl _impl(std::forward<Args>(i_args)...); \
+			\
 			return _impl; \
 		} \
 	}; \
@@ -116,18 +118,16 @@ struct iterable_transform
 		{ \
 			return i_lhs(i_rhs); \
 		} \
-		template<typename,typename...> \
-		struct impl; \
-		template<size_t ... Indexs, typename ... Iterables> \
-		struct impl<mpl::sequence<Indexs...>,Iterables...> : public detail::inherited_functor_impl<decltype((std::declval<typename Iterables::const_reference>() _OP ...)),values_tuple<typename Iterables::const_reference ...>> \
+		template<typename ... Iterables> \
+		struct impl : public detail::inherited_functor_impl<decltype((std::declval<typename Iterables::const_reference>() _OP ...)), typename Iterables::const_reference ...> \
 		{ \
 			struct callable_tag; \
 			constexpr impl() = default; \
 			constexpr impl(const impl&) = default; \
 			constexpr impl(impl&&) = default; \
-			decltype((std::declval<typename Iterables::const_reference>() _OP ...)) operator()(detail::forwarded_arg<values_tuple<typename Iterables::const_reference ...>> i_values) const override \
+			decltype((std::declval<typename Iterables::const_reference>() _OP ...)) operator()(detail::forwarded_arg<typename Iterables::const_reference> ... i_values) const override \
 			{ \
-				return (i_values.template get<Indexs>() _OP ...); \
+				return (i_values _OP ...); \
 			} \
 		}; \
 	\
@@ -145,7 +145,7 @@ struct iterable_transform
 			\
 			make_function([&acc](const_reference i_value){ acc.template set_value<value_type>(acc.empty() ? i_value : (acc.template get<value_type>() _OP i_value)); }) <<= i_iterable; \
 			\
-			value_type res = (acc.empty()) ? 0 : acc.template get<value_type>(); \
+			const value_type res = (acc.empty()) ? 0 : acc.template get<value_type>(); \
 			\
 			acc.template destroy<value_type>(); \
 			\
@@ -155,7 +155,7 @@ struct iterable_transform
 		inline auto operator()(Iterable1&& i_iterable1, Iterable2&& i_iterable2, Iterables&& ... i_iterables) const \
 		{ \
 			using ::operator<<=; \
-			typedef impl<typename mpl::make_sequence<0,2+mpl::num_types<Iterables...>>::type,mpl::remove_qualifiers<Iterable1>,mpl::remove_qualifiers<Iterable2>,mpl::remove_qualifiers<Iterables>...> __iterable_impl; \
+			typedef impl<mpl::remove_qualifiers<Iterable1>,mpl::remove_qualifiers<Iterable2>,mpl::remove_qualifiers<Iterables>...> __iterable_impl; \
 			static const __iterable_impl _impl; \
 			return transform(_impl) <<= ddk::fusion(deduce_iterable(i_iterable1),deduce_iterable(i_iterable2),deduce_iterable(i_iterables) ...); \
 		} \
@@ -196,6 +196,7 @@ BINARY_ITERABLE_TRANSFORM(prod,*)
 BINARY_ITERABLE_TRANSFORM(div,/ )
 
 FUNC_ITERABLE_TRANSFORM(sqrt,ddk::sqrt)
+FUNC_ITERABLE_TRANSFORM(pow,ddk::pow)
 FUNC_ITERABLE_TRANSFORM(sin,ddk::sin)
 FUNC_ITERABLE_TRANSFORM(cos,ddk::cos)
 

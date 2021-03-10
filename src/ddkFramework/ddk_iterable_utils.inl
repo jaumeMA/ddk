@@ -35,20 +35,21 @@ resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 
 }
 
-template<typename Return,typename Type,typename Allocator, typename Container>
-ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, Container& i_rhs)
+template<typename Function, typename Container>
+ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,typename ddk::mpl::aqcuire_callable_return_type<Function>::type>>> operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_traits<Container> traits_t;
-	typedef ddk::resolved_iterable_traits_as<Container,Return> return_traits_t;
+	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_t;
+	typedef ddk::resolved_iterable_traits_as<Container,return_t> return_traits_t;
 
-	return ddk::detail::iterable<ddk::transformed_traits<return_traits_t>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<return_traits_t>,traits_t,Return,Type>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_transform()));
+	return ddk::detail::iterable<ddk::transformed_traits<return_traits_t>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<return_traits_t>,traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_transform()));
 }
-template<typename Type,typename Allocator,typename Container>
-ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs,Container& i_rhs)
+template<typename Function,typename Container>
+ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container& i_rhs)
 {
 	typedef ddk::resolved_iterable_traits<Container> traits_t;
 
-	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<traits_t>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_filter()));
+	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_filter()));
 }
 template<typename T,typename Container>
 ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container& i_rhs)
@@ -70,7 +71,7 @@ namespace ddk
 {
 
 template<typename ... Iterables>
-detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables)
+detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(Iterables& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
 
@@ -80,7 +81,7 @@ detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterable
 }
 
 template<typename ... Iterables>
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables)
+detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
 

@@ -69,6 +69,7 @@ template<typename T>
 inline auto prod(const std::initializer_list<T>& i_values);
 
 extern const function<float(float)> sqrt;
+extern const function<float(float,float)> pow;
 extern const function<float(float)> sin;
 extern const function<float(float)> cos;
 

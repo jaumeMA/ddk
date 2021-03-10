@@ -20,12 +20,11 @@ private:
 	const Function m_transform;
 };
 
-template<typename PublicTraits, typename PrivateTraits, typename Return, typename Type>
+template<typename PublicTraits, typename PrivateTraits, typename Function>
 class transformed_iterable_impl : public iterable_impl_interface<typename PublicTraits::iterable_base_traits>
 {
     static_assert(std::is_same<typename PublicTraits::action,typename PrivateTraits::action>::value, "Actions from both public and private traits shall be the same");
-    static_assert(std::is_constructible<typename PrivateTraits::reference,Type>::value || std::is_convertible<typename PrivateTraits::reference,Type>::value, "You shall provider consistent transformations");
-    static_assert(std::is_constructible<Return,typename PublicTraits::reference>::value || std::is_convertible<Return,typename PublicTraits::reference>::value, "You shall provider consistent transformations");
+    static_assert(std::is_constructible<typename mpl::aqcuire_callable_return_type<Function>::type,typename PublicTraits::reference>::value || std::is_convertible<typename mpl::aqcuire_callable_return_type<Function>::type,typename PublicTraits::reference>::value, "You shall provider consistent transformations");
 
     typedef typename PrivateTraits::iterable_base_traits private_iterable_base_traits;
     typedef typename PrivateTraits::reference private_reference;
@@ -37,7 +36,7 @@ public:
     typedef typename PublicTraits::const_reference const_reference;
     typedef typename PublicTraits::action action;
 
-    transformed_iterable_impl(iterable_impl_dist_ref<private_iterable_base_traits> i_iterableRef, const function<Return(Type)>& i_transform);
+    transformed_iterable_impl(iterable_impl_dist_ref<private_iterable_base_traits> i_iterableRef, const Function& i_transform);
 
 private:
     void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
@@ -46,7 +45,7 @@ private:
     bool empty() const override;
 
     iterable_impl_dist_ref<private_iterable_base_traits> m_iterableRef;
-    const function<Return(Type)> m_transform;
+    const Function m_transform;
 };
 
 }

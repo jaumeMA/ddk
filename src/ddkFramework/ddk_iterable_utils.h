@@ -53,11 +53,11 @@ using transformed_traits = typename transformed_traits_resolver<Traits>::type;
 
 }
 
-template<typename Return,typename Type,typename Allocator, typename Container>
-inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,Return>>> operator<<=(const ddk::detail::iterable_transform<ddk::function<Return(Type),Allocator>>& i_lhs, Container& i_rhs);
+template<typename Function, typename Container>
+inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,typename ddk::mpl::aqcuire_callable_return_type<Function>::type>>> operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container& i_rhs);
 
-template<typename Type,typename Allocator,typename Container>
-inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<ddk::function<bool(Type),Allocator>>& i_lhs,Container& i_rhs);
+template<typename Function,typename Container>
+inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container& i_rhs);
 
 template<typename T,typename Container>
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container& i_rhs);
@@ -70,10 +70,10 @@ namespace ddk
 {
 
 template<typename ... Iterables>
-inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(const Iterables& ... i_iterables);
+inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(Iterables& ... i_iterables);
 
 template<typename ... Iterables>
-inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(const Iterables& ... i_iterables);
+inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables& ... i_iterables);
 
 }
 

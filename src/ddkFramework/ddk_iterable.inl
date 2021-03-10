@@ -1,6 +1,7 @@
 
 #include "ddk_await.h"
 #include "ddk_transformed_iterable_action_impl.h"
+#include "ddk_iterable_interface_utils.h"
 
 namespace ddk
 {
@@ -37,9 +38,11 @@ action_result iterable<Traits>::iterate(Function&& i_try, const shift_action& i_
 	{
 		m_iterableImpl->iterate_impl(make_function([&](reference i_value)
 		{
+			typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
+
 			m_iterableState.apply(m_currAction);
 
-			eval(std::forward<Function>(i_try),i_value);
+			call_iterable_payload(range_seq{},std::forward<Function>(i_try),i_value);
 
 			return m_currAction;
 		}),i_initialAction,lend(m_actionState));
@@ -59,9 +62,11 @@ action_result iterable<Traits>::iterate(Function&& i_try, const shift_action& i_
 	{
 		m_iterableImpl->iterate_impl(make_function([&](const_reference i_value)
 		{
+			typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
+
 			m_iterableState.apply(m_currAction);
 
-			eval(std::forward<Function>(i_try),i_value);
+			call_iterable_payload(range_seq{},std::forward<Function>(i_try),i_value);
 
 			return m_currAction;
 		}),i_initialAction,lend(m_actionState));

@@ -74,11 +74,11 @@ struct tuple_visitor
 TEST(DDKIterableTest, forwardIterableConstruction)
 {
 	std::vector<int> foo;
-    foo.push_back(10);
+    foo.push_back(1);
+    foo.push_back(2);
+    foo.push_back(3);
     foo.push_back(4);
-    foo.push_back(-25);
-    foo.push_back(1897);
-    foo.push_back(76);
+    foo.push_back(5);
 
 	ddk::high_order_array<size_t,2,2> highOrderProva;
 
@@ -92,7 +92,8 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	ddk::make_function([](size_t i_value){printf("cur high order value: %d\n",i_value);}) <<= highOrderIterable;
 
 	std::vector<size_t> highOrderProvaSuma;
-	const auto res = ddk::iter::sqrt <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
+	const auto res = ddk::iter::sum <<= ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
+	const auto ress = ddk::iter::sum <<= ddk::iter::pow <<= ddk::fusion(foo,highOrderProva);
 	highOrderProvaSuma <<= ddk::iter::inv(foo);
 	int provaSuma = ddk::iter::sum(foo);
 	int provaSuma2 = ddk::sum({10,4,-25,1897,76});
@@ -161,6 +162,7 @@ TEST(DDKIterableTest, iterableUnion)
     foo2.push_back(101);
     foo2.push_back(3);
     foo2.push_back(-53);
+	foo2.push_back(-67);
 
     std::vector<E> foo3;
     foo3.push_back(66);
@@ -182,10 +184,12 @@ TEST(DDKIterableTest, iterableUnion)
 		printf("done\n");
 	}
 
+	ddk::make_function([](const A& i_value1,const A& i_value2){ printf("VALORS: %d, %d\n",*i_value1,*i_value2);}) <<= ddk::fusion(fooIterable1,fooIterable2);
+
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("1 current value: %d at %zd\n",**i_value,value_position(i_value)); }) <<=  ddk::concat(fooIterable1,fooIterable2);
     ddk::const_random_access_iterable<A> fooIterableUnion2 = ddk::concat(fooIterable1,fooIterable2,fooIterable3);
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value) { printf("2 current value: %d\n",*i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= fooIterableUnion2,ddk::make_function([](ddk::action_result i_result) { if(i_result != ddk::success) printf("error: %d\n",i_result.error().get_nested_error<ddk::EraseActionError>().getValue()); });
-	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("3 current value: %d\n",*i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= ddk::iter::transform([](ddk::values_tuple<const A,const D,const A> i_value) { return i_value->get<0>(); }) <<= ddk::fusion(ddk::concat(fooIterable1,fooIterable2),fooIterable2, ddk::concat(fooIterable1,fooIterable3)), ddk::make_function([](ddk::action_result i_result){ if(i_result != ddk::success) printf("error: %d\n", i_result.error().get_nested_error<ddk::EraseActionError>().getValue()); });
+	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("3 current value: %d\n",*i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= ddk::iter::transform([](const A& i_val1, const D& i_val2, const A& i_val3) { return i_val1; }) <<= ddk::fusion(ddk::concat(fooIterable1,fooIterable2),fooIterable2, ddk::concat(fooIterable1,fooIterable3)), ddk::make_function([](ddk::action_result i_result){ if(i_result != ddk::success) printf("error: %d\n", i_result.error().get_nested_error<ddk::EraseActionError>().getValue()); });
 }
 
 std::vector<int> createLargeVector2(size_t size)

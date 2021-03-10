@@ -78,7 +78,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 	{
 		i_sink(m_iterable.at(m_currIndex = newIndex));
 
-		return 1;
+		return 0;
 	}
 	else
 	{
