@@ -15,15 +15,6 @@
 #include "ddk_container_concepts.h"
 #include "ddk_function_ops.h"
 
-namespace ddk
-{
-namespace iter
-{
-
-struct iterable_transform
-{
-};
-
 #define FUNC_ITERABLE_TRANSFORM(_NAME,_FUNC) \
 	struct _NAME##_iterable_transform : iterable_transform \
 	{ \
@@ -151,16 +142,25 @@ struct iterable_transform
 			\
 			return res; \
 		} \
-		template<typename Iterable1, typename Iterable2, typename ... Iterables> \
-		inline auto operator()(Iterable1&& i_iterable1, Iterable2&& i_iterable2, Iterables&& ... i_iterables) const \
+		template<typename Iterable, typename ... Iterables> \
+		inline auto operator()(Iterable&& i_iterable, Iterables&& ... i_iterables) const \
 		{ \
 			using ::operator<<=; \
-			typedef impl<mpl::remove_qualifiers<Iterable1>,mpl::remove_qualifiers<Iterable2>,mpl::remove_qualifiers<Iterables>...> __iterable_impl; \
+			typedef impl<mpl::remove_qualifiers<Iterable>,mpl::remove_qualifiers<Iterables>...> __iterable_impl; \
 			static const __iterable_impl _impl; \
-			return transform(_impl) <<= ddk::fusion(deduce_iterable(i_iterable1),deduce_iterable(i_iterable2),deduce_iterable(i_iterables) ...); \
+			return transform(_impl) <<= ddk::fusion(deduce_iterable(std::forward<Iterable>(i_iterable)),deduce_iterable(std::forward<Iterables>(i_iterables)) ...); \
 		} \
 	}; \
 	const _NAME##_iterable_transform _NAME;
+
+namespace ddk
+{
+namespace iter
+{
+
+struct iterable_transform
+{
+};
 
 struct transform_iterable_transform : iterable_transform
 {
@@ -188,6 +188,16 @@ public:
 };
 const transform_iterable_transform transform;
 
+}
+}
+
+#include "ddk_iterable_algorithm.inl"
+
+namespace ddk
+{
+namespace iter
+{
+
 UNARY_ITERABLE_TRANSFORM(inv,-)
 
 BINARY_ITERABLE_TRANSFORM(sum,+)
@@ -206,5 +216,3 @@ FUNC_ITERABLE_TRANSFORM(cos,ddk::cos)
 TEMPLATE(typename Sink,typename Iterable)
 REQUIRES(IS_CONTAINER(Sink))
 inline auto operator<<=(Sink& i_lhs,const Iterable& i_rhs);
-
-#include "ddk_iterable_algorithm.inl"

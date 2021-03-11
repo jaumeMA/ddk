@@ -50,13 +50,23 @@ private:
 	template<typename T>
 	static std::false_type sized_type(const T&,...);
 	template<typename T>
-	static std::true_type iterable_type(T&,decltype(std::declval<T>().begin())* = nullptr,decltype(std::declval<T>().end())* = nullptr);
+	static std::true_type random_access_type(T&,decltype(std::declval<T>()[0])* = nullptr);
 	template<typename T>
-	static std::false_type iterable_type(const T&,...);
+	static std::false_type random_access_type(const T&,...);
+	template<typename T>
+	static std::true_type relative_access_type(T&,decltype(std::declval<T>().front())* = nullptr);
+	template<typename T>
+	static std::false_type relative_access_type(const T&,...);
+	template<typename T>
+	static std::true_type iterable_access_type(T&,decltype(std::declval<T>().begin())* = nullptr,decltype(std::declval<T>().end())* = nullptr);
+	template<typename T>
+	static std::false_type iterable_access_type(const T&,...);
 
 public:
 	static const bool value = decltype(sized_type(std::declval<Container&>(),nullptr))::value && 
-							  decltype(iterable_type(std::declval<Container&>(),nullptr))::value && 
+							  (decltype(random_access_type(std::declval<Container&>(),nullptr))::value ||
+							   decltype(relative_access_type(std::declval<Container&>(),nullptr))::value ||
+							   decltype(iterable_access_type(std::declval<Container&>(),nullptr))::value) &&
 							  std::is_default_constructible<Container>::value;
 };
 

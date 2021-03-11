@@ -14,13 +14,13 @@ namespace ddk
 {
 
 template<typename Iterable>
-using resolved_iterable = detail::iterable_correspondence<Iterable>;
+using resolved_iterable = detail::iterable_correspondence<typename std::remove_reference<Iterable>::type>;
 template<typename Iterable>
-using resolved_iterable_traits = typename detail::iterable_correspondence<Iterable>::traits;
+using resolved_iterable_traits = typename detail::iterable_correspondence<typename std::remove_reference<Iterable>::type>::traits;
 template<typename Iterable, typename T>
-using resolved_iterable_traits_as = typename detail::iterable_correspondence<Iterable>::traits::template as<T>;
+using resolved_iterable_traits_as = typename detail::iterable_correspondence<typename std::remove_reference<Iterable>::type>::traits::template as<T>;
 template<typename Iterable>
-using resolved_iterable_action = typename detail::iterable_action_correspondence<Iterable>;
+using resolved_iterable_action = typename detail::iterable_action_correspondence<typename std::remove_reference<Iterable>::type>;
 
 template<typename Iterable, typename IIterable>
 inline Iterable make_iterable(IIterable&& i_iterable);
@@ -54,26 +54,26 @@ using transformed_traits = typename transformed_traits_resolver<Traits>::type;
 }
 
 template<typename Function, typename Container>
-inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,typename ddk::mpl::aqcuire_callable_return_type<Function>::type>>> operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container& i_rhs);
+inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,typename ddk::mpl::aqcuire_callable_return_type<Function>::type>>> operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container&& i_rhs);
 
 template<typename Function,typename Container>
-inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container& i_rhs);
+inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container&& i_rhs);
 
 template<typename T,typename Container>
-inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container& i_rhs);
+inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container&& i_rhs);
 
 TEMPLATE(typename Function,typename Iterable)
 REQUIRES(IS_CALLABLE(Function))
-inline auto operator<<=(Function&& i_lhs, Iterable&i_rhs);
+inline auto operator<<=(Function&& i_lhs, Iterable&&i_rhs);
 
 namespace ddk
 {
 
 template<typename ... Iterables>
-inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(Iterables& ... i_iterables);
+inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(Iterables&& ... i_iterables);
 
 template<typename ... Iterables>
-inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables& ... i_iterables);
+inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables&& ... i_iterables);
 
 }
 
