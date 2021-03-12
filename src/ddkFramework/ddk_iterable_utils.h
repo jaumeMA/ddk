@@ -69,10 +69,12 @@ inline auto operator<<=(Function&& i_lhs, Iterable&&i_rhs);
 namespace ddk
 {
 
-template<typename ... Iterables>
+TEMPLATE(typename ... Iterables)
+REQUIRES(IS_ITERABLE(Iterables)...)
 inline detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(Iterables&& ... i_iterables);
 
-template<typename ... Iterables>
+TEMPLATE(typename ... Iterables)
+REQUIRES(IS_ITERABLE(Iterables)...)
 inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables&& ... i_iterables);
 
 }

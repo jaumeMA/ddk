@@ -9,27 +9,27 @@ namespace detail
 {
 
 TEMPLATE(typename Iterable)
-REQUIRES(IS_NON_CONST_ITERABLE(Iterable),IS_EXCLUSIVE_FORWARD_ITERABLE(Iterable))
+REQUIRES(DYNAMIC_SIZE_CONTAINER(Iterable),IS_EXCLUSIVE_FORWARD_ITERABLE(Iterable))
 forward_iterable_type iterable_type_correspondence_resolver(Iterable&, ...);
 
 TEMPLATE(typename Iterable)
-REQUIRES(IS_NON_CONST_ITERABLE(Iterable),IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(Iterable))
+REQUIRES(DYNAMIC_SIZE_CONTAINER(Iterable),IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(Iterable))
 bidirectional_iterable_type iterable_type_correspondence_resolver(Iterable&, ...);
 
 TEMPLATE(typename Iterable)
-REQUIRES(IS_NON_CONST_ITERABLE(Iterable),IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(Iterable))
+REQUIRES(DYNAMIC_SIZE_CONTAINER(Iterable),IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(Iterable))
 random_access_iterable_type iterable_type_correspondence_resolver(Iterable&, ...);
 
 TEMPLATE(typename Iterable)
-REQUIRES(IS_CONST_ITERABLE(Iterable),IS_EXCLUSIVE_FORWARD_ITERABLE(Iterable))
+REQUIRES(FIXED_SIZE_CONTAINER(Iterable),IS_EXCLUSIVE_FORWARD_ITERABLE(Iterable))
 const_forward_iterable_type iterable_type_correspondence_resolver(Iterable&, ...);
 
 TEMPLATE(typename Iterable)
-REQUIRES(IS_CONST_ITERABLE(Iterable),IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(Iterable))
+REQUIRES(FIXED_SIZE_CONTAINER(Iterable),IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(Iterable))
 const_bidirectional_iterable_type iterable_type_correspondence_resolver(Iterable&, ...);
 
 TEMPLATE(typename Iterable)
-REQUIRES(IS_CONST_ITERABLE(Iterable),IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(Iterable))
+REQUIRES(FIXED_SIZE_CONTAINER(Iterable),IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(Iterable))
 const_random_access_iterable_type iterable_type_correspondence_resolver(Iterable&, ...);
 
 template<typename Iterable>

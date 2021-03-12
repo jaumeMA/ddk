@@ -13,7 +13,10 @@
 	ddk::concepts::is_container_dynamic_size<_TYPE>::value
 
 #define IS_CONTAINER(_TYPE) \
-	typename std::enable_if<ddk::concepts::is_container<_TYPE>::value>::type
+	typename std::enable_if<ddk::concepts::is_container<typename std::remove_reference<_TYPE>::type>::value>::type
+
+#define IS_CONTAINER_COND(_TYPE) \
+	ddk::concepts::is_container<typename std::remove_reference<_TYPE>::type>::value
 
 #define ASSIGNABLE_BY_INDEX_ACCESS(_TYPE,_VALUE) \
 	decltype(std::declval<_TYPE>().at(0) = std::declval<_VALUE>())
