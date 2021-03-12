@@ -7,6 +7,8 @@ template<typename T>
 struct constant_callable
 {
 public:
+    struct callable_tag;
+
     template<typename ... Args>
     constant_callable(Args&& ... i_args);
 

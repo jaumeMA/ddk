@@ -11,6 +11,8 @@ template<size_t Component>
 struct projection_callable
 {
 public:
+    struct callable_tag;
+
     projection_callable() = default;
 
     TEMPLATE(typename ... Args)
