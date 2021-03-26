@@ -14,7 +14,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(++m_currIndex));
+		i_sink.apply(m_iterable.at(++m_currIndex));
 
 		return 0;
 	}
@@ -29,7 +29,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(++m_currIndex));
+		i_sink.apply(m_iterable.at(++m_currIndex));
 
 		return 0;
 	}
@@ -44,7 +44,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 {
 	if(m_currIndex > 0)
 	{
-		i_sink(m_iterable.at(--m_currIndex));
+		i_sink.apply(m_iterable.at(--m_currIndex));
 
 		return 0;
 	}
@@ -59,7 +59,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 {
 	if(m_currIndex > 0)
 	{
-		i_sink(m_iterable.at(--m_currIndex));
+		i_sink.apply(m_iterable.at(--m_currIndex));
 
 		return 0;
 	}
@@ -76,7 +76,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 
 	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(m_currIndex = newIndex));
+		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
 
 		return 0;
 	}
@@ -93,7 +93,7 @@ typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterabl
 
 	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(m_currIndex = newIndex));
+		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
 
 		return 0;
 	}
@@ -122,7 +122,7 @@ typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type i
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(++m_currIndex));
+		i_sink.apply(m_iterable.at(++m_currIndex));
 
 		return 0;
 	}
@@ -137,7 +137,7 @@ typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type i
 {
 	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(++m_currIndex));
+		i_sink.apply(m_iterable.at(++m_currIndex));
 
 		return 0;
 	}
@@ -152,7 +152,7 @@ typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type i
 {
 	if(m_currIndex > 0)
 	{
-		i_sink(m_iterable.at(--m_currIndex));
+		i_sink.apply(m_iterable.at(--m_currIndex));
 
 		return 0;
 	}
@@ -167,7 +167,7 @@ typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type i
 {
 	if(m_currIndex > 0)
 	{
-		i_sink(m_iterable.at(--m_currIndex));
+		i_sink.apply(m_iterable.at(--m_currIndex));
 
 		return 0;
 	}
@@ -184,7 +184,7 @@ typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type i
 
 	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(m_currIndex = newIndex));
+		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
 
 		return 0;
 	}
@@ -201,7 +201,7 @@ typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type i
 
 	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink(m_iterable.at(m_currIndex = newIndex));
+		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
 
 		return 0;
 	}

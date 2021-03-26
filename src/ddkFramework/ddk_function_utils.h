@@ -120,17 +120,9 @@ inline detail::union_function<Callables...> make_union(const Callables& ... i_ca
 template<typename ReturnDst, typename ... TypesDst, typename ReturnSrc, typename ... TypesSrc>
 inline detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_composition(const function<ReturnDst(TypesDst...)>& i_fuscDst, const function<ReturnSrc(TypesSrc...)>& i_funcSrc);
 
-TEMPLATE(typename Function)
-REQUIRES(IS_CALLABLE(Function))
-inline Function fusion(const Function& i_function);
-
 TEMPLATE(typename ... Functions)
 REQUIRES(IS_CALLABLE(Functions)...)
 inline detail::intersection_function<Functions...> fusion(const Functions& ... i_functions);
-
-TEMPLATE(typename Function)
-REQUIRES(IS_CALLABLE(Function))
-inline Function concat(const Function& i_function);
 
 TEMPLATE(typename ... Functions)
 REQUIRES(IS_CALLABLE(Functions)...)

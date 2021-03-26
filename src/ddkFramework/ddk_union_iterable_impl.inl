@@ -60,14 +60,14 @@ union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::union_iterab
 }
 template<size_t ... Indexs,typename ... Iterables>
 template<typename T>
-std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const T& i_action) const
+std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::operator()(const T& i_action) const
 {
     suspend();
 
     return std::make_pair(iterable_state::npos,go_no_place);
 }
 template<size_t ... Indexs,typename ... Iterables>
-std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::visit(const ShiftActionError& i_action) const
+std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::operator()(const ShiftActionError& i_action) const
 {
     const auto pendingShift = i_action.get_pending_shift();
 

@@ -34,13 +34,13 @@ void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::loop()
 }
 template<typename Iterable,typename FinalAction,typename Function,typename Adaptor>
 template<typename T>
-void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::operator()(T&& i_value) const
+void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::apply(T&& i_value) const
 {
 	m_currAction = eval(m_sink,std::forward<T>(i_value));
 }
 
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::visit(const go_forward_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::operator()(const go_forward_action& i_action)
 {
 	const difference_type pendingShift = this->m_adaptor.forward_next_value_in(*this);
 
@@ -64,7 +64,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::v
 	}
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(const stop_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(const stop_action& i_action)
 {
 	if(this->m_actionStatePtr)
 	{
@@ -74,7 +74,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
 	return false;
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(const erase_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(const erase_action& i_action)
 {
     if constexpr (std::is_const<Iterable>::value == false)
     {
@@ -104,7 +104,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
 	return true;
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(const add_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(const add_action& i_action)
 {
     if constexpr (std::is_const<Iterable>::value == false)
     {
@@ -136,7 +136,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::visit(c
 	return true;
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::visit(const go_backward_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::operator()(const go_backward_action& i_action)
 {
 	const difference_type pendingShift = this->m_adaptor.forward_prev_value_in(*this);
 
@@ -160,7 +160,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Ada
 	}
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::visit(const go_backward_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::operator()(const go_backward_action& i_action)
 {
 	const difference_type pendingShift = this->m_adaptor.forward_prev_value_in(*this);
 
@@ -184,7 +184,7 @@ bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>:
 	}
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Adaptor>::visit(const shift_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Adaptor>::operator()(const shift_action& i_action)
 {
 	const difference_type currShift = i_action.shifting();
 	const difference_type pendingShift = this->m_adaptor.forward_shift_value_in(currShift,*this);
@@ -209,7 +209,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Ada
 	}
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>::visit(const shift_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>::operator()(const shift_action& i_action)
 {
 	const difference_type currShift = i_action.shifting();
 	const difference_type pendingShift = this->m_adaptor.forward_shift_value_in(currShift,*this);

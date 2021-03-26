@@ -25,6 +25,23 @@ size_t __get_type_id()
 
 }
 
+constexpr TypeInfo::TypeInfo(size_t i_id)
+: m_id(i_id)
+{
+}
+constexpr size_t TypeInfo::get_id() const
+{
+	return m_id;
+}
+constexpr bool TypeInfo::operator==(const TypeInfo& other) const
+{
+	return m_id == other.m_id;
+}
+constexpr bool TypeInfo::empty() const
+{
+	return m_id == s_invalid;
+}
+
 template<typename T,typename TT>
 TypeInfo make_type_info()
 {

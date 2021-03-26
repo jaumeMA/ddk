@@ -88,10 +88,10 @@ const T& high_order_array<T,rank,ranks...>::storage::operator[](size_t i_index) 
 }
 
 template<typename T,size_t rank,size_t ... ranks>
-TEMPLATE(typename Arg, typename ... Args)
-REQUIRED(IS_NOT_SAME_CLASS(Arg,high_order_array),IS_CONSTRUCTIBLE(T,Arg),IS_CONSTRUCTIBLE(T,Args)...)
-constexpr high_order_array<T,rank,ranks...>::high_order_array(Arg&& i_arg, Args&& ... i_args)
-: m_data({ i_arg,i_args... })
+TEMPLATE(typename ... Args)
+REQUIRED(IS_NUMBER_OF_ARGS(num_places,Args...),IS_CONSTRUCTIBLE(T,Args)...)
+constexpr high_order_array<T,rank,ranks...>::high_order_array(Args&& ... i_args)
+: m_data({ i_args... })
 {
 }
 template<typename T,size_t rank,size_t ... ranks>
@@ -195,32 +195,6 @@ high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(
 	{
 		m_data[index] = other.m_data[index];
 	}
-}
-template<typename T,size_t rank,size_t ... ranks>
-bool high_order_array<T,rank,ranks...>::operator==(const high_order_array& other) const
-{
-	for(size_t index = 0; index < s_totalSize; ++index)
-	{
-		if(m_data[index] != other.m_data[index])
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-template<typename T,size_t rank,size_t ... ranks>
-bool high_order_array<T,rank,ranks...>::operator!=(const high_order_array& other) const
-{
-	for(size_t index = 0; index < s_totalSize; ++index)
-	{
-		if(m_data[index] != other.m_data[index])
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 template<typename T,size_t rank,size_t ... ranks>
 size_t high_order_array<T,rank,ranks...>::size() const

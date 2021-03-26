@@ -20,7 +20,7 @@ class variant<Type>
 public:
 	static const size_t npos = 1;
 
-	variant();
+	variant() = default;
 	variant(const variant<Type>& other);
 	variant(variant<Type>&& other);
 	TEMPLATE(typename ... TTypes)

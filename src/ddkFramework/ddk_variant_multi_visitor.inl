@@ -26,7 +26,7 @@ function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedT
 }
 template<typename Return, typename Callable, typename ... ResolvedTypes, typename Variant, typename ... Variants>
 template<typename T>
-function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedTypes...>,Variant,Variants...>::visit(T&& i_value) const
+function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedTypes...>,Variant,Variants...>::operator()(T&& i_value) const
 {
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<ResolvedTypes...>()>::type indexs_resolved;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Variants...>()>::type indexs_to_resolved;
@@ -50,6 +50,20 @@ function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedT
 	return make_function([thisTransform = std::move(m_transform)](ResolvedTypes ... i_values) -> Return { return thisTransform(*i_values ...); });
 }
 
+}
+
+TEMPLATE(typename Callable,typename ... Variants)
+REQUIRED(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
+typename std::remove_reference<Callable>::type::return_type visit(Variants&& ... i_variants)
+{
+	typedef typename std::remove_reference<Callable>::type callable_t;
+	typedef typename callable_t::return_type return_type;
+
+	detail::multi_visitor<return_type,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(Callable{},std::forward<Variants>(i_variants)...);
+
+	const function<return_type()> resolvedFunction = multiVisitor.visit();
+
+	return eval(resolvedFunction);
 }
 
 TEMPLATE(typename Callable,typename ... Variants)

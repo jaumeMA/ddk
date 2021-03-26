@@ -27,7 +27,7 @@ public:
 	template<size_t ... IndexsResolved, size_t ... IndexsToResolve, typename T>
 	function<Return(ResolvedTypes...)> visit(const mpl::sequence<IndexsResolved...>&, const mpl::sequence<IndexsToResolve...>&, T&& i_value) const;
 	template<typename T>
-	function<Return(ResolvedTypes...)> visit(T&& i_value) const;
+	function<Return(ResolvedTypes...)> operator()(T&& i_value) const;
 	function<Return(ResolvedTypes...)> visit() const;
 
 private:
@@ -49,6 +49,10 @@ private:
 };
 
 }
+
+TEMPLATE(typename Callable,typename ... Variants)
+REQUIRES(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
+inline typename std::remove_reference<Callable>::type::return_type visit(Variants&& ... i_variants);
 
 TEMPLATE(typename Callable,typename ... Variants)
 REQUIRES(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)

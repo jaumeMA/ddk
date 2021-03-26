@@ -20,23 +20,23 @@ class DDKVariantTest : public Test
 class TestVisitor : public ddk::static_visitor<int>
 {
 public:
-	int visit(const DefaultType& i_value) const
+	int operator()(const DefaultType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonCopyConstructibleType& i_value) const
+	int operator()(const nonCopyConstructibleType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonMoveConstructibleType& i_value) const
+	int operator()(const nonMoveConstructibleType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonCopyAssignableType& i_value) const
+	int operator()(const nonCopyAssignableType& i_value) const
 	{
 		return i_value.getValue();
 	}
-	int visit(const nonMoveAssignableType& i_value) const
+	int operator()(const nonMoveAssignableType& i_value) const
 	{
 		return i_value.getValue();
 	}
@@ -46,7 +46,7 @@ using testing::Types;
 
 TEST(DDKVariantTest,defaultConstruction)
 {
-	ddk::variant<int,char,std::string> foo = 10;
+	const ddk::variant<int,char,std::string> foo(10);
 
 	EXPECT_EQ(foo.is<0>(),true);
 }

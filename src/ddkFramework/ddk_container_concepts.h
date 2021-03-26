@@ -34,10 +34,10 @@
 	FIXED_SIZE_CONTAINER(_TYPE),ASSIGNABLE_BY_TYPE_ACCESS(_TYPE,_VALUE)
 
 #define IS_INDEXED(_TYPE) \
-    typename std::enable_if<ddk::concepts::is_coordinate_type<_TYPE>>::type
+    typename std::enable_if<ddk::concepts::is_indexed_container<_TYPE>>::type
 
 #define IS_INDEXED_COND(_TYPE) \
-    ddk::concepts::is_coordinate_container<_TYPE>
+    ddk::concepts::is_indexed_container<_TYPE>
 
 namespace ddk
 {
@@ -93,12 +93,12 @@ struct is_container_fixed_size
 };
 
 template<typename T>
-std::false_type is_coordinate_container_impl(const T&,...);
+std::false_type is_indexed_container_impl(const T&,...);
 template<typename T,typename = typename T::place_type,size_t = T::num_places>
-std::true_type is_coordinate_container_impl(T&);
+std::true_type is_indexed_container_impl(T&);
 
 template<typename T>
-inline constexpr bool is_coordinate_container = decltype(is_coordinate_container_impl(std::declval<T&>()))::value;
+inline constexpr bool is_indexed_container = decltype(is_indexed_container_impl(std::declval<T&>()))::value;
 
 }
 }

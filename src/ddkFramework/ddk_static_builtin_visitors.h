@@ -21,7 +21,7 @@ struct constructor_visitor : public static_visitor<void>
     struct _constructor
     {
         template<typename TType>
-        static void construct(Storage& i_storage, TType&& val)
+        static constexpr void construct(Storage& i_storage, TType&& val)
 		{
 			static_assert(mpl::is_among_constructible_types<Type, Types...>, "Constructing type non present in variant types!");
 
@@ -29,12 +29,12 @@ struct constructor_visitor : public static_visitor<void>
 		}
     };
 
-    constructor_visitor(Storage& i_storage)
+	constexpr constructor_visitor(Storage& i_storage)
 	: m_storage(i_storage)
 	{
 	}
     template<size_t PosType, typename Type>
-    static detail::void_t construct(Storage& i_storage, Type&& val)
+    static constexpr detail::void_t construct(Storage& i_storage, Type&& val)
 	{
 		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(), "Type out of bounds!");
 
@@ -45,7 +45,7 @@ struct constructor_visitor : public static_visitor<void>
 		return _void;
 	}
     template<size_t PosType, typename Type>
-    detail::void_t visit(Type&& i_value)
+	constexpr detail::void_t operator()(Type&& i_value) const
 	{
 		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
 
@@ -65,12 +65,12 @@ struct destructor_visitor : public static_visitor<void>
 {
     typedef destructor_visitor t_visitor;
 
-    destructor_visitor(Storage& i_storage)
+	constexpr destructor_visitor(Storage& i_storage)
 	: m_storage(i_storage)
 	{
 	}
     template<size_t PosType, typename Type>
-    detail::void_t visit(Type&&)
+	constexpr detail::void_t operator()(Type&&) const
 	{
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
 
@@ -79,7 +79,7 @@ struct destructor_visitor : public static_visitor<void>
 		return _void;
 	}
     template<size_t PosType>
-    void destroy()
+	constexpr void destroy()
 	{
 		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(), "Type out of bounds!");
 
@@ -101,7 +101,7 @@ struct assigner_visitor : public static_visitor<void>
     struct _assigner
     {
         template<typename TType>
-        static void assign(Storage& i_storage, TType&& val)
+        static constexpr void assign(Storage& i_storage, TType&& val)
 		{
 			static_assert(mpl::is_among_constructible_types<Type, Types...>, "Assigning type non present in variant types!");
 
@@ -109,19 +109,19 @@ struct assigner_visitor : public static_visitor<void>
 		}
     };
 
-    assigner_visitor(Storage& i_storage)
+	constexpr assigner_visitor(Storage& i_storage)
 	: m_storage(i_storage)
 	{
 	}
     template<size_t PosType, typename Type>
-    static void assign(Storage& i_storage, Type&& val)
+    static constexpr void assign(Storage& i_storage, Type&& val)
 	{
 		typedef typename mpl::nth_type_of<PosType, Types...>::type TType;
 
 		_assigner<TType>::template assign<Type>(i_storage, std::forward<Type>(val));
 	}
     template<size_t PosType, typename Type>
-    detail::void_t visit(Type&& i_value)
+	constexpr detail::void_t operator()(Type&& i_value) const
 	{
 		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
 
@@ -143,14 +143,14 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
     typedef typename std::remove_const<typename embedded_type<retType>::internal_type>::type rawType;
 
 	template<size_t PosType>
-    typename embedded_type<retType>::ref_type visit(typename embedded_type<retType>::ref_type val)
+	constexpr typename embedded_type<retType>::ref_type operator()(typename embedded_type<retType>::ref_type val)
 	{
 		typedef typename embedded_type<retType>::ref_type ref_type;
 
 		return std::forward<ref_type>(val);
 	}
 	template<size_t PosType>
-    typename embedded_type<retType>::ref_type visit(typename embedded_type<retType>::cref_type val) const
+	constexpr typename embedded_type<retType>::ref_type operator()(typename embedded_type<retType>::cref_type val) const
 	{
 		typedef typename embedded_type<retType>::ref_type ref_type;
 
@@ -158,7 +158,7 @@ struct val_retriever_visitor : public static_visitor<typename embedded_type<retT
 	}
     //for the rest of unsused types
     template<size_t PosType, typename Type = void>
-    typename embedded_type<retType>::ref_type visit(...) const
+	constexpr typename embedded_type<retType>::ref_type operator()(...) const
 	{
 		typedef typename embedded_type<retType>::ref_type ref_type;
 
@@ -174,7 +174,7 @@ struct is_base_of_visitor : public static_visitor<bool>
 	typedef is_base_of_visitor t_visitor;
 
 	template<size_t PosType,typename Type>
-	bool visit(Type&& val,...) const
+	constexpr bool operator()(Type&& val,...) const
 	{
 		return std::is_base_of<T,typename mpl::nth_type_of<PosType,Types...>::type>::value;
 	}
@@ -185,13 +185,13 @@ struct swaper_visitor : public static_visitor<void>
 {
     typedef swaper_visitor t_visitor;
 
-    swaper_visitor(Variant& _thisVariant, Variant& _otherVariant)
+	constexpr swaper_visitor(Variant& _thisVariant, Variant& _otherVariant)
 	: m_thisVariant(_thisVariant)
 	, m_otherVariant(_otherVariant)
 	{
 	}
     template<size_t PosType, typename Type>
-    detail::void_t visit(Type&& otherVal)
+	constexpr detail::void_t operator()(Type&& otherVal)
 	{
 		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
 
@@ -210,13 +210,13 @@ struct comparison_visitor : public static_visitor<bool>
 {
     typedef comparison_visitor t_visitor;
 
-    comparison_visitor(const Variant& _variant)
+	constexpr comparison_visitor(const Variant& _variant)
 	: static_visitor<bool>()
 	, m_variant(_variant)
 	{
 	}
     template<size_t PosType, typename Type>
-    bool visit(Type&& otherVal)
+	constexpr bool operator()(Type&& otherVal)
 	{
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
 

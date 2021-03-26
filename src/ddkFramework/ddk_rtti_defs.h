@@ -24,14 +24,13 @@ struct TypeInfo
 public:
 	static const size_t s_invalid = -1;
 
-	TypeInfo() = default;
-	size_t get_id() const;
-	bool operator==(const TypeInfo& other) const;
-	bool empty() const;
+	constexpr TypeInfo() = default;
+	constexpr TypeInfo(size_t i_id);
+	size_t constexpr get_id() const;
+	constexpr bool operator==(const TypeInfo& other) const;
+	constexpr bool empty() const;
 
 private:
-	TypeInfo(size_t i_id);
-
 	size_t m_id = s_invalid;
 };
 

@@ -6,11 +6,6 @@ namespace ddk
 {
 
 template<typename Type>
-variant<Type>::variant()
-: m_value(Type{})
-{
-}
-template<typename Type>
 variant<Type>::variant(const variant<Type>& other)
 : m_value(other.m_value)
 {
@@ -176,14 +171,14 @@ TEMPLATE(typename Visitor)
 REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
 typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Visitor&& visitor)
 {
-	return visitor.visit(m_value);
+	return visitor(m_value);
 }
 template<typename Type>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
 typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Visitor&& visitor) const
 {
-	return visitor.visit(m_value);
+	return visitor(m_value);
 }
 template<typename Type>
 template<typename Visitor, typename ... Args>
@@ -191,7 +186,7 @@ typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(
 {
 	const Visitor _visitor(std::forward<Args>(i_args)...);
 
-	return _visitor.visit(m_value);
+	return _visitor(m_value);
 }
 
 template<typename ... Types>
@@ -199,7 +194,10 @@ variant<Types...>::variant()
 {
 	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 
-	detail::variant_impl< Types...>::template construct<0>(first_type{});
+	if constexpr (std::is_default_constructible<first_type>::value)
+	{
+		detail::variant_impl< Types...>::template construct<0>(first_type{});
+	}
 }
 template<typename ... Types>
 variant<Types...>::variant(const variant<Types...>& other)

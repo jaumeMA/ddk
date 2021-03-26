@@ -73,9 +73,9 @@ public:
 
 	constexpr high_order_array() = default;
 	constexpr high_order_array(const high_order_array<T,rank,ranks...>& other) = default;
-    TEMPLATE(typename Arg, typename ... Args)
-    REQUIRES(IS_NOT_SAME_CLASS(Arg,high_order_array),IS_CONSTRUCTIBLE(T,Arg),IS_CONSTRUCTIBLE(T,Args)...)
-    constexpr high_order_array(Arg&& i_arg, Args&& ... i_args);
+    TEMPLATE(typename ... Args)
+    REQUIRES(IS_NUMBER_OF_ARGS(num_places,Args...),IS_CONSTRUCTIBLE(T,Args)...)
+    constexpr high_order_array(Args&& ... i_args);
 	TEMPLATE(typename TT)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT))
 	high_order_array(const high_order_array<TT,rank,ranks...>& other);
@@ -89,8 +89,6 @@ public:
 	high_order_array& operator=(const high_order_array<T,rank,ranks...>& other);
 	template<typename TT>
 	high_order_array& operator=(const high_order_array<TT,rank,ranks...>& other);
-	bool operator==(const high_order_array& other) const;
-	bool operator!=(const high_order_array& other) const;
 	size_t size() const;
 	bool empty() const;
 

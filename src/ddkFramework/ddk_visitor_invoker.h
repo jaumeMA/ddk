@@ -18,7 +18,7 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
 
-		return _visitor.template visit<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.template operator()<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(const visitor& _visitor, const variant_impl<Types...>& var)
@@ -26,7 +26,7 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
 
-		return _visitor.template visit<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.template operator()<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(visitor& _visitor, variant_impl<Types...>& var)
@@ -34,7 +34,7 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
 
-		return _visitor.template visit<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.template operator()<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>& var)
@@ -42,17 +42,17 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
 
-		return _visitor.template visit<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.template operator()<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(visitor& _visitor, variant_impl<Types...>&& var)
 	{
-		return _visitor.template visit<TypePos>(std::move(var).template extract<TypePos>());
+		return _visitor.template operator()<TypePos>(std::move(var).template extract<TypePos>());
 	}
     template<typename visitor, size_t TypePos>
     inline static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
 	{
-		return _visitor.template visit<TypePos>(std::move(var).template extract<TypePos>());
+		return _visitor.template operator()<TypePos>(std::move(var).template extract<TypePos>());
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(visitor& _visitor, const variant_impl<Types...>& var)
@@ -60,7 +60,7 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
 
-		return _visitor.visit(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.operator()(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(const visitor& _visitor, const variant_impl<Types...>& var)
@@ -68,7 +68,7 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
 
-		return _visitor.visit(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.operator()(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(visitor& _visitor, variant_impl<Types...>& var)
@@ -76,7 +76,7 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
 
-		return _visitor.visit(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.operator()(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(const visitor& _visitor, variant_impl<Types...>& var)
@@ -84,17 +84,17 @@ class variant_visitor_invoker
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
 
-		return _visitor.visit(std::forward<ref_type>(var.template get<TypePos>()));
+		return _visitor.operator()(std::forward<ref_type>(var.template get<TypePos>()));
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(visitor& _visitor, variant_impl<Types...>&& var)
 	{
-		return _visitor.visit(var.template extract<TypePos>());
+		return _visitor.operator()(var.template extract<TypePos>());
 	}
     template<typename visitor, size_t TypePos>
     inline static Return outer_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
 	{
-		return _visitor.visit(var.template extract<TypePos>());
+		return _visitor.operator()(var.template extract<TypePos>());
 	}
 
 public:

@@ -145,13 +145,13 @@ template<size_t ... Indexs, typename ... T>
 template<size_t Index,typename Sink>
 void iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(Sink&& i_sink, tuple<T...>& i_iterable)
 {
-	i_sink(i_iterable.template get<Index>());
+	i_sink.apply(i_iterable.template get<Index>());
 }
 template<size_t ... Indexs, typename ... T>
 template<size_t Index,typename Sink>
 void iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(Sink&& i_sink, const tuple<T...>& i_iterable)
 {
-	i_sink(i_iterable.template get<Index>());
+	i_sink.apply(i_iterable.template get<Index>());
 }
 
 
@@ -298,13 +298,13 @@ template<size_t ... Indexs, typename ... T>
 template<size_t Index,typename Sink>
 void iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(Sink&& i_sink, tuple<T...>& i_iterable)
 {
-	i_sink(i_iterable.template get<Index>());
+	i_sink.apply(i_iterable.template get<Index>());
 }
 template<size_t ... Indexs, typename ... T>
 template<size_t Index,typename Sink>
 void iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(Sink&& i_sink, const tuple<T...>& i_iterable)
 {
-	i_sink(i_iterable.template get<Index>());
+	i_sink.apply(i_iterable.template get<Index>());
 }
 
 }

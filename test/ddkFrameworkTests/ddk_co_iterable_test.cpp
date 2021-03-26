@@ -56,7 +56,7 @@ public:
 	{
         if(m_currValue < m_max)
         {
-            i_sink(++m_currValue);
+            i_sink.apply(++m_currValue);
 
             return 0;
         }

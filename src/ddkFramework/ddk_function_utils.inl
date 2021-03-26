@@ -297,25 +297,11 @@ detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)> make_co
     return detail::composed_function<ReturnDst(TypesDst...),ReturnSrc(TypesSrc...)>(i_fuscDst,i_funcSrc);
 }
 
-TEMPLATE(typename Function)
-REQUIRED(IS_CALLABLE(Function))
-inline Function fusion(const Function& i_function)
-{
-    return i_function;
-}
-
 TEMPLATE(typename ... Functions)
 REQUIRED(IS_CALLABLE(Functions)...)
 detail::intersection_function<Functions...> fusion(const Functions& ... i_functions)
 {
     return { i_functions ... };
-}
-
-TEMPLATE(typename Function)
-REQUIRED(IS_CALLABLE(Function))
-Function concat(const Function& i_function)
-{
-    return i_function;
 }
 
 TEMPLATE(typename ... Functions)

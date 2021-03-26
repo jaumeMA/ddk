@@ -39,7 +39,7 @@ bool iterable_adaptor_base<Iterable>::forward_add_value_in(const_reference i_val
 
 	if (itNew != this->m_endIterator)
 	{
-		i_sink(*itNew);
+		i_sink.apply(*itNew);
 
 		return true;
 	}
@@ -56,7 +56,7 @@ bool iterable_adaptor_base<Iterable>::forward_erase_value_in(Sink&& i_sink)
 
 	if(itNew != this->m_endIterator)
 	{
-		i_sink(*itNew);
+		i_sink.apply(*itNew);
 
 		return true;
 	}
@@ -97,7 +97,7 @@ typename forward_iterable_adaptor<Iterable>::difference_type forward_iterable_ad
 {
 	if(++(this->m_currIterator) != this->m_endIterator)
 	{
-		i_sink(*(this->m_currIterator));
+		i_sink.apply(*(this->m_currIterator));
 
 		return 0;
 	}
@@ -112,7 +112,7 @@ typename forward_iterable_adaptor<Iterable>::difference_type forward_iterable_ad
 {
 	if(++(this->m_currIterator) != this->m_endIterator)
 	{
-		i_sink(*(this->m_currIterator));
+		i_sink.apply(*(this->m_currIterator));
 
 		return 0;
 	}
@@ -135,7 +135,7 @@ typename bidirectional_iterable_adaptor<Iterable>::difference_type bidirectional
 {
 	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator)
 	{
-		i_sink(*(this->m_currIterator));
+		i_sink.apply(*(this->m_currIterator));
 
 		return 0;
 	}
@@ -150,7 +150,7 @@ typename bidirectional_iterable_adaptor<Iterable>::difference_type bidirectional
 {
 	if(std::make_reverse_iterator((this->m_currIterator)--) != m_endReverseIterator)
 	{
-		i_sink(*(this->m_currIterator));
+		i_sink.apply(*(this->m_currIterator));
 
 		return 0;
 	}
@@ -169,7 +169,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 	case 1:
 		if(++(this->m_currIterator) != this->m_endIterator)
 		{
-			i_sink(*(this->m_currIterator));
+			i_sink.apply(*(this->m_currIterator));
 
 			return 0;
 		}
@@ -180,7 +180,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 	case -1:
 		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator)
 		{
-			i_sink(*(this->m_currIterator));
+			i_sink.apply(*(this->m_currIterator));
 
 			return 0;
 		}
@@ -191,7 +191,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 	default:
 		if((this->m_currIterator += i_shift) != this->m_endIterator)
 		{
-			i_sink(*(this->m_currIterator));
+			i_sink.apply(*(this->m_currIterator));
 
 			return 0;
 		}
@@ -210,7 +210,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 	case 1:
 		if(++(this->m_currIterator) != this->m_endIterator)
 		{
-			i_sink(*(this->m_currIterator));
+			i_sink.apply(*(this->m_currIterator));
 
 			return true;
 		}
@@ -221,7 +221,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 	case -1:
 		if(std::make_reverse_iterator((this->m_currIterator)--) != this->m_endReverseIterator)
 		{
-			i_sink(*(this->m_currIterator));
+			i_sink.apply(*(this->m_currIterator));
 
 			return true;
 		}
@@ -232,7 +232,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 	default:
 		if((this->m_currIterator += i_shift) != this->m_endIterator)
 		{
-			i_sink(*(this->m_currIterator));
+			i_sink.apply(*(this->m_currIterator));
 
 			return true;
 		}

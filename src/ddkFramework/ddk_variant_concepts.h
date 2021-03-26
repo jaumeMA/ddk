@@ -36,6 +36,19 @@ public:
 template<typename T>
 inline constexpr bool is_variant_v = is_variant<T>::value;
 
+template<typename,typename>
+struct _is_among_variant_types;
+    
+template<typename T,typename ... TT>
+struct _is_among_variant_types<T,variant<TT...>>
+{
+public:
+    static const bool value = mpl::is_among_types<T,TT...>;
+};
+
+template<typename T, typename TT>
+inline constexpr bool is_among_variant_types = _is_among_variant_types<T,TT>::value;
+
 template<typename>
 struct is_static_visitor;
 

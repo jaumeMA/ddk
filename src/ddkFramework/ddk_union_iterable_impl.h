@@ -30,9 +30,9 @@ public:
 
     union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
 
-    std::pair<size_t,shift_action> visit(const ShiftActionError& i_action) const;
+    std::pair<size_t,shift_action> operator()(const ShiftActionError& i_action) const;
     template<typename T>
-    std::pair<size_t,shift_action> visit(const T& i_action) const;
+    std::pair<size_t,shift_action> operator()(const T& i_action) const;
 
 private:
     template<size_t Index>

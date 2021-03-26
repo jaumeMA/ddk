@@ -18,9 +18,5 @@ size_t hash(const std::string& i_value)
 
     return result;
 }
-size_t hash(const time_t& i_value)
-{
-    return static_cast<size_t>(i_value);
-}
 
 }

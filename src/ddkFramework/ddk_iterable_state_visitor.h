@@ -12,11 +12,11 @@ public:
 	action_shift_visitor(size_t i_currPos)
 	: m_currPos(i_currPos)
 	{}
-	size_t visit(...) const
+	size_t operator()(...) const
 	{
 		return m_currPos;
 	}
-	size_t visit(const shift_action& i_action) const;
+	size_t operator()(const shift_action& i_action) const;
 
 protected:
 	size_t m_currPos;
@@ -29,11 +29,11 @@ public:
 	: m_appliedAction(i_appliedAction)
 	{
 	}
-	inline bool visit(...) const
+	inline bool operator()(...) const
 	{
 		return true;
 	}
-	bool visit(shift_action& i_action) const;
+	bool operator()(shift_action& i_action) const;
 
 protected:
 	shift_action m_appliedAction;

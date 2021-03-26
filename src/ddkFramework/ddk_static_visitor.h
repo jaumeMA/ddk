@@ -17,14 +17,7 @@ public:
 	typedef Return return_type;
 
 	template<typename T>
-	Return visit(const T&)
-	{
-		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
-
-		return ddk::crash_on_return<Return>::value();
-	}
-	template<typename T>
-	Return visit(const T&) const
+	Return operator()(const T&) const
 	{
 		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
 
@@ -41,14 +34,7 @@ public:
 	typedef detail::void_t return_type;
 
 	template<typename T>
-	return_type visit(T&&)
-	{
-		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
-
-		return ddk::crash_on_return<return_type>::value();
-	}
-	template<typename T>
-	return_type visit(T&&) const
+	return_type operator()(T&&) const
 	{
 		static_assert(sizeof(T) == 0, "You shall provide visit method for this type");
 
