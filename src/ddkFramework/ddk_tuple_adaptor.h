@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ddk_tuple.h"
-#include "ddk_variant.h"
+#include "ddk_iterable_defs.h"
+#include "ddk_iterable_action.h"
 
 namespace ddk
 {
@@ -15,7 +15,7 @@ public:
     typedef variant<T...> value_type;
 	typedef long long difference_type;
 
-	iterable_adaptor(tuple<T...>& i_iterable,const ddk::shift_action& i_initialAction);
+	iterable_adaptor(tuple<T...>& i_iterable, const shift_action&);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
@@ -56,7 +56,7 @@ public:
     typedef variant<T...> value_type;
 	typedef long long difference_type;
 
-	iterable_adaptor(const tuple<T...>& i_iterable,const ddk::shift_action& i_initialAction);
+	iterable_adaptor(const tuple<T...>& i_iterable, const shift_action& i_initialAction);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
@@ -73,13 +73,7 @@ public:
 
 private:
 	template<typename Sink, size_t ... IIndexs>
-	inline void get(const mpl::sequence<IIndexs...>&, Sink&& i_sink);
-
-	template<typename Sink, size_t ... IIndexs>
 	inline void get(const mpl::sequence<IIndexs...>&,Sink&& i_sink) const;
-
-	template<size_t Index,typename Sink>
-	inline static void _get(Sink&& i_sink, tuple<T...>&);
 
 	template<size_t Index,typename Sink>
 	inline static void _get(Sink&& i_sink,const tuple<T...>&);

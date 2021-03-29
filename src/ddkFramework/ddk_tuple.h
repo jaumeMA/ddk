@@ -189,3 +189,4 @@ inline tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_
 }
 
 #include "ddk_tuple.inl"
+#include "ddk_tuple_adaptor.h"

@@ -3,7 +3,7 @@
 #include <vector>
 #include "ddk_iterable_algorithm.h"
 #include "ddk_high_order_array.h"
-#include "ddk_tuple_adaptor.h"
+#include "ddk_tuple.h"
 
 using namespace testing;
 

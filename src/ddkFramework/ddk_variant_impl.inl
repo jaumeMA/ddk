@@ -513,7 +513,14 @@ typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::vi
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
-	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),*this);
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),*this);
+	}
+	else
+	{
+		return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),*this);
+	}
 }
 template<typename ... Types>
 TEMPLATE(typename Visitor)
@@ -523,7 +530,14 @@ typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::vi
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
-	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+	}
+	else
+	{
+		return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+	}
 }
 template<typename ... Types>
 template<typename Visitor,typename ... Args>
@@ -532,9 +546,16 @@ typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::vi
 	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
-	const Visitor _visitor(std::forward<Args>(i_args)...);
+	const Visitor visitor(std::forward<Args>(i_args)...);
 
-	return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},_visitor,*this);
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+	}
+	else
+	{
+		return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+	}
 }
 
 }

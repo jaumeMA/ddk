@@ -77,7 +77,14 @@ typename std::remove_reference<Callable>::type::return_type visit(Callable&& i_c
 
 	const function<return_type()> resolvedFunction = multiVisitor.visit();
 
-	return eval(resolvedFunction);
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		eval(resolvedFunction);
+	}
+	else
+	{
+		return eval(resolvedFunction);
+	}
 }
 
 }

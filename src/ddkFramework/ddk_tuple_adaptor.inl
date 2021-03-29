@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<size_t ... Indexs, typename ... T>
-iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(tuple<T...>& i_iterable,const ddk::shift_action& i_initialAction)
+iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(tuple<T...>& i_iterable, const shift_action& i_initialAction)
 : m_iterable(i_iterable)
 {
 	m_currIndex = i_initialAction.shifting();
@@ -126,7 +126,7 @@ void iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::get(co
 	typedef void(*funcType)(Sink,tuple<T...>&);
 	typedef iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>> tuple_adaptor_t;
 
-	static const funcType funcTable[] = { &tuple_adaptor_t::_get<Indexs> ... };
+	static const funcType funcTable[] = { &tuple_adaptor_t::template _get<Indexs> ... };
 
 	(*funcTable[m_currIndex])(std::forward<Sink>(i_sink),m_iterable);
 }
@@ -137,7 +137,7 @@ void iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::get(co
 	typedef void(*funcType)(Sink,const tuple<T...>&);
 	typedef iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>> tuple_adaptor_t;
 
-	static const funcType funcTable[] = { &tuple_adaptor_t::_get<Indexs> ... };
+	static const funcType funcTable[] = { &tuple_adaptor_t::template _get<Indexs> ... };
 
 	(*funcTable[m_currIndex])(std::forward<Sink>(i_sink),m_iterable);
 }
@@ -156,7 +156,7 @@ void iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(S
 
 
 template<size_t ... Indexs, typename ... T>
-iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(const tuple<T...>& i_iterable,const ddk::shift_action& i_initialAction)
+iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(const tuple<T...>& i_iterable, const shift_action& i_initialAction)
 : m_iterable(i_iterable)
 {
 	m_currIndex = i_initialAction.shifting();
@@ -274,31 +274,14 @@ bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink, size_t ... IIndexs>
-void iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::get(const mpl::sequence<IIndexs...>&, Sink&& i_sink)
-{
-	typedef void(*funcType)(Sink,tuple<T...>&);
-	typedef iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>> tuple_adaptor_t;
-
-	static const funcType funcTable[] = { &tuple_adaptor_t::_get<Indexs> ... };
-
-	(*funcTable[m_currIndex])(std::forward<Sink>(i_sink),m_iterable);
-}
-template<size_t ... Indexs, typename ... T>
-template<typename Sink, size_t ... IIndexs>
 void iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::get(const mpl::sequence<IIndexs...>&, Sink&& i_sink) const
 {
 	typedef void(*funcType)(Sink,const tuple<T...>&);
 	typedef iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>> tuple_adaptor_t;
 
-	static const funcType funcTable[] = { &tuple_adaptor_t::_get<Indexs> ... };
+	static const funcType funcTable[] = { &tuple_adaptor_t::template _get<Indexs> ... };
 
 	(*funcTable[m_currIndex])(std::forward<Sink>(i_sink),m_iterable);
-}
-template<size_t ... Indexs, typename ... T>
-template<size_t Index,typename Sink>
-void iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(Sink&& i_sink, tuple<T...>& i_iterable)
-{
-	i_sink.apply(i_iterable.template get<Index>());
 }
 template<size_t ... Indexs, typename ... T>
 template<size_t Index,typename Sink>
