@@ -223,16 +223,17 @@ public:
     typedef T* pointer_type;
     typedef typename std::add_const<T>::type* cpointer_type;
 
-	inline embedded_type(const embedded_type<T>& other)
+	constexpr embedded_type() = default;
+	constexpr embedded_type(const embedded_type<T>& other)
 	: m_data(other.m_data)
 	{
 	}
-	inline embedded_type(embedded_type<T>&& other)
+	constexpr embedded_type(embedded_type<T>&& other)
 	: m_data(std::move(other.m_data))
 	{
 	}
 	template<typename ... Args>
-	inline embedded_type(Args&& ... i_args)
+	constexpr embedded_type(Args&& ... i_args)
 	: m_data(std::forward<Args>(i_args) ...)
 	{
 	}
@@ -260,11 +261,11 @@ public:
 
 		return *this;
 	}
-	inline bool operator==(const embedded_type<T>& other) const
+	constexpr bool operator==(const embedded_type<T>& other) const
 	{
 		return m_data == other.m_data;
 	}
-	inline cref_type get() const
+	constexpr cref_type get() const
 	{
 		return std::forward<embedded_type<T>::cref_type>(m_data);
 	}
@@ -272,7 +273,7 @@ public:
 	{
 		return std::forward<embedded_type<T>::ref_type>(m_data);
 	}
-	inline cpointer_type get_ptr() const
+	constexpr cpointer_type get_ptr() const
 	{
 		return &m_data;
 	}
@@ -284,7 +285,7 @@ public:
 	{
 		return std::forward<embedded_type<T>::rref_type>(m_data);
 	}
-	inline cref_type operator*() const
+	constexpr cref_type operator*() const
 	{
 		return std::forward<embedded_type<T>::cref_type>(m_data);
 	}
@@ -296,7 +297,7 @@ public:
 	{
 		return &m_data;
 	}
-	inline cpointer_type operator->() const
+	constexpr cpointer_type operator->() const
 	{
 		return &m_data;
 	}

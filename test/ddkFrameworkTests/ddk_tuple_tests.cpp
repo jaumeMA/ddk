@@ -14,7 +14,9 @@ class DDKTupleTest : public Test
 
 TEST(DDKTupleTest,defaultConstruction)
 {
-    ddk::tuple<int,std::string,float> foo(10,"hola",0.5f);
+    constexpr ddk::tuple<int,const char*,float> foo(10,"hola",0.5f);
+
+	constexpr int fooInt = foo.template get<0>();
 
 	EXPECT_EQ(foo.get<0>(),10);
 	EXPECT_EQ(foo.get<1>(),"hola");
