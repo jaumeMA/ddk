@@ -14,7 +14,7 @@ namespace ddk
 namespace detail
 {
 
-template<size_t Index, typename T>
+template<size_t Index,typename T>
 class tuple_base
 {
 public:
@@ -24,14 +24,14 @@ public:
 
     tuple_base() = default;
     TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-    constexpr explicit tuple_base(Args&& ... i_args);
-    reference get();
-    rreference extract() &&;
+        REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+        constexpr explicit tuple_base(Args&& ... i_args);
+    constexpr reference get();
+    rreference extract()&&;
     constexpr const_reference get() const;
     TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-    bool set(Args&& ... i_args);
+        REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+        bool set(Args&& ... i_args);
 
 private:
     embedded_type<T> m_value;
@@ -54,36 +54,36 @@ class tuple_impl<mpl::sequence<0>,Type>
     friend class tuple_impl;
 
 public:
-    tuple_impl() = default;
-    TEMPLATE(size_t IIndex, typename Arg)
-    REQUIRES(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
-    tuple_impl(const mpl::sequence<IIndex>&, Arg&& i_arg);
+    constexpr tuple_impl() = default;
+    TEMPLATE(size_t IIndex,typename Arg)
+        REQUIRES(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
+        constexpr tuple_impl(const mpl::sequence<IIndex>&,Arg&& i_arg);
     TEMPLATE(typename Arg)
-    REQUIRES(IS_CONSTRUCTIBLE(Type,Arg))
-    explicit tuple_impl(Arg&& i_val);
+        REQUIRES(IS_CONSTRUCTIBLE(Type,Arg))
+        constexpr explicit tuple_impl(Arg&& i_val);
     template<typename TType>
-    tuple_impl(const tuple_impl<mpl::sequence<0>,TType>& other);
+    constexpr tuple_impl(const tuple_impl<mpl::sequence<0>,TType>& other);
     template<typename TType>
-    tuple_impl(tuple_impl<mpl::sequence<0>,TType>&& other);
+    constexpr tuple_impl(tuple_impl<mpl::sequence<0>,TType>&& other);
     template<size_t IIndex>
-    typename embedded_type<Type>::cref_type get() const;
+    constexpr typename embedded_type<Type>::cref_type get() const;
     template<size_t IIndex>
-    typename embedded_type<Type>::ref_type get();
-	template<size_t IIndex>
-	typename embedded_type<Type>::rref_type extract() &&;
-	template<size_t IIndex, typename Arg>
+    constexpr typename embedded_type<Type>::ref_type get();
+    template<size_t IIndex>
+    typename embedded_type<Type>::rref_type extract()&&;
+    template<size_t IIndex,typename Arg>
     typename embedded_type<Type>::ref_type set(Arg&& i_arg);
     tuple_impl<mpl::sequence<0>,Type>* operator->();
-    const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
+    constexpr const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
     static constexpr size_t size();
-	bool empty() const;
+    constexpr bool empty() const;
 
 private:
-	Type m_val;
+    Type m_val;
 };
 
-template<size_t ... Indexs, typename ... Types>
-class tuple_impl<mpl::sequence<Indexs...>,Types...> : protected tuple_base<Indexs,Types> ...
+template<size_t ... Indexs,typename ... Types>
+class tuple_impl<mpl::sequence<Indexs...>,Types...>: protected tuple_base<Indexs,Types> ...
 {
     template<typename,typename...>
     friend class tuple_impl;
@@ -95,29 +95,29 @@ class tuple_impl<mpl::sequence<Indexs...>,Types...> : protected tuple_base<Index
 
 public:
     tuple_impl() = default;
-    TEMPLATE(size_t ... IIndexs, typename ... TTypes)
-    REQUIRES(IS_CONSTRUCTIBLE(type_by_index<IIndexs>,TTypes)...)
-    constexpr tuple_impl(const mpl::sequence<IIndexs...>&, TTypes&& ... i_args);
+    TEMPLATE(size_t ... IIndexs,typename ... TTypes)
+        REQUIRES(IS_CONSTRUCTIBLE(type_by_index<IIndexs>,TTypes)...)
+        constexpr tuple_impl(const mpl::sequence<IIndexs...>&,TTypes&& ... i_args);
     TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
-    constexpr explicit tuple_impl(Args&& ... i_args);
+        REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
+        constexpr explicit tuple_impl(Args&& ... i_args);
     constexpr tuple_impl(const tuple_impl& other);
     constexpr tuple_impl(tuple_impl&& other);
-    template<size_t ... IIndexs, typename ... TTypes>
+    template<size_t ... IIndexs,typename ... TTypes>
     constexpr tuple_impl(const tuple_impl<mpl::sequence<IIndexs...>,TTypes...>& other);
-    template<size_t ... IIndexs, typename ... TTypes>
+    template<size_t ... IIndexs,typename ... TTypes>
     constexpr tuple_impl(tuple_impl<mpl::sequence<IIndexs...>,TTypes...>&& other);
     tuple_impl& operator=(const tuple_impl& other) = default;
     tuple_impl& operator=(tuple_impl&& other) = default;
     template<size_t IIndex>
     constexpr typename base_by_index<IIndex>::const_reference get() const;
     template<size_t IIndex>
-    typename base_by_index<IIndex>::reference get();
-	template<size_t IIndex>
-    typename base_by_index<IIndex>::rreference extract() &&;
-	template<size_t ... IIndexs, typename ... Args>
-    void set(const mpl::sequence<IIndexs...>&, Args&& ... i_args);
-    template<size_t IIndex, typename Arg>
+    constexpr typename base_by_index<IIndex>::reference get();
+    template<size_t IIndex>
+    typename base_by_index<IIndex>::rreference extract()&&;
+    template<size_t ... IIndexs,typename ... Args>
+    void set(const mpl::sequence<IIndexs...>&,Args&& ... i_args);
+    template<size_t IIndex,typename Arg>
     typename base_by_index<IIndex>::reference set(Arg&& i_val);
     tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->();
     const tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->() const;
@@ -132,14 +132,14 @@ using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::num_types<Ty
 
 template<typename ... Types>
 constexpr tuple<Types...> make_tuple(Types&& ... vals);
-template<typename ... TypesA, typename ... TypesB>
-constexpr tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs);
-template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... TypesA, typename ... TypesB>
-constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, const tuple<TypesA...>& i_lhs, const tuple<TypesB...>& i_rhs);
-template<typename ... Types, typename ... Args>
-constexpr tuple<Types...,Args...> merge_args(const tuple<Types...>& i_lhs, Args&& ... i_args);
-template<typename ... FinalTypes, size_t ... FromIndexs, size_t ... ToIndexs, typename ... Types, typename ... Args>
-constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq, const mpl::sequence<ToIndexs...>& i_destSeq, const tuple<Types...>& i_lhs, Args&& ... i_args);
+template<typename ... TypesA,typename ... TypesB>
+constexpr tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs,const tuple<TypesB...>& i_rhs);
+template<typename ... FinalTypes,size_t ... FromIndexs,size_t ... ToIndexs,typename ... TypesA,typename ... TypesB>
+constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq,const mpl::sequence<ToIndexs...>& i_destSeq,const tuple<TypesA...>& i_lhs,const tuple<TypesB...>& i_rhs);
+template<typename ... Types,typename ... Args>
+constexpr tuple<Types...,Args...> merge_args(const tuple<Types...>& i_lhs,Args&& ... i_args);
+template<typename ... FinalTypes,size_t ... FromIndexs,size_t ... ToIndexs,typename ... Types,typename ... Args>
+constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge_args(const mpl::sequence<FromIndexs...>& i_srcSeq,const mpl::sequence<ToIndexs...>& i_destSeq,const tuple<Types...>& i_lhs,Args&& ... i_args);
 
 }
 

@@ -25,11 +25,11 @@ public:
     typedef typename std::add_const<T>::type* cpointer_type;
 
 public:
-	inline embedded_type(internal_type& other)
+	constexpr embedded_type(internal_type& other)
 	: m_data(other)
 	{
 	}
-	inline embedded_type(const embedded_type<T&>& other)
+	constexpr embedded_type(const embedded_type<T&>& other)
 	: m_data(other.m_data)
 	{
 	}
@@ -44,7 +44,7 @@ public:
 
 		return *this;
 	}
-	inline bool operator==(const embedded_type<T&>& other) const
+	constexpr bool operator==(const embedded_type<T&>& other) const
 	{
 		return m_data == other.m_data;
 	}
@@ -52,7 +52,7 @@ public:
 	{
 		return m_data;
 	}
-	inline cref_type get() const
+	constexpr cref_type get() const
 	{
 		return m_data;
 	}
@@ -64,7 +64,7 @@ public:
 	{
 		return &m_data;
 	}
-	inline cref_type operator*() const
+	constexpr cref_type operator*() const
 	{
 		return m_data;
 	}
@@ -76,15 +76,15 @@ public:
 	{
 		return &m_data;
 	}
-	inline cpointer_type operator->() const
+	constexpr cpointer_type operator->() const
 	{
 		return &m_data;
 	}
-	inline operator ref_type()
+	constexpr operator ref_type()
 	{
 		return m_data;
 	}
-	inline operator cref_type() const
+	constexpr operator cref_type() const
 	{
 		return m_data;
 	}
@@ -126,11 +126,11 @@ public:
     typedef T* pointer_type;
     typedef typename std::add_const<T>::type* cpointer_type;
 
-	inline embedded_type(T&& other)
+	constexpr embedded_type(T&& other)
 	: m_data(std::move(other))
 	{
 	}
-	inline embedded_type(embedded_type&& other)
+	constexpr embedded_type(embedded_type&& other)
 	: m_data(std::move(other.m_data))
 	{
 	}
@@ -144,11 +144,11 @@ public:
 	{
 		return m_data == other.m_data;
 	}
-	inline cref_type get() const
+	constexpr cref_type get() const
 	{
 		return std::move(m_data);
 	}
-	inline ref_type get()
+	constexpr ref_type get()
 	{
 		return std::move(m_data);
 	}
@@ -160,7 +160,7 @@ public:
 	{
 		return std::move(m_data);
 	}
-	inline cref_type operator*() const
+	constexpr cref_type operator*() const
 	{
 		return m_data;
 	}
@@ -172,7 +172,7 @@ public:
 	{
 		return &m_data;
 	}
-	inline cpointer_type operator->() const
+	constexpr cpointer_type operator->() const
 	{
 		return &m_data;
 	}
@@ -269,7 +269,7 @@ public:
 	{
 		return std::forward<embedded_type<T>::cref_type>(m_data);
 	}
-	inline ref_type get()
+	constexpr ref_type get()
 	{
 		return std::forward<embedded_type<T>::ref_type>(m_data);
 	}
