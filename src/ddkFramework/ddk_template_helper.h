@@ -57,6 +57,8 @@ template<typename T>
 struct class_holder
 {
     typedef T type;
+
+    constexpr class_holder() = default;
 };
 
 template<typename ... Types>
@@ -263,6 +265,12 @@ struct get_cond_rank<cond,rank1,rank2,ranks...>
 template<size_t Index>
 struct static_number{};
 
+template<size_t,size_t>
+struct make_sequence;
+
+template<typename...>
+struct merge_sequence;
+
 template<size_t ...>
 struct sequence;
 
@@ -281,6 +289,8 @@ struct sequence
 {
     static const size_t size = 1 + sizeof...(ranks);
 
+    constexpr sequence() = default;
+
     template<typename>
     struct at;
 
@@ -290,42 +300,31 @@ struct sequence
         typedef sequence<nth_rank_of<ranks...>(Indexs) ...> type;
     };
 
-    template<size_t Index, size_t Pos = 0>
-    struct find;
-
-    template<size_t Index>
-    struct find<Index,size>
+    static constexpr bool present(size_t i_pos)
     {
-        static const size_t index = static_cast<size_t>(-1);
-    };
-
-    template<size_t Index, size_t Pos>
-    struct find
+        return ((i_pos == ranks) || ...);
+    }
+    static constexpr size_t find(size_t i_pos)
     {
-    private:
-        template<bool,typename>
-        struct found;
-        template<typename T>
-        struct found<true,T>
-        {
-            static const size_t index = Pos;
-        };
-        template<typename T>
-        struct found<false,T>
-        {
-            static const size_t index = find<Index,Pos+1>::index;
-        };
+        const size_t indexs[] = {ranks...};
 
-    public:
-        static const size_t index = found<Index==nth_rank_of<ranks...>(Pos),void>::index;
-    };
+        for(size_t index=0;index<num_ranks<ranks...>;++index)
+        {
+            if(indexs[index] == i_pos)
+            {
+                return index;
+            }
+        }
+
+        return static_cast<size_t>(-1);
+    }
+
+    template<size_t ... Indexs>
+    using drop = typename merge_sequence<typename static_if<sequence<Indexs...>::present(ranks),sequence<>,sequence<ranks>>::type...>::type;
 
     static const size_t min = get_cond_rank<min_rank,ranks...>::value;
     static const size_t max = get_cond_rank<max_rank,ranks...>::value;
 };
-
-template<typename,typename>
-struct merge_sequence;
 
 template<size_t ... ranksA, size_t ... ranksB>
 struct merge_sequence<sequence<ranksA...>,sequence<ranksB...>>
@@ -333,8 +332,11 @@ struct merge_sequence<sequence<ranksA...>,sequence<ranksB...>>
     typedef sequence<ranksA...,ranksB...> type;
 };
 
-template<size_t ini, size_t end>
-struct make_sequence;
+template<typename Sequence, typename ... Sequences>
+struct merge_sequence<Sequence,Sequences...>
+{
+    typedef typename merge_sequence<Sequence,typename merge_sequence<Sequences...>::type>::type type;
+};
 
 template<size_t end>
 struct make_sequence<end,end>
@@ -396,7 +398,7 @@ private:
     template<size_t ... IIndexs>
     struct resolve<sequence<IIndexs...>>
     {
-        typedef sequence<sequence<Indexs...>::template find<IIndexs>::index ...> type;
+        typedef sequence<sequence<Indexs...>::find(IIndexs) ...> type;
     };
 
 public:

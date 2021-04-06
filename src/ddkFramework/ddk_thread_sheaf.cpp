@@ -7,6 +7,12 @@ thread_sheaf::thread_sheaf(thread_sheaf&& other)
 : m_threadCtr(std::move(other.m_threadCtr))
 {
 }
+thread_sheaf& thread_sheaf::operator=(thread_sheaf&& other)
+{
+	m_threadCtr = std::move(other.m_threadCtr);
+
+	return *this;
+}
 void thread_sheaf::start(const ddk::function<void()>& i_function)
 {
 	thread_container::iterator itThread = m_threadCtr.begin();

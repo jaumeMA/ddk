@@ -19,6 +19,8 @@ public:
 
 	fiber_sheaf(const fiber_sheaf&) = delete;
 	fiber_sheaf(fiber_sheaf&& other);
+	fiber_sheaf& operator=(const fiber_sheaf&) = delete;
+	fiber_sheaf& operator=(fiber_sheaf&& other);
 	void start(const ddk::function<void()>& i_function);
 	void stop();
 	void insert(fiber i_fiber);

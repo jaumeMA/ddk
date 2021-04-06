@@ -88,25 +88,32 @@ public:
 	{
 		return m_data;
 	}
+	inline void inplace_construct(T& val)
+	{
+		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(val);
+	}
+	constexpr void inplace_assign(T& val)
+	{
+		//references must be reconstructed every time
+		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(val);
+	}
+	inline void inplace_destroy()
+	{
+		//in references nothing needs to be done
+	}
 	inline static bool construct(void* address,T& val)
 	{
 		return new(address)embedded_type(val) != nullptr;
-	}
-	inline static bool destroy(void* address)
-	{
-		//in references nothing needs to be done
-		return true;
 	}
 	inline static bool assign(void* address,T& val)
 	{
 		//references must be reconstructed every time
 		return new(address)embedded_type(val) != nullptr;
 	}
-	inline static bool swap(void* addressA,internal_type& valA,void* addressB,internal_type& valB)
+	inline static bool destroy(void* address)
 	{
-		internal_type& tmp = valA;
-
-		return construct(addressA,valB) && construct(addressB,tmp);
+		//in references nothing needs to be done
+		return true;
 	}
 
 private:
@@ -184,6 +191,19 @@ public:
 	{
 		return m_data;
 	}
+	inline void inplace_construct(T&& val)
+	{
+		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(std::move(val));
+	}
+	constexpr void inplace_assign(T&& val)
+	{
+		//references must be reconstructed every time
+		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(std::move(val));
+	}
+	inline void inplace_destroy()
+	{
+		//in references nothing needs to be done
+	}
 	inline static bool construct(void* address,T&& val)
 	{
 		return new(address) embedded_type(std::move(val)) != nullptr;
@@ -225,16 +245,16 @@ public:
 
 	constexpr embedded_type() = default;
 	constexpr embedded_type(const embedded_type<T>& other)
-		: m_data(other.m_data)
+	: m_data(other.m_data)
 	{
 	}
 	constexpr embedded_type(embedded_type<T>&& other)
-		: m_data(std::move(other.m_data))
+	: m_data(std::move(other.m_data))
 	{
 	}
-	template<typename ... Args>
-	constexpr embedded_type(Args&& ... i_args)
-		: m_data(std::forward<Args>(i_args) ...)
+	template<typename Arg, typename ... Args>
+	constexpr embedded_type(Arg&& i_arg, Args&& ... i_args)
+	: m_data(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...)
 	{
 	}
 	inline embedded_type& operator=(const internal_type& other)
@@ -306,6 +326,20 @@ public:
 		return std::forward<embedded_type<T>::rref_type>(m_data);
 	}
 	template<typename ... Args>
+	inline void inplace_construct(Args&& ... i_args)
+	{
+		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type{ std::forward<Args>(i_args)... };
+	}
+	template<typename ... Args>
+	constexpr void inplace_assign(Args&& ... i_args)
+	{
+		m_data = { std::forward<Args>(i_args)... };
+	}
+	inline void inplace_destroy()
+	{
+		m_data.~T();
+	}
+	template<typename ... Args>
 	inline static bool construct(void* address,Args&& ... i_args)
 	{
 		return new(address) embedded_type(std::forward<Args>(i_args) ...) != nullptr;
@@ -322,18 +356,6 @@ public:
 	inline static bool assign(void* address,Type&& val)
 	{
 		reinterpret_cast<embedded_type<T>*>(address)->m_data = std::forward<Type>(val);
-
-		return true;
-	}
-	inline static bool swap(void* addressA,internal_type& valA,void* addressB,internal_type& valB)
-	{
-		internal_type tmp = valA;
-
-		embedded_type<T>* _Adata = reinterpret_cast<embedded_type<T>*>(addressA);
-		*_Adata = valB;
-
-		embedded_type<T>* _Bdata = reinterpret_cast<embedded_type<T>*>(addressB);
-		*_Bdata = tmp;
 
 		return true;
 	}

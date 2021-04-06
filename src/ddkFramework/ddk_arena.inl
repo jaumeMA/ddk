@@ -85,7 +85,7 @@ embedded_type<T> arena<ArenaSize,ArenaAlignment>::extract()
 
 	embedded_type<T>* nestedData = reinterpret_cast<embedded_type<T>*>(&m_storage);
 
-	embedded_type<T> res = nestedData->extract();
+	embedded_type<T> res(nestedData->extract());
 
 	embedded_type<T>::destroy(&m_storage);
 

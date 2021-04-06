@@ -96,17 +96,17 @@ class tuple_impl<mpl::sequence<Indexs...>,Types...>: protected tuple_base<Indexs
 public:
     tuple_impl() = default;
     TEMPLATE(size_t ... IIndexs,typename ... TTypes)
-        REQUIRES(IS_CONSTRUCTIBLE(type_by_index<IIndexs>,TTypes)...)
-        constexpr tuple_impl(const mpl::sequence<IIndexs...>&,TTypes&& ... i_args);
+    REQUIRES(IS_CONSTRUCTIBLE(type_by_index<IIndexs>,TTypes)...)
+    constexpr tuple_impl(const mpl::sequence<IIndexs...>&,TTypes&& ... i_args);
     TEMPLATE(typename ... Args)
-        REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
-        constexpr explicit tuple_impl(Args&& ... i_args);
+    REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
+    constexpr explicit tuple_impl(Args&& ... i_args);
     constexpr tuple_impl(const tuple_impl& other);
     constexpr tuple_impl(tuple_impl&& other);
-    template<size_t ... IIndexs,typename ... TTypes>
-    constexpr tuple_impl(const tuple_impl<mpl::sequence<IIndexs...>,TTypes...>& other);
-    template<size_t ... IIndexs,typename ... TTypes>
-    constexpr tuple_impl(tuple_impl<mpl::sequence<IIndexs...>,TTypes...>&& other);
+    template<typename ... TTypes>
+    constexpr tuple_impl(const tuple_impl<mpl::sequence<Indexs...>,TTypes...>& other);
+    template<typename ... TTypes>
+    constexpr tuple_impl(tuple_impl<mpl::sequence<Indexs...>,TTypes...>&& other);
     tuple_impl& operator=(const tuple_impl& other) = default;
     tuple_impl& operator=(tuple_impl&& other) = default;
     template<size_t IIndex>
@@ -132,6 +132,8 @@ using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::num_types<Ty
 
 template<typename ... Types>
 constexpr tuple<Types...> make_tuple(Types&& ... vals);
+template<size_t ... Indexs, typename ... Types>
+constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>&, Types&& ... vals);
 template<typename ... TypesA,typename ... TypesB>
 constexpr tuple<TypesA...,TypesB...> merge(const tuple<TypesA...>& i_lhs,const tuple<TypesB...>& i_rhs);
 template<typename ... FinalTypes,size_t ... FromIndexs,size_t ... ToIndexs,typename ... TypesA,typename ... TypesB>

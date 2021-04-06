@@ -18,6 +18,8 @@ public:
 
 	thread_sheaf(const thread_sheaf&) = delete;
 	thread_sheaf(thread_sheaf&& other);
+	thread_sheaf& operator=(const thread_sheaf&) = delete;
+	thread_sheaf& operator=(thread_sheaf&& other);
 	void start(const ddk::function<void()>& i_function);
 	size_t start(const ddk::function<void()>& i_function, size_t i_numThreads);
 	void stop();

@@ -125,15 +125,15 @@ constexpr tuple_impl<mpl::sequence<Indexs...>,Types...>::tuple_impl(Args&& ... i
 {
 }
 template<size_t ... Indexs,typename ... Types>
-template<size_t ... IIndexs,typename ... TTypes>
-constexpr tuple_impl<mpl::sequence<Indexs...>,Types...>::tuple_impl(const tuple_impl<mpl::sequence<IIndexs...>,TTypes...>& other)
-: tuple_base<Indexs,Types>(std::forward<TTypes>(other.template get<IIndexs>())) ...
+template<typename ... TTypes>
+constexpr tuple_impl<mpl::sequence<Indexs...>,Types...>::tuple_impl(const tuple_impl<mpl::sequence<Indexs...>,TTypes...>& other)
+: tuple_base<Indexs,Types>(std::forward<TTypes>(other.template get<Indexs>())) ...
 {
 }
 template<size_t ... Indexs,typename ... Types>
-template<size_t ... IIndexs,typename ... TTypes>
-constexpr tuple_impl<mpl::sequence<Indexs...>,Types...>::tuple_impl(tuple_impl<mpl::sequence<IIndexs...>,TTypes...>&& other)
-: tuple_base<Indexs,Types>(std::move(other).template extract<IIndexs>()) ...
+template<typename ... TTypes>
+constexpr tuple_impl<mpl::sequence<Indexs...>,Types...>::tuple_impl(tuple_impl<mpl::sequence<Indexs...>,TTypes...>&& other)
+: tuple_base<Indexs,Types>(std::move(other).template extract<Indexs>()) ...
 {
 }
 template<size_t ... Indexs,typename ... Types>
@@ -208,6 +208,16 @@ template<typename ... Types>
 constexpr tuple<Types...> make_tuple(Types&& ... vals)
 {
     return tuple<Types...>(std::forward<Types>(vals)...);
+}
+template<size_t ... Indexs, size_t ... IIndexs,typename ... Types>
+constexpr tuple<Types...> make_indexed_tuple(const mpl::sequence<Indexs...>& i_inverseSeq, const mpl::sequence<IIndexs...>& i_seq,Types&& ... vals)
+{
+    return tuple<mpl::nth_type_of_t<IIndexs,Types...>...>(i_seq,std::forward<Types>(vals)...);
+}
+template<size_t ... Indexs,typename ... Types>
+constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>& i_seq, Types&& ... vals)
+{
+    return make_indexed_tuple(typename mpl::inverse_sequence<mpl::sequence<Indexs...>>::type{},i_seq,std::forward<Types>(vals)...);
 }
 
 template<typename ... FinalTypes,size_t ... FromIndexs,size_t ... ToIndexs,size_t ... IndexsA,typename ... TypesA,size_t ... IndexsB,typename ... TypesB>

@@ -111,7 +111,7 @@
     decltype(std::declval<_TYPE>() < std::declval<_TYPE>())
 
 #define IS_NUMERIC(_TYPE) \
-	typename std::enable_if<std::is_numeric_v<_TYPE>>::type
+	typename std::enable_if<std::is_arithmetic<_TYPE>::value>::type
 
 #define TYPE_CONTAINS_SYMBOL(_TYPE,_SYMBOL) \
 	typename std::enable_if<contains_symbol_##_SYMBOL<_TYPE>::value>::type

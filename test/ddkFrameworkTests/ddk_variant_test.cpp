@@ -46,7 +46,8 @@ using testing::Types;
 
 TEST(DDKVariantTest,defaultConstruction)
 {
-	const ddk::variant<int,char,std::string> foo(10);
+	constexpr ddk::variant<int,char> foo(10);
+	constexpr ddk::variant<int,char> fooo = constexpr_copy_variant(foo);
 
 	EXPECT_EQ(foo.is<0>(),true);
 }
@@ -250,9 +251,9 @@ struct myMultiVisitor : public ddk::static_visitor<size_t>
 
 TEST(DDKVariantTest,multi_visitation)
 {
-	ddk::variant<std::string,int,size_t,nonCopyConstructibleType> foo1;
-	ddk::variant<DefaultType,std::vector<int>> foo2;
-	ddk::variant<char,double,float,std::string> foo3;
+	ddk::variant<std::string,int,size_t,nonCopyConstructibleType> foo1 = "holaquease";
+	ddk::variant<DefaultType,std::vector<int>> foo2 = { 10 };
+	ddk::variant<char,double,float,std::string> foo3 = 0.15f;
 
 	myMultiVisitor multiVisitor;
 	const size_t res = ddk::visit(multiVisitor,foo1,foo2,foo3);

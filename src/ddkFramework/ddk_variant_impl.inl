@@ -18,78 +18,76 @@ namespace ddk
 namespace detail
 {
 
-template<typename ... Types>
-variant_impl<Types...>::variant_impl()
-: m_currentType(s_numTypes)
+template<typename SuperClass>
+variant_impl_destructor<SuperClass,false>::~variant_impl_destructor()
 {
+	static_cast<SuperClass*>(this)->destroy();
 }
-template<typename ... Types>
-void variant_impl<Types...>::construct(const variant_impl<Types...>& other)
-{
-	m_currentType = other.m_currentType;
 
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,Types...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,Types);
-		CALL_INNER_VISITOR(ctr,other);
-	}
-}
-template<typename ... Types>
-void variant_impl<Types...>::construct(variant_impl<Types...>&& other)
-{
-	m_currentType = other.m_currentType;
-
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,Types...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,Types);
-		CALL_INNER_VISITOR(ctr,std::move(other));
-
-		other.m_currentType = s_numTypes;
-	}
-}
-template<typename ... Types>
-template<typename ... TTypes>
-void variant_impl<Types...>::construct(const variant_impl<TTypes...>& other)
-{
-	m_currentType = other.m_currentType;
-
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,TTypes...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,TTypes);
-		CALL_INNER_VISITOR(ctr,other);
-	}
-}
-template<typename ... Types>
-template<typename ... TTypes>
-void variant_impl<Types...>::construct(variant_impl<TTypes...>&& other)
-{
-	m_currentType = other.m_currentType;
-
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,TTypes...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,TTypes);
-		CALL_INNER_VISITOR(ctr,std::move(other));
-
-		other.m_currentType = s_numTypes;
-	}
-}
 template<typename ... Types>
 template<size_t Index, typename TType>
-void variant_impl<Types...>::construct(TType&& other)
+constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&, TType&& other)
+: m_currentType(Index)
+, m_storage(mpl::class_holder<mpl::nth_type_of_t<Index,Types...>>{},std::forward<TType>(other))
 {
-	static_assert(Index >= 0 && Index < s_numTypes, "Not found type!");
+}
+template<typename ... Types>
+constexpr variant_impl<Types...>::variant_impl(const variant_impl<Types...>& other)
+: m_currentType(other.m_currentType)
+, m_storage(none)
+{
+	if (other.m_currentType < s_numTypes)
+	{
+		constructor_visitor<data_type,Types...> ctr(m_storage);
 
-	m_currentType = static_cast<unsigned char>(Index);
+		CREATE_INNER_VISITOR(ctr,Types);
+		CALL_INNER_VISITOR(ctr,other);
+	}
+}
+template<typename ... Types>
+constexpr variant_impl<Types...>::variant_impl(variant_impl<Types...>&& other)
+: m_currentType(other.m_currentType)
+, m_storage(none)
+{
+	if (other.m_currentType < s_numTypes)
+	{
+		constructor_visitor<data_type,Types...> ctr(m_storage);
 
-	constructor_visitor<data_type,Types...>::template construct<Index>(m_storage, std::forward<TType>(other));
+		CREATE_INNER_VISITOR(ctr,Types);
+		CALL_INNER_VISITOR(ctr,std::move(other));
+
+		other.m_currentType = s_numTypes;
+	}
+}
+template<typename ... Types>
+template<typename ... TTypes>
+constexpr variant_impl<Types...>::variant_impl(const variant_impl<TTypes...>& other)
+: m_currentType(other.m_currentType)
+, m_storage(none)
+{
+	if (other.m_currentType < s_numTypes)
+	{
+		constructor_visitor<data_type,TTypes...> ctr(m_storage);
+
+		CREATE_INNER_VISITOR(ctr,TTypes);
+		CALL_INNER_VISITOR(ctr,other);
+	}
+}
+template<typename ... Types>
+template<typename ... TTypes>
+constexpr variant_impl<Types...>::variant_impl(variant_impl<TTypes...>&& other)
+: m_currentType(other.m_currentType)
+, m_storage(none)
+{
+	if (other.m_currentType < s_numTypes)
+	{
+		constructor_visitor<data_type,TTypes...> ctr(m_storage);
+
+		CREATE_INNER_VISITOR(ctr,TTypes);
+		CALL_INNER_VISITOR(ctr,std::move(other));
+
+		other.m_currentType = s_numTypes;
+	}
 }
 template<typename ... Types>
 void variant_impl<Types...>::destroy()
@@ -103,11 +101,6 @@ void variant_impl<Types...>::destroy()
 
 		m_currentType = s_numTypes;
 	}
-}
-template<typename ... Types>
-variant_impl<Types...>::~variant_impl()
-{
-	destroy();
 }
 template<typename ... Types>
 variant_impl<Types...>& variant_impl<Types...>::operator=(const variant_impl<Types...>& other)
@@ -331,7 +324,7 @@ bool variant_impl<Types...>::operator!=(variant_impl<Types...>&& other) const
 }
 template<typename ... Types>
 template<size_t Index, typename TType>
-bool variant_impl<Types...>::compare(TType&& other) const
+constexpr bool variant_impl<Types...>::compare(TType&& other) const
 {
 	bool res = false;
 
@@ -352,7 +345,7 @@ bool variant_impl<Types...>::compare(TType&& other) const
 }
 template<typename ... Types>
 template<typename TType>
-typename embedded_type<TType>::cref_type variant_impl<Types...>::get() const
+constexpr typename embedded_type<TType>::cref_type variant_impl<Types...>::get() const
 {
 	DDK_ASSERT(is<TType>(), "Accessing non current type!");
 
@@ -360,7 +353,7 @@ typename embedded_type<TType>::cref_type variant_impl<Types...>::get() const
 }
 template<typename ... Types>
 template<typename TType>
-typename embedded_type<TType>::ref_type variant_impl<Types...>::get()
+constexpr typename embedded_type<TType>::ref_type variant_impl<Types...>::get()
 {
 	DDK_ASSERT(is<TType>(), "Accessing non current type!");
 
@@ -372,11 +365,11 @@ TType variant_impl<Types...>::extract() &&
 {
 	m_currentType = s_numTypes;
 
-	return m_storage.template extract<TType>().extract();
+	return m_storage.template extract<TType>();
 }
 template<typename ... Types>
 template<typename TType>
-bool variant_impl<Types...>::is() const
+constexpr bool variant_impl<Types...>::is() const
 {
 	static_assert(mpl::is_among_types<TType, Types...>, "Non present type in variant");
 
@@ -386,7 +379,7 @@ bool variant_impl<Types...>::is() const
 }
 template<typename ... Types>
 template<typename TType>
-typename embedded_type<TType>::cref_type variant_impl<Types...>::get_as() const
+constexpr typename embedded_type<TType>::cref_type variant_impl<Types...>::get_as() const
 {
 	typedef typename std::add_const<TType>::type ret_type;
 
@@ -398,7 +391,7 @@ typename embedded_type<TType>::cref_type variant_impl<Types...>::get_as() const
 }
 template<typename ... Types>
 template<typename TType>
-typename embedded_type<TType>::ref_type variant_impl<Types...>::get_as()
+constexpr typename embedded_type<TType>::ref_type variant_impl<Types...>::get_as()
 {
 	val_retriever_visitor<TType,Types...> getter;
 
@@ -408,7 +401,7 @@ typename embedded_type<TType>::ref_type variant_impl<Types...>::get_as()
 }
 template<typename ... Types>
 template<typename TType>
-bool variant_impl<Types...>::is_base_of() const
+constexpr bool variant_impl<Types...>::is_base_of() const
 {
 	const is_base_of_visitor<TType,Types...> isBaseOf;
 
@@ -418,24 +411,18 @@ bool variant_impl<Types...>::is_base_of() const
 }
 template<typename ... Types>
 template<size_t Pos>
-typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type variant_impl<Types...>::get() const
+constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type variant_impl<Types...>::get() const
 {
-	DDK_ASSERT(m_currentType == Pos, "Accessing non current type!");
-
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 
-	//ok, get it!
 	return m_storage.template get<embeddedType>();
 }
 template<typename ... Types>
 template<size_t Pos>
-typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type variant_impl<Types...>::get()
+constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type variant_impl<Types...>::get()
 {
-	DDK_ASSERT(m_currentType == Pos, "Accessing non current type!");
-
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 
-	//ok, get it!
 	return m_storage.template get<embeddedType>();
 }
 template<typename ... Types>
@@ -446,16 +433,16 @@ embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> variant_impl<Types.
 
 	m_currentType = s_numTypes;
 
-	return m_storage.template extract<embeddedType>();
+	return embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>{ m_storage.template extract<embeddedType>() };
 }
 template<typename ... Types>
 template<size_t Pos>
-bool variant_impl<Types...>::is() const
+constexpr bool variant_impl<Types...>::is() const
 {
 	return m_currentType == Pos;
 }
 template<typename ... Types>
-char variant_impl<Types...>::which() const
+constexpr char variant_impl<Types...>::which() const
 {
 	return m_currentType;
 }

@@ -12,8 +12,9 @@ class variant_visitor_invoker
 {
     static const size_t _numTypes = mpl::get_num_types<Types...>();
 
+public:
     template<typename visitor, size_t TypePos>
-    inline static Return inner_invoke(visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return inner_invoke(visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
@@ -28,7 +29,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return inner_invoke(const visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return inner_invoke(const visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
@@ -43,7 +44,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return inner_invoke(visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return inner_invoke(visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
@@ -58,7 +59,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
@@ -73,7 +74,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return inner_invoke(visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return inner_invoke(visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -85,7 +86,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
+    constexpr static Return inner_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -97,7 +98,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return outer_invoke(visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return outer_invoke(visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
@@ -112,7 +113,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return outer_invoke(const visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return outer_invoke(const visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::cref_type ref_type;
@@ -127,7 +128,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return outer_invoke(visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return outer_invoke(visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
@@ -142,7 +143,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return outer_invoke(const visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return outer_invoke(const visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef typename mpl::nth_type_of<TypePos,Types...>::type CurrType;
 		typedef typename embedded_type<CurrType>::ref_type ref_type;
@@ -157,7 +158,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return outer_invoke(visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return outer_invoke(visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -169,7 +170,7 @@ class variant_visitor_invoker
 		}
 	}
     template<typename visitor, size_t TypePos>
-    inline static Return outer_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return outer_invoke(const visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -183,12 +184,12 @@ class variant_visitor_invoker
 
 public:
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -200,12 +201,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -217,12 +218,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -234,12 +235,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -251,12 +252,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -268,12 +269,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return outer_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -285,12 +286,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -302,12 +303,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, const variant_impl<Types...>& var)
+	constexpr static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, const variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -319,12 +320,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -336,12 +337,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>& var)
+	constexpr static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -353,12 +354,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, const visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -370,12 +371,12 @@ public:
 		}
 	}
     template<typename visitor, size_t ... TypeIndexs>
-    inline static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>&& var)
+	constexpr static Return inner_invoker(const mpl::sequence<TypeIndexs...>&, visitor& _visitor, variant_impl<Types...>&& var)
 	{
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		static const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
