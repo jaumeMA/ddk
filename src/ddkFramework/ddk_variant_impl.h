@@ -39,7 +39,7 @@ class variant_impl : public variant_impl_destructor<variant_impl<Types...>,mpl::
 public:
 	static const size_t npos = s_numTypes;
 
-    constexpr variant_impl() = default;
+    constexpr variant_impl();
     template<size_t Index, typename TType>
     constexpr variant_impl(const mpl::static_number<Index>&, TType&& other);
     constexpr variant_impl(const variant_impl& other);

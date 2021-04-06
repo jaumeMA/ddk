@@ -25,6 +25,11 @@ variant_impl_destructor<SuperClass,false>::~variant_impl_destructor()
 }
 
 template<typename ... Types>
+constexpr variant_impl<Types...>::variant_impl()
+: m_currentType((std::is_default_constructible<mpl::nth_type_of<0,Types...>::type>::value) ? 0 : s_numTypes)
+{
+}
+template<typename ... Types>
 template<size_t Index, typename TType>
 constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&, TType&& other)
 : m_currentType(Index)
