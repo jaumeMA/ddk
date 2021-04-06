@@ -131,7 +131,7 @@ template<typename ... Types>
 using tuple = detail::tuple_impl<typename mpl::make_sequence<0,mpl::num_types<Types...>>::type,Types...>;
 
 template<typename ... Types>
-constexpr tuple<Types...> make_tuple(Types&& ... vals);
+constexpr auto make_tuple(Types&& ... vals);
 template<size_t ... Indexs, typename ... Types>
 constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>&, Types&& ... vals);
 template<typename ... TypesA,typename ... TypesB>

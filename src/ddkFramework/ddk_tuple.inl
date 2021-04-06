@@ -205,14 +205,14 @@ constexpr bool tuple_impl<mpl::sequence<Indexs...>,Types...>::empty() const
 }
 
 template<typename ... Types>
-constexpr tuple<Types...> make_tuple(Types&& ... vals)
+constexpr auto make_tuple(Types&& ... vals)
 {
     return tuple<Types...>(std::forward<Types>(vals)...);
 }
 template<size_t ... Indexs, size_t ... IIndexs,typename ... Types>
-constexpr tuple<Types...> make_indexed_tuple(const mpl::sequence<Indexs...>& i_inverseSeq, const mpl::sequence<IIndexs...>& i_seq,Types&& ... vals)
+constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>& i_inverseSeq, const mpl::sequence<IIndexs...>& i_seq,Types&& ... vals)
 {
-    return tuple<mpl::nth_type_of_t<IIndexs,Types...>...>(i_seq,std::forward<Types>(vals)...);
+    return tuple<mpl::nth_type_of_t<Indexs,Types...>...>(i_seq,std::forward<Types>(vals)...);
 }
 template<size_t ... Indexs,typename ... Types>
 constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>& i_seq, Types&& ... vals)
