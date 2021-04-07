@@ -5,6 +5,7 @@
 #include "ddk_variadic_union.h"
 #include "ddk_static_visitor.h"
 #include "ddk_type_concepts.h"
+#include "ddk_function_concepts.h"
 #include "ddk_concepts.h"
 
 namespace ddk
@@ -88,13 +89,13 @@ public:
     constexpr char which() const;
     inline void swap(variant_impl<Types...>& other);
     TEMPLATE(typename Visitor)
-    REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type>,mpl::remove_qualifiers<Visitor>))
-    inline typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor);
+    REQUIRES(IS_CALLABLE(Visitor))
+    constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor);
     TEMPLATE(typename Visitor)
-    REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type>,mpl::remove_qualifiers<Visitor>))
-    inline typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor) const;
+    REQUIRES(IS_CALLABLE(Visitor))
+    constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor) const;
     template<typename Visitor, typename ... Args>
-    inline typename mpl::remove_qualifiers<Visitor>::return_type visit(Args&& ... i_args) const;
+    constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Args&& ... i_args) const;
 
 private:
     typedef variadic_union<Types...> data_type;

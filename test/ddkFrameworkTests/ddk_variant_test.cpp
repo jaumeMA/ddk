@@ -240,8 +240,10 @@ TEST(DDKVariantTest,visitation)
 	EXPECT_EQ(foo.visit(visitor),0xBB);
 }
 
-struct myMultiVisitor : public ddk::static_visitor<size_t>
+struct myMultiVisitor
 {
+	typedef size_t return_type;
+
 	template<typename ... T>
 	size_t operator()(T&& ... i_values) const
 	{
@@ -255,6 +257,6 @@ TEST(DDKVariantTest,multi_visitation)
 	ddk::variant<DefaultType,std::vector<int>> foo2 = { 10 };
 	ddk::variant<char,double,float,std::string> foo3 = 0.15f;
 
-	myMultiVisitor multiVisitor;
-	const size_t res = ddk::visit(multiVisitor,foo1,foo2,foo3);
+	const bool res1 = ddk::visit<bool>([](auto&& ... i_value) -> bool { return true; },foo1,foo2,foo3);
+	const size_t res2 = ddk::visit<myMultiVisitor>(foo1,foo2,foo3);
 }

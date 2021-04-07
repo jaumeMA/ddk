@@ -6,11 +6,20 @@
 #define IS_VARIANT(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_variant_v<_TYPE>>::type
 
+#define IS_NOT_VARIANT(_TYPE) \
+	typename std::enable_if<ddk::concepts::is_not_variant_v<_TYPE>>::type
+
 #define IS_STATIC_VISITOR(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_static_visitor_v<_TYPE>>::type
 
+#define IS_NOT_STATIC_VISITOR(_TYPE) \
+	typename std::enable_if<ddk::concepts::is_not_static_visitor_v<_TYPE>>::type
+
 #define IS_BASE_OF_STATIC_VISITOR(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_base_of_static_visitor_v<_TYPE>>::type
+
+#define IS_NOT_BASE_OF_STATIC_VISITOR(_TYPE) \
+	typename std::enable_if<ddk::concepts::is_not_base_of_static_visitor_v<_TYPE>>::type
 
 namespace ddk
 {
@@ -35,6 +44,8 @@ public:
 
 template<typename T>
 inline constexpr bool is_variant_v = is_variant<T>::value;
+template<typename T>
+inline constexpr bool is_not_variant_v = (is_variant<T>::value == false);
 
 template<typename,typename>
 struct _is_among_variant_types;

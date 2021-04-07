@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_variant_concepts.h"
+#include "ddk_callable.h"
 
 namespace ddk
 {
@@ -311,20 +312,40 @@ constexpr bool variant<Types...>::operator!=(T&& other) const
 	}
 }
 
-TEMPLATE(typename Visitor,typename Variant)
-REQUIRED(IS_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
-constexpr typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_visitor,Variant&& i_variant)
+TEMPLATE(typename Return, typename Visitor,typename Variant)
+REQUIRED(IS_VARIANT(Variant))
+constexpr auto visit(Visitor&& i_visitor,Variant&& i_variant)
 {
-	return i_variant.visit(std::forward<Visitor>(i_visitor));
+	return i_variant.visit(deduce_fixed_callable<Return>(i_visitor));
+}
+TEMPLATE(typename Visitor,typename Variant)
+REQUIRED(IS_VARIANT(Variant))
+constexpr auto visit(Visitor&& i_visitor,Variant&& i_variant)
+{
+	typedef typename mpl::aqcuire_callable_return_type<Visitor>::type acquired_return_type;
+	typedef typename mpl::static_if<std::is_same<detail::none_t,acquired_return_type>::value,void,acquired_return_type>::type return_type;
+
+	return i_variant.visit(deduce_fixed_callable<return_type>(i_visitor));
 }
 
-TEMPLATE(typename Visitor,typename Variant)
-REQUIRED(IS_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
-constexpr typename std::remove_reference<Visitor>::type::return_type visit(Variant&& i_variant)
+TEMPLATE(typename Return, typename Visitor,typename Variant)
+REQUIRED(IS_VARIANT(Variant))
+constexpr auto visit(Variant&& i_variant)
 {
 	const Visitor _visitor;
 
-	return i_variant.visit(_visitor);
+	return i_variant.visit(deduce_fixed_callable<Return>(_visitor));
+}
+TEMPLATE(typename Visitor,typename Variant)
+REQUIRED(IS_VARIANT(Variant))
+constexpr auto visit(Variant&& i_variant)
+{
+	typedef typename mpl::aqcuire_callable_return_type<Visitor>::type acquired_return_type;
+	typedef typename mpl::static_if<std::is_same<detail::none_t,acquired_return_type>::value,void,acquired_return_type>::type return_type;
+
+	const Visitor _visitor;
+
+	return i_variant.visit(deduce_fixed_callable<void>(_visitor));
 }
 
 }

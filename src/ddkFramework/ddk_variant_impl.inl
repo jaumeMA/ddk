@@ -499,10 +499,10 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 }
 template<typename ... Types>
 TEMPLATE(typename Visitor)
-REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
-typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor)
+REQUIRED(IS_CALLABLE(Visitor))
+constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor)
 {
-	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
+	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	if constexpr(std::is_same<void,return_type>::value)
@@ -516,10 +516,10 @@ typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::vi
 }
 template<typename ... Types>
 TEMPLATE(typename Visitor)
-REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
-typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
+REQUIRED(IS_CALLABLE(Visitor))
+constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
 {
-	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
+	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	if constexpr(std::is_same<void,return_type>::value)
@@ -533,9 +533,9 @@ typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::vi
 }
 template<typename ... Types>
 template<typename Visitor,typename ... Args>
-typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Args&& ... i_args) const
+constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Args&& ... i_args) const
 {
-	typedef typename std::remove_reference<typename std::remove_const<Visitor>::type>::type::return_type  return_type;
+	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	const Visitor visitor(std::forward<Args>(i_args)...);

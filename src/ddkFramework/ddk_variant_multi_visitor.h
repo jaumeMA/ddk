@@ -50,13 +50,19 @@ private:
 
 }
 
+TEMPLATE(typename Return, typename Callable,typename ... Variants)
+REQUIRES(IS_VARIANT(Variants)...)
+constexpr auto visit(Variants&& ... i_variants);
 TEMPLATE(typename Callable,typename ... Variants)
-REQUIRES(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
-inline typename std::remove_reference<Callable>::type::return_type visit(Variants&& ... i_variants);
+REQUIRES(IS_VARIANT(Variants)...)
+constexpr auto visit(Variants&& ... i_variants);
 
+TEMPLATE(typename Return, typename Callable,typename ... Variants)
+REQUIRES(IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
+constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants);
 TEMPLATE(typename Callable,typename ... Variants)
-REQUIRES(IS_BASE_OF_STATIC_VISITOR(Callable),IS_VARIANT(Variants)...)
-inline typename std::remove_reference<Callable>::type::return_type visit(Callable&& i_callable,Variants&& ... i_variants);
+REQUIRES(IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
+constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants);
 
 }
 

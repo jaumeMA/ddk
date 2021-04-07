@@ -85,7 +85,7 @@ function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<
 
 TEMPLATE(typename Visitor,typename ... Values)
 REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_visitor,const Values& ... i_values)
+auto visit(Visitor&& i_visitor,const Values& ... i_values)
 {
     typedef typename std::remove_reference<Visitor>::type visitor_t;
 	typedef typename visitor_t::type_interface type_interface;
@@ -100,7 +100,7 @@ typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& i_vis
 
 TEMPLATE(typename Visitor,typename ... Values)
 REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-typename Visitor::return_type visit(const Values& ... i_values)
+auto visit(const Values& ... i_values)
 {
 	typedef typename Visitor::type_interface type_interface;
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;

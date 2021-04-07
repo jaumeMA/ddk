@@ -162,13 +162,21 @@ variant<Types...>&& as_variant(variant<Types...>&& i_value)
 namespace ddk
 {
 
-TEMPLATE(typename Visitor, typename Variant)
-REQUIRES(IS_BASE_OF_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
-constexpr typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor, Variant&& i_variant);
+TEMPLATE(typename Visitor,typename Variant)
+REQUIRES(IS_VARIANT(Variant))
+constexpr auto visit(Visitor&& visitor,Variant&& i_variant);
+
+TEMPLATE(typename Return, typename Visitor, typename Variant)
+REQUIRES(IS_VARIANT(Variant))
+constexpr auto visit(Visitor&& visitor, Variant&& i_variant);
 
 TEMPLATE(typename Visitor,typename Variant)
-REQUIRES(IS_BASE_OF_STATIC_VISITOR(Visitor),IS_VARIANT(Variant))
-constexpr typename std::remove_reference<Visitor>::type::return_type visit(Variant&& i_variant);
+REQUIRES(IS_VARIANT(Variant))
+constexpr auto visit(Variant&& i_variant);
+
+TEMPLATE(typename Return, typename Visitor,typename Variant)
+REQUIRES(IS_VARIANT(Variant))
+constexpr auto visit(Variant&& i_variant);
 
 }
 
