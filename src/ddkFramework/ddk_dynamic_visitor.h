@@ -25,16 +25,6 @@ public:
 	static const size_t nvisitor = -1;
 
 	virtual ~dynamic_visitor() = default;
-	template<typename T>
-	void operator()(T&&) const
-	{
-		static_assert(sizeof(T)==0, "You have to provide a visit method for this type");
-	}
-	template<typename T>
-	void operator()(T&&)
-	{
-		static_assert(sizeof(T)==0, "You have to provide a visit method for this type");
-	}
 	static size_t get_dynamic_visitor(const rtti::TypeInfo& i_typeInfo)
 	{
 		std::unordered_map<size_t,size_t>& registeredDynamicVisitors = __get_dynamic_visitor_layout();

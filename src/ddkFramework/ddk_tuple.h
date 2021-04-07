@@ -24,14 +24,14 @@ public:
 
     tuple_base() = default;
     TEMPLATE(typename ... Args)
-        REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-        constexpr explicit tuple_base(Args&& ... i_args);
+    REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+    constexpr explicit tuple_base(Args&& ... i_args);
     constexpr reference get();
     rreference extract()&&;
     constexpr const_reference get() const;
     TEMPLATE(typename ... Args)
-        REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-        bool set(Args&& ... i_args);
+    REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+    bool set(Args&& ... i_args);
 
 private:
     embedded_type<T> m_value;
@@ -56,11 +56,11 @@ class tuple_impl<mpl::sequence<0>,Type>
 public:
     constexpr tuple_impl() = default;
     TEMPLATE(size_t IIndex,typename Arg)
-        REQUIRES(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
-        constexpr tuple_impl(const mpl::sequence<IIndex>&,Arg&& i_arg);
+    REQUIRES(IS_SAME_RANK(IIndex,0),IS_CONSTRUCTIBLE(Type,Arg))
+    constexpr tuple_impl(const mpl::sequence<IIndex>&,Arg&& i_arg);
     TEMPLATE(typename Arg)
-        REQUIRES(IS_CONSTRUCTIBLE(Type,Arg))
-        constexpr explicit tuple_impl(Arg&& i_val);
+    REQUIRES(IS_CONSTRUCTIBLE(Type,Arg))
+    constexpr explicit tuple_impl(Arg&& i_val);
     template<typename TType>
     constexpr tuple_impl(const tuple_impl<mpl::sequence<0>,TType>& other);
     template<typename TType>
