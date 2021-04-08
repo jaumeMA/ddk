@@ -9,6 +9,7 @@ struct constant_callable
 public:
     struct callable_tag;
 
+    constant_callable() = default;
     template<typename ... Args>
     constant_callable(Args&& ... i_args);
 
