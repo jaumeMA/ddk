@@ -24,97 +24,31 @@ public:
 	typedef T* pointer_type;
 	typedef typename std::add_const<T>::type* cpointer_type;
 
-public:
-	constexpr embedded_type(internal_type& other)
-		: m_data(other)
-	{
-	}
-	constexpr embedded_type(const embedded_type<T&>& other)
-		: m_data(other.m_data)
-	{
-	}
+	constexpr embedded_type(internal_type& other);
+	constexpr embedded_type(const embedded_type<T&>& other);
 	embedded_type() = delete;
 	inline T& operator=(internal_type& other) = delete;
 	inline T& operator=(internal_type&& other) = delete;
 	inline T& operator=(embedded_type<T&>&& other) = delete;
 	template<typename Type>
-	inline embedded_type& operator=(Type&& val)
-	{
-		new(&m_data)embedded_type(std::forward<Type>(val));
-
-		return *this;
-	}
-	constexpr bool operator==(const embedded_type<T&>& other) const
-	{
-		return m_data == other.m_data;
-	}
-	inline rref_type extract()
-	{
-		return m_data;
-	}
-	constexpr cref_type get() const
-	{
-		return m_data;
-	}
-	constexpr ref_type get()
-	{
-		return m_data;
-	}
-	constexpr pointer_type get_ptr()
-	{
-		return &m_data;
-	}
-	constexpr cref_type operator*() const
-	{
-		return m_data;
-	}
-	constexpr ref_type operator*()
-	{
-		return m_data;
-	}
-	constexpr pointer_type operator->()
-	{
-		return &m_data;
-	}
-	constexpr cpointer_type operator->() const
-	{
-		return &m_data;
-	}
-	constexpr operator ref_type()
-	{
-		return m_data;
-	}
-	constexpr operator cref_type() const
-	{
-		return m_data;
-	}
-	inline void inplace_construct(T& val)
-	{
-		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(val);
-	}
-	constexpr void inplace_assign(T& val)
-	{
-		//references must be reconstructed every time
-		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(val);
-	}
-	inline void inplace_destroy()
-	{
-		//in references nothing needs to be done
-	}
-	inline static bool construct(void* address,T& val)
-	{
-		return new(address)embedded_type(val) != nullptr;
-	}
-	inline static bool assign(void* address,T& val)
-	{
-		//references must be reconstructed every time
-		return new(address)embedded_type(val) != nullptr;
-	}
-	inline static bool destroy(void* address)
-	{
-		//in references nothing needs to be done
-		return true;
-	}
+	inline embedded_type& operator=(Type&& val);
+	constexpr bool operator==(const embedded_type<T&>& other) const;
+	inline rref_type extract();
+	constexpr cref_type get() const;
+	constexpr ref_type get();
+	constexpr pointer_type get_ptr();
+	constexpr cref_type operator*() const;
+	constexpr ref_type operator*();
+	constexpr pointer_type operator->();
+	constexpr cpointer_type operator->() const;
+	constexpr operator ref_type();
+	constexpr operator cref_type() const;
+	inline void inplace_construct(T& val);
+	inline void inplace_assign(T& val);
+	inline void inplace_destroy();
+	inline static bool construct(void* address,T& val);
+	inline static bool assign(void* address,T& val);
+	inline static bool destroy(void* address);
 
 private:
 	internal_type& m_data;
@@ -133,98 +67,32 @@ public:
 	typedef T* pointer_type;
 	typedef typename std::add_const<T>::type* cpointer_type;
 
-	constexpr embedded_type(T&& other)
-		: m_data(std::move(other))
-	{
-	}
-	constexpr embedded_type(embedded_type&& other)
-		: m_data(std::move(other.m_data))
-	{
-	}
+	constexpr embedded_type(T&& other);
+	constexpr embedded_type(embedded_type&& other);
 	//this is a ref, we do not allow assignments beyond construction
 	embedded_type() = delete;
 	embedded_type(internal_type& other) = delete;
 	T& operator=(internal_type& other) = delete;
 	T& operator=(internal_type&& other) = delete;
 	T& operator=(embedded_type<const T&>&& other) = delete;
-	inline bool operator==(const embedded_type<T&&>& other) const
-	{
-		return m_data == other.m_data;
-	}
-	constexpr cref_type get() const
-	{
-		return std::move(m_data);
-	}
-	constexpr ref_type get()
-	{
-		return std::move(m_data);
-	}
-	constexpr pointer_type get_ptr()
-	{
-		return &m_data;
-	}
-	inline rref_type extract()
-	{
-		return std::move(m_data);
-	}
-	constexpr cref_type operator*() const
-	{
-		return m_data;
-	}
-	constexpr ref_type operator*()
-	{
-		return m_data;
-	}
-	constexpr pointer_type operator->()
-	{
-		return &m_data;
-	}
-	constexpr cpointer_type operator->() const
-	{
-		return &m_data;
-	}
-	constexpr operator ref_type()
-	{
-		return m_data;
-	}
-	constexpr operator cref_type() const
-	{
-		return m_data;
-	}
-	inline void inplace_construct(T&& val)
-	{
-		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(std::move(val));
-	}
-	constexpr void inplace_assign(T&& val)
-	{
-		//references must be reconstructed every time
-		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(std::move(val));
-	}
-	inline void inplace_destroy()
-	{
-		//in references nothing needs to be done
-	}
-	inline static bool construct(void* address,T&& val)
-	{
-		return new(address) embedded_type(std::move(val)) != nullptr;
-	}
-	inline static bool destroy(void* address)
-	{
-		//in references nothing needs to be done
-		return true;
-	}
-	inline static bool assign(void* address,T&& val)
-	{
-		//references must be reconstructed every time
-
-		return construct(address,std::move(val));
-	}
-	inline static bool swap(void* addressA,internal_type&& valA,void* addressB,internal_type&& valB)
-	{
-		internal_type&& tmp = std::move(valA);
-
-		return construct(addressA,std::move(valB)) && construct(addressB,std::move(tmp));
-	}
+	constexpr bool operator==(const embedded_type<T&&>& other) const;
+	constexpr cref_type get() const;
+	constexpr ref_type get();
+	constexpr pointer_type get_ptr();
+	inline rref_type extract();
+	constexpr cref_type operator*() const;
+	constexpr ref_type operator*();
+	constexpr pointer_type operator->();
+	constexpr cpointer_type operator->() const;
+	constexpr operator ref_type();
+	constexpr operator cref_type() const;
+	inline void inplace_construct(T&& val);
+	inline void inplace_assign(T&& val);
+	inline void inplace_destroy();
+	inline static bool construct(void* address,T&& val);
+	inline static bool destroy(void* address);
+	inline static bool assign(void* address,T&& val);
+	inline static bool swap(void* addressA,internal_type&& valA,void* addressB,internal_type&& valB);
 
 private:
 	internal_type&& m_data;
@@ -244,124 +112,40 @@ public:
 	typedef typename std::add_const<T>::type* cpointer_type;
 
 	constexpr embedded_type() = default;
-	constexpr embedded_type(const embedded_type<T>& other)
-	: m_data(other.m_data)
-	{
-	}
-	constexpr embedded_type(embedded_type<T>&& other)
-	: m_data(std::move(other.m_data))
-	{
-	}
+	constexpr embedded_type(const embedded_type<T>& other);
+	constexpr embedded_type(embedded_type<T>&& other);
 	template<typename Arg, typename ... Args>
-	constexpr embedded_type(Arg&& i_arg, Args&& ... i_args)
-	: m_data(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...)
-	{
-	}
-	inline embedded_type& operator=(const internal_type& other)
-	{
-		m_data = other;
-
-		return *this;
-	}
-	inline embedded_type& operator=(internal_type&& other)
-	{
-		m_data = std::move(other);
-
-		return *this;
-	}
-	inline embedded_type& operator=(const embedded_type<T>& other)
-	{
-		m_data = other.m_data;
-
-		return *this;
-	}
-	inline embedded_type& operator=(embedded_type<T>&& other)
-	{
-		m_data = std::move(other.m_data);
-
-		return *this;
-	}
-	constexpr bool operator==(const embedded_type<T>& other) const
-	{
-		return m_data == other.m_data;
-	}
-	constexpr cref_type get() const
-	{
-		return std::forward<embedded_type<T>::cref_type>(m_data);
-	}
-	constexpr ref_type get()
-	{
-		return std::forward<embedded_type<T>::ref_type>(m_data);
-	}
-	constexpr cpointer_type get_ptr() const
-	{
-		return &m_data;
-	}
-	constexpr pointer_type get_ptr()
-	{
-		return &m_data;
-	}
-	inline rref_type extract()
-	{
-		return std::forward<embedded_type<T>::rref_type>(m_data);
-	}
-	constexpr cref_type operator*() const
-	{
-		return std::forward<embedded_type<T>::cref_type>(m_data);
-	}
-	constexpr ref_type operator*()
-	{
-		return std::forward<embedded_type<T>::ref_type>(m_data);
-	}
-	constexpr pointer_type operator->()
-	{
-		return &m_data;
-	}
-	constexpr cpointer_type operator->() const
-	{
-		return &m_data;
-	}
-	inline operator rref_type()
-	{
-		return std::forward<embedded_type<T>::rref_type>(m_data);
-	}
+	constexpr embedded_type(Arg&& i_arg, Args&& ... i_args);
+	inline embedded_type& operator=(const internal_type& other);
+	inline embedded_type& operator=(internal_type&& other);
+	inline embedded_type& operator=(const embedded_type<T>& other);
+	inline embedded_type& operator=(embedded_type<T>&& other);
+	constexpr bool operator==(const embedded_type<T>& other) const;
+	constexpr cref_type get() const;
+	constexpr ref_type get();
+	constexpr cpointer_type get_ptr() const;
+	constexpr pointer_type get_ptr();
+	inline rref_type extract();
+	constexpr cref_type operator*() const;
+	constexpr ref_type operator*();
+	constexpr pointer_type operator->();
+	constexpr cpointer_type operator->() const;
+	inline operator rref_type();
 	template<typename ... Args>
-	inline void inplace_construct(Args&& ... i_args)
-	{
-		new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type{ std::forward<Args>(i_args)... };
-	}
+	inline void inplace_construct(Args&& ... i_args);
 	template<typename ... Args>
-	constexpr void inplace_assign(Args&& ... i_args)
-	{
-		m_data = { std::forward<Args>(i_args)... };
-	}
-	inline void inplace_destroy()
-	{
-		m_data.~T();
-	}
+	constexpr void inplace_assign(Args&& ... i_args);
+	inline void inplace_destroy();
 	template<typename ... Args>
-	inline static bool construct(void* address,Args&& ... i_args)
-	{
-		return new(address) embedded_type(std::forward<Args>(i_args) ...) != nullptr;
-	}
-	inline static bool destroy(void* address)
-	{
-		embedded_type<T>* _data = reinterpret_cast<embedded_type<T>*>(address);
-
-		_data->m_data.~T();
-
-		return true;
-	}
+	inline static bool construct(void* address,Args&& ... i_args);
+	inline static bool destroy(void* address);
 	template<typename Type>
-	inline static bool assign(void* address,Type&& val)
-	{
-		reinterpret_cast<embedded_type<T>*>(address)->m_data = std::forward<Type>(val);
-
-		return true;
-	}
+	inline static bool assign(void* address,Type&& val);
 
 private:
 	internal_type  m_data;
 };
 
 }
+
+#include "ddk_embedded_type.inl"

@@ -39,7 +39,7 @@ REQUIRED(IS_CALLABLE_NOT_FUNCTION(T))
 function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(T&& i_functor, const Allocator& i_allocator)
 : m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
-    typedef typename mpl::static_if<detail::is_base_of_inherited_functor_impl<mpl::remove_qualifiers<T>>,mpl::remove_qualifiers<T>,detail::aggregated_functor_impl<mpl::remove_qualifiers<T>,Return,Types...>>::type Functor;
+    typedef typename mpl::static_if<detail::is_base_of_inherited_functor_impl<mpl::remove_qualifiers<T>,Return,Types...>,mpl::remove_qualifiers<T>,detail::aggregated_functor_impl<mpl::remove_qualifiers<T>,Return,Types...>>::type Functor;
 
 	std::pair<resource_deleter_const_lent_ref,void*> allocCtxt = m_allocator.allocate(sizeof(Functor));
 

@@ -198,7 +198,6 @@ class inherited_functor_impl : public function_base<Return,Types...>
 {
 	using function_base<Return,Types...>::s_numTypes;
 	using typename function_base<Return,Types...>::tuple_args;
-	friend inline std::true_type is_base_of_inherited_functor_impl_f(const inherited_functor_impl&);
 
 public:
 	typedef Return return_type;
@@ -215,10 +214,8 @@ private:
 	Return apply(const mpl::sequence<Indexs...>&,const tuple_args& i_tuple) const;
 };
 
-std::false_type is_base_of_inherited_functor_impl_f(...);
-
-template<typename T>
-inline constexpr bool is_base_of_inherited_functor_impl = decltype(is_base_of_inherited_functor_impl_f(std::declval<T>()))::value;
+template<typename T, typename Return, typename ... Types>
+inline constexpr bool is_base_of_inherited_functor_impl = std::is_base_of<inherited_functor_impl<Return,Types...>,T>::value;
 
 }
 }

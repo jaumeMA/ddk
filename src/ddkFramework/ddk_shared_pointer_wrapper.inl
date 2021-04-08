@@ -150,7 +150,7 @@ shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,R
 			clearIfCounterVoid(m_refCounter->decrementSharedReference());
 		}
 
-		if((m_data = dynamic_cast<T*>(other.m_data)))
+		if((m_data = static_cast<T*>(other.m_data)))
 		{
 			m_deleter = other.m_deleter;
 			m_refCounter = other.m_refCounter;
@@ -177,7 +177,7 @@ shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,R
 			clearIfCounterVoid(m_refCounter->decrementSharedReference());
 		}
 
-		if((m_data = dynamic_cast<T*>(other.m_data)))
+		if((m_data = static_cast<T*>(other.m_data)))
 		{
 			m_deleter = other.m_deleter;
 		}
