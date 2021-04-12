@@ -2,9 +2,6 @@
 
 #include "ddk_variant.h"
 #include "ddk_optional.h"
-#include "ddk_macros.h"
-#include "ddk_formatter.h"
-#include "ddk_error.h"
 
 #if defined(DDK_DEBUG)
 
