@@ -2,6 +2,7 @@
 
 #include "ddk_iterable_defs.h"
 #include "ddk_iterable_action_defs.h"
+#include "ddk_variant.h"
 
 namespace ddk
 {
