@@ -24,8 +24,8 @@ public:
 	thread_polling_executor(const thread_polling_executor&) = delete;
 	thread_polling_executor(thread_polling_executor&&);
 	~thread_polling_executor();
-	void set_update_time(size_t i_sleepInMs);
-	size_t get_update_time() const;
+	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
+	std::chrono::milliseconds get_update_time() const;
 	void start_thread(const ddk::function<void()>& i_executor);
 	void stop_thread();
 	void signal_thread();
@@ -55,8 +55,8 @@ public:
 	thread_event_driven_executor(const thread_event_driven_executor&) = delete;
 	thread_event_driven_executor(thread_event_driven_executor&& other);
 	~thread_event_driven_executor();
-	void set_update_time(unsigned int i_sleepInMs);
-	unsigned int get_update_time() const;
+	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
+	std::chrono::milliseconds get_update_time() const;
 	void start_thread(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc = nullptr);
 	void stop_thread();
 	void signal_thread();
@@ -69,7 +69,7 @@ private:
 	virtual void signal() override;
 	void update();
 
-	unsigned int m_sleepTimeInMS;
+	std::chrono::milliseconds m_sleepTimeInMS;
 	ddk::function<void()> m_executor;
 	ddk::function<bool()> m_testFunc;
 	bool m_stopped;

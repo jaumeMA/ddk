@@ -15,8 +15,8 @@ public:
 	fiber_polling_executor(const fiber_polling_executor&) = delete;
 	fiber_polling_executor(fiber_polling_executor&& other);
 	~fiber_polling_executor();
-	void set_update_time(unsigned long i_sleepInMs);
-	unsigned int get_update_time() const;
+	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
+	std::chrono::milliseconds get_update_time() const;
 	void start(const ddk::function<void()>& i_executor);
 	void stop();
 
@@ -28,7 +28,7 @@ private:
 	void update();
 
 	ddk::fiber m_fiber;
-	unsigned long m_sleepTimeInMS;
+	std::chrono::milliseconds m_sleepTimeInMS;
 	ddk::function<void()> m_executor;
 	bool m_stopped;
 };
@@ -40,8 +40,8 @@ public:
 	fiber_event_driven_executor(const fiber_event_driven_executor&) = delete;
 	fiber_event_driven_executor(fiber_event_driven_executor&& other);
 	~fiber_event_driven_executor();
-	void set_update_time(unsigned int i_sleepInMs);
-	unsigned int get_update_time() const;
+	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
+	std::chrono::milliseconds get_update_time() const;
 	void start(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc = nullptr);
 	void stop();
 
@@ -53,7 +53,7 @@ private:
 	void update();
 
 	ddk::fiber m_fiber;
-	unsigned int m_sleepTimeInMS;
+	std::chrono::milliseconds m_sleepTimeInMS;
 	bool m_stopped;
 	ddk::function<void()> m_executor;
 	ddk::function<bool()> m_testFunc;

@@ -30,11 +30,11 @@ fiber_polling_executor::~fiber_polling_executor()
 		m_fiber.stop();
 	}
 }
-void fiber_polling_executor::set_update_time(unsigned long i_sleepInMs)
+void fiber_polling_executor::set_update_time(const std::chrono::milliseconds& i_sleepInMs)
 {
 	m_sleepTimeInMS = i_sleepInMs;
 }
-unsigned int fiber_polling_executor::get_update_time() const
+std::chrono::milliseconds fiber_polling_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
@@ -87,9 +87,17 @@ void fiber_polling_executor::update()
 {
 	while(m_stopped == false)
 	{
+		const std::chrono::steady_clock::time_point before = std::chrono::steady_clock::now();
+
 		eval(m_executor);
 
-		ddk::sleep(m_sleepTimeInMS);
+		const std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+
+		if(evalDuration < m_sleepTimeInMS)
+		{
+			ddk::sleep((m_sleepTimeInMS - evalDuration).count());
+		}
 	}
 }
 
@@ -120,11 +128,11 @@ fiber_event_driven_executor::~fiber_event_driven_executor()
 
 	DDK_ASSERT(m_pendingWork == false,"Leaving with pending work");
 }
-void fiber_event_driven_executor::set_update_time(unsigned int i_sleepInMs)
+void fiber_event_driven_executor::set_update_time(const std::chrono::milliseconds& i_sleepInMs)
 {
 	m_sleepTimeInMS = i_sleepInMs;
 }
-unsigned int fiber_event_driven_executor::get_update_time() const
+std::chrono::milliseconds fiber_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
@@ -188,7 +196,7 @@ void fiber_event_driven_executor::update()
 
 	while(m_stopped == false)
 	{
-		time_t start = std::clock();
+		const std::chrono::steady_clock::time_point before = std::chrono::steady_clock::now();
 
 		m_condVarMutex.unlock();
 
@@ -199,7 +207,13 @@ void fiber_event_driven_executor::update()
 
 		m_condVarMutex.lock();
 
-		m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }),std::chrono::milliseconds(m_sleepTimeInMS));
+		const std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+
+		if(evalDuration < m_sleepTimeInMS)
+		{
+			m_condVar.wait_until(m_condVarMutex,make_function([this]() { return eval(m_testFunc) == false; }),m_sleepTimeInMS - evalDuration);
+		}
 	}
 
 	m_condVarMutex.unlock();

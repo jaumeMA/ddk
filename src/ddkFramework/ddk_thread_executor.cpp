@@ -35,13 +35,13 @@ thread_polling_executor::~thread_polling_executor()
 		m_updateThread.stop();
 	}
 }
-void thread_polling_executor::set_update_time(size_t i_sleepInMs)
+void thread_polling_executor::set_update_time(const std::chrono::milliseconds& i_sleepInMs)
 {
-	m_sleepTimeInMS = std::chrono::milliseconds(i_sleepInMs);
+	m_sleepTimeInMS = i_sleepInMs;
 }
-size_t thread_polling_executor::get_update_time() const
+std::chrono::milliseconds thread_polling_executor::get_update_time() const
 {
-	return static_cast<unsigned int>(m_sleepTimeInMS.count());
+	return m_sleepTimeInMS;
 }
 void thread_polling_executor::start_thread(const ddk::function<void()>& i_executor)
 {
@@ -103,9 +103,17 @@ void thread_polling_executor::update() const
 {
 	while(m_stopped == false)
 	{
+		const std::chrono::steady_clock::time_point before = std::chrono::steady_clock::now();
+
 		eval(m_executor);
 
-		ddk::sleep(static_cast<unsigned long>(m_sleepTimeInMS.count()));
+		const std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+
+		if(evalDuration < m_sleepTimeInMS)
+		{
+			ddk::sleep((m_sleepTimeInMS - evalDuration).count());
+		}
 	}
 }
 
@@ -151,11 +159,11 @@ thread_event_driven_executor::~thread_event_driven_executor()
 
 	DDK_ASSERT(m_pendingWork == false,"Leaving with pending work");
 }
-void thread_event_driven_executor::set_update_time(unsigned int i_sleepInMS)
+void thread_event_driven_executor::set_update_time(const std::chrono::milliseconds& i_sleepInMS)
 {
 	m_sleepTimeInMS = i_sleepInMS;
 }
-unsigned int thread_event_driven_executor::get_update_time() const
+std::chrono::milliseconds thread_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
@@ -238,7 +246,7 @@ void thread_event_driven_executor::update()
 
 	while(m_stopped == false)
 	{
-		time_t start = std::clock();
+		const std::chrono::steady_clock::time_point before = std::chrono::steady_clock::now();
 
 		m_pendingWork = false;
 
@@ -251,7 +259,13 @@ void thread_event_driven_executor::update()
 			m_condVarMutex.lock();
         }
 
-		m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }), std::chrono::milliseconds(m_sleepTimeInMS));
+		const std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+
+		if(evalDuration < m_sleepTimeInMS)
+		{
+			m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }),m_sleepTimeInMS - evalDuration);
+		}
 	}
 
 	m_condVarMutex.unlock();
