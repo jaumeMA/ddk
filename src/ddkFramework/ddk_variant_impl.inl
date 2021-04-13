@@ -499,7 +499,7 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 }
 template<typename ... Types>
 TEMPLATE(typename Visitor)
-REQUIRED(IS_CALLABLE(Visitor))
+REQUIRED(IS_CALLABLE(Visitor,Types)...)
 constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor)
 {
 	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
@@ -516,7 +516,7 @@ constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Typ
 }
 template<typename ... Types>
 TEMPLATE(typename Visitor)
-REQUIRED(IS_CALLABLE(Visitor))
+REQUIRED(IS_CALLABLE(Visitor,Types)...)
 constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
 {
 	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;

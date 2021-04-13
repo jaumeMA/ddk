@@ -89,10 +89,10 @@ public:
     constexpr char which() const;
     inline void swap(variant_impl<Types...>& other);
     TEMPLATE(typename Visitor)
-    REQUIRES(IS_CALLABLE(Visitor))
+    REQUIRES(IS_CALLABLE(Visitor,Types)...)
     constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor);
     TEMPLATE(typename Visitor)
-    REQUIRES(IS_CALLABLE(Visitor))
+    REQUIRES(IS_CALLABLE(Visitor,Types)...)
     constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor) const;
     template<typename Visitor, typename ... Args>
     constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Args&& ... i_args) const;

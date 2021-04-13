@@ -345,7 +345,7 @@ constexpr auto visit(Variant&& i_variant)
 
 	const Visitor _visitor;
 
-	return i_variant.visit(deduce_fixed_callable<void>(_visitor));
+	return i_variant.visit(deduce_fixed_callable<return_type>(_visitor));
 }
 
 }

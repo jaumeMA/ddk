@@ -101,18 +101,27 @@ bool thread_polling_executor::is_stopped() const
 }
 void thread_polling_executor::update() const
 {
+	std::chrono::milliseconds systemDelta = std::chrono::milliseconds(0);
+
 	while(m_stopped == false)
 	{
-		const std::chrono::steady_clock::time_point before = std::chrono::steady_clock::now();
+		const std::chrono::steady_clock::time_point beforeEval = std::chrono::steady_clock::now();
 
 		eval(m_executor);
 
-		const std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
-		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
+		const std::chrono::steady_clock::time_point beforeSleep = std::chrono::steady_clock::now();
+		const std::chrono::steady_clock::time_point afterEval = std::chrono::steady_clock::now();
+		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(afterEval - beforeEval);
 
-		if(evalDuration < m_sleepTimeInMS)
+		if(evalDuration < (m_sleepTimeInMS - systemDelta))
 		{
-			ddk::sleep((m_sleepTimeInMS - evalDuration).count());
+			const std::chrono::milliseconds remainingWaitingTime = m_sleepTimeInMS - evalDuration;
+
+			std::this_thread::sleep_for(remainingWaitingTime - systemDelta);
+
+			const std::chrono::steady_clock::time_point afterSleep = std::chrono::steady_clock::now();
+
+			systemDelta += std::chrono::duration_cast<std::chrono::milliseconds>(afterSleep - beforeSleep) - remainingWaitingTime;
 		}
 	}
 }
@@ -246,8 +255,6 @@ void thread_event_driven_executor::update()
 
 	while(m_stopped == false)
 	{
-		const std::chrono::steady_clock::time_point before = std::chrono::steady_clock::now();
-
 		m_pendingWork = false;
 
         if(m_executor != nullptr)
@@ -259,13 +266,7 @@ void thread_event_driven_executor::update()
 			m_condVarMutex.lock();
         }
 
-		const std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
-		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(after - before);
-
-		if(evalDuration < m_sleepTimeInMS)
-		{
-			m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }),m_sleepTimeInMS - evalDuration);
-		}
+		m_condVar.wait_until(m_condVarMutex,make_function([this](){ return eval(m_testFunc) == false; }),m_sleepTimeInMS);
 	}
 
 	m_condVarMutex.unlock();
