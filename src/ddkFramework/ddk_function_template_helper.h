@@ -153,7 +153,7 @@ public:
 
 std::false_type _is_function(...);
 template<typename T>
-inline constexpr bool is_function = decltype(_is_function(std::declval<T>()))::value;
+inline constexpr bool is_function = decltype(_is_function(std::declval<typename std::remove_reference<T>::type*>()))::value;
 
 template<typename T, typename ... Args>
 struct is_valid_functor

@@ -20,6 +20,10 @@ struct TypeInfo
 	friend TypeInfo make_type_info();
 	template<typename>
 	friend TypeInfo make_type_info();
+	friend inline size_t hash(const TypeInfo& i_typeInfo)
+	{
+		return i_typeInfo.m_id;	
+	}
 
 public:
 	static const size_t s_invalid = -1;
