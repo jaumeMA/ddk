@@ -638,7 +638,9 @@ struct type_pack
 	template<typename ... TTypes>
 	struct add
 	{
-		typedef type_pack<Types...,TTypes...> type;
+        static_assert(type_pack<Types...>::template contains<TTypes...>()==false, "Trying to add already added type.");
+        
+        typedef type_pack<Types...,TTypes...> type;
 	};
 	template<typename ... TTypes>
 	struct add_unique

@@ -1,4 +1,7 @@
 
+#include "ddk_async_exceptions.h"
+#include "ddk_fiber_utils.h"
+
 namespace ddk
 {
 namespace detail

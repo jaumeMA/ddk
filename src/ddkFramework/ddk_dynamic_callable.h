@@ -5,21 +5,23 @@
 namespace ddk
 {
 
-template<typename Callable>
-struct dynamic_callable
+template<typename Callable, typename Return, typename TypeInterface>
+struct dynamic_callable : public dynamic_visitor<TypeInterface>
 {
 public:
-	template<typename CCallable>
-	dynamic_callable(CCallable&& i_callable);
+	typedef Return return_type;
 
-	template<typename T>
-	inline void operator()(T&& i_value);
+	dynamic_callable(const Callable& i_callable);
+	dynamic_callable(Callable&& i_callable);
+	dynamic_callable(const dynamic_callable&) = default;
+	dynamic_callable(dynamic_callable&&) = default;
+
+	template<typename ... Args>
+	inline Return operator()(Args&& ... i_args);
 
 private:
 	Callable m_callable;
 };
-template<typename Callable>
-dynamic_callable(Callable&&) -> dynamic_callable<typename std::remove_reference<Callable>::type>;
 
 }
 

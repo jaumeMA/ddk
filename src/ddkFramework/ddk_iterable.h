@@ -1,11 +1,5 @@
 #pragma once
 
-#if defined(WIN32)
-
-#define _ENABLE_EXTENDED_ALIGNED_STORAGE
-
-#endif
-
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_function.h"
 #include "ddk_iterable_action.h"
@@ -119,6 +113,5 @@ using random_access_iterable = detail::iterable<detail::random_access_iterable_v
 
 #include "ddk_iterable.inl"
 #include "ddk_iterable_resolver.h"
-#include "ddk_iteration.h"
 #include "ddk_iterable_utils.h"
 #include "ddk_view_utils.h"

@@ -23,5 +23,5 @@
 #define IS_RETURN_TYPE_CONVERTIBLE_TO(_TYPE,_RETURN) \
 	typename std::enable_if<std::is_convertible<typename ddk::mpl::aqcuire_callable_return_type<_TYPE>::type,_RETURN>::value>::type
 
-#define IS_CALLABLE_NOT_FUNCTION(_TYPE) \
-	IS_CALLABLE(_TYPE),IS_NOT_FUNCTION(_TYPE)
+#define IS_CALLABLE_NOT_FUNCTION(_TYPE,...) \
+	IS_CALLABLE(_TYPE,##__VA_ARGS__),IS_NOT_FUNCTION(_TYPE)

@@ -35,7 +35,7 @@ function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(std::nullp
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 TEMPLATE(typename T)
-REQUIRED(IS_CALLABLE_NOT_FUNCTION(T))
+REQUIRED(IS_CALLABLE_NOT_FUNCTION(T,Types...))
 function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(T&& i_functor, const Allocator& i_allocator)
 : m_allocator(k_small_buffer_allocation_size,i_allocator)
 {
@@ -103,7 +103,8 @@ bool function_impl<Return(Types...),Allocator,FunctionImpl>::operator!=(std::nul
     return m_functionImpl.empty() == false;
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
-template<typename ... Args>
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&& ... i_args) const
 {
 	if(m_functionImpl)
@@ -123,7 +124,8 @@ Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
-template<typename ... Args>
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(const function_arguments<Args...>& i_args) const
 {
     return eval_arguments(typename mpl::make_sequence<0,mpl::get_num_types<Args...>()>::type{},i_args);
