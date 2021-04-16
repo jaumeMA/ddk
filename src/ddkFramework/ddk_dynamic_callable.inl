@@ -11,9 +11,22 @@ dynamic_callable_impl<Callable,Return,TypeInterface>::dynamic_callable_impl(cons
 }
 template<typename Callable,typename Return,typename TypeInterface>
 template<typename ... Args>
-Return dynamic_callable_impl<Callable,Return,TypeInterface>::operator()(Args&& ... i_args)
+Return dynamic_callable_impl<Callable,Return,TypeInterface>::operator()(Args&& ... i_args) const
 {
 	if constexpr (std::is_same<Return,void>::value)
+	{
+		eval(m_callable,std::forward<Args>(i_args)...);
+	}
+	else
+	{
+		return eval(m_callable,std::forward<Args>(i_args)...);
+	}
+}
+template<typename Callable,typename Return,typename TypeInterface>
+template<typename ... Args>
+Return dynamic_callable_impl<Callable,Return,TypeInterface>::operator()(Args&& ... i_args)
+{
+	if constexpr(std::is_same<Return,void>::value)
 	{
 		eval(m_callable,std::forward<Args>(i_args)...);
 	}

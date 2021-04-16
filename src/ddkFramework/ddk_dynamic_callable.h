@@ -18,6 +18,8 @@ public:
 	dynamic_callable_impl(dynamic_callable_impl&&) = default;
 
 	template<typename ... Args>
+	inline Return operator()(Args&& ... i_args) const;
+	template<typename ... Args>
 	inline Return operator()(Args&& ... i_args);
 
 private:

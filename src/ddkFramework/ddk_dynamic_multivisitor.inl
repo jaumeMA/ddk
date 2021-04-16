@@ -90,7 +90,17 @@ dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTy
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes>
 function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>>::visit() const
 {
-	return make_function([thisVisitor = std::move(m_visitor)](ResolvedTypes ... i_values) mutable -> return_type { return thisVisitor(*i_values ...); });
+	return make_function([thisVisitor = std::move(m_visitor)](ResolvedTypes ... i_values) mutable -> return_type 
+	{ 
+		if constexpr (std::is_same<return_type,void>::value)
+		{
+			thisVisitor(*i_values ...);
+		}
+		else
+		{
+			return thisVisitor(*i_values ...);
+		}
+	});
 }
 
 TEMPLATE(typename TypeInterface, typename Callable,typename ... Values)

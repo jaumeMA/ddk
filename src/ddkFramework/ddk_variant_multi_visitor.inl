@@ -73,7 +73,7 @@ constexpr auto visit(Variants&& ... i_variants)
 
 	const function<Return()> resolvedFunction = multiVisitor.visit();
 
-	if constexpr (std::ia_same<void,Return>::value)
+	if constexpr (std::is_same<void,Return>::value)
 	{
 		eval(resolvedFunction);
 	}
