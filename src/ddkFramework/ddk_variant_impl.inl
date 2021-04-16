@@ -500,9 +500,13 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 template<typename ... Types>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Types)...)
-constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor)
+constexpr auto variant_impl<Types...>::visit(Visitor&& visitor)
 {
-	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
+	typedef mpl::nth_type_of<0,Types...>::type first_type;
+	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
+
+	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...), "You shall provide a uniform return type callable.");
+
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	if constexpr(std::is_same<void,return_type>::value)
@@ -517,9 +521,13 @@ constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Typ
 template<typename ... Types>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Types)...)
-constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Visitor&& visitor) const
+constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) const
 {
-	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
+	typedef mpl::nth_type_of<0,Types...>::type first_type;
+	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
+
+	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...),"You shall provide a uniform return type callable.");
+
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	if constexpr(std::is_same<void,return_type>::value)
@@ -533,9 +541,13 @@ constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Typ
 }
 template<typename ... Types>
 template<typename Visitor,typename ... Args>
-constexpr typename mpl::remove_qualifiers<Visitor>::return_type variant_impl<Types...>::visit(Args&& ... i_args) const
+constexpr auto variant_impl<Types...>::visit(Args&& ... i_args) const
 {
-	typedef typename mpl::remove_qualifiers<Visitor>::return_type  return_type;
+	typedef mpl::nth_type_of<0,Types...>::type first_type;
+	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
+
+	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...),"You shall provide a uniform return type callable.");
+
 	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
 
 	const Visitor visitor(std::forward<Args>(i_args)...);

@@ -257,6 +257,6 @@ TEST(DDKVariantTest,multi_visitation)
 	ddk::variant<DefaultType,std::vector<int>> foo2 = { 10 };
 	ddk::variant<char,double,float,std::string> foo3 = 0.15f;
 
-	const bool res1 = ddk::visit<bool>([](auto&& ... i_value) -> bool { return true; },foo1,foo2,foo3);
+	const bool res1 = ddk::visit([](auto&& ... i_value) -> bool { return true; },foo1,foo2,foo3);
 	const size_t res2 = ddk::visit<myMultiVisitor>(foo1,foo2,foo3);
 }

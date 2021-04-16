@@ -22,6 +22,7 @@ class variant<Type>
 
 public:
 	static const size_t npos = 1;
+	typedef mpl::type_pack<Type> type_pack;
 
 	constexpr variant() = default;
 	constexpr variant(const variant<Type>& other);
@@ -75,13 +76,13 @@ public:
 	constexpr bool is() const;
 	constexpr char which() const;
 	TEMPLATE(typename Visitor)
-	REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
-	constexpr typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor);
+	REQUIRES(IS_CALLABLE(Visitor,Type))
+	constexpr auto visit(Visitor&& visitor);
 	TEMPLATE(typename Visitor)
-	REQUIRES(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
-	constexpr typename std::remove_reference<Visitor>::type::return_type visit(Visitor&& visitor) const;
+	REQUIRES(IS_CALLABLE(Visitor,Type))
+	constexpr auto visit(Visitor&& visitor) const;
 	template<typename Visitor, typename ... Args>
-	constexpr typename std::remove_reference<Visitor>::type::return_type visit(Args&& ... i_args) const;
+	constexpr auto visit(Args&& ... i_args) const;
 
 private:
 	Type m_value;
@@ -155,7 +156,6 @@ variant<Types...>&& as_variant(variant<Types...>&& i_value)
 }
 
 }
-
 
 #include "ddk_variant_concepts.h"
 

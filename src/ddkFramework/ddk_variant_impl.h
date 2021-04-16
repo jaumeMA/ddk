@@ -39,6 +39,7 @@ class variant_impl : public variant_impl_destructor<variant_impl<Types...>,mpl::
 
 public:
 	static const size_t npos = s_numTypes;
+    typedef mpl::type_pack<Types...> type_pack;
 
     constexpr variant_impl();
     template<size_t Index, typename TType>
@@ -90,12 +91,12 @@ public:
     inline void swap(variant_impl<Types...>& other);
     TEMPLATE(typename Visitor)
     REQUIRES(IS_CALLABLE(Visitor,Types)...)
-    constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor);
+    constexpr auto visit(Visitor&& visitor);
     TEMPLATE(typename Visitor)
     REQUIRES(IS_CALLABLE(Visitor,Types)...)
-    constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& visitor) const;
+    constexpr auto visit(Visitor&& visitor) const;
     template<typename Visitor, typename ... Args>
-    constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Args&& ... i_args) const;
+    constexpr auto visit(Args&& ... i_args) const;
 
 private:
     typedef variadic_union<Types...> data_type;

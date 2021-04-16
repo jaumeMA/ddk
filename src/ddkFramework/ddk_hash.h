@@ -28,16 +28,15 @@ template<typename Hasher>
 constexpr size_t hash(const Hasher& i_hasher,const time_t& i_value);
 template<typename Hasher,typename UnderlyingType,typename T>
 constexpr size_t hash(const Hasher& i_hasher,const Id<UnderlyingType,T>& i_id);
-template <class T>
-constexpr uint32_t hash_combine(uint32_t& combined,const T& v);
-template <class T>
-constexpr uint64_t hash_combine(uint64_t& combined,const T& v);
-template <typename Hasher,typename T>
-constexpr uint32_t hash_combine(const Hasher& i_hasher,const T& v);
+template<typename ... Args>
+constexpr size_t hash_combine(Args&& ... i_args);
 
 struct builtin_hasher
 {
-	constexpr builtin_hasher(size_t i_seed = 0);
+	constexpr builtin_hasher() = default;
+	constexpr builtin_hasher(size_t i_seed);
+	template<typename T>
+	constexpr builtin_hasher(T&& i_value);
 
 	template<typename ... Args>
 	size_t operator()(Args&& ... i_args) const;

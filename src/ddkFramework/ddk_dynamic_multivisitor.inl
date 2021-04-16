@@ -1,10 +1,20 @@
 
 #include "ddk_embedded_type.h"
+#include "ddk_dynamic_callable.h"
 
 namespace ddk
 {
 namespace detail
 {
+
+template<typename Callable,typename,typename>
+struct resolve_callable_return_type;
+
+template<typename Callable, size_t ... Indexs, typename ... Types>
+struct resolve_callable_return_type<Callable,mpl::sequence<Indexs...>,mpl::type_pack<Types...>>
+{
+	typedef decltype(std::declval<typename std::remove_reference<Callable>::type>()(std::declval<mpl::type_pack<Types...>::template nth_type<Indexs>>()...)) type;
+};
 
 template<typename FinalVisitorType, typename VisitorType>
 bool __expand_type_visitor_layout()
@@ -83,35 +93,96 @@ function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<
 	return make_function([thisVisitor = std::move(m_visitor)](ResolvedTypes ... i_values) mutable -> return_type { return thisVisitor(*i_values ...); });
 }
 
-TEMPLATE(typename Visitor,typename ... Values)
-REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
-auto visit(Visitor&& i_visitor,const Values& ... i_values)
+TEMPLATE(typename TypeInterface, typename Callable,typename ... Values)
+REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_INHERITED_VALUE(Values)...)
+auto visit(Callable&& i_callable,const Values& ... i_values)
 {
-    typedef typename std::remove_reference<Visitor>::type visitor_t;
-	typedef typename visitor_t::type_interface type_interface;
-	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
+	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
+	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
+	auto _visitor = dynamic_callable<return_type,TypeInterface>(i_callable);
 
-	dynamic_multi_visitor<visitor_t,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(i_visitor,i_values ...);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
 
-	const function<typename visitor_t::return_type()> resolvedFunc = multiVisitor.visit();
+	const function<return_type()> resolvedFunc = multiVisitor.visit();
 
-	return eval(resolvedFunc);
+	if constexpr(std::is_same<return_type,void>::value)
+	{
+		eval(resolvedFunc);
+	}
+	else
+	{
+		return eval(resolvedFunc);
+	}
 }
 
-TEMPLATE(typename Visitor,typename ... Values)
-REQUIRED(IS_BASE_OF_DYNAMIC_VISITOR(Visitor),IS_INHERITED_VALUE(Values)...)
+TEMPLATE(typename Return,typename TypeInterface,typename Callable,typename ... Values)
+REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_INHERITED_VALUE(Values)...)
+auto visit(Callable&& i_callable,const Values& ... i_values)
+{
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
+	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
+	auto _visitor = dynamic_callable<Return,TypeInterface>(i_callable);
+
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+
+	const function<Return()> resolvedFunc = multiVisitor.visit();
+
+	if constexpr (std::is_same<Return,void>::value)
+	{
+		eval(resolvedFunc);
+	}
+	else
+	{
+		return eval(resolvedFunc);
+	}
+}
+
+TEMPLATE(typename Callable, typename TypeInterface, typename ... Values)
+REQUIRED(IS_INHERITED_VALUE(Values)...)
 auto visit(const Values& ... i_values)
 {
-	typedef typename Visitor::type_interface type_interface;
-	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
+	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
+	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
 
-	const Visitor _visitor;
+	const auto _visitor = dynamic_callable<return_type,TypeInterface>(Callable{});
 
-	dynamic_multi_visitor<const Visitor,rtti::inherited_type_list<type_interface>,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
 
-	const function<typename Visitor::return_type()> resolvedFunc = multiVisitor.visit();
+	const function<return_type()> resolvedFunc = multiVisitor.visit();
 
-	return eval(resolvedFunc);
+	if constexpr(std::is_same<return_type,void>::value)
+	{
+		eval(resolvedFunc);
+	}
+	else
+	{
+		return eval(resolvedFunc);
+	}
+}
+
+TEMPLATE(typename Return,typename Callable,typename TypeInterface,typename ... Values)
+REQUIRED(IS_INHERITED_VALUE(Values)...)
+auto visit(const Values& ... i_values)
+{
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
+	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
+
+	const auto _visitor = dynamic_callable<Return,TypeInterface>(Callable{});
+
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+
+	const function<Return()> resolvedFunc = multiVisitor.visit();
+
+	if constexpr(std::is_same<Return,void>::value)
+	{
+		eval(resolvedFunc);
+	}
+	else
+	{
+		return eval(resolvedFunc);
+	}
 }
 
 }

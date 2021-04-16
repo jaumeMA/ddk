@@ -5,6 +5,7 @@
 #include "test_utils.h"
 #include "ddk_rtti.h"
 #include "ddk_any_value.h"
+#include "ddk_dynamic_callable.h"
 
 using namespace testing;
 using testing::Types;
@@ -67,7 +68,7 @@ class DDKInheritedValuetTest : public Test
 {
 };
 
-struct DerivedTypeMultiVisitor : public ddk::dynamic_visitor<prova::BaseType1>
+struct DerivedTypeMultiVisitor
 {
 	typedef int return_type;
 
@@ -92,7 +93,10 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	ddk::inherited_value<prova::BaseType1> foo1 = ddk::make_inherited_value<prova::DerivedBaseType2>(20);
 	DerivedTypeMultiVisitor multiVisitor;
 
+	ddk::dynamic_callable<bool,prova::BaseType1>([](auto&& i_value){ return true; });
+
 	int a = 0;
-	int res = ddk::visit<DerivedTypeMultiVisitor>(foo0,foo1);
+
+	ddk::visit<void,prova::BaseType1>([](auto&& i_lhs, auto&& i_rhs){ return 0; },foo0,foo1);
 	int b = 0;
 }

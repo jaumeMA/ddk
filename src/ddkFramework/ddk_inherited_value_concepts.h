@@ -6,6 +6,9 @@
 #define IS_INHERITED_VALUE(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_inherited_value_v<_TYPE>>::type
 
+#define IS_NOT_INHERITED_VALUE(_TYPE) \
+	typename std::enable_if<ddk::concepts::is_inherited_value_v<_TYPE> == false>::type
+
 #define IS_DYNAMIC_VISITOR(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_dynamic_visitor_v<_TYPE>>::type
 

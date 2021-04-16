@@ -169,25 +169,52 @@ constexpr char variant<Type>::which() const
 }
 template<typename Type>
 TEMPLATE(typename Visitor)
-REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
-constexpr typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Visitor&& visitor)
+REQUIRED(IS_CALLABLE(Visitor,Type))
+constexpr auto variant<Type>::visit(Visitor&& visitor)
 {
-	return visitor(m_value);
+	typedef decltype(std::declval<Visitor>()(std::declval<Type>())) return_type;
+
+	if constexpr (std::is_same<void,return_type>::value)
+	{
+		visitor(m_value);
+	}
+	else
+	{
+		return visitor(m_value);
+	}
 }
 template<typename Type>
 TEMPLATE(typename Visitor)
-REQUIRED(IS_BASE_OF(static_visitor<typename mpl::remove_qualifiers<Visitor>::return_type >,mpl::remove_qualifiers<Visitor>))
-constexpr typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Visitor&& visitor) const
+REQUIRED(IS_CALLABLE(Visitor,Type))
+constexpr auto variant<Type>::visit(Visitor&& visitor) const
 {
-	return visitor(m_value);
+	typedef decltype(std::declval<Visitor>()(std::declval<Type>())) return_type;
+
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		visitor(m_value);
+	}
+	else
+	{
+		return visitor(m_value);
+	}
 }
 template<typename Type>
 template<typename Visitor, typename ... Args>
-constexpr typename std::remove_reference<Visitor>::type::return_type variant<Type>::visit(Args&& ... i_args) const
+constexpr auto variant<Type>::visit(Args&& ... i_args) const
 {
+	typedef decltype(std::declval<Visitor>()(std::declval<Type>())) return_type;
+	
 	const Visitor _visitor(std::forward<Args>(i_args)...);
 
-	return _visitor(m_value);
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		_visitor(m_value);
+	}
+	else
+	{
+		return _visitor(m_value);
+	}
 }
 
 template<typename ... Types>
@@ -316,36 +343,62 @@ TEMPLATE(typename Return, typename Visitor,typename Variant)
 REQUIRED(IS_VARIANT(Variant))
 constexpr auto visit(Visitor&& i_visitor,Variant&& i_variant)
 {
-	return i_variant.visit(deduce_fixed_callable<Return>(i_visitor));
+	if constexpr(std::is_same<void,Return>::value)
+	{
+		i_variant.visit(i_visitor);
+	}
+	else
+	{
+		return i_variant.visit(i_visitor);
+	}
 }
 TEMPLATE(typename Visitor,typename Variant)
 REQUIRED(IS_VARIANT(Variant))
 constexpr auto visit(Visitor&& i_visitor,Variant&& i_variant)
 {
-	typedef typename mpl::aqcuire_callable_return_type<Visitor>::type acquired_return_type;
-	typedef typename mpl::static_if<std::is_same<detail::none_t,acquired_return_type>::value,void,acquired_return_type>::type return_type;
+	typedef decltype(i_variant.visit(std::declval<Visitor>())) return_type;
 
-	return i_variant.visit(deduce_fixed_callable<return_type>(i_visitor));
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		i_variant.visit(i_visitor);
+	}
+	else
+	{
+		return i_variant.visit(i_visitor);
+	}
 }
 
 TEMPLATE(typename Return, typename Visitor,typename Variant)
 REQUIRED(IS_VARIANT(Variant))
-constexpr auto visit(Variant&& i_variant)
+constexpr Return visit(Variant&& i_variant)
 {
 	const Visitor _visitor;
 
-	return i_variant.visit(deduce_fixed_callable<Return>(_visitor));
+	if constexpr (std::is_same<void,Return>::value)
+	{
+		i_variant.visit(_visitor);
+	}
+	else
+	{
+		return i_variant.visit(_visitor);
+	}
 }
 TEMPLATE(typename Visitor,typename Variant)
 REQUIRED(IS_VARIANT(Variant))
 constexpr auto visit(Variant&& i_variant)
 {
-	typedef typename mpl::aqcuire_callable_return_type<Visitor>::type acquired_return_type;
-	typedef typename mpl::static_if<std::is_same<detail::none_t,acquired_return_type>::value,void,acquired_return_type>::type return_type;
+	typedef decltype(i_variant.visit(std::declval<Visitor>())) return_type;
 
 	const Visitor _visitor;
 
-	return i_variant.visit(deduce_fixed_callable<return_type>(_visitor));
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		i_variant.visit(_visitor);
+	}
+	else
+	{
+		return i_variant.visit(_visitor);
+	}
 }
 
 }
