@@ -70,19 +70,19 @@ private:
 };
 
 TEMPLATE(typename TypeInterface,typename Callable,typename ... Values)
-REQUIRES(IS_NOT_INHERITED_VALUE(Callable),IS_INHERITED_VALUE(Values)...)
+REQUIRES(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(Callable&& i_callable,const Values& ... i_values);
 
 TEMPLATE(typename Return,typename TypeInterface,typename Callable,typename ... Values)
-REQUIRES(IS_NOT_INHERITED_VALUE(Callable),IS_INHERITED_VALUE(Values)...)
+REQUIRES(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(Callable&& i_callable,const Values& ... i_values);
 
 TEMPLATE(typename Callable,typename TypeInterface,typename ... Values)
-REQUIRES(IS_INHERITED_VALUE(Values)...)
+REQUIRES(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(const Values& ... i_values);
 
 TEMPLATE(typename Return, typename Callable,typename TypeInterface,typename ... Values)
-REQUIRES(IS_INHERITED_VALUE(Values)...)
+REQUIRES(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(const Values& ... i_values);
 
 }

@@ -104,7 +104,7 @@ function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<
 }
 
 TEMPLATE(typename TypeInterface, typename Callable,typename ... Values)
-REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_INHERITED_VALUE(Values)...)
+REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 auto visit(Callable&& i_callable,const Values& ... i_values)
 {
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
@@ -127,7 +127,7 @@ auto visit(Callable&& i_callable,const Values& ... i_values)
 }
 
 TEMPLATE(typename Return,typename TypeInterface,typename Callable,typename ... Values)
-REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_INHERITED_VALUE(Values)...)
+REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 auto visit(Callable&& i_callable,const Values& ... i_values)
 {
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
@@ -149,7 +149,7 @@ auto visit(Callable&& i_callable,const Values& ... i_values)
 }
 
 TEMPLATE(typename Callable, typename TypeInterface, typename ... Values)
-REQUIRED(IS_INHERITED_VALUE(Values)...)
+REQUIRED(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 auto visit(const Values& ... i_values)
 {
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
@@ -173,7 +173,7 @@ auto visit(const Values& ... i_values)
 }
 
 TEMPLATE(typename Return,typename Callable,typename TypeInterface,typename ... Values)
-REQUIRED(IS_INHERITED_VALUE(Values)...)
+REQUIRED(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 auto visit(const Values& ... i_values)
 {
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;

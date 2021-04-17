@@ -15,7 +15,7 @@
     typename std::enable_if<IS_NUMBER_OF_ARGS_GREATER_COND(_NUM,__VA_ARGS__)>::type
 
 #define IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL_COND(_NUM,...) \
-    (ddk::mpl::num_types<__VA_ARGS__>() >= _NUM)
+    (ddk::mpl::num_types<__VA_ARGS__> >= _NUM)
 
 #define IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(_NUM,...) \
     typename std::enable_if<IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL_COND(_NUM,__VA_ARGS__)>::type
@@ -27,7 +27,7 @@
     typename std::enable_if<IS_NUMBER_OF_ARGS_LESSER_COND(_NUM,__VA_ARGS__)>::type
 
 #define IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL_COND(_NUM,...) \
-    (ddk::mpl::num_types<__VA_ARGS__>() <= _NUM)
+    (ddk::mpl::num_types<__VA_ARGS__> <= _NUM)
 
 #define IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL(_NUM,...) \
     typename std::enable_if<IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL_COND(_NUM,__VA_ARGS__)>::type

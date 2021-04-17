@@ -51,17 +51,17 @@ private:
 }
 
 TEMPLATE(typename Return, typename Callable,typename ... Variants)
-REQUIRES(IS_VARIANT(Variants)...)
+REQUIRES(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_VARIANT(Variants)...)
 constexpr auto visit(Variants&& ... i_variants);
 TEMPLATE(typename Callable,typename ... Variants)
-REQUIRES(IS_VARIANT(Variants)...)
+REQUIRES(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_VARIANT(Variants)...)
 constexpr auto visit(Variants&& ... i_variants);
 
 TEMPLATE(typename Return, typename Callable,typename ... Variants)
-REQUIRES(IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
+REQUIRES(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
 constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants);
 TEMPLATE(typename Callable,typename ... Variants)
-REQUIRES(IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
+REQUIRES(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
 constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants);
 
 }

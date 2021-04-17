@@ -64,7 +64,7 @@ function<Return(ResolvedTypes...)> multi_visitor<Return,Callable,tuple<ResolvedT
 }
 
 TEMPLATE(typename Return, typename Callable,typename ... Variants)
-REQUIRED(IS_VARIANT(Variants)...)
+REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_VARIANT(Variants)...)
 constexpr auto visit(Variants&& ... i_variants)
 {
 	typedef typename std::remove_reference<decltype(deduce_fixed_callable<Return>(std::declval<Callable>())) >::type callable_t;
@@ -83,7 +83,7 @@ constexpr auto visit(Variants&& ... i_variants)
 	}
 }
 TEMPLATE(typename Callable,typename ... Variants)
-REQUIRED(IS_VARIANT(Variants)...)
+REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_VARIANT(Variants)...)
 constexpr auto visit(Variants&& ... i_variants)
 {
 	typedef decltype(std::declval<Callable>()(std::declval<typename std::remove_reference<Variants>::type::type_pack::template nth_type<0>>()...)) return_type;
@@ -104,7 +104,7 @@ constexpr auto visit(Variants&& ... i_variants)
 }
 
 TEMPLATE(typename Return, typename Callable,typename ... Variants)
-REQUIRED(IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
+REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
 constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants)
 {
     typedef typename std::remove_reference<decltype(deduce_fixed_callable<Return>(i_callable))>::type callable_t;
@@ -123,7 +123,7 @@ constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants)
 	}
 }
 TEMPLATE(typename Callable,typename ... Variants)
-REQUIRED(IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
+REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
 constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants)
 {
 	typedef decltype(std::declval<Callable>()(std::declval<typename std::remove_reference<Variants>::type::type_pack::template nth_type<0>>()...)) return_type;
