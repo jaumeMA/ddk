@@ -184,6 +184,10 @@ const transform_iterable_transform transform;
 }
 }
 
+TEMPLATE(typename Sink,typename Iterable)
+REQUIRES(IS_CONTAINER(Sink))
+inline auto operator<<=(Sink& i_lhs, const Iterable& i_rhs);
+
 #include "ddk_iterable_algorithm.inl"
 
 namespace ddk
@@ -205,7 +209,3 @@ FUNC_ITERABLE_TRANSFORM(cos,ddk::cos)
 
 }
 }
-
-TEMPLATE(typename Sink,typename Iterable)
-REQUIRES(IS_CONTAINER(Sink))
-inline auto operator<<=(Sink& i_lhs,const Iterable& i_rhs);

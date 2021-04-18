@@ -78,19 +78,19 @@ public:
     constexpr high_order_array(Args&& ... i_args);
 	TEMPLATE(typename TT)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT))
-	high_order_array(const high_order_array<TT,rank,ranks...>& other);
+	constexpr high_order_array(const high_order_array<TT,rank,ranks...>& other);
 	~high_order_array() = default;
 	detail::high_order_sub_array<T,ranks...> operator[](size_t index);
-	detail::high_order_sub_array<const T,ranks...> operator[](size_t index) const;
+	constexpr detail::high_order_sub_array<const T,ranks...> operator[](size_t index) const;
 	reference at(const high_order_array<size_t,s_numRanks>& i_indexs);
-	const_reference at(const high_order_array<size_t,s_numRanks>& i_indexs) const;
+	constexpr const_reference at(const high_order_array<size_t,s_numRanks>& i_indexs) const;
 	constexpr reference at(size_t i_index);
 	constexpr const_reference at(size_t i_index) const;
 	high_order_array& operator=(const high_order_array<T,rank,ranks...>& other);
 	template<typename TT>
 	high_order_array& operator=(const high_order_array<TT,rank,ranks...>& other);
-	size_t size() const;
-	bool empty() const;
+	constexpr size_t size() const;
+	constexpr bool empty() const;
 
 private:
 	storage m_data;

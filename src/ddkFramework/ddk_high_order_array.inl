@@ -97,7 +97,7 @@ constexpr high_order_array<T,rank,ranks...>::high_order_array(Args&& ... i_args)
 template<typename T,size_t rank,size_t ... ranks>
 TEMPLATE(typename TT)
 REQUIRED(IS_CONSTRUCTIBLE(T,TT))
-high_order_array<T,rank,ranks...>::high_order_array(const high_order_array<TT,rank,ranks...>& other)
+constexpr high_order_array<T,rank,ranks...>::high_order_array(const high_order_array<TT,rank,ranks...>& other)
 {
 	for(size_t index = 0; index < s_totalSize; ++index)
 	{
@@ -119,7 +119,7 @@ detail::high_order_sub_array<T,ranks...> high_order_array<T,rank,ranks...>::oper
 	}
 }
 template<typename T,size_t rank,size_t ... ranks>
-detail::high_order_sub_array<const T,ranks...> high_order_array<T,rank,ranks...>::operator[](size_t i_index) const
+constexpr detail::high_order_sub_array<const T,ranks...> high_order_array<T,rank,ranks...>::operator[](size_t i_index) const
 {
 	if(i_index < rank)
 	{
@@ -148,7 +148,7 @@ typename high_order_array<T,rank,ranks...>::reference high_order_array<T,rank,ra
 	return m_data[linearizedIndex];
 }
 template<typename T,size_t rank,size_t ... ranks>
-typename high_order_array<T,rank,ranks...>::const_reference high_order_array<T,rank,ranks...>::at(const high_order_array<size_t,s_numRanks>& i_indexs) const
+constexpr typename high_order_array<T,rank,ranks...>::const_reference high_order_array<T,rank,ranks...>::at(const high_order_array<size_t,s_numRanks>& i_indexs) const
 {
 	static const size_t s_ranks[s_numRanks] = { rank, ranks... };
 
@@ -197,12 +197,12 @@ high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(
 	}
 }
 template<typename T,size_t rank,size_t ... ranks>
-size_t high_order_array<T,rank,ranks...>::size() const
+constexpr size_t high_order_array<T,rank,ranks...>::size() const
 {
 	return s_totalSize;
 }
 template<typename T,size_t rank,size_t ... ranks>
-bool high_order_array<T,rank,ranks...>::empty() const
+constexpr bool high_order_array<T,rank,ranks...>::empty() const
 {
 	return false;
 }

@@ -115,7 +115,8 @@ template<template <typename> typename Traits1, typename BaseType1, template<type
 struct union_iterable_traits_resolver<Traits1<BaseType1>,Traits2<BaseType2>,Traits...>
 {
     typedef typename std::common_type<BaseType1,BaseType2>::type common_base_type;
-    typedef decltype(traits_common_access(std::declval<Traits1<common_base_type>>(),std::declval<Traits2<common_base_type>>())) common_traits;
+    typedef typename mpl::static_if<std::is_const<BaseType1>::value || std::is_const<BaseType2>::value, const common_base_type,common_base_type>:: type cv_common_base_type;
+    typedef decltype(traits_common_access(std::declval<Traits1<cv_common_base_type>>(),std::declval<Traits2<cv_common_base_type>>())) common_traits;
     typedef typename union_iterable_traits_resolver<common_traits,Traits...>::traits traits;
     typedef typename traits::iterable_base_traits base_traits;
 };

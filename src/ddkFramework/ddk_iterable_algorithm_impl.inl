@@ -62,11 +62,11 @@ void type_access_dumping<Sink>::_set(Sink& i_sink,const variant<T...>& i_value)
 template<typename Sink,typename Traits>
 inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable)
 {
-	typedef typename Traits::iterable_value iterable_value;
+	typedef typename Traits::iterable_const_value iterable_const_value;
 
 	iterable_dumper_type<Sink,typename Traits::value_type> _dumper(i_sink);
 
-	return (ddk::make_function([dumper = std::move(_dumper)](iterable_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
+	return (ddk::make_function([dumper = std::move(_dumper)](iterable_const_value i_value) { dumper.apply(*i_value); }) <<= i_transformedIterable).attach(ddk::this_thread());
 }
 
 }
