@@ -435,6 +435,9 @@ typedef typename _partial<0>::type type;
 template<size_t Index, typename T>
 using index_to_type = T;
 
+template<size_t Index,size_t IIndex>
+inline constexpr size_t index_to_index = IIndex;
+
 template<size_t ... ranks>
 constexpr size_t get_sum_ranks()
 {

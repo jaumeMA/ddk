@@ -186,6 +186,8 @@ high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(
 			m_data[index] = other.m_data[index];
 		}
 	}
+
+	return *this;
 }
 template<typename T,size_t rank,size_t ... ranks>
 template<typename TT>
@@ -195,6 +197,8 @@ high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(
 	{
 		m_data[index] = other.m_data[index];
 	}
+
+	return *this;
 }
 template<typename T,size_t rank,size_t ... ranks>
 constexpr size_t high_order_array<T,rank,ranks...>::size() const

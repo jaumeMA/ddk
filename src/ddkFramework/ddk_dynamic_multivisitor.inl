@@ -13,7 +13,7 @@ struct resolve_callable_return_type;
 template<typename Callable, size_t ... Indexs, typename ... Types>
 struct resolve_callable_return_type<Callable,mpl::sequence<Indexs...>,mpl::type_pack<Types...>>
 {
-	typedef decltype(std::declval<typename std::remove_reference<Callable>::type>()(std::declval<mpl::type_pack<Types...>::template nth_type<Indexs>>()...)) type;
+	typedef decltype(std::declval<typename std::remove_reference<Callable>::type>()(std::declval<mpl::type_pack<Types...>::template nth_type<mpl::index_to_index<Indexs,0>>>()...)) type;
 };
 
 template<typename FinalVisitorType, typename VisitorType>
