@@ -82,6 +82,9 @@ private:
     Type m_val;
 };
 
+template<size_t Index, typename ... Types>
+using tuple_base_by_index = mpl::nth_type_of_t<Index,tuple_base<Index,Types>...>;
+
 template<size_t ... Indexs,typename ... Types>
 class tuple_impl<mpl::sequence<Indexs...>,Types...>: protected tuple_base<Indexs,Types> ...
 {
@@ -90,8 +93,6 @@ class tuple_impl<mpl::sequence<Indexs...>,Types...>: protected tuple_base<Indexs
     static const size_t s_total_size = mpl::total_size<Types...>;
     template<size_t Index>
     using type_by_index = mpl::nth_type_of_t<Index,Types...>;
-    template<size_t Index>
-    using base_by_index = mpl::nth_type_of_t<Index,tuple_base<Indexs,Types>...>;
 
 public:
     tuple_impl() = default;
@@ -110,15 +111,15 @@ public:
     tuple_impl& operator=(const tuple_impl& other) = default;
     tuple_impl& operator=(tuple_impl&& other) = default;
     template<size_t IIndex>
-    constexpr typename base_by_index<IIndex>::const_reference get() const;
+    constexpr typename tuple_base_by_index<IIndex,Types...>::const_reference get() const;
     template<size_t IIndex>
-    constexpr typename base_by_index<IIndex>::reference get();
+    constexpr typename tuple_base_by_index<IIndex,Types...>::reference get();
     template<size_t IIndex>
-    typename base_by_index<IIndex>::rreference extract()&&;
+    typename tuple_base_by_index<IIndex,Types...>::rreference extract()&&;
     template<size_t ... IIndexs,typename ... Args>
     void set(const mpl::sequence<IIndexs...>&,Args&& ... i_args);
     template<size_t IIndex,typename Arg>
-    typename base_by_index<IIndex>::reference set(Arg&& i_val);
+    typename tuple_base_by_index<IIndex,Types...>::reference set(Arg&& i_val);
     tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->();
     const tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->() const;
     static constexpr size_t size();

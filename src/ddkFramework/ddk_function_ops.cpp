@@ -10,7 +10,7 @@ const function<float(float)> sqrt = std::sqrt;
 const function<float(float,float)> pow =
 #if defined(__LINUX__)
 std::pow;
-#elif
+#else
 std::powf;
 #endif
 

@@ -148,19 +148,19 @@ constexpr tuple_impl<mpl::sequence<Indexs...>,Types...>::tuple_impl(tuple_impl&&
 }
 template<size_t ... Indexs,typename ... Types>
 template<size_t IIndex>
-constexpr typename tuple_impl<mpl::sequence<Indexs...>,Types...>::template base_by_index<IIndex>::const_reference tuple_impl<mpl::sequence<Indexs...>,Types...>::get() const
+constexpr typename tuple_base_by_index<IIndex,Types...>::const_reference tuple_impl<mpl::sequence<Indexs...>,Types...>::get() const
 {
     return static_cast<const tuple_base<IIndex,type_by_index<IIndex>>&>(*this).get();
 }
 template<size_t ... Indexs,typename ... Types>
 template<size_t IIndex>
-constexpr typename tuple_impl<mpl::sequence<Indexs...>,Types...>::template base_by_index<IIndex>::reference tuple_impl<mpl::sequence<Indexs...>,Types...>::get()
+constexpr typename tuple_base_by_index<IIndex,Types...>::reference tuple_impl<mpl::sequence<Indexs...>,Types...>::get()
 {
     return static_cast<tuple_base<IIndex,type_by_index<IIndex>>&>(*this).get();
 }
 template<size_t ... Indexs,typename ... Types>
 template<size_t IIndex>
-typename tuple_impl<mpl::sequence<Indexs...>,Types...>::template base_by_index<IIndex>::rreference tuple_impl<mpl::sequence<Indexs...>,Types...>::extract()&&
+typename tuple_base_by_index<IIndex,Types...>::rreference tuple_impl<mpl::sequence<Indexs...>,Types...>::extract()&&
 {
     return static_cast<tuple_base<IIndex,type_by_index<IIndex>>&&>(*this).extract();
 }
@@ -175,7 +175,7 @@ void tuple_impl<mpl::sequence<Indexs...>,Types...>::set(const mpl::sequence<IInd
 }
 template<size_t ... Indexs,typename ... Types>
 template<size_t IIndex,typename Arg>
-typename tuple_impl<mpl::sequence<Indexs...>,Types...>::template base_by_index<IIndex>::reference tuple_impl<mpl::sequence<Indexs...>,Types...>::set(Arg&& i_arg)
+typename tuple_base_by_index<IIndex,Types...>::reference tuple_impl<mpl::sequence<Indexs...>,Types...>::set(Arg&& i_arg)
 {
     static_cast<tuple_base<IIndex,type_by_index<IIndex>>&>(*this).set(std::forward<Arg>(i_arg));
 
