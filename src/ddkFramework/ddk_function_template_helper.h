@@ -141,7 +141,7 @@ template<typename Functor>
 struct aqcuire_callable_args_type
 {
 private:
-    template<typename T,typename TT = decltype(&Functor::operator())>
+    template<typename T,typename TT = decltype(&T::operator())>
     static typename aqcuire_callable_args_type<TT>::type resolve(T&);
     template<typename T>
     static typename T::args_type resolve(const T&,...);
@@ -165,11 +165,10 @@ private:
 	static std::false_type _resolve(TT&, ...);
 
     template<typename TT>
-	static std::true_type resolve(TT&, typename TT::callable_tag*);
-    template<typename TT>
 	static std::true_type resolve(TT&, decltype(&TT::operator()));
-    template<typename TT>
-	static decltype(_resolve(std::declval<T&>(),nullptr)) resolve(TT&, ...);
+    template<typename TT, typename = typename TT::callable_tag>
+	static std::true_type resolve(TT&, ...);
+	static decltype(_resolve(std::declval<T&>(),nullptr)) resolve(...);
 
 public:
     typedef typename static_if<is_function<T>,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;

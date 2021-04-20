@@ -22,7 +22,7 @@ public:
 	typedef typename Iterable::const_reference const_reference;
 	typedef typename Iterable::pointer pointer;
 	typedef typename Iterable::const_pointer const_pointer;
-	typedef typename long long difference_type;
+	typedef long long difference_type;
 
 	template<typename Action>
 	iterable_adaptor_base(Iterable& i_iterable, Action&& i_initialAction);
@@ -50,7 +50,7 @@ public:
 	typedef typename Iterable::const_reference const_reference;
 	typedef typename Iterable::const_pointer pointer;
 	typedef typename Iterable::const_pointer const_pointer;
-	typedef typename long long difference_type;
+	typedef long long difference_type;
 
 	template<typename Action>
 	iterable_adaptor_base(const Iterable& i_iterable,Action&& i_initialAction);

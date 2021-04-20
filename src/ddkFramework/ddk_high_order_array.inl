@@ -123,9 +123,7 @@ constexpr detail::high_order_sub_array<const T,ranks...> high_order_array<T,rank
 {
 	if(i_index < rank)
 	{
-		static const size_t s_partialSize = detail::high_order_sub_array<const T,ranks...>::size();
-
-		return m_data[i_index * s_partialSize];
+		return m_data[i_index * detail::high_order_sub_array<const T,ranks...>::size()];
 	}
 	else
 	{
@@ -150,7 +148,7 @@ typename high_order_array<T,rank,ranks...>::reference high_order_array<T,rank,ra
 template<typename T,size_t rank,size_t ... ranks>
 constexpr typename high_order_array<T,rank,ranks...>::const_reference high_order_array<T,rank,ranks...>::at(const high_order_array<size_t,s_numRanks>& i_indexs) const
 {
-	static const size_t s_ranks[s_numRanks] = { rank, ranks... };
+	const size_t s_ranks[s_numRanks] = { rank, ranks... };
 
 	size_t linearizedIndex = i_indexs[0];
 	size_t accProdRank = s_ranks[0];

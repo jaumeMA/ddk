@@ -39,7 +39,7 @@ struct action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>:
 {
 public:
 	using action_visitor_base<Iterable,FinalAction,Function,Adaptor>::action_visitor_base;
-	using action_visitor_base<Iterable,FinalAction,Function,Adaptor>::difference_type;
+	using typename action_visitor_base<Iterable,FinalAction,Function,Adaptor>::difference_type;
 	typedef const_input_action action;
 
 	inline bool operator()(const go_forward_action&);
@@ -51,7 +51,7 @@ struct action_visitor<Iterable,FinalAction,Function,input_action,Adaptor> : publ
 public:
     using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::action_visitor;
 	using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::operator();
-	using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::difference_type;
+	using typename action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::difference_type;
 	typedef input_action action;
 
 	inline bool operator()(const stop_action&);
@@ -65,7 +65,7 @@ struct action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,A
 public:
     using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::action_visitor;
 	using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::operator();
-	using action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::difference_type;
+	using typename action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::difference_type;
 	typedef const_bidirectional_action action;
 
 	inline bool operator()(const go_backward_action&);
@@ -77,7 +77,7 @@ struct action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor
 public:
 	using action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::action_visitor;
 	using action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator();
-	using action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::difference_type;
+	using typename action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::difference_type;
 	typedef bidirectional_action action;
 
 	inline bool operator()(const go_backward_action&);
@@ -89,7 +89,7 @@ struct action_visitor<Iterable,FinalAction,Function,const_random_access_action,A
 public:
     using action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::action_visitor;
 	using action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::operator();
-	using action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::difference_type;
+	using typename action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::difference_type;
 	typedef const_random_access_action action;
 
 	inline bool operator()(const shift_action&);
@@ -101,7 +101,7 @@ struct action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor
 public:
 	using action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::action_visitor;
 	using action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::operator();
-	using action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::difference_type;
+	using typename action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::difference_type;
 	typedef const_random_access_action action;
 
 	inline bool operator()(const shift_action&);

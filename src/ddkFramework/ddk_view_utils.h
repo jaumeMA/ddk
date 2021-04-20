@@ -23,7 +23,7 @@ inline detail::iterable_order<T> order(T&& i_order);
 
 TEMPLATE(typename Iterable, typename ... Predicates)
 REQUIRES(IS_CALLABLE(Predicates)...)
-inline std::array<decltype(deduce_iterable(std::declval<Iterable>())),mpl::num_types<Predicates...>+1> group_by(Iterable& i_lhs, Predicates&& ... i_predicates);
+inline std::array<decltype(deduce_iterable(std::declval<Iterable>())),mpl::num_types<Predicates...>+1> group_by(Iterable&& i_lhs, Predicates&& ... i_predicates);
 
 }
 }

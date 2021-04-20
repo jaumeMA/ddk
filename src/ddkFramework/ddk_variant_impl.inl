@@ -26,7 +26,7 @@ variant_impl_destructor<SuperClass,false>::~variant_impl_destructor()
 
 template<typename ... Types>
 constexpr variant_impl<Types...>::variant_impl()
-: m_currentType((std::is_default_constructible<mpl::nth_type_of<0,Types...>::type>::value) ? 0 : s_numTypes)
+: m_currentType((std::is_default_constructible<typename mpl::nth_type_of<0,Types...>::type>::value) ? 0 : s_numTypes)
 {
 }
 template<typename ... Types>
@@ -378,9 +378,7 @@ constexpr bool variant_impl<Types...>::is() const
 {
 	static_assert(mpl::is_among_types<TType, Types...>, "Non present type in variant");
 
-	static const size_t isPos = mpl::nth_pos_of_type<TType, Types...>;
-
-	return m_currentType == isPos;
+	return m_currentType == mpl::nth_pos_of_type<TType, Types...>;
 }
 template<typename ... Types>
 template<typename TType>
@@ -502,7 +500,7 @@ TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Types)...)
 constexpr auto variant_impl<Types...>::visit(Visitor&& visitor)
 {
-	typedef mpl::nth_type_of<0,Types...>::type first_type;
+	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
 
 	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...), "You shall provide a uniform return type callable.");
@@ -523,7 +521,7 @@ TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Types)...)
 constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) const
 {
-	typedef mpl::nth_type_of<0,Types...>::type first_type;
+	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
 
 	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...),"You shall provide a uniform return type callable.");
@@ -543,7 +541,7 @@ template<typename ... Types>
 template<typename Visitor,typename ... Args>
 constexpr auto variant_impl<Types...>::visit(Args&& ... i_args) const
 {
-	typedef mpl::nth_type_of<0,Types...>::type first_type;
+	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
 
 	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...),"You shall provide a uniform return type callable.");
