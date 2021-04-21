@@ -81,7 +81,7 @@ public:
     REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
     inline Return inline_eval(const function_arguments<Args...>& i_args) const;
 	template<typename ... Args>
-    inline resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
+    inline NO_DISCARD_RETURN resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
 
 private:
     template<size_t ... Indexs, typename ... Args>

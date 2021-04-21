@@ -132,7 +132,7 @@ Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(const
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 template<typename ... Args>
-resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> function_impl<Return(Types...),Allocator,FunctionImpl>::operator()(Args&& ... i_args) const
+NO_DISCARD_RETURN resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> function_impl<Return(Types...),Allocator,FunctionImpl>::operator()(Args&& ... i_args) const
 {
     if(m_functionImpl)
     {

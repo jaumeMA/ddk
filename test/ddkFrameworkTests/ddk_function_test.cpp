@@ -69,7 +69,7 @@ TEST(DDKFunctionTest,defaultConstruction)
 
     ddk::unique_pointer_wrapper<int> kk;
 
-    foo2(std::move(kk));
+    const auto res = foo2(std::move(kk));
 }
 TEST(DDKFunctionTest,funcMakeConstruction)
 {

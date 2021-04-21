@@ -10,10 +10,14 @@
 
 #if defined(WIN32)
 
+    //pragma macros
     #define __TODO(_FILE,_LINE,_TEXT) __pragma(message(_FILE"("#_LINE") : " #_TEXT))
     #define _TODO(_FILE,_LINE,_TEXT) __TODO(_FILE,_LINE,_TEXT)
     #define TODO(text) _TODO(__FILE__,__LINE__,text)
     #define UNUSED(_x) (void)(_x);
+
+    //annotations
+    #define NO_DISCARD_RETURN [[ nodiscard ]]
 
     #ifdef DDK_DEBUG
 
