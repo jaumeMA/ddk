@@ -16,6 +16,9 @@ public:
 	{
 		return (numUnits >= 1) ? malloc(numUnits * unitSize) : nullptr;
 	}
+	void* aligned_allocate(void* i_ptr,size_t i_size,size_t& i_remainingSize)
+	{
+	}
 	void deallocate(const void *ptr) const
 	{
 		if(ptr)

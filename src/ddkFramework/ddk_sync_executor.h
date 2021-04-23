@@ -59,6 +59,7 @@ private:
 	bool notify() override;
 	start_result execute() override;
 	cancel_result cancel() override;
+	bool empty() const override;
 
 	void set_value(sink_reference i_value);
 	void set_exception(const async_exception& i_excp);

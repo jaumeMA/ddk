@@ -104,6 +104,8 @@ class function<Return(Types...),Allocator> : public detail::function_impl<Return
 
 public:
     using function_base_t::function_base_t;
+
+    function& operator=(std::nullptr_t);
 };
 
 namespace mpl

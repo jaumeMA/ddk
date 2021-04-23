@@ -45,6 +45,7 @@ public:
 	tagged_pointer(const tagged_pointer<TT>& other);
 	template<typename TT>
 	tagged_pointer(tagged_pointer<TT>&& other);
+	~tagged_pointer();
 	tagged_pointer& operator=(const tagged_pointer& other);
 	template<typename TT>
 	tagged_pointer& operator=(const tagged_pointer<TT>& other);

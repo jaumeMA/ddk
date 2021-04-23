@@ -8,6 +8,19 @@ void* typed_system_allocator<T>::allocate(size_t numUnits) const
 	return allocate(numUnits,sizeof(T));
 }
 template<typename T>
+void* system_allocator::aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const
+{
+    static const size_t alignment = alignof(T);
+
+    void* res = std::align(alignment,sizeof(T),i_ptr,i_remainingSize);
+
+    i_ptr = reinterpret_cast<char*>(i_ptr) + sizeof(T);
+
+    i_remainingSize -= sizeof(T);
+
+    return res;
+}
+template<typename T>
 void* typed_system_allocator<T>::reallocate(void *ptr,size_t numUnits) const
 {
 	return reallocate(ptr,numUnits,sizeof(T));

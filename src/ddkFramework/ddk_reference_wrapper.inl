@@ -1,4 +1,6 @@
 
+#include "ddk_system_allocator.h"
+
 namespace ddk
 {
 
@@ -180,12 +182,15 @@ template<typename T,typename ... Args>
 unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args)
 {
 	typedef typename unique_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+	static const system_allocator s_alloc;
 
-	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(T) + sizeof(unique_reference_counter)));
+	size_t allocatedStorageSize = mpl::total_size<T,unique_reference_counter>;
 
-	T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
+	void* allocatedMemory = malloc(allocatedStorageSize);
 
-	unique_reference_counter* refCounter = new (allocatedMemory + sizeof(T)) unique_reference_counter();
+	T* allocatedObject = new (s_alloc.aligned_allocate<T>(allocatedMemory,allocatedStorageSize)) T(std::forward<Args>(i_args) ...);
+
+	unique_reference_counter* refCounter = new (s_alloc.aligned_allocate<unique_reference_counter>(allocatedMemory,allocatedStorageSize)) unique_reference_counter();
 
 	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
 
@@ -233,14 +238,10 @@ shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 {
 	typedef typename shared_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
 
-	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(T)));
-
-	T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
+	T* allocatedObject = new T(std::forward<Args>(i_args) ...);
 
 	// In the case of shared pointers we cannot group memory allocation into a single malloc since we have weak deps
-	allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(shared_reference_counter)));
-
-	shared_reference_counter* refCounter = new (allocatedMemory) shared_reference_counter();
+	shared_reference_counter* refCounter = new shared_reference_counter();
 
 	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
 
@@ -250,12 +251,15 @@ template<typename T,typename ... Args>
 distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_args)
 {
 	typedef typename distributed_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+	static const system_allocator s_alloc;
 
-	char* allocatedMemory = reinterpret_cast<char*>(malloc(sizeof(T) + sizeof(distributed_reference_counter)));
+	size_t allocatedStorageSize = mpl::total_size<T,distributed_reference_counter>;
 
-	T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
+	void* allocatedMemory = malloc(allocatedStorageSize);
 
-	distributed_reference_counter* refCounter = new (allocatedMemory + sizeof(T)) distributed_reference_counter();
+	T* allocatedObject = new (s_alloc.aligned_allocate<T>(allocatedMemory,allocatedStorageSize)) T(std::forward<Args>(i_args) ...);
+
+	distributed_reference_counter* refCounter = new (s_alloc.aligned_allocate<distributed_reference_counter>(allocatedMemory,allocatedStorageSize)) distributed_reference_counter();
 
 	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
 

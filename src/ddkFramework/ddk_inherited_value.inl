@@ -88,6 +88,14 @@ inherited_value<T,Allocator>& inherited_value<T,Allocator>::operator=(inherited_
 
 	return *this;
 }
+template<typename T,typename Allocator>
+inherited_value<T,Allocator>& inherited_value<T,Allocator>::operator=(std::nullptr_t)
+{
+	m_typeInfo = rtti::TypeInfo();
+	m_value = nullptr;
+
+	return *this;
+}
 template<typename T, typename Allocator>
 template<typename TT>
 bool inherited_value<T,Allocator>::is() const

@@ -1,0 +1,87 @@
+#pragma once
+
+#include "ddk_thread_executor_interface.h"
+#include "ddk_thread_pool.h"
+#include "ddk_mutex.h"
+#include "ddk_thread_executor.h"
+#include "ddk_type_id.h"
+#include "ddk_async.h"
+#include "ddk_unique_reference_wrapper.h"
+#include "ddk_lock_free_stack.h"
+#include "ddk_atomics.h"
+
+namespace ddk
+{
+
+extern const size_t k_maxNumPendingTasks;
+
+struct task_id_t;
+typedef Id<size_t,task_id_t> task_id;
+
+class task_executor
+{
+	struct pending_task
+	{
+	public:
+		pending_task() = default;
+		virtual ~pending_task() = default;
+		virtual void execute(thread i_thread) = 0;
+		virtual bool execute() = 0;
+		virtual bool cancel() = 0;
+		virtual bool empty() = 0;
+	};
+	typedef unique_reference_wrapper<pending_task> unique_pending_task;
+
+	template<typename Return>
+	struct pending_task_impl: public pending_task
+	{
+	public:
+		typedef typename cancellable_executor_interface<Return()>::sink_type sink_type;
+
+		pending_task_impl(const function<Return()>& i_task);
+		~pending_task_impl();
+
+		future<Return> as_future();
+		void execute(thread i_thread) final override;
+
+	private:
+		bool execute() final override;
+		bool cancel() final override;
+		bool empty() final override;
+
+		shared_pointer_wrapper<async_executor<Return>> m_executor;
+	};
+	template<typename Return>
+	using unique_pending_impl_task = unique_reference_wrapper<pending_task_impl<Return>>;
+
+public:
+	task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks = k_maxNumPendingTasks);
+	~task_executor();
+
+	void start();
+	void stop();
+	bool running() const;
+
+	template<typename Return>
+	future<Return> enqueue(const function<Return()>& i_task);
+
+private:
+	enum State
+	{
+		Idle,
+		Running
+	};
+
+	void update();
+
+	thread_pool m_availableThreads;
+	size_t m_maxNumPendingTasks = 0;
+	State m_state;
+	atomic_size_t m_numPendingTasks;
+	thread_event_driven_executor m_updateThread;
+	lock_free_stack<unique_pending_task> m_pendingTasks;
+};
+
+}
+
+#include "ddk_task_executor.inl"

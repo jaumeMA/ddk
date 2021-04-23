@@ -52,6 +52,7 @@ public:
 	inherited_value& operator=(const inherited_value<TT,Allocator>& other);
 	template<typename TT>
 	inherited_value& operator=(inherited_value<TT,Allocator>&& other);
+	inherited_value& operator=(std::nullptr_t);
 	template<typename TT>
 	inline bool is() const;
 	inline operator bool() const;

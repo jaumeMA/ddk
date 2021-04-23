@@ -75,6 +75,7 @@ public:
 	result& operator=(result&& other);
 	Error error() const;
 	explicit operator bool() const;
+	void detach() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;
 	bool operator==(const Error& i_error) const;
@@ -143,6 +144,7 @@ public:
 	T get() const;
 	T extract() &&;
 	explicit operator bool() const;
+	void detach() const;
 	bool operator==(const result_success_t&) const;
 	bool operator!=(const result_success_t&) const;
 	bool operator==(const Error& i_error) const;

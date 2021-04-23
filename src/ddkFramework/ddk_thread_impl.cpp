@@ -59,14 +59,14 @@ void* threadFunc(void *ptr)
 
 	return nullptr;
 }
-void threadExiting(void* ptr)
-{
-	if(thread_impl_interface* thread = reinterpret_cast<thread_impl_interface*>(ptr))
-	{
-		thread->setExiting(true);
-	}
-}
 
+one_shot_thread_impl::one_shot_thread_impl()
+{
+}
+one_shot_thread_impl::~one_shot_thread_impl()
+{
+	stop();
+}
 void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder* i_yielder)
 {
 	if(m_started == false)
@@ -90,11 +90,11 @@ void one_shot_thread_impl::stop()
 {
 	if(m_started)
 	{
-		m_started = false;
-
 		void *res = nullptr;
-		thread_id_t prova = get_id();
+
 		pthread_join(m_thread,&res);
+
+		m_started = false;
 	}
 }
 bool one_shot_thread_impl::joinable() const
@@ -111,8 +111,6 @@ void one_shot_thread_impl::setExiting(bool i_exiting)
 	{
 		m_started = false;
 
-		m_threadFunc = nullptr;
-
 		thread_impl_interface::clear_yielder();
 
 		m_yielder = nullptr;
@@ -124,11 +122,13 @@ void one_shot_thread_impl::execute()
 	{
 		thread_impl_interface::set_yielder(m_yielder);
 
-		pthread_cleanup_push(&threadExiting,this);
-
 		eval(m_threadFunc);
 
-		pthread_cleanup_pop(1);
+		thread_impl_interface::clear_yielder();
+
+		m_yielder = nullptr;
+
+		m_threadFunc = nullptr;
 	}
 }
 bool one_shot_thread_impl::set_affinity(const cpu_set_t& i_set)

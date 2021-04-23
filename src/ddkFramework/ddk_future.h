@@ -64,7 +64,6 @@ class future<void> : public future<detail::void_t>
 {
 public:
 	using future<detail::void_t>::future;
-	future(const future& other) = default;
 	future(future&& other) = default;
 	future(const future<detail::void_t>& other)
 	: future<detail::void_t>(other)
@@ -93,6 +92,9 @@ public:
 	{
         return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError);
 	}
+
+protected:
+	future(const future& other) = default;
 };
 
 template<typename T>

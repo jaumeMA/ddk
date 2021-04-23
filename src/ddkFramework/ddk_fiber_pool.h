@@ -46,11 +46,13 @@ public:
 private:
 	void deallocate(const void* i_object) const override;
 
-	mutable fiber_container m_fiberCtr;
-	mutable fiber_scheduler_shared_ref<> m_fiberScheduler;
 	Policy m_policy;
-	stack_alloc_const_shared_ref m_stackAllocator;
+	size_t m_maxNumFibers;
 	size_t m_numMaxPages;
+	mutable fiber_container m_fiberCtr;
+	mutable size_t m_inUseFibers = 0;
+	mutable fiber_scheduler_shared_ref<> m_fiberScheduler;
+	stack_alloc_const_shared_ref m_stackAllocator;
 	mutable mutex m_mutex;	
 };
 

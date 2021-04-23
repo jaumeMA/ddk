@@ -15,9 +15,11 @@ struct lock_free_stack
 {
 public:
 	lock_free_stack();
+	~lock_free_stack();
 	template<typename ... Args>
 	void push(Args&& ... i_args);
 	optional<T> pop();
+	inline void clear();
 	inline bool empty() const;
 
 private:

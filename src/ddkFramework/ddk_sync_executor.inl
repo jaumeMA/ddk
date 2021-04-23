@@ -25,7 +25,10 @@ async_executor<Return>::async_executor(async_executor&& other)
 template<typename Return>
 async_executor<Return>::~async_executor()
 {
-	notify();
+	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
+	{
+		eval(m_function);
+	}
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(thread i_thread)
@@ -236,9 +239,16 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 	if (cancelRes == success)
 	{
 		m_promise.signal();
+
+		m_executor = nullptr;
 	}
 
 	return cancelRes;
+}
+template<typename Return>
+bool async_executor<Return>::empty() const
+{
+	return m_executor == nullptr;
 }
 template<typename Return>
 bool async_executor<Return>::notify()

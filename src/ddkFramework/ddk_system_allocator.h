@@ -17,6 +17,8 @@ public:
 
 	system_allocator() = default;
     void* allocate(size_t numUnits, size_t unitSize) const;
+    template<typename T>
+    void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const;
     void deallocate(void *ptr) const;
     void* reallocate(void *ptr, size_t numUnits, size_t unitSize) const;
 };

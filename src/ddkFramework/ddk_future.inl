@@ -33,7 +33,7 @@ future<T>::~future()
 {
 	if(m_sharedState)
 	{
-		m_sharedState->notify();
+		m_sharedState->detach();
 	}
 }
 template<typename T>
@@ -84,7 +84,14 @@ typename future<T>::cancel_result future<T>::cancel()
 {
 	if (m_sharedState)
 	{
-		return m_sharedState->cancel();
+		const auto cancelRes = m_sharedState->cancel();
+
+		if(cancelRes)
+		{
+			m_sharedState = nullptr;
+		}
+
+		return cancelRes;
 	}
 	else
 	{

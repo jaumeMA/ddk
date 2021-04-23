@@ -65,8 +65,6 @@ void lent_reference_counter::registerStackTrace(size_t i_id)
 #ifdef TRACK_STACK
 	typedef detail::symbol_cache_table::symbol_info symbol_info;
 
-	static const size_t s_maxFuncNameLength = 64;
-
 	void* stack[k_maxNumberOfStacks] = { NULL };
 
 #ifdef WIN32
@@ -86,16 +84,7 @@ void lent_reference_counter::registerStackTrace(size_t i_id)
 
 	for (int i = 0; i < k_maxNumberOfStacks; i++)
 	{
-		if(i<numberOfFrames)
-		{
-			const symbol_info& symbolicatedSymbol = m_symbolInfoCache.symbolicate(stack[i]);
-
-			currStackTrace[i] = stack[i];
-		}
-		else
-		{
-			currStackTrace[i] = nullptr;
-		}
+		currStackTrace[i] = (i < numberOfFrames) ? stack[i] : nullptr;
 	}
 
 #endif
@@ -153,11 +142,12 @@ lent_reference_counter::stack_contents lent_reference_counter::dumpStackTrace()
 			if(void* currStackSymbol = currStack[i])
 			{
 				const detail::symbol_cache_table::symbol_info& symbolicatedSymbol = m_symbolInfoCache.symbolicate(currStackSymbol);
-				//std stringstream is just too slow
-				char contents[k_maxNumOfChars] = { 0 };
-				sprintf(contents, "%s(%zu) : %s\n", symbolicatedSymbol.m_filename.c_str(), symbolicatedSymbol.m_lineNumber, symbolicatedSymbol.m_name.c_str());
 
-				res[itStackTrace->first].emplace_back(contents);
+				//std stringstream is just too slow
+				std::string resume = symbolicatedSymbol.m_filename + "(" + std::to_string(symbolicatedSymbol.m_lineNumber) + ") : " + symbolicatedSymbol.m_name;
+				resume.resize(k_maxNumOfChars);
+
+				res[itStackTrace->first].emplace_back(std::move(resume));
 			}
 		}
 	}

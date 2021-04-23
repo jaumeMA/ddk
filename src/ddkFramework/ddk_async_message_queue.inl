@@ -54,7 +54,9 @@ void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk
 template<typename MessageType>
 void async_attachable_message_queue<MessageType>::stop(sender_id i_id)
 {
-	mutex_guard lg(m_mutex);
+	bool toBeStopped = false;
+
+	m_mutex.lock();
 
 	typename linked_list<std::pair<sender_id,function<void(const message_type&)>>>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,function<void(const message_type&)>>& i_pair) { return i_pair.first == i_id; });
 
@@ -64,12 +66,16 @@ void async_attachable_message_queue<MessageType>::stop(sender_id i_id)
 	{
 		m_receivers.erase(std::move(itReceiver));
 
-		if(m_receivers.empty())
-		{
-			thread_executor_interface::resume_result stopRes = m_executor->resume();
+		toBeStopped = m_receivers.empty();
+	}
 
-			DDK_ASSERT(stopRes == success,"Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
-		}
+	m_mutex.unlock();
+
+	if(toBeStopped)
+	{
+		thread_executor_interface::resume_result stopRes = m_executor->resume();
+
+		DDK_ASSERT(stopRes == success,"Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 	}
 }
 template<typename MessageType>

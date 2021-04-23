@@ -51,7 +51,8 @@ void threadExiting(void* ptr);
 class one_shot_thread_impl : public thread_impl_interface
 {
 public:
-	one_shot_thread_impl() = default;
+	one_shot_thread_impl();
+	~one_shot_thread_impl();
 
 private:
 	void start(const ddk::function<void()>&, yielder* i_yielder = nullptr) override;
@@ -64,7 +65,7 @@ private:
 
 	pthread_t				m_thread;
 	ddk::function<void()>	m_threadFunc;
-	yielder*				m_yielder;
+	yielder*				m_yielder = nullptr;
 	bool					m_started = false;
 };
 

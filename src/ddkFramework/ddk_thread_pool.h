@@ -9,6 +9,7 @@
 #include "ddk_mutex.h"
 #include "ddk_cond_var.h"
 #include "ddk_mutex.h"
+#include "ddk_signal.h"
 #include <functional>
 #include <vector>
 
@@ -22,6 +23,8 @@ class worker_thread_impl : public thread_impl_interface
 public:
 	worker_thread_impl();
 	~worker_thread_impl();
+	worker_thread_impl(const worker_thread_impl&) = delete;
+	worker_thread_impl(worker_thread_impl&&) = delete;
 
 private:
 	enum State
@@ -42,7 +45,7 @@ private:
 	pthread_t m_thread;
 	mutex m_mutex;
 	cond_var m_condVar;
-	optional<ddk::function<void()>> m_funcToExecute;
+	ddk::function<void()> m_funcToExecute;
 	State m_state;
 	detail::yielder* m_yielder;
 };
@@ -67,6 +70,8 @@ public:
 	template<typename T>
 	using acquire_result = result<T,AcquireErrorCode>;
 
+	signal<void()> on_availableThreads;
+
 	thread_pool(Policy i_policy, size_t i_initialSize);
 	thread_pool(const thread_pool&) = delete;
 	thread_pool(thread_pool&& other);
@@ -79,10 +84,15 @@ public:
 private:
 	void deallocate(const void* i_object) const override;
 
+	const Policy m_policy;
+	const size_t m_maxNumThreads;
 	mutable thread_container m_availableThreads;
 	mutable thread_in_use_container m_underUseThreads;
-	const Policy m_policy;
 	mutable mutex m_mutex;
+	mutable cond_var m_condVar;
 };
+
+typedef thread_pool::acquire_result<thread> acquire_thread_result;
+typedef thread_pool::acquire_result<thread_sheaf> acquire_thread_sheaf_result;
 
 }

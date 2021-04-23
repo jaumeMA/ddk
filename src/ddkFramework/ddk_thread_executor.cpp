@@ -132,7 +132,7 @@ thread_event_driven_executor::thread_event_driven_executor(unsigned int i_sleepI
 , m_stopped(true)
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
-, m_testFunc([=]() { return m_pendingWork; })
+, m_testFunc([=]() { return m_pendingWork || m_stopped; })
 {
 }
 thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread, unsigned int i_sleepInMS)
@@ -142,7 +142,7 @@ thread_event_driven_executor::thread_event_driven_executor(ddk::thread i_thread,
 , m_updateThread(std::move(i_thread))
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
-, m_testFunc([=]() { return m_pendingWork; })
+, m_testFunc([=]() { return m_pendingWork || m_stopped; })
 {
 }
 thread_event_driven_executor::thread_event_driven_executor(thread_event_driven_executor&& other)
@@ -152,7 +152,7 @@ thread_event_driven_executor::thread_event_driven_executor(thread_event_driven_e
 , m_updateThread(std::move(other.m_updateThread))
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
-, m_testFunc([=](){ return m_pendingWork; })
+, m_testFunc([=](){ return m_pendingWork || m_stopped; })
 {
 	std::swap(m_executor,other.m_executor);
 	std::swap(m_stopped,other.m_stopped);
@@ -165,8 +165,6 @@ thread_event_driven_executor::~thread_event_driven_executor()
 		m_stopped = true;
 		m_updateThread.stop();
 	}
-
-	DDK_ASSERT(m_pendingWork == false,"Leaving with pending work");
 }
 void thread_event_driven_executor::set_update_time(const std::chrono::milliseconds& i_sleepInMS)
 {
@@ -180,7 +178,7 @@ void thread_event_driven_executor::start_thread(const ddk::function<void()>& i_e
 {
 	if (i_testFunc != nullptr)
 	{
-		m_testFunc = i_testFunc;
+		m_testFunc = i_testFunc || make_function([=](){ return m_stopped; });
 	}
 
 	const start_result startRes = execute(nullptr,i_executor);

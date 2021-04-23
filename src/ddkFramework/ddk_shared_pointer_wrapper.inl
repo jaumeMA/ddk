@@ -129,6 +129,7 @@ shared_pointer_wrapper_impl<T,ReferenceCounter>& shared_pointer_wrapper_impl<T,R
 		}
 
 		m_deleter = other.m_deleter;
+		other.m_deleter = nullptr;
 		m_data = other.m_data;
 		other.m_data = nullptr;
 		m_refCounter = other.m_refCounter;

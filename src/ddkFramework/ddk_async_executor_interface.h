@@ -54,6 +54,7 @@ public:
 	typedef result<void,StartErrorCode> start_result;
 
 	virtual start_result execute() = 0;
+	virtual bool empty() const = 0;
 };
 
 template<typename Return>

@@ -17,6 +17,16 @@ lock_free_stack<T,Allocator>::lock_free_stack()
 
 }
 template<typename T,typename Allocator>
+lock_free_stack<T,Allocator>::~lock_free_stack()
+{
+	clear();
+}
+template<typename T,typename Allocator>
+void lock_free_stack<T,Allocator>::clear()
+{
+	while(const auto _ = pop());
+}
+template<typename T,typename Allocator>
 template<typename ... Args>
 void lock_free_stack<T,Allocator>::push(Args&& ... i_args)
 {

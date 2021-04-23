@@ -88,7 +88,7 @@ function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(const T *i
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 function_impl<Return(Types...),Allocator,FunctionImpl>& function_impl<Return(Types...),Allocator,FunctionImpl>::operator=(std::nullptr_t)
 {
-    m_functionImpl.clean();
+    m_functionImpl = nullptr;
 
     return *this;
 }
@@ -169,4 +169,13 @@ Return function_impl<Return(Types...),Allocator,FunctionImpl>::eval_arguments(co
 }
 
 }
+
+template<typename Return,typename ... Types,typename Allocator>
+function<Return(Types...),Allocator>& function<Return(Types...),Allocator>::operator=(std::nullptr_t)
+{
+    function_base_t::operator=(nullptr);
+
+    return *this;
+}
+
 }

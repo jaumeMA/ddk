@@ -17,7 +17,7 @@ tagged_pointer<T>::tagged_pointer(interface_ptr i_data)
 }
 template<typename T>
 tagged_pointer<T>::tagged_pointer(interface_ptr i_data,short i_tag)
-: m_data(i_data)
+: m_data(nullptr)
 {
 	DDK_ASSERT(i_tag <= tag_mask,"You shall provide a tag less than tag mask");
 
@@ -46,6 +46,11 @@ tagged_pointer<T>::tagged_pointer(tagged_pointer<TT>&& other)
 : m_data(nullptr)
 {
 	std::swap(m_data,other.m_data);
+}
+template<typename T>
+tagged_pointer<T>::~tagged_pointer()
+{
+	m_data = nullptr;
 }
 template<typename T>
 tagged_pointer<T>& tagged_pointer<T>::operator=(const tagged_pointer& other)
