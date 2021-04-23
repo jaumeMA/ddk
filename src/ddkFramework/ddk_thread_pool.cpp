@@ -23,9 +23,20 @@ worker_thread_impl::worker_thread_impl()
 }
 worker_thread_impl::~worker_thread_impl()
 {
-	m_state = Stopped;
+	if(m_mutex.try_lock())
+	{
+		m_state = Stopped;
 
-	m_condVar.notify_all();
+		m_condVar.notify_all();
+
+		m_mutex.unlock();
+	}
+	else
+	{
+		m_state = Stopped;
+
+		m_condVar.notify_all();
+	}
 
 	void *res = NULL;
 	pthread_join(m_thread,&res);
@@ -85,7 +96,10 @@ void worker_thread_impl::execute()
 			m_state = Idle;
 		}
 
-		m_condVar.wait(m_mutex);
+		if(m_state != Stopped)
+		{
+			m_condVar.wait(m_mutex);
+		}
 	}
 }
 bool worker_thread_impl::set_affinity(const cpu_set_t& i_set)

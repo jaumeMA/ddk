@@ -24,7 +24,7 @@ public:
 	~mutex();
 
 	void lock();
-	int try_lock();
+	bool try_lock();
 	void unlock();
 
 private:
