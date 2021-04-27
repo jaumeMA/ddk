@@ -135,16 +135,27 @@ thread_pool::thread_pool(thread_pool&& other)
 }
 thread_pool::~thread_pool()
 {
-	mutex_guard lg(m_mutex);
-
+	m_mutex.lock();
+		
 	thread_in_use_container::iterator itInUseThread = m_underUseThreads.begin();
-	for(; itInUseThread != m_underUseThreads.end(); ++itInUseThread)
+	for(; itInUseThread != m_underUseThreads.end();)
 	{
 		if(detail::thread_impl_interface* inUseThread = itInUseThread->second)
 		{
+			m_mutex.unlock();
+
 			inUseThread->stop();
+
+			m_mutex.lock();
 		}
+
+		//after retorning from stop we can ensure itInUseThread has been deleted from m_underUseThreads
+		itInUseThread = m_underUseThreads.begin();
 	}
+
+	m_mutex.unlock();
+
+	mutex_guard lg(m_mutex);
 
 	m_condVar.wait_until(m_mutex,[this](){ return m_underUseThreads.empty() == false; });
 
@@ -160,26 +171,24 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 	if(m_availableThreads.empty())
 	{
-		//depending on the policy
-		if(m_policy == GrowsOnDemand && m_underUseThreads.size() < m_maxNumThreads)
-		{
-			m_availableThreads.push_back(new detail::worker_thread_impl());
-		}
-		else
-		{
-			return make_error<acquire_result<thread>>(NoThreadAvailable);
-		}
+		detail::thread_impl_interface* acquiredThread = new detail::worker_thread_impl();
+
+		m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
+
+		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
 	}
+	else
+	{
+		thread_container::iterator itThread = m_availableThreads.begin();
 
-	thread_container::iterator itThread = m_availableThreads.begin();
+		detail::thread_impl_interface* acquiredThread = *itThread;
 
-	detail::thread_impl_interface* acquiredThread = *itThread;
+		m_availableThreads.erase(itThread);
 
-	m_availableThreads.erase(itThread);
+		m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
-	m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
-
-	return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ref_from_this(),AllocationMode::ConstructionProvided}));
+		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+	}
 }
 thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_size)
 {
