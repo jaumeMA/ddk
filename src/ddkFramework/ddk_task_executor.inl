@@ -26,11 +26,11 @@ bool task_executor::pending_task_impl<Return>::execute()
 {
 	if(async_execute_shared_ptr<Return> _executor = m_executor)
 	{
-		static_cast<bool>(_executor->execute());
+		return static_cast<bool>(_executor->execute());
 	}
 	else
 	{
-		return true;
+		return false;
 	}
 }
 template<typename Return>

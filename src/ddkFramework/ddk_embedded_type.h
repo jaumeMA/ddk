@@ -62,7 +62,7 @@ public:
 	typedef typename std::remove_cv<T>::type raw_type;
 	typedef T internal_type;
 	typedef T&& ref_type;
-	typedef typename std::add_const<T>::type&& cref_type;
+	typedef T&& cref_type;
 	typedef T&& rref_type;
 	typedef T* pointer_type;
 	typedef typename std::add_const<T>::type* cpointer_type;

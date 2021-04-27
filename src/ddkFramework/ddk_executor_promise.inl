@@ -23,7 +23,7 @@ executor_promise<T>& executor_promise<T>::operator=(const promise<T>& other)
 template<typename T>
 void executor_promise<T>::set_value(sink_type i_value)
 {
-	m_sharedState->set_value(i_value);
+	m_sharedState->set_value(std::forward<sink_type>(i_value));
 }
 template<typename T>
 void executor_promise<T>::set_exception(const async_exception& i_exception)

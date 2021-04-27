@@ -165,6 +165,22 @@ thread_pool::~thread_pool()
 		delete(*itThread);
 	}
 }
+bool thread_pool::set_affinity(const cpu_set_t& i_set)
+{
+	bool res = true;
+
+	mutex_guard lg(m_mutex);
+	thread_container::iterator itThread = m_availableThreads.begin();
+	for(; itThread != m_availableThreads.end(); ++itThread)
+	{
+		if(detail::thread_impl_interface* threadImpl = *itThread)
+		{
+			res = threadImpl->set_affinity(i_set) && res;
+		}
+	}
+
+	return res;
+}
 thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 {
 	mutex_guard lg(m_mutex);

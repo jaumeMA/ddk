@@ -212,7 +212,7 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 template<typename Return>
 void async_executor<Return>::set_value(sink_reference i_value)
 {
-	m_promise.set_value(i_value);
+	m_promise.set_value(std::forward<sink_reference>(i_value));
 }
 template<typename Return>
 void async_executor<Return>::set_exception(const async_exception& i_excp)

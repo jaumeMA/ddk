@@ -2,6 +2,7 @@
 
 #include "ddk_variant.h"
 #include "ddk_optional.h"
+#include "ddk_class_rules.h"
 
 #if defined(DDK_DEBUG)
 
@@ -90,7 +91,7 @@ private:
 };
 
 template<typename T, typename Error>
-class result
+class result : contravariant_rules<T>
 {
 #if defined(DDK_DEBUG)
 	friend inline void set_checked(const result& i_result)
@@ -135,11 +136,19 @@ public:
 	result(const T& i_payload);
 	result(T&& i_payload);
 	result(const Error& i_error);
-	result(const result& other);
-	result(result&& other);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_SAME_CLASS(T,TT),IS_COPY_CONSTRUCTIBLE(TT))
+	result(const result<TT,Error>& other);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_SAME_CLASS(T,TT),IS_MOVE_CONSTRUCTIBLE(TT))
+	result(result<TT,Error>&& other);
 	~result();
-	result& operator=(const result& other);
-	result& operator=(result&& other);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_SAME_CLASS(T,TT),IS_COPY_ASSIGNABLE(TT))
+	result& operator=(const result<TT,Error>& other);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_SAME_CLASS(T,TT),IS_MOVE_ASSIGNABLE(TT))
+	result& operator=(result<TT,Error>&& other);
 	Error error() const;
 	T get() const;
 	T extract() &&;

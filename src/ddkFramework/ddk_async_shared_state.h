@@ -27,7 +27,7 @@ struct private_async_state : async_state_base
 	friend struct private_async_state;
 
 public:
-	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename embedded_type<T>::cref_type>::type sink_type;
+	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename mpl::static_if<std::is_copy_constructible<T>::value,embedded_type<T>,embedded_type<T&&>>::type::cref_type>::type sink_type;
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
 	typedef typename embedded_type<T>::rref_type rreference;

@@ -92,6 +92,18 @@
 #define IS_CONSTRUCTIBLE(_TYPE,...) \
 	typename std::enable_if<IS_CONSTRUCTIBLE_COND(_TYPE,__VA_ARGS__)>::type
 
+#define IS_COPY_CONSTRUCTIBLE_COND(_TYPE) \
+	std::is_copy_constructible_v<_TYPE>
+
+#define IS_COPY_CONSTRUCTIBLE(_TYPE) \
+	typename std::enable_if<IS_COPY_CONSTRUCTIBLE_COND(_TYPE)>::type
+
+#define IS_MOVE_CONSTRUCTIBLE_COND(_TYPE) \
+	std::is_move_constructible_v<_TYPE>
+
+#define IS_MOVE_CONSTRUCTIBLE(_TYPE) \
+	typename std::enable_if<IS_MOVE_CONSTRUCTIBLE_COND(_TYPE)>::type
+
 #define IS_CONVERTIBLE_COND(_TYPE,...) \
 	std::is_convertible_v<_TYPE,__VA_ARGS__>
 
@@ -103,6 +115,18 @@
 
 #define IS_ASSIGNABLE(_TYPE,_ARG) \
 	typename std::enable_if<IS_ASSIGNABLE_COND(_TYPE,_ARG)>::type
+
+#define IS_COPY_ASSIGNABLE_COND(_TYPE) \
+	std::is_copy_assignable<_TYPE>::value
+
+#define IS_COPY_ASSIGNABLE(_TYPE) \
+	typename std::enable_if<IS_COPY_ASSIGNABLE_COND(_TYPE)>::type
+
+#define IS_MOVE_ASSIGNABLE_COND(_TYPE) \
+	std::is_move_assignable<_TYPE>::value
+
+#define IS_MOVE_ASSIGNABLE(_TYPE) \
+	typename std::enable_if<IS_MOVE_ASSIGNABLE_COND(_TYPE)>::type
 
 #define IS_EQUALLY_COMPARABLE(_TYPE) \
     decltype(std::declval<_TYPE>() == std::declval<_TYPE>())

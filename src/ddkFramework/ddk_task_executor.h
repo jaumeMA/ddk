@@ -9,6 +9,9 @@
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_lock_free_stack.h"
 #include "ddk_atomics.h"
+#include "ddk_lend_from_this.h"
+#include "ddk_lent_reference_wrapper.h"
+#include "ddk_unique_pointer_wrapper.h"
 
 namespace ddk
 {
@@ -18,7 +21,7 @@ extern const size_t k_maxNumPendingTasks;
 struct task_id_t;
 typedef Id<size_t,task_id_t> task_id;
 
-class task_executor
+class task_executor : public lend_from_this<task_executor>
 {
 	struct pending_task
 	{
@@ -61,6 +64,7 @@ public:
 	void start();
 	void stop();
 	bool running() const;
+	bool set_affinity(const cpu_set_t& i_set);
 
 	template<typename Return>
 	future<Return> enqueue(const function<Return()>& i_task);
@@ -81,6 +85,16 @@ private:
 	thread_event_driven_executor m_updateThread;
 	lock_free_stack<unique_pending_task> m_pendingTasks;
 };
+
+typedef lent_reference_wrapper<task_executor> task_executor_lent_ref;
+typedef lent_reference_wrapper<const task_executor> task_executor_const_lent_ref;
+typedef lent_pointer_wrapper<task_executor> task_executor_lent_ptr;
+typedef lent_pointer_wrapper<const task_executor> task_executor_const_lent_ptr;
+
+typedef unique_reference_wrapper<task_executor> task_executor_unique_ref;
+typedef unique_reference_wrapper<const task_executor> task_executor_const_unique_ref;
+typedef unique_pointer_wrapper<task_executor> task_executor_unique_ptr;
+typedef unique_pointer_wrapper<const task_executor> task_executor_const_unique_ptr;
 
 }
 

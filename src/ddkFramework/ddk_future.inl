@@ -44,6 +44,11 @@ future<T>& future<T>::operator=(future<T>&& other)
 	return *this;
 }
 template<typename T>
+future<T>::operator bool() const
+{
+	return m_sharedState != nullptr;
+}
+template<typename T>
 bool future<T>::valid() const
 {
 	return m_sharedState != nullptr;
@@ -258,20 +263,20 @@ shared_future<T>::shared_future(shared_future&& i_future)
 }
 template<typename T>
 shared_future<T>::shared_future(future<T>&& i_future)
-: future<T>(std::move(i_future.m_sharedState))
+: future<T>(std::move(i_future))
 {
 }
 template<typename T>
 shared_future<T>& shared_future<T>::operator=(const shared_future& other)
 {
-	m_sharedState = i_future.m_sharedState;
+	m_sharedState = other.m_sharedState;
 
 	return *this;
 }
 template<typename T>
 shared_future<T>& shared_future<T>::operator=(shared_future&& other)
 {
-	m_sharedState = std::move(i_future.m_sharedState);
+	m_sharedState = std::move(other.m_sharedState);
 
 	return *this;
 }

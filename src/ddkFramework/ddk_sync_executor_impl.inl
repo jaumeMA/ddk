@@ -163,7 +163,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						eval(i_sink,res);
+						eval(i_sink,std::forward<sink_reference>(res));
 					}
 				}
 				catch(...)

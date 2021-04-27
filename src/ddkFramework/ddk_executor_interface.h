@@ -14,7 +14,7 @@ namespace detail
 template<typename T>
 struct sink_type_resolver
 {
-	typedef typename mpl::static_if<std::is_reference<T>::value,T,const T&>::type reference;	
+	typedef typename mpl::static_if<std::is_reference<T>::value,T,typename mpl::static_if<std::is_copy_constructible<T>::value,const T&,T&&>::type>::type reference;
 	typedef function<void(reference)> type;
 };
 template<>

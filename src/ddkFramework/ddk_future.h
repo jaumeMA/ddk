@@ -41,6 +41,7 @@ public:
 
 	future& operator=(const future&) = delete;
 	future& operator=(future&&);
+	operator bool() const;
 	bool valid() const;
 	bool ready() const;
 	bool empty() const;

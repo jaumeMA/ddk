@@ -129,12 +129,16 @@ result<T,Error>::result(const Error& i_error)
 {
 }
 template<typename T, typename Error>
-result<T,Error>::result(const result& other)
+TEMPLATE(typename TT)
+REQUIRED(IS_SAME_CLASS(T,TT),IS_COPY_CONSTRUCTIBLE(TT))
+result<T,Error>::result(const result<TT,Error>& other)
 : m_nestedRes(other.m_nestedRes)
 {
 }
 template<typename T, typename Error>
-result<T,Error>::result(result&& other)
+TEMPLATE(typename TT)
+REQUIRED(IS_SAME_CLASS(T,TT),IS_MOVE_CONSTRUCTIBLE(TT))
+result<T,Error>::result(result<TT,Error>&& other)
 : m_nestedRes(std::move(other.m_nestedRes))
 {
     SET_CHECK_RESULT(*this,true);
@@ -146,7 +150,9 @@ result<T,Error>::~result()
     CHECK_RESULT
 }
 template<typename T, typename Error>
-result<T,Error>& result<T,Error>::operator=(const result& other)
+TEMPLATE(typename TT)
+REQUIRED(IS_SAME_CLASS(T,TT),IS_COPY_ASSIGNABLE(TT))
+result<T,Error>& result<T,Error>::operator=(const result<TT,Error>& other)
 {
     CHECK_RESULT
     SET_CHECK_RESULT(*this,false)
@@ -156,7 +162,9 @@ result<T,Error>& result<T,Error>::operator=(const result& other)
     return *this;
 }
 template<typename T, typename Error>
-result<T,Error>& result<T,Error>::operator=(result&& other)
+TEMPLATE(typename TT)
+REQUIRED(IS_SAME_CLASS(T,TT),IS_MOVE_ASSIGNABLE(TT))
+result<T,Error>& result<T,Error>::operator=(result<TT,Error>&& other)
 {
 	CHECK_RESULT
 

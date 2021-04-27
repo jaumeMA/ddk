@@ -5,6 +5,7 @@
 #include "ddk_type_concepts.h"
 #include "ddk_function_concepts.h"
 #include "ddk_none.h"
+#include "ddk_class_rules.h"
 
 #define constexpr_copy_variant(_VARIANT) _VARIANT.template get<_VARIANT.which()>();
 
@@ -15,7 +16,7 @@ template<typename ...>
 class variant;
 
 template<typename Type>
-class variant<Type>
+class variant<Type> : contravariant_rules<Type>
 {
 	template<typename...>
 	friend class variant;
@@ -25,25 +26,21 @@ public:
 	typedef mpl::type_pack<Type> type_pack;
 
 	constexpr variant() = default;
-	constexpr variant(const variant<Type>& other);
-	constexpr variant(variant<Type>&& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type),IS_COPY_CONSTRUCTIBLE(TTypes)...)
 	constexpr variant(const variant<TTypes ...>& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type),IS_MOVE_CONSTRUCTIBLE(TTypes)...)
 	constexpr variant(variant<TTypes...>&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(Type,T))
 	constexpr variant(T&& i_value);
 	~variant() = default;
-	variant& operator=(const variant<Type>& other);
-	variant& operator=(variant<Type>&& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type),IS_COPY_ASSIGNABLE(TTypes)...)
 	variant& operator=(const variant<TTypes...>& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Type),IS_MOVE_ASSIGNABLE(TTypes)...)
 	variant& operator=(variant<TTypes...>&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(Type,T))
@@ -90,7 +87,7 @@ private:
 };
 
 template<typename ... Types>
-class variant : public detail::variant_impl<Types...>
+class variant : public detail::variant_impl<Types...>, contravariant_rules<Types...>
 {
     static_assert(mpl::get_num_types<Types...>() > 1, "You have to provide at least one type to variant");
     static_assert(mpl::get_num_types<Types...>() < 255, "You cannot provide more than 255 types to a variant!");
@@ -100,31 +97,27 @@ public:
 	using detail::variant_impl<Types...>::npos;
 
 	variant() = default;
-	constexpr variant(const variant<Types...>& other);
-	constexpr variant(variant<Types...>&& other);
 	TEMPLATE(typename TType)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
-	constexpr variant(const variant<TType>& other);
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_COPY_CONSTRUCTIBLE(TType))
+	constexpr variant(const variant<TType>&other);
 	TEMPLATE(typename TType)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...))
-	constexpr variant(variant<TType>&& other);
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
+	constexpr variant(variant<TType> && other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_COPY_CONSTRUCTIBLE(TTypes)...)
 	constexpr variant(const variant<TTypes...>& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_MOVE_CONSTRUCTIBLE(TTypes)...)
 	constexpr variant(variant<TTypes...>&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 	constexpr variant(T&& i_value);
     ~variant() = default;
-	variant& operator=(const variant<Types...>& other);
-	variant& operator=(variant<Types...>&& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_COPY_ASSIGNABLE(TTypes)...)
 	variant& operator=(const variant<TTypes...>& other);
 	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...))
+	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_MOVE_ASSIGNABLE(TTypes)...)
 	variant& operator=(variant<TTypes...>&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
