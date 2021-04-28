@@ -47,6 +47,7 @@ public:
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;
 	virtual void notify() const override;
+	async_base_lent_ptr get_aync_execution() const;
 
 private:
 	mutable mutex m_mutex;

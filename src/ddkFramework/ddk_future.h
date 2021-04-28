@@ -49,6 +49,7 @@ public:
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
 	cancel_result cancel();
+	void detach();
 	template<typename TT>
 	future<TT> then(const function<TT(const_reference)>& i_continuation) &&;
 	template<typename TT, typename TTT>

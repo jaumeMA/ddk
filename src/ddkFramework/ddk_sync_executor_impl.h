@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ddk_executor_interface.h"
-#include "ddk_thread_sheaf.h"
-#include "ddk_fiber_sheaf.h"
+#include "ddk_sync_executor_context.h"
+#include "ddk_lendable.h"
 #include "ddk_fiber_yielder.h"
 
 namespace ddk
@@ -25,9 +25,12 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
 	ExecutorState get_state() const override;
 
 	atomic<ExecutorState::underlying_type> m_state;
+	lendable<deferred_execution_context> m_execContext;
 };
 
 template<typename Return>
@@ -45,9 +48,11 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	mutable fiber m_fiber;
+	lendable<fiber_execution_context> m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 
@@ -65,11 +70,11 @@ private:
 
 	start_result execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	mutable fiber_sheaf m_fiberSheaf;
-	size_t m_pendingFibers = 0;
-	size_t m_failedFibers = 0;
+	lendable<fiber_sheaf_execution_context> m_execContext;
 	atomic32<ExecutorState::underlying_type> m_state;
 };
 
@@ -91,9 +96,11 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	mutable thread m_thread;
+	lendable<thread_execution_context> m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 
@@ -111,11 +118,34 @@ private:
 
 	start_result execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	mutable thread_sheaf m_threadSheaf;
-	size_t m_pendingThreads = 0;
-	size_t m_failedThreads = 0;
+	lendable<thread_sheaf_execution_context> m_execContext;
+	atomic<ExecutorState::underlying_type> m_state;
+};
+
+template<typename Return>
+class execution_context_executor : public cancellable_executor_interface<Return()>
+{
+public:
+	execution_context_executor(executor_context_lent_ref i_execContext);
+
+private:
+	typedef typename executor_interface<Return()>::sink_reference sink_reference;
+	using typename cancellable_executor_interface<Return()>::start_result;
+	using typename cancellable_executor_interface<Return()>::StartErrorCode;
+	using typename cancellable_executor_interface<Return()>::cancel_result;
+	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
+
+	start_result execute(const ddk::function<void(sink_reference)>& i_sink,const ddk::function<Return()>& i_callable) override;
+	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
+	ExecutorState get_state() const override;
+
+	executor_context_lent_ref m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 

@@ -17,7 +17,7 @@ task_executor::pending_task_impl<Return>::~pending_task_impl()
 template<typename Return>
 void task_executor::pending_task_impl<Return>::execute(thread i_thread)
 {
-	m_executor->attach(std::move(i_thread));
+	m_executor->attach(std::move(i_thread)).detach();
 	//once executed no need to hold executor anymore
 	m_executor = nullptr;
 }

@@ -39,6 +39,7 @@ public:
 	future<Return> attach(fiber i_fiber);
 	future<Return> attach(thread_sheaf i_threadSheaf);
 	future<Return> attach(fiber_sheaf i_fiberSheaf);
+	future<Return> attach(async_base_lent_ref i_asyncExecutor);
 	future<Return> attach(attachable<Return> i_attachable);
 
 	// delayed attach
@@ -46,6 +47,7 @@ public:
 	future<Return> deferred_attach(fiber i_fiber);
 	future<Return> deferred_attach(thread_sheaf i_threadSheaf);
 	future<Return> deferred_attach(fiber_sheaf i_fiberSheaf);
+	future<Return> deferred_attach(async_base_lent_ref i_asyncExecutor);
 	future<Return> deferred_attach(attachable<Return> i_attachable);
 
 	async_shared_ref store(promise<Return>& i_promise);
@@ -57,6 +59,8 @@ protected:
 
 private:
 	bool notify() override;
+	executor_context_lent_ref get_execution_context() override;
+	executor_context_const_lent_ref get_execution_context() const override;
 	start_result execute() override;
 	cancel_result cancel() override;
 	bool empty() const override;

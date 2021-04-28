@@ -35,6 +35,10 @@ void task_executor::stop()
 		m_updateThread.stop_thread();
 	}
 }
+void task_executor::set_max_num_pending_tasks(size_t i_maxNumPendingTasks)
+{
+	m_maxNumPendingTasks = i_maxNumPendingTasks;
+}
 bool task_executor::set_affinity(const cpu_set_t& i_set)
 {
 	return m_availableThreads.set_affinity(i_set);

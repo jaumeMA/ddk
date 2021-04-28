@@ -130,7 +130,7 @@ public:
 	constexpr ref_type operator*();
 	constexpr pointer_type operator->();
 	constexpr cpointer_type operator->() const;
-	inline operator rref_type();
+	inline operator rref_type() &&;
 	template<typename ... Args>
 	inline void inplace_construct(Args&& ... i_args);
 	template<typename ... Args>

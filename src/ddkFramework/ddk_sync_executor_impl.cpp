@@ -7,8 +7,7 @@ namespace detail
 {
 
 thread_sheaf_executor::thread_sheaf_executor(thread_sheaf i_threadSheaf)
-: m_threadSheaf(std::move(i_threadSheaf))
-, m_pendingThreads(m_threadSheaf.size())
+: m_execContext(std::move(i_threadSheaf))
 , m_state(ExecutorState::Idle)
 {
 }
@@ -22,32 +21,23 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			m_threadSheaf.start([this,i_sink,i_callable]()
+			m_execContext->start([this,i_sink,i_callable]()
 			{
-				try
+				eval(i_callable);
+			});
+
+			m_execContext->enqueue([=]()
+			{
+				while(m_state.get() == ExecutorState::Cancelling)
 				{
-					eval(i_callable);
+					std::this_thread::yield();
 				}
-				catch(...)
+
+				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					m_failedThreads++;
-				}
-
-				--m_pendingThreads;
-
-				if (m_pendingThreads == 0)
-				{
-					while (m_state.get() == ExecutorState::Cancelling)
+					if(m_execContext->get_num_failures() == 0)
 					{
-						std::this_thread::yield();
-					}
-
-					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
-					{
-						if(m_failedThreads == 0)
-						{
-							eval(i_sink,_void);
-						}
+						eval(i_sink,_void);
 					}
 				}
 			});
@@ -88,14 +78,21 @@ thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const ddk::fu
 		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
+executor_context_lent_ref thread_sheaf_executor::get_execution_context()
+{
+	return lend(m_execContext);
+}
+executor_context_const_lent_ref thread_sheaf_executor::get_execution_context() const
+{
+	return lend(m_execContext);
+}
 ExecutorState thread_sheaf_executor::get_state() const
 {
 	return m_state.get();
 }
 
 fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
-: m_fiberSheaf(std::move(i_fiberSheaf))
-, m_pendingFibers(m_fiberSheaf.size())
+: m_execContext(std::move(i_fiberSheaf))
 , m_state(ExecutorState::Idle)
 {
 }
@@ -109,34 +106,25 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			m_fiberSheaf.start([this,i_sink,i_callable]()
+			m_execContext->start([this,i_sink,i_callable]()
 			{
-				try
+				eval(i_callable);
+			});
+
+			m_execContext->enqueue([=]()
+			{
+				m_execContext->clear_fibers();
+
+				while(m_state.get() == ExecutorState::Cancelling)
 				{
-					eval(i_callable);
+					std::this_thread::yield();
 				}
-				catch(...)
+
+				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					m_failedFibers++;
-				}
-
-				--m_pendingFibers;
-
-				if(m_pendingFibers == 0)
-				{
-					m_fiberSheaf.clear();
-
-					while (m_state.get() == ExecutorState::Cancelling)
+					if(m_execContext->get_num_failures() == 0)
 					{
-						std::this_thread::yield();
-					}
-
-					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
-					{
-						if(m_failedFibers == 0)
-						{
-							eval(i_sink,_void);
-						}
+						eval(i_sink,_void);
 					}
 				}
 			});
@@ -176,6 +164,14 @@ fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const ddk::func
 	{
 		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
+}
+executor_context_lent_ref fiber_sheaf_executor::get_execution_context()
+{
+	return lend(m_execContext);
+}
+executor_context_const_lent_ref fiber_sheaf_executor::get_execution_context() const
+{
+	return lend(m_execContext);
 }
 ExecutorState fiber_sheaf_executor::get_state() const
 {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_sync_executor_context_interface.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_thread.h"
@@ -15,12 +16,19 @@ class async_interface_base
 public:
 	virtual ~async_interface_base() = default;
 	virtual bool notify() = 0;
+	virtual executor_context_lent_ref get_execution_context() = 0;
+	virtual executor_context_const_lent_ref get_execution_context() const = 0;
 };
 
 using async_base_shared_ref = shared_reference_wrapper<async_interface_base>;
 using async_base_const_shared_ref = shared_reference_wrapper<const async_interface_base>;
 using async_base_shared_ptr = shared_pointer_wrapper<async_interface_base>;
 using async_base_const_shared_ptr = shared_pointer_wrapper<const async_interface_base>;
+
+using async_base_lent_ref = lent_reference_wrapper<async_interface_base>;
+using async_base_const_lent_ref = lent_reference_wrapper<const async_interface_base>;
+using async_base_lent_ptr = lent_pointer_wrapper<async_interface_base>;
+using async_base_const_lent_ptr = lent_pointer_wrapper<const async_interface_base>;
 
 class async_cancellable_interface : public async_interface_base
 {

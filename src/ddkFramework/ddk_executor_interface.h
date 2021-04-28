@@ -5,6 +5,7 @@
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_async_executor_interface.h"
+#include "ddk_sync_executor_context_interface.h"
 
 namespace ddk
 {
@@ -74,6 +75,8 @@ public:
 	typedef typename async_cancellable_interface::CancelErrorCode CancelErrorCode;
 
 	virtual cancel_result cancel(const ddk::function<bool()>&) = 0;
+	virtual executor_context_lent_ref get_execution_context() = 0;
+	virtual executor_context_const_lent_ref get_execution_context() const = 0;
 };
 
 template<typename Return, typename ... Args>

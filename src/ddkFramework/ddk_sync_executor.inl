@@ -86,6 +86,17 @@ future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 	return newAsyncExecutor->as_future();
 }
 template<typename Return>
+future<Return> async_executor<Return>::attach(async_base_lent_ref i_asyncExecution)
+{
+	m_executor = make_executor<detail::execution_context_executor<Return>>(i_asyncExecution->get_execution_context());
+
+	start_result execRes = execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return as_future();
+}
+template<typename Return>
 future<Return> async_executor<Return>::attach(attachable<Return> i_attachable)
 {
 	m_executor = std::move(i_attachable.m_executorImpl);
@@ -134,6 +145,13 @@ future<Return> async_executor<Return>::deferred_attach(fiber_sheaf i_fiberSheaf)
 	m_executor.clear();
 
 	return newAsyncExecutor->as_future();
+}
+template<typename Return>
+future<Return> async_executor<Return>::deferred_attach(async_base_lent_ref i_asyncExecution)
+{
+	m_executor = make_executor<detail::execution_context_executor<Return>>(i_asyncExecution->get_execution_context());
+
+	return as_future();
 }
 template<typename Return>
 future<Return> async_executor<Return>::deferred_attach(attachable<Return> i_attachable)
@@ -266,6 +284,16 @@ bool async_executor<Return>::notify()
 	{
 		return false;
 	}
+}
+template<typename Return>
+executor_context_lent_ref async_executor<Return>::get_execution_context()
+{
+	return m_executor->get_execution_context();
+}
+template<typename Return>
+executor_context_const_lent_ref async_executor<Return>::get_execution_context() const
+{
+	return m_executor->get_execution_context();
 }
 
 }

@@ -63,6 +63,7 @@ public:
 
 	void start();
 	void stop();
+	void set_max_num_pending_tasks(size_t i_maxNumPendingTasks);
 	bool running() const;
 	bool set_affinity(const cpu_set_t& i_set);
 

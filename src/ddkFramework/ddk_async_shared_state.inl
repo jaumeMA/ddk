@@ -2,6 +2,7 @@
 #include "ddk_embedded_type.h"
 #include "ddk_async_exceptions.h"
 #include "ddk_lock_guard.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -35,6 +36,11 @@ template<typename T>
 void private_async_state<T>::detach()
 {
 	m_asyncExecutor = nullptr;
+}
+template<typename T>
+async_base_lent_ptr private_async_state<T>::get_aync_execution() const
+{
+	return ddk::lend(m_asyncExecutor);
 }
 template<typename T>
 void private_async_state<T>::set_value(sink_type i_value)
@@ -137,7 +143,7 @@ embedded_type<T> private_async_state<T>::extract_value()
 	}
 	else if(m_arena.template is<T>())
 	{
-		rreference res = std::move(m_arena).template extract<T>();
+		embedded_type<T> res = std::move(m_arena).template extract<T>();
 
 		m_arena = none;
 

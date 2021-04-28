@@ -311,9 +311,9 @@ constexpr typename embedded_type<T>::cpointer_type embedded_type<T>::operator->(
 	return &m_data;
 }
 template<typename T>
-embedded_type<T>::operator rref_type()
+embedded_type<T>::operator rref_type() &&
 {
-	return std::forward<embedded_type<T>::rref_type>(m_data);
+	return std::move(m_data);
 }
 template<typename T>
 template<typename ... Args>
