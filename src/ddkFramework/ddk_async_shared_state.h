@@ -11,6 +11,12 @@
 
 namespace ddk
 {
+
+template<typename>
+class promise;
+template<typename>
+class executor_promise;
+
 namespace detail
 {
 
@@ -25,8 +31,22 @@ struct private_async_state : async_state_base
 {
 	template<typename>
 	friend struct private_async_state;
+	template<typename>
+	friend class ddk::promise;
+	template<typename>
+	friend class ddk::executor_promise;
 
 public:
+	struct reference_counter : public distributed_reference_counter
+	{
+	public:
+		reference_counter(async_cancellable_shared_ptr& i_asyncExec);
+		unsigned int decrementSharedReference();
+
+	private:
+		async_cancellable_shared_ptr& m_asyncExec;
+	};
+
 	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename mpl::static_if<std::is_copy_constructible<T>::value,embedded_type<T>,embedded_type<T&&>>::type::cref_type>::type sink_type;
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
@@ -54,16 +74,17 @@ private:
 	mutable cond_var m_condVar;
 	variant<detail::none_t,async_exception,T> m_arena;
 	mutable async_cancellable_shared_ptr m_asyncExecutor;
+	reference_counter m_refCounter;
 };
 
 template<typename T>
-using private_async_state_shared_ref = shared_reference_wrapper<private_async_state<T>>;
+using private_async_state_shared_ref = detail::shared_reference_wrapper_impl<private_async_state<T>,typename private_async_state<T>::reference_counter>;
 template<typename T>
-using private_async_state_const_shared_ref = shared_reference_wrapper<const private_async_state<T>>;
+using private_async_state_const_shared_ref = detail::shared_reference_wrapper_impl<const private_async_state<T>,typename private_async_state<T>::reference_counter>;
 template<typename T>
-using private_async_state_shared_ptr = shared_pointer_wrapper<private_async_state<T>>;
+using private_async_state_shared_ptr = detail::shared_pointer_wrapper_impl<private_async_state<T>,typename private_async_state<T>::reference_counter>;
 template<typename T>
-using private_async_state_const_shared_ptr = shared_pointer_wrapper<const private_async_state<T>>;
+using private_async_state_const_shared_ptr = detail::shared_pointer_wrapper_impl<const private_async_state<T>,typename private_async_state<T>::reference_counter>;
 
 template<typename T>
 using private_async_state_lent_ref = lent_reference_wrapper<private_async_state<T>>;

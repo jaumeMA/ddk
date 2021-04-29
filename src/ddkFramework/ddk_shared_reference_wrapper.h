@@ -19,10 +19,8 @@ class shared_reference_wrapper_impl : public shared_pointer_wrapper_impl<T,Refer
 	friend shared_reference_wrapper_impl<TTT,RReferenceCounter> __dynamic_shared_cast(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
 	template<typename TT,typename RReferenceCounter>
 	friend lent_reference_wrapper<TT> __lend(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
-	template<typename TT>
-	friend inline shared_reference_wrapper_impl<TT,shared_reference_counter> __make_shared_reference(TT* i_data, const tagged_pointer<shared_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
-	template<typename TT>
-	friend inline shared_reference_wrapper_impl<TT,distributed_reference_counter> __make_shared_reference(TT* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	template<typename TT, typename ReferenceCounter>
+	friend inline shared_reference_wrapper_impl<TT,ReferenceCounter> __make_shared_reference(TT* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
 	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 

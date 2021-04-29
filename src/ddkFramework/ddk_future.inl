@@ -29,14 +29,6 @@ future<T>::future(shared_reference_wrapper<TT> i_executor,...)
 {
 }
 template<typename T>
-future<T>::~future()
-{
-	if(m_sharedState)
-	{
-		m_sharedState->detach();
-	}
-}
-template<typename T>
 future<T>& future<T>::operator=(future<T>&& other)
 {
 	m_sharedState = std::move(other.m_sharedState);

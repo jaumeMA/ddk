@@ -107,20 +107,13 @@ TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&& ... i_args) const
 {
-	if(m_functionImpl)
+	if constexpr (std::is_same<Return,void>::value)
 	{
-		if constexpr (std::is_same<Return,void>::value)
-		{
-			m_functionImpl->operator()(std::forward<Args>(i_args) ...);
-		}
-		else
-		{
-			return m_functionImpl->operator()(std::forward<Args>(i_args) ...);
-		}
+		m_functionImpl->operator()(std::forward<Args>(i_args) ...);
 	}
 	else
 	{
-		throw call_function_exception{ "Trying to call empty function_impl" };
+		return m_functionImpl->operator()(std::forward<Args>(i_args) ...);
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>

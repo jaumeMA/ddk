@@ -2,14 +2,17 @@
 
 #include "ddk_reference_wrapper.h"
 #include "ddk_future.inl"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
 
 template<typename T>
 promise<T>::promise()
-: m_sharedState(make_shared_reference<detail::private_async_state<T>>())
 {
+	detail::private_async_state<T>* sharedState = new detail::private_async_state<T>();
+
+	m_sharedState = as_shared_reference(sharedState,tagged_pointer<decltype(sharedState->m_refCounter)>(&sharedState->m_refCounter, ReferenceAllocationType::Embedded),nullptr);
 }
 template<typename T>
 promise<T>::promise(const promise<T>& other)

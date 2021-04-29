@@ -10,9 +10,29 @@ namespace detail
 {
 
 template<typename T>
+private_async_state<T>::reference_counter::reference_counter(async_cancellable_shared_ptr& i_asyncExec)
+: m_asyncExec(i_asyncExec)
+{
+}
+template<typename T>
+unsigned int private_async_state<T>::reference_counter::decrementSharedReference()
+{
+	const unsigned int res = distributed_reference_counter::decrementSharedReference();
+
+	//in case we descend to 1 reference (that of the promise), please trigger its execution by means of removing our reference of async execution (check async_executor destructor).
+	if(res == 1)
+	{
+		m_asyncExec = nullptr;
+	}
+
+	return res;
+}
+
+template<typename T>
 private_async_state<T>::private_async_state()
 : m_arena(none)
 , m_mutex(MutexType::Recursive)
+, m_refCounter(m_asyncExecutor)
 {
 }
 template<typename T>

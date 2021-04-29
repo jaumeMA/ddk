@@ -49,10 +49,8 @@ inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data);
 
 #endif
 
-template<typename T>
-inline shared_reference_wrapper_impl<T,shared_reference_counter> __make_shared_reference(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
-template<typename T>
-inline shared_reference_wrapper_impl<T,distributed_reference_counter> __make_shared_reference(T* i_data,const tagged_pointer<distributed_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+template<typename T,typename ReferenceCounter>
+inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T* i_data,const tagged_pointer<ReferenceCounter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 template<typename T>
 ddk::weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 template<typename T>
@@ -107,15 +105,14 @@ template<typename T>
 inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr);
 template<typename T>
 inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer_deleter& i_refDeleter);
-template<typename T>
-inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 
 template<typename T>
 inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr);
 template<typename T>
 inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr,const tagged_pointer_deleter& i_refDeleter);
-template<typename T>
-inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr, const tagged_pointer<distributed_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+
+template<typename T, typename ReferenceCounter>
+inline detail::shared_reference_wrapper_impl<T,ReferenceCounter> as_shared_reference(T* i_ptr, const tagged_pointer<ReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
 template<typename T,typename ... Args>
 inline atomic_shared_reference_wrapper<T> make_atomic_shared_reference(Args&& ... i_args);

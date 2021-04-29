@@ -37,7 +37,6 @@ public:
 	future(future&&);
 	template<typename TT>
 	future(shared_reference_wrapper<TT> i_executor, ...);
-	~future();
 
 	future& operator=(const future&) = delete;
 	future& operator=(future&&);

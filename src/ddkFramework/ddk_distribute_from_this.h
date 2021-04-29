@@ -9,8 +9,8 @@ namespace ddk
 namespace detail
 {
 
-template<typename T>
-inline shared_reference_wrapper_impl<T,distributed_reference_counter> __make_shared_reference(T*,const tagged_pointer<distributed_reference_counter>&, const tagged_pointer_deleter&);
+template<typename T, typename ReferenceCounter>
+inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T*,const tagged_pointer<ReferenceCounter>&, const tagged_pointer_deleter&);
 
 }
 
@@ -25,8 +25,8 @@ class distribute_from_this
 	friend inline distributed_reference_wrapper<TTT> as_distributed_reference(TTT* i_ptr);
 	template<typename TTT>
 	friend inline distributed_reference_wrapper<TTT> as_distributed_reference(TTT* i_ptr, const tagged_pointer_deleter& i_refDeleter);
-	template<typename TTT>
-	friend inline detail::shared_reference_wrapper_impl<TTT,distributed_reference_counter> detail::__make_shared_reference(TTT*,const tagged_pointer<distributed_reference_counter>&, const tagged_pointer_deleter&);
+	template<typename TTT, typename ReferenceCounter>
+	friend inline detail::shared_reference_wrapper_impl<TTT,ReferenceCounter> detail::__make_shared_reference(TTT*,const tagged_pointer<ReferenceCounter>&, const tagged_pointer_deleter&);
 
 public:
 	struct __distributed_type_tag;

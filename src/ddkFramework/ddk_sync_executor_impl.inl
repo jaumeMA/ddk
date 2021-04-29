@@ -24,7 +24,7 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 			{
 				m_execContext->start([&i_sink,&i_callable]()
 				{
-					eval(i_sink,eval(i_callable));
+					eval_unsafe(i_sink,eval_unsafe(i_callable));
 				});
 			}
 			catch(...)
@@ -88,13 +88,13 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 			{
 				try
 				{
-					sink_reference res = eval(i_callable);
+					sink_reference res = eval_unsafe(i_callable);
 
 					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
 
 					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 					{
-						eval(i_sink,res);
+						eval_unsafe(i_sink,res);
 					}
 				}
 				catch(...)
@@ -122,7 +122,7 @@ typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(co
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
+		if (i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 
@@ -179,13 +179,13 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 			{
 				try
 				{
-					sink_reference res = eval(i_callable);
+					sink_reference res = eval_unsafe(i_callable);
 
 					while (m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
 
 					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
 					{
-						eval(i_sink,std::forward<sink_reference>(res));
+						eval_unsafe(i_sink,std::forward<sink_reference>(res));
 					}
 				}
 				catch(...)
@@ -213,7 +213,7 @@ typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
 	{
-		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
+		if (i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 
@@ -270,13 +270,13 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 			{
 				try
 				{
-					sink_reference res = eval(i_callable);
+					sink_reference res = eval_unsafe(i_callable);
 
 					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
 
 					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 					{
-						eval(i_sink,std::forward<sink_reference>(res));
+						eval_unsafe(i_sink,std::forward<sink_reference>(res));
 					}
 				}
 				catch(...)
@@ -304,7 +304,7 @@ typename execution_context_executor<Return>::cancel_result execution_context_exe
 	}
 	else if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
 	{
-		if(i_cancelFunc != nullptr && eval(i_cancelFunc))
+		if(i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
 
