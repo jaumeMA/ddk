@@ -42,35 +42,42 @@ fixed_size_allocator::~fixed_size_allocator()
 	pthread_mutex_destroy(&m_poolMutex);
 #endif
 }
-void* fixed_size_allocator::allocate() const
+void* fixed_size_allocator::allocate(size_t i_size) const
 {
-	void* res = nullptr;
-	size_t currChunk = 0;
-
-	do
+	if(i_size > m_unitSize)
 	{
-		currChunk = m_currChunk.get();
-
-		if(currChunk == s_invalidChunk)
-		{
-			return nullptr;
-		}
-
-	}while(atomic_compare_exchange(m_currChunk,currChunk,m_nextChunkArr[currChunk]) == false);
-
-	res = &m_pool[m_unitSize * currChunk];
-
-	#ifdef MEM_CHECK
-	{
-		ddk::mutex_guard lg(m_poolMutex);
-		++m_numCurrentAllocations;
-		m_isAllocated[m_currChunk] = true;
-
-		WAS_LOG_INFO("Number of allocated chunks after allocation: " << m_numCurrentAllocations);
+		return nullptr;
 	}
-	#endif
+	else
+	{
+		void* res = nullptr;
+		size_t currChunk = 0;
 
-	return res;
+		do
+		{
+			currChunk = m_currChunk.get();
+
+			if(currChunk == s_invalidChunk)
+			{
+				return nullptr;
+			}
+
+		}while(atomic_compare_exchange(m_currChunk,currChunk,m_nextChunkArr[currChunk]) == false);
+
+		res = &m_pool[m_unitSize * currChunk];
+
+		#ifdef MEM_CHECK
+		{
+			ddk::mutex_guard lg(m_poolMutex);
+			++m_numCurrentAllocations;
+			m_isAllocated[m_currChunk] = true;
+
+			WAS_LOG_INFO("Number of allocated chunks after allocation: " << m_numCurrentAllocations);
+		}
+		#endif
+
+		return res;
+	}
 }
 void fixed_size_allocator::deallocate(const void* i_address) const
 {

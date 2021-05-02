@@ -19,7 +19,7 @@ public:
 	fixed_size_allocator(size_t i_unitSize,size_t i_poolSize = s_numReservedEntries);
 	~fixed_size_allocator();
 
-	void* allocate() const;
+	void* allocate(size_t i_size) const;
 	void deallocate(const void* i_address) const override;
 	size_t unit_size() const;
 

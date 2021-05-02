@@ -8,15 +8,15 @@ namespace ddk
 {
 
 template<typename Return>
-using async_shared_ref = typename async_executor<Return>::async_shared_ref;
+using async_dist_ref = typename async_executor<Return>::async_dist_ref;
 template<typename Return>
-using async_const_shared_ref = typename async_executor<Return>::async_const_shared_ref;
+using async_const_dist_ref = typename async_executor<Return>::async_const_dist_ref;
 
 template<typename Return>
-inline async_shared_ref<Return> async(const ddk::function<Return()>& i_function);
+inline async_dist_ref<Return> async(const ddk::function<Return()>& i_function);
 
 //void version
-async_shared_ref<void> async(const ddk::function<void()>& i_function);
+async_dist_ref<void> async(const ddk::function<void()>& i_function);
 
 }
 

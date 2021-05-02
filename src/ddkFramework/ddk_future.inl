@@ -13,18 +13,18 @@ future<T>::future(future&& other)
 {
 }
 template<typename T>
-future<T>::future(const detail::private_async_state_shared_ptr<T>& i_sharedState)
+future<T>::future(const detail::private_async_state_dist_ptr<T>& i_sharedState)
 : m_sharedState(i_sharedState)
 {
 }
 template<typename T>
-future<T>::future(detail::private_async_state_shared_ptr<T>&& i_sharedState)
+future<T>::future(detail::private_async_state_dist_ptr<T>&& i_sharedState)
 : m_sharedState(std::move(i_sharedState))
 {
 }
 template<typename T>
 template<typename TT>
-future<T>::future(shared_reference_wrapper<TT> i_executor,...)
+future<T>::future(distributed_reference_wrapper<TT> i_executor,...)
 : future(i_executor->as_future())
 {
 }

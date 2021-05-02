@@ -24,7 +24,7 @@ public:
 	executor_promise& operator=(const promise<T>& other);
 	void set_value(sink_type i_value);
 	void set_exception(const async_exception& i_exception);
-	void attach(async_cancellable_shared_ref i_executor);
+	void attach(async_cancellable_dist_ref i_executor);
 	void detach();
 	bool is_attached() const;
 	future<T> get_future() const;
@@ -35,7 +35,7 @@ protected:
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;
 
-	detail::private_async_state_shared_ptr<T> m_sharedState;
+	detail::private_async_state_dist_ptr<T> m_sharedState;
 };
 
 }

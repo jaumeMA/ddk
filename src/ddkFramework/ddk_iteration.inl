@@ -199,7 +199,7 @@ template<typename Iterable, typename Function>
 template<typename T>
 future<action_result> co_iteration<Iterable,Function>::attach(T&& i_execContext)
 {
-    shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Function>,*this));
+	distributed_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Function>,*this));
 
     return res->attach(std::forward<T>(i_execContext));
 }

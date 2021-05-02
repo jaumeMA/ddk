@@ -3,6 +3,12 @@
 #include "ddk_fixed_size_allocator.h"
 #include "ddk_system_allocator.h"
 
+#define DDK_APPEND_GLOBAL_ALLOCATOR(...) \
+namespace ddk \
+{ \
+	bool g__appended_global_allocs = __append_global_allocator_map_entries({__VA_ARGS__}); \
+}
+
 namespace ddk
 {
 
@@ -17,7 +23,7 @@ public:
 	void deallocate(const std::pair<resource_deleter_const_lent_ref,const void*>& ptr) const;
 
 private:
-	fixed_size_allocator* m_primaryAllocator = nullptr;
+	const fixed_size_allocator* m_primaryAllocator = nullptr;
 	Allocator m_secondaryAllocator;
 };
 

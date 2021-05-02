@@ -24,7 +24,7 @@ void task_executor::pending_task_impl<Return>::execute(thread i_thread)
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::execute()
 {
-	if(async_execute_shared_ptr<Return> _executor = m_executor)
+	if(async_execute_dist_ptr<Return> _executor = m_executor)
 	{
 		return static_cast<bool>(_executor->execute());
 	}
@@ -36,7 +36,7 @@ bool task_executor::pending_task_impl<Return>::execute()
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::cancel()
 {
-	if(async_cancellable_shared_ptr _executor = m_executor)
+	if(async_cancellable_dist_ptr _executor = m_executor)
 	{
 		const auto res = _executor->cancel();
 
@@ -50,7 +50,7 @@ bool task_executor::pending_task_impl<Return>::cancel()
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::empty()
 {
-	if(async_execute_shared_ptr<Return> _executor = m_executor)
+	if(async_execute_dist_ptr<Return> _executor = m_executor)
 	{
 		return _executor->empty();
 	}
@@ -70,7 +70,10 @@ future<Return> task_executor::enqueue(const function<Return()>& i_task)
 {
 	if(m_state == Running)
 	{
-		unique_pending_impl_task<Return> newTask = make_unique_reference<pending_task_impl<Return>>(i_task);
+		static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<pending_task_impl<Return>>());
+
+		unique_pending_impl_task<Return> newTask = (s_allocator) ? make_unique_reference<pending_task_impl<Return>>(*s_allocator,i_task)
+																: make_unique_reference<pending_task_impl<Return>>(i_task);
 
 		future<Return> taskFuture = newTask->as_future();
 

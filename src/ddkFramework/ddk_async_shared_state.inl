@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T>
-private_async_state<T>::reference_counter::reference_counter(async_cancellable_shared_ptr& i_asyncExec)
+private_async_state<T>::reference_counter::reference_counter(async_cancellable_dist_ptr& i_asyncExec)
 : m_asyncExec(i_asyncExec)
 {
 }
@@ -48,7 +48,7 @@ typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
 	}
 }
 template<typename T>
-void private_async_state<T>::attach(async_cancellable_shared_ptr i_executor)
+void private_async_state<T>::attach(async_cancellable_dist_ptr i_executor)
 {
 	m_asyncExecutor = i_executor;
 }

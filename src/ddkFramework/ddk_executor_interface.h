@@ -91,7 +91,10 @@ using cancellable_executor_const_unique_ptr = unique_pointer_wrapper<const cance
 template<typename Executor, typename ... Args>
 unique_reference_wrapper<Executor> make_executor(Args&& ... i_args)
 {
-	return ddk::make_unique_reference<Executor>(std::forward<Args>(i_args) ...);
+	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<Executor>());
+
+	return (s_allocator) ? ddk::make_unique_reference<Executor>(*s_allocator,std::forward<Args>(i_args) ...)
+		: ddk::make_unique_reference<Executor>(std::forward<Args>(i_args) ...);
 }
 
 }

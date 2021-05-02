@@ -214,12 +214,15 @@ void unique_pointer_wrapper<T>::clearIfCounterVoid(bool i_hasRefs)
 		{
 			const short allocCategory = m_deleter.get_tag();
 
+			//before destructing, resolve address
+			const void* ptrBase = allocator_address_reference_wrapper(m_data);
+
 			if(allocCategory == AllocationMode::AllocationOnly)
 			{
 				m_data->~T();
 			}
 
-			deleter->deallocate(allocator_address_reference_wrapper(m_data));
+			deleter->deallocate(ptrBase);
 		}
 		else
 		{

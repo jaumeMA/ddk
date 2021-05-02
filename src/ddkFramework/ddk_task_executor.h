@@ -52,7 +52,7 @@ class task_executor : public lend_from_this<task_executor>
 		bool cancel() final override;
 		bool empty() final override;
 
-		shared_pointer_wrapper<async_executor<Return>> m_executor;
+		distributed_pointer_wrapper<async_executor<Return>> m_executor;
 	};
 	template<typename Return>
 	using unique_pending_impl_task = unique_reference_wrapper<pending_task_impl<Return>>;

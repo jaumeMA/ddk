@@ -31,7 +31,7 @@ protected:
 	void wait_for(unsigned int i_period) const;
 	bool ready() const;
 
-	detail::private_async_state_shared_ptr<T> m_sharedState;
+	detail::private_async_state_dist_ptr<T> m_sharedState;
 };
 
 template<>

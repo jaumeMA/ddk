@@ -20,10 +20,10 @@ public:
 	virtual executor_context_const_lent_ref get_execution_context() const = 0;
 };
 
-using async_base_shared_ref = shared_reference_wrapper<async_interface_base>;
-using async_base_const_shared_ref = shared_reference_wrapper<const async_interface_base>;
-using async_base_shared_ptr = shared_pointer_wrapper<async_interface_base>;
-using async_base_const_shared_ptr = shared_pointer_wrapper<const async_interface_base>;
+using async_base_dist_ref = distributed_reference_wrapper<async_interface_base>;
+using async_base_const_dist_ref = distributed_reference_wrapper<const async_interface_base>;
+using async_base_dist_ptr = distributed_pointer_wrapper<async_interface_base>;
+using async_base_const_dist_ptr = distributed_pointer_wrapper<const async_interface_base>;
 
 using async_base_lent_ref = lent_reference_wrapper<async_interface_base>;
 using async_base_const_lent_ref = lent_reference_wrapper<const async_interface_base>;
@@ -44,10 +44,10 @@ public:
 	virtual cancel_result cancel() = 0;
 };
 
-using async_cancellable_shared_ref = shared_reference_wrapper<async_cancellable_interface>;
-using async_cancellable_const_shared_ref = shared_reference_wrapper<const async_cancellable_interface>;
-using async_cancellable_shared_ptr = shared_pointer_wrapper<async_cancellable_interface>;
-using async_cancellable_const_shared_ptr = shared_pointer_wrapper<const async_cancellable_interface>;
+using async_cancellable_dist_ref = distributed_reference_wrapper<async_cancellable_interface>;
+using async_cancellable_const_dist_ref = distributed_reference_wrapper<const async_cancellable_interface>;
+using async_cancellable_dist_ptr = distributed_pointer_wrapper<async_cancellable_interface>;
+using async_cancellable_const_dist_ptr = distributed_pointer_wrapper<const async_cancellable_interface>;
 
 template<typename Return>
 class async_execute_interface
@@ -66,13 +66,13 @@ public:
 };
 
 template<typename Return>
-using async_execute_shared_ref = shared_reference_wrapper<async_execute_interface<Return>>;
+using async_execute_dist_ref = distributed_reference_wrapper<async_execute_interface<Return>>;
 template<typename Return>
-using async_execute_const_shared_ref = shared_reference_wrapper<const async_execute_interface<Return>>;
+using async_execute_const_dist_ref = distributed_reference_wrapper<const async_execute_interface<Return>>;
 template<typename Return>
-using async_execute_shared_ptr = shared_pointer_wrapper<async_execute_interface<Return>>;
+using async_execute_dist_ptr = distributed_pointer_wrapper<async_execute_interface<Return>>;
 template<typename Return>
-using async_execute_const_shared_ptr = shared_pointer_wrapper<const async_execute_interface<Return>>;
+using async_execute_const_dist_ptr = distributed_pointer_wrapper<const async_execute_interface<Return>>;
 
 template<typename Return>
 using async_execute_lent_ref = lent_reference_wrapper<async_execute_interface<Return>>;

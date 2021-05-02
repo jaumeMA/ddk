@@ -17,6 +17,8 @@
 #include "ddk_atomic_weak_pointer_wrapper.h"
 #include "ddk_smart_ptr_template_helper.h"
 #include "ddk_pointer_defs.h"
+#include "ddk_allocator_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -84,6 +86,9 @@ inline lent_reference_wrapper<T> __lend(const shared_reference_wrapper_impl<T,Re
 
 }
 
+template<typename T>
+constexpr size_t size_of_unique_allocation();
+
 template<typename T, typename ... Args>
 inline unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args);
 
@@ -96,15 +101,22 @@ inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr);
 template<typename T>
 inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
+template<typename T>
+constexpr size_t size_of_shared_allocation();
+
 template<typename T, typename ... Args>
 inline shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args);
-template<typename T,typename ... Args>
-inline distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_args);
 
 template<typename T>
 inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr);
 template<typename T>
 inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer_deleter& i_refDeleter);
+
+template<typename T>
+constexpr size_t size_of_distributed_allocation();
+
+template<typename T,typename ... Args>
+inline distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_args);
 
 template<typename T>
 inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr);

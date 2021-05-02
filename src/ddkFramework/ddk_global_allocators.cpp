@@ -6,35 +6,38 @@ namespace ddk
 namespace
 {
 
-fixed_size_allocator g_8byteFixedSizeAllocator = fixed_size_allocator(8);
-fixed_size_allocator g_16byteFixedSizeAllocator = fixed_size_allocator(16);
-fixed_size_allocator g_32byteFixedSizeAllocator = fixed_size_allocator(32);
-fixed_size_allocator g_64byteFixedSizeAllocator = fixed_size_allocator(64);
+std::map<size_t,fixed_size_allocator>& __get_global_allocator_map()
+{
+	static std::map<size_t,fixed_size_allocator> s_globalAllocatorMap = {{8,fixed_size_allocator(8)},{16,fixed_size_allocator(16)},{32,fixed_size_allocator(32)}};
+
+	return s_globalAllocatorMap;
+}
 
 }
 
-fixed_size_allocator* get_fixed_size_allocator(size_t i_unitSize)
+bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& i_entries)
 {
-	if(i_unitSize <= 8)
+	static std::map<size_t,fixed_size_allocator>& s_globalAllocatorMap = __get_global_allocator_map();
+
+	for(const auto& entry : i_entries)
 	{
-		return &g_8byteFixedSizeAllocator;
+		s_globalAllocatorMap.insert(std::make_pair(entry,fixed_size_allocator(entry)));
 	}
-	else if(i_unitSize <= 16)
+
+	return true;
+}
+
+const fixed_size_allocator* get_fixed_size_allocator(size_t i_unitSize)
+{
+	const std::map<size_t,fixed_size_allocator>& globalAllocMap = __get_global_allocator_map();
+
+	std::map<size_t,fixed_size_allocator>::const_iterator itAlloc = globalAllocMap.lower_bound(i_unitSize);
+	if(itAlloc != globalAllocMap.end())
 	{
-		return &g_16byteFixedSizeAllocator;
+		return &(itAlloc->second);
 	}
-	else if(i_unitSize <= 32)
-	{
-		return &g_32byteFixedSizeAllocator;
-	}
-	else if(i_unitSize <= 64)
-	{
-		return &g_64byteFixedSizeAllocator;
-	}
-	else
-	{
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
 const null_deleter g_nullDeleter = null_deleter();

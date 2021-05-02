@@ -289,12 +289,15 @@ void shared_pointer_wrapper_impl<T,ReferenceCounter>::clearIfCounterVoid(size_t 
 		{
 			const short allocCategory = m_deleter.get_tag();
 
+			//before destructing, resolve address
+			const void* ptrBase = allocator_address_reference_wrapper(m_data);
+
 			if(allocCategory == AllocationMode::AllocationOnly)
 			{
 				m_data->~T();
 			}
 
-			deleter->deallocate(allocator_address_reference_wrapper(m_data));
+			deleter->deallocate(ptrBase);
 		}
 		else
 		{

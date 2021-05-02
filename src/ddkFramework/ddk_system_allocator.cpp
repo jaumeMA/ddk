@@ -40,7 +40,11 @@ void* system_allocator::allocate(size_t numUnits, size_t unitSize) const
 {
     return sysAlloc.allocate(numUnits,unitSize);
 }
-void system_allocator::deallocate(void *ptr) const
+void* system_allocator::allocate(size_t unitSize) const
+{
+	return sysAlloc.allocate(1,unitSize);
+}
+void system_allocator::deallocate(const void *ptr) const
 {
 	sysAlloc.deallocate(ptr);
 }

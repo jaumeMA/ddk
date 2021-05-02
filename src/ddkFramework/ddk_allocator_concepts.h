@@ -2,11 +2,17 @@
 
 #include "ddk_type_concepts.h"
 
+#define IS_ALLOCATOR_COND(_TYPE) \
+	ddk::concepts::is_allocator<_TYPE>::value
+
 #define IS_ALLOCATOR(_TYPE) \
-	typename std::enable_if<ddk::concepts::is_allocator<_TYPE>::value>::type*
+	typename std::enable_if<IS_ALLOCATOR_COND(_TYPE)>::type*
+
+#define IS_NOT_ALLOCATOR_COND(_TYPE) \
+	(ddk::concepts::is_allocator<_TYPE>::value==false)
 
 #define IS_NOT_ALLOCATOR(_TYPE) \
-	typename std::enable_if<ddk::concepts::is_allocator<_TYPE>::value==false>::type*
+	typename std::enable_if<IS_NOT_ALLOCATOR_COND(_TYPE)>::type*
 
 namespace ddk
 {
@@ -17,13 +23,13 @@ template<typename T>
 struct is_allocator
 {
 private:
-	template<typename TT>
-	static char func(const TT&,typename TT::allocator* = nullptr);
+	template<typename TT, typename = decltype(std::declval<TT>().allocate(1)), typename = decltype(std::declval<TT>().deallocate(nullptr))>
+	static std::true_type test(const TT&);
 	template<typename ... TT>
-	static int func(const TT& ...);
+	static std::false_type test(const TT& ...);
 
 public:
-	static const bool value = sizeof(decltype(func(std::declval<T>()))) == sizeof(char);
+	static const bool value = decltype(test(std::declval<T>()))::value;
 };
 
 }

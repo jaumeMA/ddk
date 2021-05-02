@@ -1,5 +1,6 @@
 
 #include "ddk_system_allocator.h"
+#include "ddk_allocator_exceptions.h"
 
 namespace ddk
 {
@@ -172,25 +173,55 @@ lent_reference_wrapper<T> __lend(const shared_reference_wrapper_impl<T,Reference
 
 }
 
-template<typename T,typename ... Args>
-unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args)
+template<typename T>
+constexpr size_t size_of_unique_allocation()
+{
+	return mpl::total_size<T,unique_reference_counter>;
+}
+
+template<typename T, typename Allocator, typename ... Args>
+inline unique_reference_wrapper<T> make_allocated_unique_reference(Allocator&& i_allocator, Args&& ... i_args)
 {
 	typedef typename unique_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
 	static const system_allocator s_alloc;
 
-	size_t allocatedStorageSize = mpl::total_size<T,unique_reference_counter>;
+	size_t allocatedStorageSize = size_of_unique_allocation<T>();
 
-	void* allocatedMemory = malloc(allocatedStorageSize);
+	if(void* allocatedMemory = i_allocator.allocate(allocatedStorageSize))
+	{
+		T* allocatedObject = new (s_alloc.aligned_allocate<T>(allocatedMemory,allocatedStorageSize)) T(std::forward<Args>(i_args) ...);
 
-	T* allocatedObject = new (s_alloc.aligned_allocate<T>(allocatedMemory,allocatedStorageSize)) T(std::forward<Args>(i_args) ...);
+		unique_reference_counter* refCounter = new (s_alloc.aligned_allocate<unique_reference_counter>(allocatedMemory,allocatedStorageSize)) unique_reference_counter();
 
-	unique_reference_counter* refCounter = new (s_alloc.aligned_allocate<unique_reference_counter>(allocatedMemory,allocatedStorageSize)) unique_reference_counter();
+		tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
 
-	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
+		return detail::__make_unique_reference(allocatedObject,taggedRefCounter,{ lend(i_allocator),AllocationMode::AllocationOnly });
+	}
 
-	return detail::__make_unique_reference(allocatedObject,taggedRefCounter,nullptr);
+	throw bad_allocation_exception{"Out of resources."};
 }
+template<typename T,typename ... Args>
+unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args)
+{
+	static const system_allocator s_alloc;
 
+	if constexpr(IS_NUMBER_OF_ARGS_GREATER_COND(0,Args...))
+	{
+		typedef typename mpl::nth_type_of<0,Args...>::type first_type;
+		if constexpr (IS_ALLOCATOR_COND(first_type))
+		{
+			return make_allocated_unique_reference<T>(std::forward<Args>(i_args)...);
+		}
+		else
+		{
+			return make_allocated_unique_reference<T>(s_alloc,std::forward<Args>(i_args)...);
+		}
+	}
+	else
+	{
+		return make_allocated_unique_reference<T>(s_alloc,std::forward<Args>(i_args)...);
+	}
+}
 template<typename T>
 unique_reference_wrapper<T> as_unique_reference(T* i_ptr,const tagged_pointer_deleter& i_refDeleter)
 {
@@ -204,7 +235,6 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr,const tagged_pointer_de
 
 	return detail::__make_unique_reference(i_ptr,taggedRefCounter,i_refDeleter);
 }
-
 template<typename T>
 unique_reference_wrapper<T> as_unique_reference(T* i_ptr)
 {
@@ -227,6 +257,12 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr,const tagged_pointer<un
 	return detail::__make_unique_reference(i_ptr,i_refCounter,i_refDeleter);
 }
 
+template<typename T>
+constexpr size_t size_of_shared_allocation()
+{
+	return mpl::total_size<T,shared_reference_counter>;
+}
+
 template<typename T,typename ... Args>
 shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 {
@@ -241,25 +277,6 @@ shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args)
 
 	return detail::__make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
 }
-template<typename T,typename ... Args>
-distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_args)
-{
-	typedef typename distributed_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
-	static const system_allocator s_alloc;
-
-	size_t allocatedStorageSize = mpl::total_size<T,distributed_reference_counter>;
-
-	void* allocatedMemory = malloc(allocatedStorageSize);
-
-	T* allocatedObject = new (s_alloc.aligned_allocate<T>(allocatedMemory,allocatedStorageSize)) T(std::forward<Args>(i_args) ...);
-
-	distributed_reference_counter* refCounter = new (s_alloc.aligned_allocate<distributed_reference_counter>(allocatedMemory,allocatedStorageSize)) distributed_reference_counter();
-
-	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
-
-	return detail::__make_shared_reference(allocatedObject,taggedRefCounter,nullptr);
-}
-
 template<typename T>
 shared_reference_wrapper<T> as_shared_reference(T* i_ptr)
 {
@@ -283,6 +300,61 @@ shared_reference_wrapper<T> as_shared_reference(T* i_ptr,const tagged_pointer_de
 	return detail::__make_shared_reference(i_ptr,tagged_reference_counter{ refCounter },i_refDeleter);
 }
 
+template<typename T>
+constexpr size_t size_of_distributed_allocation()
+{
+	return mpl::total_size<T,distributed_reference_counter>;
+}
+template<typename T, typename Allocator,typename ... Args>
+inline distributed_reference_wrapper<T> make_allocated_distributed_reference(Allocator&& i_allocator, Args&& ... i_args)
+{
+	typedef typename distributed_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+	static const system_allocator s_alloc;
+
+	size_t allocatedStorageSize = size_of_shared_allocation<T>();
+
+	void* allocatedMemory = i_allocator.allocate(allocatedStorageSize);
+
+	if(T* allocatedObject = new (s_alloc.aligned_allocate<T>(allocatedMemory,allocatedStorageSize)) T(std::forward<Args>(i_args) ...))
+	{
+		if constexpr(mpl::contains_symbol___distributed_type_tag<T>::value)
+		{
+			return detail::__make_shared_reference(allocatedObject,allocatedObject->get_reference_counter(),{ lend(i_allocator),AllocationMode::AllocationOnly });
+		}
+		else
+		{
+			distributed_reference_counter* refCounter = new (s_alloc.aligned_allocate<distributed_reference_counter>(allocatedMemory,allocatedStorageSize)) distributed_reference_counter();
+
+			tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
+
+			return detail::__make_shared_reference(allocatedObject,taggedRefCounter,{ lend(i_allocator),AllocationMode::AllocationOnly });
+		}
+	}
+
+	throw bad_allocation_exception{ "Out of resources." };
+}
+template<typename T,typename ... Args>
+distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_args)
+{
+	static const system_allocator s_alloc;
+
+	if constexpr(IS_NUMBER_OF_ARGS_GREATER_COND(0,Args...))
+	{
+		typedef typename mpl::nth_type_of<0,Args...>::type first_type;
+		if constexpr(IS_ALLOCATOR_COND(first_type))
+		{
+			return make_allocated_distributed_reference<T>(std::forward<Args>(i_args)...);
+		}
+		else
+		{
+			return make_allocated_distributed_reference<T>(s_alloc,std::forward<Args>(i_args)...);
+		}
+	}
+	else
+	{
+		return make_allocated_distributed_reference<T>(s_alloc,std::forward<Args>(i_args)...);
+	}
+}
 template<typename T>
 distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr)
 {

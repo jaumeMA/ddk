@@ -53,7 +53,7 @@ void executor_promise<T>::signal() const
 	return m_sharedState->signal();
 }
 template<typename T>
-void executor_promise<T>::attach(async_cancellable_shared_ref i_executor)
+void executor_promise<T>::attach(async_cancellable_dist_ref i_executor)
 {
 	m_sharedState->attach(i_executor);
 }

@@ -44,6 +44,8 @@ public:
 	lent_reference_counter(lent_reference_counter&& other);
 	virtual ~lent_reference_counter() = default;
 
+	lent_reference_counter& operator=(const lent_reference_counter& other);
+	lent_reference_counter& operator=(lent_reference_counter&& other);
 	unsigned int incrementLentReference();
 	unsigned int decrementLentReference();
 	unsigned int getNumLentReferences() const;
@@ -122,6 +124,9 @@ public:
 	unique_reference_counter();
 	unique_reference_counter(const unique_reference_counter& other);
 	unique_reference_counter(unique_reference_counter&& other);
+
+	unique_reference_counter& operator=(const unique_reference_counter& other);
+	unique_reference_counter& operator=(unique_reference_counter&& other);
 	bool addStrongReference();
 	bool removeStrongReference();
 	bool hasStrongReferences() const;

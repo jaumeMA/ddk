@@ -91,6 +91,8 @@ typename fiber_scheduler<Comparator>::iterator fiber_scheduler<Comparator>::end(
 template<typename Comparator>
 void fiber_scheduler<Comparator>::resize(size_t i_size)
 {
+	mutex_guard lg(m_fiberMutex);
+
 	m_fibers.reserve(i_size);
 }
 template<typename Comparator>
@@ -160,7 +162,11 @@ void fiber_scheduler<Comparator>::yield(detail::yielder_context* i_context)
 template<typename Comparator>
 void fiber_scheduler<Comparator>::suspend(detail::yielder_context* i_context)
 {
-	m_fiberCondVar.notify_one();
+	{
+		mutex_guard lg(m_fiberMutex);
+
+		m_fiberCondVar.notify_one();
+	}
 
 	throw suspend_exception(m_callee->get_id());
 }
@@ -233,18 +239,30 @@ void fiber_scheduler<Comparator>::run()
 		if(itFunction != m_functions.end())
 		{
 			fiber_container::iterator itFiber = m_fibers.find(itFunction->first);
-
-			if(detail::fiber_impl* currFiber = itFiber->second)
+			if(itFiber != m_fibers.end())
 			{
-				callableObject = itFunction->second;
+				if(detail::fiber_impl* currFiber = itFiber->second)
+				{
+					callableObject = itFunction->second;
 
-				m_functions.erase(itFunction);
+					m_functions.erase(itFunction);
 
+					m_fiberMutex.unlock();
+
+					currFiber->start_from(m_caller,callableObject);
+
+					m_runningFibers.emplace(currFiber,0);
+				}
+				else
+				{
+					m_functions.erase(itFunction);
+
+					m_fiberMutex.unlock();
+				}
+			}
+			else
+			{
 				m_fiberMutex.unlock();
-
-				currFiber->start_from(m_caller,callableObject);
-
-				m_runningFibers.emplace(currFiber,0);
 			}
 		}
 		else

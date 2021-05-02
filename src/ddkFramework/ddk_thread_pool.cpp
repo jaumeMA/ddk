@@ -175,7 +175,10 @@ bool thread_pool::set_affinity(const cpu_set_t& i_set)
 	{
 		if(detail::thread_impl_interface* threadImpl = *itThread)
 		{
-			res = threadImpl->set_affinity(i_set) && res;
+			if(threadImpl->set_affinity(i_set) == false)
+			{
+				res = false;
+			}
 		}
 	}
 

@@ -44,6 +44,25 @@ lent_reference_counter::lent_reference_counter(lent_reference_counter&& other)
 	std::swap(m_stackTraces,other.m_stackTraces);
 #endif
 }
+lent_reference_counter& lent_reference_counter::operator=(const lent_reference_counter& other)
+{
+	m_numLentReferences = other.m_numLentReferences;
+	m_stackTraces.clear();
+	for(const auto& entry : other.m_stackTraces)
+	{
+		memcpy(m_stackTraces[entry.first],entry.second,sizeof(stack_entry));
+	}
+
+	return *this;
+}
+lent_reference_counter& lent_reference_counter::operator=(lent_reference_counter&& other)
+{
+	m_numLentReferences = other.m_numLentReferences;
+	m_stackTraces = std::move(other.m_stackTraces);
+	other.m_numLentReferences = 0;
+
+	return *this;
+}
 unsigned int lent_reference_counter::incrementLentReference()
 {
 	return atomic_post_increment(m_numLentReferences);
@@ -281,12 +300,33 @@ unique_reference_counter::unique_reference_counter(const unique_reference_counte
 unique_reference_counter::unique_reference_counter(unique_reference_counter&& other)
 #ifdef DDK_DEBUG
 : lent_reference_counter(std::move(other))
-,m_hasStrongReferences(false)
+, m_hasStrongReferences(false)
 #else
 : m_hasStrongReferences(false)
 #endif
 {
 	std::swap(m_hasStrongReferences,other.m_hasStrongReferences);
+}
+unique_reference_counter& unique_reference_counter::operator=(const unique_reference_counter& other)
+{
+#ifdef DDK_DEBUG
+	lent_reference_counter::operator=(other);
+#endif
+
+	m_hasStrongReferences = other.m_hasStrongReferences;
+
+	return *this;
+}
+unique_reference_counter& unique_reference_counter::operator=(unique_reference_counter&& other)
+{
+#ifdef DDK_DEBUG
+	lent_reference_counter::operator=(std::move(other));
+#endif
+
+	m_hasStrongReferences = other.m_hasStrongReferences;
+	other.m_hasStrongReferences = false;
+
+	return *this;
 }
 bool unique_reference_counter::addStrongReference()
 {

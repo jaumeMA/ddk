@@ -4,9 +4,12 @@ namespace ddk
 {
 
 template<typename Return>
-shared_reference_wrapper<async_executor<Return>> make_async_executor(const function<Return()>& i_function)
+distributed_reference_wrapper<async_executor<Return>> make_async_executor(const function<Return()>& i_function)
 {
-	return make_shared_reference<async_executor<Return>>(i_function);
+	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_distributed_allocation<async_executor<Return>>());
+
+	return (s_allocator) ? make_distributed_reference<async_executor<Return>>(*s_allocator,i_function)
+		: make_distributed_reference<async_executor<Return>>(i_function);
 }
 
 template<typename Return>
@@ -56,7 +59,7 @@ template<typename Return>
 future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
 	//at some point put a composed callable here
-	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_dist_ref newAsyncExecutor = make_distributed_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -72,7 +75,7 @@ future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 template<typename Return>
 future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 {
-	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_dist_ref newAsyncExecutor = make_distributed_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
@@ -125,7 +128,7 @@ template<typename Return>
 future<Return> async_executor<Return>::deferred_attach(thread_sheaf i_threadSheaf)
 {
 	//at some point put a composed callable here
-	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_dist_ref newAsyncExecutor = make_distributed_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -137,7 +140,7 @@ future<Return> async_executor<Return>::deferred_attach(thread_sheaf i_threadShea
 template<typename Return>
 future<Return> async_executor<Return>::deferred_attach(fiber_sheaf i_fiberSheaf)
 {
-	async_shared_ref newAsyncExecutor = make_shared_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+	async_dist_ref newAsyncExecutor = make_distributed_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
@@ -161,14 +164,14 @@ future<Return> async_executor<Return>::deferred_attach(attachable<Return> i_atta
 	return as_future();
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::store(promise<Return>& i_promise)
+typename async_executor<Return>::async_dist_ref async_executor<Return>::store(promise<Return>& i_promise)
 {
 	m_promise = i_promise;
 
 	return this->ref_from_this();
 }
 template<typename Return>
-typename async_executor<Return>::async_shared_ref async_executor<Return>::on_cancel(const ddk::function<bool()>& i_cancelFunc)
+typename async_executor<Return>::async_dist_ref async_executor<Return>::on_cancel(const ddk::function<bool()>& i_cancelFunc)
 {
 	m_cancelFunc = i_cancelFunc;
 

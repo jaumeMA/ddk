@@ -12,11 +12,22 @@
 
 #endif
 
-#define DDK_ADDRESSABLE_TYPE(_TYPE) \
+#define DDK_ADDRESSABLE_TYPE_BASE(_TYPE) \
  \
+virtual std::ptrdiff_t resolve_pointer_offset(const void* i_ptr) const \
+{ \
+	return 0; \
+} \
 friend inline const void* allocator_address_reference_wrapper(const _TYPE* i_ptr) \
 { \
-	return i_ptr; \
+	return reinterpret_cast<const char*>(i_ptr) + i_ptr->resolve_pointer_offset(i_ptr); \
+}
+
+#define DDK_ADDRESSABLE_TYPE \
+ \
+virtual std::ptrdiff_t resolve_pointer_offset(const void* i_ptr) const \
+{ \
+	return reinterpret_cast<const char*>(this) - reinterpret_cast<const char*>(i_ptr); \
 }
 
 namespace ddk

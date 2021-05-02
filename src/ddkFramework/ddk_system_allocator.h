@@ -6,7 +6,7 @@
 namespace ddk
 {
 
-class system_allocator
+class system_allocator: public resource_deleter_interface
 {
 public:
     typedef system_allocator allocator;
@@ -17,9 +17,10 @@ public:
 
 	system_allocator() = default;
     void* allocate(size_t numUnits, size_t unitSize) const;
+    void* allocate(size_t unitSize) const;
     template<typename T>
     void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const;
-    void deallocate(void *ptr) const;
+    void deallocate(const void *ptr) const override;
     void* reallocate(void *ptr, size_t numUnits, size_t unitSize) const;
 };
 
