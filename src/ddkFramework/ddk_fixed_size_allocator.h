@@ -6,6 +6,8 @@
 #include "ddk_mutex.h"
 #include <cstddef>
 
+//#define MEM_CHECK
+
 namespace ddk
 {
 
@@ -33,9 +35,7 @@ private:
 	const size_t m_unitSize;
 	const size_t m_poolSize;
 	#ifdef MEM_CHECK
-	mutable mutex m_poolMutex;
-	mutable size_t m_numCurrentAllocations;
-	mutable std::vector<bool> m_isAllocated;
+	mutable atomic_size_t m_numCurrentAllocations = 0;
 	#endif
 };
 

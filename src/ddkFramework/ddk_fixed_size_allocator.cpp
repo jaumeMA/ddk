@@ -9,9 +9,6 @@ fixed_size_allocator::fixed_size_allocator(size_t i_unitSize,size_t i_poolSize)
 : m_currChunk(0)
 , m_unitSize(i_unitSize)
 , m_poolSize(i_poolSize)
-#ifdef MEM_CHECK
-,m_numCurrentAllocations(0)
-#endif
 {
 	m_pool.resize(m_poolSize * m_unitSize);
 	m_nextChunkArr.resize(m_poolSize);
@@ -22,24 +19,13 @@ fixed_size_allocator::fixed_size_allocator(size_t i_unitSize,size_t i_poolSize)
 		m_nextChunkArr[chunkIndex] = chunkIndex + 1;
 	}
 
-#ifdef MEM_CHECK
-	ddk::mutex_guard lg(m_poolMutex);
-	m_isAllocated.resize(m_poolSize);
-
-	for(size_t chunkIndex = 0; chunkIndex < m_poolSize - 1; ++chunkIndex)
-	{
-		m_isAllocated[chunkIndex] = false;
-	}
-	pthread_mutex_init(&m_poolMutex,NULL);
-#endif
-
 	m_nextChunkArr[m_poolSize - 1] = s_invalidChunk;
 
 }
 fixed_size_allocator::~fixed_size_allocator()
 {
 #ifdef MEM_CHECK
-	pthread_mutex_destroy(&m_poolMutex);
+	DDK_ASSERT(m_numCurrentAllocations.get()==0,"Still pending allocations while destroying allocator.");
 #endif
 }
 void* fixed_size_allocator::allocate(size_t i_size) const
@@ -68,11 +54,7 @@ void* fixed_size_allocator::allocate(size_t i_size) const
 
 		#ifdef MEM_CHECK
 		{
-			ddk::mutex_guard lg(m_poolMutex);
-			++m_numCurrentAllocations;
-			m_isAllocated[m_currChunk] = true;
-
-			WAS_LOG_INFO("Number of allocated chunks after allocation: " << m_numCurrentAllocations);
+			atomic_post_increment(m_numCurrentAllocations);
 		}
 		#endif
 
@@ -81,6 +63,7 @@ void* fixed_size_allocator::allocate(size_t i_size) const
 }
 void fixed_size_allocator::deallocate(const void* i_address) const
 {
+
 	//check that address is inside our space address
 	const std::ptrdiff_t localAddress = get_local_address(reinterpret_cast<const char*>(i_address));
 
@@ -92,23 +75,13 @@ void fixed_size_allocator::deallocate(const void* i_address) const
 		do
 		{
 			currChunk = m_currChunk.get();
+			m_nextChunkArr[nextChunk] = currChunk;
 		}
 		while(atomic_compare_exchange(m_currChunk,currChunk,nextChunk) == false);
 
-		m_nextChunkArr[nextChunk] = currChunk;
-
 		#ifdef MEM_CHECK
 		{
-			ddk::mutex_guard lg(m_poolMutex);
-			if(m_isAllocated[nextChunk] == false)
-			{
-				MAKE_IT_CRASH
-			}
-
-			--m_numCurrentAllocations;
-			m_isAllocated[nextChunk] = false;
-
-			WAS_LOG_INFO("Number of allocated chunks after deallocation: " << m_numCurrentAllocations);
+			atomic_post_decrement(m_numCurrentAllocations);
 		}
 		#endif
 	}
