@@ -22,6 +22,8 @@ ddk::lent_pointer_wrapper<TT> __make_lent_pointer(TT*,const tagged_pointer<lent_
 
 #define THIS_OBJECT (*this)
 
+#if defined(TRACK_STACK)
+
 #define REGISTER_STACK_TRACE(_OBJECT) \
 	if (_OBJECT.m_refCounter) \
 	{ \
@@ -42,6 +44,31 @@ ddk::lent_pointer_wrapper<TT> __make_lent_pointer(TT*,const tagged_pointer<lent_
 	{ \
 		_NEW_OBJECT.m_refCounter->reassignStackTrace(reinterpret_cast<size_t>(&_OLD_OBJECT),reinterpret_cast<size_t>(&_NEW_OBJECT)); \
 	}
+
+#else
+
+#define REGISTER_STACK_TRACE(_OBJECT) \
+	if (_OBJECT.m_refCounter) \
+	{ \
+		_OBJECT.m_refCounter->registerStackTrace(reinterpret_cast<size_t>(&_OBJECT)); \
+	}
+#define UNREGISTER_STACK_TRACE(_OBJECT) \
+	if (_OBJECT.m_refCounter) \
+	{ \
+		_OBJECT.m_refCounter->unregisterStackTrace(reinterpret_cast<size_t>(&_OBJECT)); \
+	}
+#define COPY_STACK_TRACE(_OLD_OBJECT,_NEW_OBJECT) \
+	if (_NEW_OBJECT.m_refCounter) \
+	{ \
+		_NEW_OBJECT.m_refCounter->copyStackTrace(reinterpret_cast<size_t>(&_OLD_OBJECT),reinterpret_cast<size_t>(&_NEW_OBJECT)); \
+	}
+#define MOVE_STACCK_TRACE(_OLD_OBJECT,_NEW_OBJECT) \
+	if (_NEW_OBJECT.m_refCounter) \
+	{ \
+		_NEW_OBJECT.m_refCounter->reassignStackTrace(reinterpret_cast<size_t>(&_OLD_OBJECT),reinterpret_cast<size_t>(&_NEW_OBJECT)); \
+	}
+
+#endif
 
 template<typename>
 class lent_reference_wrapper;

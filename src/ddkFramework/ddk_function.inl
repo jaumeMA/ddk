@@ -7,7 +7,7 @@ namespace ddk
 namespace detail
 {
 
-const size_t k_small_buffer_allocation_size = 32;
+const size_t k_small_buffer_allocation_size = 40;
 
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
 function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl()

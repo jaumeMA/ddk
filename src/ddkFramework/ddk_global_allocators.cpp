@@ -8,7 +8,7 @@ namespace
 
 std::map<size_t,fixed_size_allocator>& __get_global_allocator_map()
 {
-	static std::map<size_t,fixed_size_allocator> s_globalAllocatorMap = {{8,fixed_size_allocator(8)},{16,fixed_size_allocator(16)},{32,fixed_size_allocator(32)}};
+	static std::map<size_t,fixed_size_allocator> s_globalAllocatorMap = {{8,fixed_size_allocator(8)},{16,fixed_size_allocator(16)},{32,fixed_size_allocator(32)},{64,fixed_size_allocator(64)} };
 
 	return s_globalAllocatorMap;
 }

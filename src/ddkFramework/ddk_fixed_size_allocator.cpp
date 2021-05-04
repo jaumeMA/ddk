@@ -38,17 +38,27 @@ void* fixed_size_allocator::allocate(size_t i_size) const
 	{
 		void* res = nullptr;
 		size_t currChunk = 0;
+		bool firstAttempt = true;
 
 		do
 		{
+			if(!firstAttempt)
+			{
+				std::this_thread::yield();
+			}
+			else
+			{
+				firstAttempt = false;
+			}
+
 			currChunk = m_currChunk.get();
 
 			if(currChunk == s_invalidChunk)
 			{
 				return nullptr;
 			}
-
-		}while(atomic_compare_exchange(m_currChunk,currChunk,m_nextChunkArr[currChunk]) == false);
+		}
+		while(atomic_compare_exchange(m_currChunk,currChunk,m_nextChunkArr[currChunk]) == false);
 
 		res = &m_pool[m_unitSize * currChunk];
 
@@ -71,10 +81,21 @@ void fixed_size_allocator::deallocate(const void* i_address) const
 	{
 		const size_t nextChunk = localAddress / m_unitSize;
 		size_t currChunk = 0;
+		bool firstAttempt = true;
 
 		do
 		{
+			if(!firstAttempt)
+			{
+				std::this_thread::yield();
+			}
+			else
+			{
+				firstAttempt = false;
+			}
+
 			currChunk = m_currChunk.get();
+
 			m_nextChunkArr[nextChunk] = currChunk;
 		}
 		while(atomic_compare_exchange(m_currChunk,currChunk,nextChunk) == false);

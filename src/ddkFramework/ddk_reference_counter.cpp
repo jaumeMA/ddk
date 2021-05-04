@@ -1,31 +1,10 @@
 #include "ddk_reference_counter.h"
 #include "ddk_lock_guard.h"
 
-#include <sstream>
-
-#ifdef DDK_DEBUG
-
-#if defined(WIN32)
-
-#include <dbghelp.h>
-
-#elif defined(__LINUX__)
-
-#include <execinfo.h>
-
-#endif
-
-#endif
-
 namespace ddk
 {
 
 #ifdef DDK_DEBUG
-
-//#define TRACK_STACK
-
-detail::symbol_cache_table lent_reference_counter::m_symbolInfoCache = detail::symbol_cache_table();
-
 
 lent_reference_counter::lent_reference_counter()
 : m_numLentReferences(0)
@@ -37,29 +16,30 @@ lent_reference_counter::lent_reference_counter(const lent_reference_counter& oth
 }
 lent_reference_counter::lent_reference_counter(lent_reference_counter&& other)
 : m_numLentReferences(0)
+#ifdef TRACK_STACK
+, m_memTracker(std::move(other.m_memTracker))
+#endif
 {
 	m_numLentReferences.set(other.m_numLentReferences.get());
 	other.m_numLentReferences.set(0);
-#ifdef TRACK_STACK
-	std::swap(m_stackTraces,other.m_stackTraces);
-#endif
 }
 lent_reference_counter& lent_reference_counter::operator=(const lent_reference_counter& other)
 {
 	m_numLentReferences = other.m_numLentReferences;
-	m_stackTraces.clear();
-	for(const auto& entry : other.m_stackTraces)
-	{
-		memcpy(m_stackTraces[entry.first],entry.second,sizeof(stack_entry));
-	}
+
+#ifdef TRACK_STACK
+	m_memTracker = other.m_memTracker;
+#endif
 
 	return *this;
 }
 lent_reference_counter& lent_reference_counter::operator=(lent_reference_counter&& other)
 {
 	m_numLentReferences = other.m_numLentReferences;
-	m_stackTraces = std::move(other.m_stackTraces);
-	other.m_numLentReferences = 0;
+
+#ifdef TRACK_STACK
+	m_memTracker = std::move(other.m_memTracker);
+#endif
 
 	return *this;
 }
@@ -79,100 +59,25 @@ bool lent_reference_counter::hasLentReferences() const
 {
 	return m_numLentReferences.get() > 0;
 }
+
+#ifdef TRACK_STACK
 void lent_reference_counter::registerStackTrace(size_t i_id)
 {
-#ifdef TRACK_STACK
-	typedef detail::symbol_cache_table::symbol_info symbol_info;
-
-	void* stack[k_maxNumberOfStacks] = { NULL };
-
-#ifdef WIN32
-	HANDLE process = GetCurrentProcess();
-	SymInitialize(process, NULL, TRUE);
-	WORD numberOfFrames = CaptureStackBackTrace(3, k_maxNumberOfStacks, stack, NULL);
-
-#elif defined (__LINUX__)
-	int numberOfFrames = backtrace(stack,k_maxNumberOfStacks);
-#else
-#error "Pending to be implemented for this platform"
-#endif
-
-	mutex_guard lg(m_refMutex);
-
-	stack_entry& currStackTrace = m_stackTraces[i_id];
-
-	for (int i = 0; i < k_maxNumberOfStacks; i++)
-	{
-		currStackTrace[i] = (i < numberOfFrames) ? stack[i] : nullptr;
-	}
-
-#endif
+	m_memTracker.register_allocation(i_id);
 }
 void lent_reference_counter::unregisterStackTrace(size_t i_id)
 {
-#ifdef TRACK_STACK
-	mutex_guard lg(m_refMutex);
-
-	stack_container::iterator itStackTrace = m_stackTraces.find(i_id);
-	if (itStackTrace != m_stackTraces.end())
-	{
-		m_stackTraces.erase(itStackTrace);
-	}
-#endif
+	m_memTracker.unregister_allocation(i_id);
 }
 void lent_reference_counter::copyStackTrace(size_t i_oldId, size_t i_newId)
 {
-#ifdef TRACK_STACK
-	mutex_guard lg(m_refMutex);
-
-	stack_container::iterator itOldStackTrace = m_stackTraces.find(i_oldId);
-	if (itOldStackTrace != m_stackTraces.end())
-	{
-		memcpy(m_stackTraces[i_newId],itOldStackTrace->second,sizeof(void*) * k_maxNumberOfStacks);
-	}
-#endif
+	m_memTracker.copy_entries_from(i_oldId,i_newId);
 }
 void lent_reference_counter::reassignStackTrace(size_t i_oldId, size_t i_newId)
 {
-#ifdef TRACK_STACK
-	mutex_guard lg(m_refMutex);
-
-	stack_container::iterator itOldStackTrace = m_stackTraces.find(i_oldId);
-	if (itOldStackTrace != m_stackTraces.end())
-	{
-		memcpy(m_stackTraces[i_newId],itOldStackTrace->second,sizeof(void*) * k_maxNumberOfStacks);
-		m_stackTraces.erase(itOldStackTrace);
-	}
+	m_memTracker.move_entries_to(i_oldId,i_newId);
+}
 #endif
-}
-lent_reference_counter::stack_contents lent_reference_counter::dumpStackTrace()
-{
-	stack_contents res;
-
-	mutex_guard lg(m_refMutex);
-
-	stack_container::iterator itStackTrace = m_stackTraces.begin();
-	for(;itStackTrace!=m_stackTraces.end();++itStackTrace)
-	{
-		stack_entry& currStack = itStackTrace->second;
-
-		for (size_t i = 0; i < k_maxNumberOfStacks; i++)
-		{
-			if(void* currStackSymbol = currStack[i])
-			{
-				const detail::symbol_cache_table::symbol_info& symbolicatedSymbol = m_symbolInfoCache.symbolicate(currStackSymbol);
-
-				//std stringstream is just too slow
-				std::string resume = symbolicatedSymbol.m_filename + "(" + std::to_string(symbolicatedSymbol.m_lineNumber) + ") : " + symbolicatedSymbol.m_name;
-				resume.resize(k_maxNumOfChars);
-
-				res[itStackTrace->first].emplace_back(std::move(resume));
-			}
-		}
-	}
-
-	return res;
-}
 
 #endif
 

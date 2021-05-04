@@ -24,7 +24,12 @@ lock_free_stack<T,Allocator>::~lock_free_stack()
 template<typename T,typename Allocator>
 void lock_free_stack<T,Allocator>::clear()
 {
-	while(const auto _ = pop());
+	while(empty() == false)
+	{
+		pop();
+	}
+
+	deallocate_node(m_head.get_next());
 }
 template<typename T,typename Allocator>
 template<typename ... Args>

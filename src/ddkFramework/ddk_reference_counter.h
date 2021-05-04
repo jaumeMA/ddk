@@ -3,13 +3,16 @@
 #include "ddk_atomics.h"
 #include "ddk_macros.h"
 #include "ddk_scoped_enum.h"
+#include "ddk_mutex.h"
 #include <map>
 #include <vector>
-#include "ddk_mutex.h"
+
 
 #ifdef DDK_DEBUG
 
-#include "ddk_symbol_cache_table.h"
+#define TRACK_STACK
+
+#include "ddk_memory_tracker.h"
 
 #endif
 
@@ -31,11 +34,6 @@ SCOPED_ENUM_DECL(ReferenceAllocationType,
 
 class lent_reference_counter
 {
-	static const size_t k_maxNumberOfStacks = 16;
-	static const size_t k_maxNumOfChars = 64;
-	typedef void* stack_entry[k_maxNumberOfStacks];
-	typedef std::unordered_map<size_t, stack_entry> stack_container;
-
 public:
 	typedef std::map<size_t,std::vector<std::string>> stack_contents;
 
@@ -50,17 +48,19 @@ public:
 	unsigned int decrementLentReference();
 	unsigned int getNumLentReferences() const;
 	bool hasLentReferences() const;
+
+#ifdef TRACK_STACK
 	void registerStackTrace(size_t i_id);
 	void unregisterStackTrace(size_t i_id);
 	void copyStackTrace(size_t i_oldId, size_t i_newId);
 	void reassignStackTrace(size_t i_oldId, size_t i_newId);
-	stack_contents dumpStackTrace();
+#endif
 
 private:
-	static detail::symbol_cache_table m_symbolInfoCache;
-	stack_container m_stackTraces;
-	mutex m_refMutex;
+#if defined(TRACK_STACK)
+	memory_tracker m_memTracker;
 	atomic_uint m_numLentReferences;
+#endif
 };
 
 #endif
