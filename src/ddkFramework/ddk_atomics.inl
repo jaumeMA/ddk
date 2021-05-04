@@ -4,290 +4,193 @@ namespace ddk
 
 template<typename T>
 atomic8<T>::atomic8(const T& i_value)
+: m_value(i_value)
 {
-	m_arena.template construct<T>(i_value);
 }
 template<typename T>
 atomic8<T>::atomic8(T&& i_value)
+: m_value(std::move(i_value))
 {
-	m_arena.template construct<T>(std::move(i_value));
 }
 template<typename T>
 atomic8<T>::atomic8(const atomic8& other)
+: m_value(other.m_value)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template construct<T>(other.template get<T>());
-	}
 }
 template<typename T>
 atomic8<T>::atomic8(atomic8&& other)
+: m_value(std::move(other.m_value))
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template construct<T>(other.template extract<T>());
-	}
-}
-template<typename T>
-atomic8<T>::~atomic8()
-{
-	m_arena.template destroy<T>();
 }
 template<typename T>
 atomic8<T>& atomic8<T>::operator=(const atomic8& other)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template assign<T>(other.template get<T>());
-	}
+	m_value = other.m_value;
 }
 template<typename T>
 atomic8<T>& atomic8<T>::operator=(atomic8&& other)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template assign<T>(other.template extract<T>());
-	}
-}
-template<typename T>
-bool atomic8<T>::empty() const
-{
-	return m_arena.empty();
+	m_value = std::move(other.m_value);
 }
 template<typename T>
 const T& atomic8<T>::get() const
 {
-	return m_arena.template get<T>();
+	return m_value;
 }
 template<typename T>
 T& atomic8<T>::get()
 {
-	return m_arena.template get<T>();
+	return m_value;
 }
 template<typename T>
 void atomic8<T>::set(const T& i_value)
 {
-	m_arena.template assign<T>(i_value);
+	m_value = i_value;
 }
 template<typename T>
 void atomic8<T>::set(T&& i_value)
 {
-	m_arena.template assign<T>(std::move(i_value));
-}
-template<typename T>
-void atomic8<T>::reset()
-{
-	m_arena.template destroy<T>();
+	m_value = std::move(i_value);
 }
 template<typename T>
 T* atomic8<T>::_get_typed_arena()
 {
-	return m_arena.template get_ptr<T>();
+	return &m_value;
 }
 template<typename T>
 char* atomic8<T>::_get_arena()
 {
-	return m_arena.template get_ptr<char>();
+	return reinterpret_cast<char*>(&m_value);
 }
 
 template<typename T>
 atomic32<T>::atomic32(const T& i_value)
+: m_value(i_value)
 {
-	m_arena.template construct<T>(i_value);
 }
 template<typename T>
 atomic32<T>::atomic32(T&& i_value)
+: m_value(std::move(i_value))
 {
-	m_arena.template construct<T>(std::move(i_value));
 }
 template<typename T>
 atomic32<T>::atomic32(const atomic32& other)
+: m_value(other.m_value)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template construct<T>(other.m_arena.template get<T>());
-	}
 }
 template<typename T>
 atomic32<T>::atomic32(atomic32&& other)
+: m_value(std::move(other.m_value))
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template construct<T>(other.m_arena.template extract<T>());
-	}
-}
-template<typename T>
-atomic32<T>::~atomic32()
-{
-	m_arena.template destroy<T>();
 }
 template<typename T>
 atomic32<T>& atomic32<T>::operator=(const atomic32& other)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template set_value<T>(other.m_arena.template get<T>());
-	}
-	else
-	{
-		m_arena.template destroy<T>();
-	}
+	m_value = other.m_value;
 
 	return *this;
 }
 template<typename T>
 atomic32<T>& atomic32<T>::operator=(atomic32&& other)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template set_value<T>(other.m_arena.template extract<T>());
-	}
-	else
-	{
-		m_arena.template destroy<T>();
-	}
+	m_value = std::move(other.m_value);
 
 	return *this;
 }
 template<typename T>
-bool atomic32<T>::empty() const
-{
-	return m_arena.empty();
-}
-template<typename T>
 const T& atomic32<T>::get() const
 {
-	return m_arena.template get<T>();
+	return m_value;
 }
 template<typename T>
 T& atomic32<T>::get()
 {
-	return m_arena.template get<T>();
+	return m_value;
 }
 template<typename T>
 void atomic32<T>::set(const T& i_value)
 {
-	m_arena.template set_value<T>(i_value);
+	m_value = i_value;
 }
 template<typename T>
 void atomic32<T>::set(T&& i_value)
 {
-	m_arena.template set_value<T>(std::move(i_value));
-}
-template<typename T>
-void atomic32<T>::reset()
-{
-	m_arena.template destroy<T>();
+	m_value = std::move(i_value);
 }
 template<typename T>
 T* atomic32<T>::_get_typed_arena()
 {
-	return m_arena.template get_ptr<T>();
+	return &m_value;
 }
 template<typename T>
 uint32_t* atomic32<T>::_get_arena()
 {
-	return m_arena.template get_ptr<uint32_t>();
+	return reinterpret_cast<uint32_t*>(&m_value);
 }
 
 template<typename T>
 atomic64<T>::atomic64(const T& i_value)
+: m_value(i_value)
 {
-	m_arena.template construct<T>(i_value);
 }
 template<typename T>
 atomic64<T>::atomic64(T&& i_value)
+: m_value(std::move(i_value))
 {
-	m_arena.template construct<T>(std::move(i_value));
 }
 template<typename T>
 atomic64<T>::atomic64(const atomic64& other)
+: m_value(other.m_value)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template construct<T>(other.m_arena.template get<T>());
-	}
 }
 template<typename T>
 atomic64<T>::atomic64(atomic64&& other)
+: m_value(std::move(other.m_value))
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template construct<T>(other.m_arena.template extract<T>());
-	}
-}
-template<typename T>
-atomic64<T>::~atomic64()
-{
-	m_arena.template destroy<T>();
 }
 template<typename T>
 atomic64<T>& atomic64<T>::operator=(const atomic64& other)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template set_value<T>(other.m_arena.template get<T>());
-	}
-	else
-	{
-		m_arena.template destroy<T>();
-	}
+	m_value = other.m_value;
 
 	return *this;
 }
 template<typename T>
 atomic64<T>& atomic64<T>::operator=(atomic64&& other)
 {
-	if(other.m_arena.empty() == false)
-	{
-		m_arena.template set_value<T>(other.m_arena.template extract<T>());
-	}
-	else
-	{
-		m_arena.template destroy<T>();
-	}
+	m_value = std::move(other.m_value);
 
 	return *this;
 }
 template<typename T>
-bool atomic64<T>::empty() const
-{
-	return m_arena.empty();
-}
-template<typename T>
 const T& atomic64<T>::get() const
 {
-	return m_arena.template get<T>();
+	return m_value;
 }
 template<typename T>
 T& atomic64<T>::get()
 {
-	return m_arena.template get<T>();
+	return m_value;
 }
 template<typename T>
 void atomic64<T>::set(const T& i_value)
 {
-	m_arena.template set_value<T>(i_value);
+	m_value = i_value;
 }
 template<typename T>
 void atomic64<T>::set(T&& i_value)
 {
-	m_arena.template set_value<T>(std::move(i_value));
-}
-template<typename T>
-void atomic64<T>::reset()
-{
-	m_arena.template destroy<T>();
+	m_value = std::move(i_value);
 }
 template<typename T>
 T* atomic64<T>::_get_typed_arena()
 {
-	return m_arena.template get_ptr<T>();
+	return &m_value;
 }
 template<typename T>
 int64_t* atomic64<T>::_get_arena()
 {
-	return m_arena.template get_ptr<int64_t>();
+	return reinterpret_cast<int64_t*>(&m_value);
 }
 
 template<typename T>

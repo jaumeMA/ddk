@@ -47,22 +47,19 @@ struct atomic8
 	atomic8(T&& i_value);
 	atomic8(const atomic8& other);
 	atomic8(atomic8&& other);
-	~atomic8();
 	atomic8& operator=(const atomic8& other);
 	atomic8& operator=(atomic8&& other);
-	inline bool empty() const;
 	inline const T& get() const;
 	inline T& get();
 	inline void set(const T& i_value);
 	inline void set(T&& i_value);
-	inline void reset();
 
 private:
 	T* _get_typed_arena();
 	char* _get_arena();
 
-	arena<1,std::alignment_of<T>::value> m_arena;
-}; 
+	T m_value;
+};
 
 typedef atomic8<bool> atomic_bool;
 typedef atomic8<char> atomic_char;
@@ -95,21 +92,18 @@ struct atomic32
 	atomic32(T&& i_value);
 	atomic32(const atomic32& other);
 	atomic32(atomic32&& other);
-	~atomic32();
 	atomic32& operator=(const atomic32& other);
 	atomic32& operator=(atomic32&& other);
-	inline bool empty() const;
 	inline const T& get() const;
 	inline T& get();
 	inline void set(const T& i_value);
 	inline void set(T&& i_value);
-	inline void reset();
 
 private:
 	T* _get_typed_arena();
 	uint32_t* _get_arena();
 
-	arena<4,std::alignment_of<T>::value> m_arena;
+	T m_value;
 };
 
 //put here whatever specialization you need
@@ -144,21 +138,18 @@ struct atomic64
 	atomic64(T&& i_value);
 	atomic64(const atomic64& other);
 	atomic64(atomic64&& other);
-	~atomic64();
 	atomic64& operator=(const atomic64& other);
 	atomic64& operator=(atomic64&& other);
-	inline bool empty() const;
 	inline const T& get() const;
 	inline T& get();
 	inline void set(const T& i_value);
 	inline void set(T&& i_value);
-	inline void reset();
 
 private:
 	T* _get_typed_arena();
 	int64_t* _get_arena();
 
-	arena<8,std::alignment_of<T>::value> m_arena;
+	T m_value;
 };
 
 typedef typename mpl::which_type<(alignof(size_t)<=4),atomic32<size_t>,atomic64<size_t>>::type  atomic_size_t;
