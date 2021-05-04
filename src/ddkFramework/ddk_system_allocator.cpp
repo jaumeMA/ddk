@@ -5,7 +5,7 @@
 
 #ifdef DDK_DEBUG
 
-#define MEM_CHECK
+//#define MEM_CHECK
 
 #endif
 
