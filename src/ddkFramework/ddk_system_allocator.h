@@ -19,7 +19,7 @@ public:
     void* allocate(size_t numUnits, size_t unitSize) const;
     void* allocate(size_t unitSize) const;
     template<typename T>
-    void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const;
+    static inline void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize);
     void deallocate(const void *ptr) const override;
     void* reallocate(void *ptr, size_t numUnits, size_t unitSize) const;
 };

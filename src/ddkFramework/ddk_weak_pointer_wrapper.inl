@@ -39,10 +39,16 @@ template<typename TT>
 weak_pointer_wrapper<T>::weak_pointer_wrapper(weak_pointer_wrapper<TT>&& other)
 : m_data(nullptr)
 , m_refCounter(std::move(other.m_refCounter))
-, m_deleter(nullptr)
+, m_deleter(other.m_deleter)
 {
-	std::swap(m_data,other.m_data);
-	std::swap(m_deleter,other.m_deleter);
+	static_assert(std::is_base_of<T,TT>::value,"You shall provide a base class of T");
+
+	if((m_data = other.m_data))
+	{
+		std::swap(m_refCounter,other.m_refCounter);
+	}
+
+	other.m_data = nullptr;
 }
 template<typename T>
 weak_pointer_wrapper<T>::weak_pointer_wrapper(T* i_data,const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_deleter)

@@ -19,6 +19,14 @@
     //annotations
     #define NO_DISCARD_RETURN [[ nodiscard ]]
 
+    #define DDK_THROW(__cond,__exception,...) \
+        { \
+            if(static_cast<bool>(__cond) == false) \
+            { \
+                throw __exception{__VA_ARGS__}; \
+            } \
+        }
+
     #ifdef DDK_DEBUG
 
         #include "ddk_assert.h"

@@ -10,6 +10,8 @@ fixed_size_allocator::fixed_size_allocator(size_t i_unitSize,size_t i_poolSize)
 , m_unitSize(i_unitSize)
 , m_poolSize(i_poolSize)
 {
+	DDK_ASSERT(mpl::is_power_of_two(i_unitSize), "You shall provide power of two unitSize in order to avoid alignment problems.");
+
 	m_pool.resize(m_poolSize * m_unitSize);
 	m_nextChunkArr.resize(m_poolSize);
 
@@ -21,6 +23,20 @@ fixed_size_allocator::fixed_size_allocator(size_t i_unitSize,size_t i_poolSize)
 
 	m_nextChunkArr[m_poolSize - 1] = s_invalidChunk;
 
+}
+fixed_size_allocator::fixed_size_allocator(fixed_size_allocator&& other)
+: m_currChunk(other.m_currChunk)
+, m_unitSize(other.m_unitSize)
+, m_poolSize(other.m_poolSize)
+, m_pool(std::move(other.m_pool))
+, m_nextChunkArr(std::move(other.m_nextChunkArr))
+#ifdef MEM_CHECK
+, m_numCurrentAllocations(other.m_numCurrentAllocations);
+#endif
+{
+#ifdef MEM_CHECK
+	other.m_numCurrentAllocations = 0;
+#endif
 }
 fixed_size_allocator::~fixed_size_allocator()
 {

@@ -81,6 +81,7 @@ public:
 	bool set_affinity(const cpu_set_t& i_set);
 	acquire_result<thread> aquire_thread();
 	acquire_result<thread_sheaf> acquire_sheaf(size_t i_size);
+	bool available_threads() const;
 
 private:
 	void deallocate(const void* i_object) const override;

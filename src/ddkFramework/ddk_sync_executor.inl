@@ -289,12 +289,12 @@ bool async_executor<Return>::notify()
 	}
 }
 template<typename Return>
-executor_context_lent_ref async_executor<Return>::get_execution_context()
+executor_context_weak_ptr async_executor<Return>::get_execution_context()
 {
 	return m_executor->get_execution_context();
 }
 template<typename Return>
-executor_context_const_lent_ref async_executor<Return>::get_execution_context() const
+executor_context_const_weak_ptr async_executor<Return>::get_execution_context() const
 {
 	return m_executor->get_execution_context();
 }

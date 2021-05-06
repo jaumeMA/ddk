@@ -54,11 +54,11 @@ inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data);
 template<typename T,typename ReferenceCounter>
 inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T* i_data,const tagged_pointer<ReferenceCounter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 template<typename T>
-ddk::weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
 template<typename T>
-inline ddk::weak_pointer_wrapper<T> __weak(shared_pointer_wrapper_impl<T,shared_reference_counter>& i_sharedPtr);
-template<typename T, typename ReferenceCounter>
-inline ddk::weak_pointer_wrapper<const T> __weak(const shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr);
+inline weak_pointer_wrapper<T> __weak(shared_pointer_wrapper_impl<T,shared_reference_counter>& i_sharedPtr);
+template<typename T>
+inline weak_pointer_wrapper<const T> __weak(const shared_pointer_wrapper_impl<T,shared_reference_counter>& i_sharedPtr);
 template<typename TT,typename T,typename ReferenceCounter>
 inline shared_pointer_wrapper_impl<TT,ReferenceCounter> __static_shared_cast(const shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedRef);
 template<typename TT,typename T,typename ReferenceCounter>

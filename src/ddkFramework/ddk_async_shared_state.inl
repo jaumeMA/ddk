@@ -58,9 +58,11 @@ void private_async_state<T>::detach()
 	m_asyncExecutor = nullptr;
 }
 template<typename T>
-async_base_lent_ptr private_async_state<T>::get_aync_execution() const
+async_base_dist_ptr private_async_state<T>::get_aync_execution() const
 {
-	return ddk::lend(m_asyncExecutor);
+	mutex_guard lg(m_mutex);
+
+	return m_asyncExecutor;
 }
 template<typename T>
 void private_async_state<T>::set_value(sink_type i_value)
@@ -68,6 +70,8 @@ void private_async_state<T>::set_value(sink_type i_value)
 	mutex_guard lg(m_mutex);
 
 	m_arena = std::forward<sink_type>(i_value);
+
+	m_asyncExecutor = nullptr;
 
 	m_condVar.notify_all();
 }
@@ -77,6 +81,8 @@ void private_async_state<T>::set_exception(const async_exception& i_exception)
 	mutex_guard lg(m_mutex);
 
 	m_arena = i_exception;
+
+	m_asyncExecutor = nullptr;
 
 	m_condVar.notify_all();
 }

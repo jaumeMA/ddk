@@ -774,7 +774,23 @@ template<typename ... T>
 inline constexpr size_t total_alignment = mpl::sequence<std::alignment_of<T>::value ...>::max;
 
 template<typename ... T>
-inline constexpr size_t total_size = sizeof(total_type<T...>);
+constexpr size_t total_size()
+{
+    void* arena = nullptr;
+    const size_t k_maxSpace = static_cast<size_t>(-1);
+    size_t spaceLeft = k_maxSpace;
+    const size_t typeSizes[] = { mpl::size_of_qualified_type<T>::value ... };
+    const size_t typeAlignments[] = { alignof(T) ... };
+
+    for(size_t typeIndex = 0; typeIndex < num_types<T...>; ++typeIndex)
+    {
+        std::align(typeAlignments[typeIndex],typeSizes[typeIndex],arena,spaceLeft);
+        arena = reinterpret_cast<char*>(arena) + typeSizes[typeIndex];
+        spaceLeft -= typeSizes[typeIndex];
+    }
+
+    return k_maxSpace - spaceLeft;
+}
 
 template<typename>
 struct _acc_sizeof;
@@ -808,6 +824,11 @@ struct acc_sizeof
 {
     typedef _acc_sizeof<typename acc_sequence<size_of_qualified_type<Types>::value ...>::type> type;
 };
+
+constexpr bool is_power_of_two(size_t i_value)
+{
+    return (i_value & (i_value - 1)) == 0;
+}
 
 }
 }

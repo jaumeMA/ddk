@@ -1,7 +1,6 @@
 #pragma once
 
 #include <utility>
-#include "ddk_template_helper.h"
 #include <type_traits>
 
 namespace ddk

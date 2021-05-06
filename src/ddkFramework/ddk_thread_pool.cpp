@@ -59,13 +59,7 @@ void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder*
 }
 void worker_thread_impl::stop()
 {
-	//we are using lock/unlock operations just t owait until current function execution ends, s_yielder is thread local theres no need to protect it with mutexes
-	//we set it there just to avoid compiler applies some kind of optimization
-	mutex_guard lg(m_mutex);
-
-	m_state = Stopped;
-
-	m_condVar.notify_one();
+	//worker threads are effectively stopped during detsruction
 }
 bool worker_thread_impl::joinable() const
 {
@@ -190,15 +184,22 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 	if(m_availableThreads.empty())
 	{
-		detail::thread_impl_interface* acquiredThread = new detail::worker_thread_impl();
+		if(m_policy == GrowsOnDemand)
+		{
+			detail::thread_impl_interface* acquiredThread = new detail::worker_thread_impl();
 
-		m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
+			m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
-		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+			return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+		}
+		else
+		{
+			return make_error<acquire_result<thread>>(NoThreadAvailable);
+		}
 	}
 	else
 	{
-		thread_container::iterator itThread = m_availableThreads.begin();
+		thread_container::iterator itThread = m_availableThreads.begin() + m_availableThreads.size() - 1;
 
 		detail::thread_impl_interface* acquiredThread = *itThread;
 
@@ -247,6 +248,12 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 	{
 		return make_error<acquire_result<thread_sheaf>>(NoThreadAvailable);
 	}
+}
+bool thread_pool::available_threads() const
+{
+	mutex_guard lg(m_mutex);
+
+	return m_availableThreads.empty() == false;
 }
 void thread_pool::deallocate(const void* i_object) const
 {

@@ -21,7 +21,7 @@ void task_executor::start()
 {
 	if(m_state != Running)
 	{
-		m_updateThread.start_thread(ddk::make_function(this,&task_executor::update));
+		m_updateThread.start_thread(make_function(this,&task_executor::update),make_function([this](){ return (m_pendingTasks.empty() == false) && m_availableThreads.available_threads(); }));
 
 		m_state = Running;
 	}

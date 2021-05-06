@@ -2,7 +2,7 @@
 
 #include "ddk_executor_interface.h"
 #include "ddk_sync_executor_context.h"
-#include "ddk_lendable.h"
+#include "ddk_shared_reference_wrapper.h"
 #include "ddk_fiber_yielder.h"
 
 namespace ddk
@@ -25,13 +25,14 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ref get_execution_context() override;
-	executor_context_const_lent_ref get_execution_context() const override;
+	executor_context_weak_ptr get_execution_context() override;
+	executor_context_const_weak_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
 	atomic<ExecutorState::underlying_type> m_state;
-	lendable<deferred_execution_context> m_execContext;
 };
+
+extern shared_pointer_wrapper<deferred_execution_context> s_execContext;
 
 template<typename Return>
 class fiber_executor : public cancellable_executor_interface<Return()>
@@ -48,11 +49,11 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ref get_execution_context() override;
-	executor_context_const_lent_ref get_execution_context() const override;
+	executor_context_weak_ptr get_execution_context() override;
+	executor_context_const_weak_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	lendable<fiber_execution_context> m_execContext;
+	shared_pointer_wrapper<fiber_execution_context> m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 
@@ -70,11 +71,11 @@ private:
 
 	start_result execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ref get_execution_context() override;
-	executor_context_const_lent_ref get_execution_context() const override;
+	executor_context_weak_ptr get_execution_context() override;
+	executor_context_const_weak_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	lendable<fiber_sheaf_execution_context> m_execContext;
+	shared_pointer_wrapper<fiber_sheaf_execution_context> m_execContext;
 	atomic32<ExecutorState::underlying_type> m_state;
 };
 
@@ -96,11 +97,11 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ref get_execution_context() override;
-	executor_context_const_lent_ref get_execution_context() const override;
+	executor_context_weak_ptr get_execution_context() override;
+	executor_context_const_weak_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	lendable<thread_execution_context> m_execContext;
+	shared_pointer_wrapper<thread_execution_context> m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 
@@ -118,11 +119,11 @@ private:
 
 	start_result execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ref get_execution_context() override;
-	executor_context_const_lent_ref get_execution_context() const override;
+	executor_context_weak_ptr get_execution_context() override;
+	executor_context_const_weak_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	lendable<thread_sheaf_execution_context> m_execContext;
+	shared_pointer_wrapper<thread_sheaf_execution_context> m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 
@@ -130,7 +131,7 @@ template<typename Return>
 class execution_context_executor : public cancellable_executor_interface<Return()>
 {
 public:
-	execution_context_executor(executor_context_lent_ref i_execContext);
+	execution_context_executor(executor_context_weak_ptr i_execContext);
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
@@ -141,11 +142,11 @@ private:
 
 	start_result execute(const ddk::function<void(sink_reference)>& i_sink,const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ref get_execution_context() override;
-	executor_context_const_lent_ref get_execution_context() const override;
+	executor_context_weak_ptr get_execution_context() override;
+	executor_context_const_weak_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	executor_context_lent_ref m_execContext;
+	executor_context_weak_ptr m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 

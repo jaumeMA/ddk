@@ -1,14 +1,24 @@
 
+#if defined(__LINUX__)
+
+namespace 
+inline void* align(std::size_t alignment,std::size_t size,
+                    void*& ptr,std::size_t& space) {
+    std::uintptr_t pn = reinterpret_cast<std::uintptr_t>(ptr);
+    std::uintptr_t aligned = (pn + alignment - 1) & -alignment;
+    std::size_t padding = aligned - pn;
+    if(space < size + padding) return nullptr;
+    space -= padding;
+    return ptr = reinterpret_cast<void*>(aligned);
+}
+
+#endif
+
 namespace ddk
 {
 
 template<typename T>
-void* typed_system_allocator<T>::allocate(size_t numUnits) const
-{
-	return allocate(numUnits,sizeof(T));
-}
-template<typename T>
-void* system_allocator::aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const
+void* system_allocator::aligned_allocate(void*& i_ptr,size_t& i_remainingSize)
 {
     static const size_t alignment = alignof(T);
 
@@ -22,10 +32,14 @@ void* system_allocator::aligned_allocate(void*& i_ptr,size_t& i_remainingSize) c
     }
     else
     {
-        DDK_FAIL("Allocation was not possible");
-
         return nullptr;
     }
+}
+
+template<typename T>
+void* typed_system_allocator<T>::allocate(size_t numUnits) const
+{
+	return allocate(numUnits,sizeof(T));
 }
 template<typename T>
 void* typed_system_allocator<T>::reallocate(void *ptr,size_t numUnits) const

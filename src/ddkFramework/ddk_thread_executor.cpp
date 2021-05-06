@@ -71,7 +71,7 @@ thread_polling_executor::start_result thread_polling_executor::execute(const ddk
 	}
 	else
 	{
-		return make_error<start_result>(StartNotAvailable);
+		return make_error<start_result>(StartNotExecutable);
 	}
 }
 ExecutorState thread_polling_executor::get_state() const
@@ -207,7 +207,7 @@ thread_event_driven_executor::start_result thread_event_driven_executor::execute
 	}
 	else
 	{
-		return make_error<start_result>(StartNotAvailable);
+		return make_error<start_result>(StartNotExecutable);
 	}
 }
 ExecutorState thread_event_driven_executor::get_state() const

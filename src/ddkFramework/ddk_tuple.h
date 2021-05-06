@@ -90,7 +90,6 @@ class tuple_impl<mpl::sequence<Indexs...>,Types...>: protected tuple_base<Indexs
 {
     template<typename,typename...>
     friend class tuple_impl;
-    static const size_t s_total_size = mpl::total_size<Types...>;
     template<size_t Index>
     using type_by_index = mpl::nth_type_of_t<Index,Types...>;
 

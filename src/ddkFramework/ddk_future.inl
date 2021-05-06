@@ -132,26 +132,29 @@ template<typename T>
 template<typename TT>
 future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) &&
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		if(async_base_lent_ptr asyncExecutor = m_sharedState->get_aync_execution())
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
-			future<TT> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
+			if constexpr(std::is_same<TT,void>::value)
 			{
-				if constexpr(std::is_same<TT,void>::value)
-				{
-					eval(i_continuation,acquiredFuture.extract_value());
-				}
-				else
-				{
-					return eval(i_continuation,acquiredFuture.extract_value());
-				}
-			})) -> attach(promote_to_ref(asyncExecutor));
+				eval(i_continuation,acquiredFuture.extract_value());
+			}
+			else
+			{
+				return eval(i_continuation,acquiredFuture.extract_value());
+			}
+		}));
+
+		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
+		{
+			future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
 
 			return std::move(res);
 		}
 		else
 		{
+			return executor->as_future();
 		}
 	}
 
@@ -161,27 +164,33 @@ template<typename T>
 template<typename TT, typename TTT>
 future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		if(async_base_lent_ptr asyncExecutor = m_sharedState->get_aync_execution())
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
-			future<TT> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
+			if constexpr(std::is_same<TT,void>::value)
 			{
-				if constexpr(std::is_same<TT,void>::value)
-				{
-					future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
 
-					nestedFuture.wait();
-				}
-				else
-				{
-					future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				nestedFuture.wait();
+			}
+			else
+			{
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
 
-					return nestedFuture.extract_value();
-				}
-			})) -> attach(promote_to_ref(asyncExecutor));
+				return nestedFuture.extract_value();
+			}
+		}));
+
+		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
+		{
+			future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
 
 			return std::move(res);
+		}
+		else
+		{
+			return executor->as_future();
 		}
 	}
 
@@ -213,35 +222,41 @@ future<TT> future<T>::async(const function<TT(const_reference)>& i_continuation,
 template<typename T>
 future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		if(async_base_lent_ptr asyncExecutor = m_sharedState->get_aync_execution())
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_onError]() mutable
 		{
-			future<T> res = make_async_executor(make_function([acquiredFuture = std::move(*this),i_onError]() mutable
+			try
 			{
-				try
+				if constexpr(std::is_same<T,void>::value)
 				{
-					if constexpr(std::is_same<T,void>::value)
-					{
-						acquiredFuture.extract_value();
-					}
-					else
-					{
-						return acquiredFuture.extract_value();
-					}
+					acquiredFuture.extract_value();
 				}
-				catch(const async_exception& i_excp)
+				else
 				{
-					if(i_excp.acquired() == false)
-					{
-						eval(i_onError,i_excp.as_error());
-					}
+					return acquiredFuture.extract_value();
+				}
+			}
+			catch(const async_exception& i_excp)
+			{
+				if(i_excp.acquired() == false)
+				{
+					eval(i_onError,i_excp.as_error());
+				}
 
-					throw async_exception{ i_excp.what(),i_excp.get_code(),true };
-				}
-			})) -> attach(promote_to_ref(asyncExecutor));
+				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
+			}
+		}));
+		
+		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
+		{
+			future<T> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
 
 			return std::move(res);
+		}
+		else
+		{
+			return executor->as_future();
 		}
 	}
 
@@ -287,23 +302,29 @@ template<typename T>
 template<typename TT>
 shared_future<TT> shared_future<T>::then(const function<TT(const_reference)>& i_continuation) const
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		if(async_base_lent_ptr asyncExecutor = m_sharedState->get_aync_execution())
+		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation]() mutable
 		{
-			shared_future<TT> res = make_async_executor(make_function([acquiredFuture = *this,i_continuation]() mutable
+			if constexpr(std::is_same<TT,void>::value)
 			{
-				if constexpr(std::is_same<TT,void>::value)
-				{
-					eval(i_continuation,acquiredFuture.get_value());
-				}
-				else
-				{
-					return eval(i_continuation,acquiredFuture.get_value());
-				}
-			})) -> attach(promote_to_ref(asyncExecutor));
+				eval(i_continuation,acquiredFuture.get_value());
+			}
+			else
+			{
+				return eval(i_continuation,acquiredFuture.get_value());
+			}
+		}));
+
+		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
+		{
+			shared_future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
 
 			return std::move(res);
+		}
+		else
+		{
+			return executor->as_future();
 		}
 	}
 
@@ -313,27 +334,33 @@ template<typename T>
 template<typename TT,typename TTT>
 shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		if(async_base_lent_ptr asyncExecutor = m_sharedState->get_aync_execution())
+		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
-			shared_future<TT> res = make_async_executor(make_function([acquiredFuture = *this,i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
+			if constexpr(std::is_same<TT,void>::value)
 			{
-				if constexpr(std::is_same<TT,void>::value)
-				{
-					shared_future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
+				shared_future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
 
-					nestedFuture.wait();
-				}
-				else
-				{
-					shared_future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
+				nestedFuture.wait();
+			}
+			else
+			{
+				shared_future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
 
-					return nestedFuture.extract_value();
-				}
-			})) -> attach(promote_to_ref(asyncExecutor));
+				return nestedFuture.extract_value();
+			}
+		}));
+			
+		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
+		{
+			shared_future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
 
 			return std::move(res);
+		}
+		else
+		{
+			return executor->as_future();
 		}
 	}
 
@@ -365,35 +392,41 @@ shared_future<TT> shared_future<T>::async(const function<TT(const_reference)>& i
 template<typename T>
 shared_future<T> shared_future<T>::on_error(const function<void(const async_error&)>& i_onError) const
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		if(async_base_lent_ptr asyncExecutor = m_sharedState->get_aync_execution())
+		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_onError]() mutable
 		{
-			shared_future<T> res = make_async_executor(make_function([acquiredFuture = *this,i_onError]() mutable
+			try
 			{
-				try
+				if constexpr(std::is_same<T,void>::value)
 				{
-					if constexpr(std::is_same<T,void>::value)
-					{
-						acquiredFuture.extract_value();
-					}
-					else
-					{
-						return acquiredFuture.extract_value();
-					}
+					acquiredFuture.extract_value();
 				}
-				catch(const async_exception& i_excp)
+				else
 				{
-					if(i_excp.acquired() == false)
-					{
-						eval(i_onError,i_excp.as_error());
-					}
+					return acquiredFuture.extract_value();
+				}
+			}
+			catch(const async_exception& i_excp)
+			{
+				if(i_excp.acquired() == false)
+				{
+					eval(i_onError,i_excp.as_error());
+				}
 
-					throw async_exception{ i_excp.what(),i_excp.get_code(),true };
-				}
-			})) -> attach(promote_to_ref(asyncExecutor));
+				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
+			}
+		}));
+			
+		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
+		{
+			shared_future<T> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
 
 			return std::move(res);
+		}
+		else
+		{
+			return executor->as_future();
 		}
 	}
 

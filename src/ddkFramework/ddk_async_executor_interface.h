@@ -16,8 +16,8 @@ class async_interface_base
 public:
 	virtual ~async_interface_base() = default;
 	virtual bool notify() = 0;
-	virtual executor_context_lent_ref get_execution_context() = 0;
-	virtual executor_context_const_lent_ref get_execution_context() const = 0;
+	virtual executor_context_weak_ptr get_execution_context() = 0;
+	virtual executor_context_const_weak_ptr get_execution_context() const = 0;
 };
 
 using async_base_dist_ref = distributed_reference_wrapper<async_interface_base>;

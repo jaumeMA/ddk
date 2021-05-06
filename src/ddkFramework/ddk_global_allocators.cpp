@@ -8,7 +8,12 @@ namespace
 
 std::map<size_t,fixed_size_allocator>& __get_global_allocator_map()
 {
-	static std::map<size_t,fixed_size_allocator> s_globalAllocatorMap = {{8,fixed_size_allocator(8)},{16,fixed_size_allocator(16)},{32,fixed_size_allocator(32)},{64,fixed_size_allocator(64)} };
+	static std::map<size_t,fixed_size_allocator> s_globalAllocatorMap;
+
+	s_globalAllocatorMap.insert(std::make_pair(8,8));
+	s_globalAllocatorMap.insert(std::make_pair(16,16));
+	s_globalAllocatorMap.insert(std::make_pair(32,32));
+	s_globalAllocatorMap.insert(std::make_pair(64,64));
 
 	return s_globalAllocatorMap;
 }
@@ -17,6 +22,7 @@ std::map<size_t,fixed_size_allocator>& __get_global_allocator_map()
 
 bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& i_entries)
 {
+	//its important this variable is static so initial fixed allocators are inserted only once
 	static std::map<size_t,fixed_size_allocator>& s_globalAllocatorMap = __get_global_allocator_map();
 
 	for(const auto& entry : i_entries)

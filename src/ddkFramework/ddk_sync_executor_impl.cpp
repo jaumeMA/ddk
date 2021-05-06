@@ -6,8 +6,10 @@ namespace ddk
 namespace detail
 {
 
+shared_pointer_wrapper<deferred_execution_context> s_execContext = make_shared_reference<deferred_execution_context>();
+
 thread_sheaf_executor::thread_sheaf_executor(thread_sheaf i_threadSheaf)
-: m_execContext(std::move(i_threadSheaf))
+: m_execContext(make_shared_reference<thread_sheaf_execution_context>(std::move(i_threadSheaf)))
 , m_state(ExecutorState::Idle)
 {
 }
@@ -46,7 +48,7 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 		}
 		else
 		{
-			return make_error<start_result>(StartErrorCode::StartNotAvailable);
+			return make_error<start_result>(StartErrorCode::StartNotExecutable);
 		}
 	}
 }
@@ -78,13 +80,13 @@ thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const ddk::fu
 		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
-executor_context_lent_ref thread_sheaf_executor::get_execution_context()
+executor_context_weak_ptr thread_sheaf_executor::get_execution_context()
 {
-	return lend(m_execContext);
+	return weak(m_execContext);
 }
-executor_context_const_lent_ref thread_sheaf_executor::get_execution_context() const
+executor_context_const_weak_ptr thread_sheaf_executor::get_execution_context() const
 {
-	return lend(m_execContext);
+	return weak(m_execContext);
 }
 ExecutorState thread_sheaf_executor::get_state() const
 {
@@ -92,7 +94,7 @@ ExecutorState thread_sheaf_executor::get_state() const
 }
 
 fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
-: m_execContext(std::move(i_fiberSheaf))
+: m_execContext(make_shared_reference<fiber_sheaf_execution_context>(std::move(i_fiberSheaf)))
 , m_state(ExecutorState::Idle)
 {
 }
@@ -133,7 +135,7 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 		}
 		else
 		{
-			return make_error<start_result>(StartErrorCode::StartNotAvailable);
+			return make_error<start_result>(StartErrorCode::StartNotExecutable);
 		}
 	}
 }
@@ -165,13 +167,13 @@ fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const ddk::func
 		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
-executor_context_lent_ref fiber_sheaf_executor::get_execution_context()
+executor_context_weak_ptr fiber_sheaf_executor::get_execution_context()
 {
-	return lend(m_execContext);
+	return weak(m_execContext);
 }
-executor_context_const_lent_ref fiber_sheaf_executor::get_execution_context() const
+executor_context_const_weak_ptr fiber_sheaf_executor::get_execution_context() const
 {
-	return lend(m_execContext);
+	return weak(m_execContext);
 }
 ExecutorState fiber_sheaf_executor::get_state() const
 {
