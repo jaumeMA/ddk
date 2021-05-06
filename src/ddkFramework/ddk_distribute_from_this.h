@@ -21,8 +21,8 @@ class distribute_from_this
 	friend inline distributed_reference_wrapper<TTTT> distribute(distribute_from_this<TTT,TTTT>& i_distFromThis);
 	template<typename TTT,typename TTTT>
 	friend inline distributed_reference_wrapper<const TTTT> distribute(const distribute_from_this<TTT,TTTT>& i_distFromThis);
-	template<typename T,typename Allocator,typename ... Args>
-	friend inline distributed_reference_wrapper<T> make_allocated_distributed_reference(Allocator&& i_allocator,Args&& ... i_args);
+	template<typename TTT,typename Allocator,typename ... Args>
+	friend inline distributed_reference_wrapper<TTT> make_allocated_distributed_reference(Allocator&& i_allocator,Args&& ... i_args);
 	template<typename TTT>
 	friend inline distributed_reference_wrapper<TTT> as_distributed_reference(TTT* i_ptr);
 	template<typename TTT>

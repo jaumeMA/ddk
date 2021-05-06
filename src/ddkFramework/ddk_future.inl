@@ -32,7 +32,7 @@ template<typename T>
 future<T>& future<T>::operator=(future<T>&& other)
 {
 	m_sharedState = std::move(other.m_sharedState);
-	
+
 	return *this;
 }
 template<typename T>
@@ -287,14 +287,14 @@ shared_future<T>::shared_future(future<T>&& i_future)
 template<typename T>
 shared_future<T>& shared_future<T>::operator=(const shared_future& other)
 {
-	m_sharedState = other.m_sharedState;
+	this->m_sharedState = other.m_sharedState;
 
 	return *this;
 }
 template<typename T>
 shared_future<T>& shared_future<T>::operator=(shared_future&& other)
 {
-	m_sharedState = std::move(other.m_sharedState);
+	this->m_sharedState = std::move(other.m_sharedState);
 
 	return *this;
 }
@@ -302,7 +302,7 @@ template<typename T>
 template<typename TT>
 shared_future<TT> shared_future<T>::then(const function<TT(const_reference)>& i_continuation) const
 {
-	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation]() mutable
 		{
@@ -334,7 +334,7 @@ template<typename T>
 template<typename TT,typename TTT>
 shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const
 {
-	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
@@ -370,7 +370,7 @@ template<typename T>
 template<typename TT,typename TTT>
 shared_future<TT> shared_future<T>::async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const
 {
-	if(m_sharedState)
+	if(this->m_sharedState)
 	{
 		return make_async_executor(make_function([acquiredFuture = *this,i_continuation]() mutable
 		{
@@ -392,7 +392,7 @@ shared_future<TT> shared_future<T>::async(const function<TT(const_reference)>& i
 template<typename T>
 shared_future<T> shared_future<T>::on_error(const function<void(const async_error&)>& i_onError) const
 {
-	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_onError]() mutable
 		{

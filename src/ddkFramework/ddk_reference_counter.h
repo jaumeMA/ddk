@@ -10,7 +10,7 @@
 
 #ifdef DDK_DEBUG
 
-#define TRACK_STACK
+//#define TRACK_STACK
 
 #include "ddk_memory_tracker.h"
 
@@ -59,8 +59,8 @@ public:
 private:
 #if defined(TRACK_STACK)
 	memory_tracker m_memTracker;
-	atomic_uint m_numLentReferences;
 #endif
+	atomic_uint m_numLentReferences;
 };
 
 #endif
@@ -81,7 +81,7 @@ private:
 	atomic_uint m_numWeakReferences;
 };
 
-class distributed_reference_counter 
+class distributed_reference_counter
 #ifdef DDK_DEBUG
 : public lent_reference_counter
 #endif

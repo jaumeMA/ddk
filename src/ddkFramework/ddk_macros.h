@@ -78,6 +78,9 @@
     #define TODO(something) PRAGMA(message(something));
     #define UNUSED(_x) (void)_x;
 
+    //annotations
+    #define NO_DISCARD_RETURN [[ nodiscard ]]
+
     #ifdef DDK_DEBUG
 
         #include <signal.h>
