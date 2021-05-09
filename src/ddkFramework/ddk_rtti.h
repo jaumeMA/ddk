@@ -90,7 +90,9 @@ public:
 }
 
 template<typename T>
-using inherited_type_list = typename detail::get_inherited_type_list<T>::type::template drop_if<mpl::not_predicate<std::is_base_of,T>::template type>::type;
+using _inherited_type_list = typename detail::get_inherited_type_list<T>::type;
+template<typename T>
+using inherited_type_list = typename _inherited_type_list<T>::template drop_if<mpl::not_predicate<std::is_base_of,T>::template type>::type;
 template<typename T>
 static const bool inherited_type_expansion = detail::get_inherited_type_list<T>::template initialize_visitable_type(inherited_type_list<T>{});
 
