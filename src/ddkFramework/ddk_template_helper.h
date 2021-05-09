@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <cstring>
 #include <functional>
+#include <memory>
 
 #define CONTAINS_SYMBOL(_SYMBOL) \
 template<typename T> \

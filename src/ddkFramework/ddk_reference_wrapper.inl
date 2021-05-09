@@ -189,9 +189,9 @@ inline unique_reference_wrapper<T> make_allocated_unique_reference(Allocator&& i
 	{
 		void* allocatedStorage = allocatedMemory;
 
-		if(void* alignedTStorage = i_allocator.aligned_allocate<T>(allocatedStorage,allocatedStorageSize))
+		if(void* alignedTStorage = i_allocator.template aligned_allocate<T>(allocatedStorage,allocatedStorageSize))
 		{
-			if(void* alignedRStorage = i_allocator.aligned_allocate<unique_reference_counter>(allocatedStorage,allocatedStorageSize))
+			if(void* alignedRStorage = i_allocator.template aligned_allocate<unique_reference_counter>(allocatedStorage,allocatedStorageSize))
 			{
 				T* allocatedObject = new (alignedTStorage) T(std::forward<Args>(i_args) ...);
 
@@ -370,7 +370,7 @@ inline distributed_reference_wrapper<T> make_allocated_distributed_reference(All
 	{
 		void* allocatedStorage = allocatedMemory;
 
-		if(void* alignedTStorage = i_allocator.aligned_allocate<T>(allocatedStorage,allocatedStorageSize))
+		if(void* alignedTStorage = i_allocator.template aligned_allocate<T>(allocatedStorage,allocatedStorageSize))
 		{
 			if constexpr(mpl::contains_symbol___distributed_type_tag<T>::value)
 			{
@@ -378,7 +378,7 @@ inline distributed_reference_wrapper<T> make_allocated_distributed_reference(All
 
 				return detail::__make_shared_reference(allocatedObject,allocatedObject->get_reference_counter(),{ lend(i_allocator),AllocationMode::AllocationOnly });
 			}
-			else if(void* alignedRStorage = i_allocator.aligned_allocate<distributed_reference_counter>(allocatedStorage,allocatedStorageSize))
+			else if(void* alignedRStorage = i_allocator.template aligned_allocate<distributed_reference_counter>(allocatedStorage,allocatedStorageSize))
 			{
 				T* allocatedObject = new (alignedTStorage) T(std::forward<Args>(i_args) ...);
 
