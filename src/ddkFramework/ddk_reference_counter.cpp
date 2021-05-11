@@ -156,7 +156,7 @@ bool distributed_reference_counter::incrementSharedReferenceIfNonEmpty()
 		{
 			return false;
 		}
-	} while(atomic_compare_exchange(m_numSharedReferences,oldValue,oldValue + 1));
+	} while(atomic_compare_exchange(m_numSharedReferences,oldValue,oldValue + 1) == false);
 
 	return true;
 }
