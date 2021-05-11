@@ -39,6 +39,10 @@ void task_executor::set_max_num_pending_tasks(size_t i_maxNumPendingTasks)
 {
 	m_maxNumPendingTasks = i_maxNumPendingTasks;
 }
+size_t task_executor::get_max_num_pending_tasks()
+{
+	return m_maxNumPendingTasks;
+}
 bool task_executor::set_affinity(const cpu_set_t& i_set)
 {
 	return m_availableThreads.set_affinity(i_set);
@@ -51,12 +55,12 @@ void task_executor::update()
 {
 	while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
 	{
+		atomic_post_decrement(m_numPendingTasks);
+
 		if(m_state != Running)
 		{
 			return;
 		}
-
-		atomic_post_increment(m_numPendingTasks);
 
 		unique_pending_task newTask = optTask.extract();
 
@@ -68,6 +72,8 @@ void task_executor::update()
 			}
 			else
 			{
+				atomic_post_increment(m_numPendingTasks);
+
 				m_pendingTasks.push(std::move(newTask));
 
 				break;

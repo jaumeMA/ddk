@@ -77,22 +77,19 @@ future<Return> task_executor::enqueue(const function<Return()>& i_task)
 
 		future<Return> taskFuture = newTask->as_future();
 
-		if(acquire_thread_result threadRes = m_availableThreads.aquire_thread())
+		if(m_numPendingTasks.get() > m_maxNumPendingTasks)
 		{
-			newTask->execute(std::move(threadRes).extract());
+			if(m_pendingTasks.pop())
+			{
+				atomic_post_decrement(m_numPendingTasks);
+			}
 		}
-		else if(m_numPendingTasks.get() < m_maxNumPendingTasks)
-		{
-			m_pendingTasks.push(std::move(newTask));
 
-			atomic_post_increment(m_numPendingTasks);
+		m_pendingTasks.push(std::move(newTask));
 
-			m_updateThread.signal_thread();
-		}
-		else
-		{
-			throw future_exception{ "Reach max number of pending items in task executor." };
-		}
+		atomic_post_increment(m_numPendingTasks);
+
+		m_updateThread.signal_thread();
 
 		return std::move(taskFuture);
 	}

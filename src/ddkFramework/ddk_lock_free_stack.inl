@@ -96,12 +96,6 @@ void lock_free_stack<T,Allocator>::_push(lock_free_stack_node<T>* i_newNode)
 	while(lastNode->is_divider() == false)
 	{
 		std::this_thread::yield();
-
-		if(++numOfRetries > k_maxNumberOfPivotChangeRetries)
-		{
-			numOfRetries = 0;
-			sleep(s_sleepTime);
-		}
 	}
 
 	lastNode->set_value(i_newNode->extract_value());

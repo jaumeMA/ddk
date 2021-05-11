@@ -49,16 +49,18 @@ void thread_execution_context::start(const function<void()>& i_callable)
 }
 void thread_execution_context::enqueue(const function<void()>& i_callable)
 {
-	mutex_guard mg(m_mutex);
+	{
+		mutex_guard mg(m_mutex);
 
-	if(m_alive)
-	{
-		m_pendingCallables.push(i_callable);
+		if(m_alive)
+		{
+			m_pendingCallables.push(i_callable);
+
+			return;
+		}
 	}
-	else
-	{
-		eval(i_callable);
-	}
+
+	eval(i_callable);
 }
 void thread_execution_context::clear()
 {
@@ -100,16 +102,18 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 }
 void fiber_execution_context::enqueue(const function<void()>& i_callable)
 {
-	mutex_guard mg(m_mutex);
+	{
+		mutex_guard mg(m_mutex);
 
-	if(m_alive)
-	{
-		m_pendingCallables.push(i_callable);
+		if(m_alive)
+		{
+			m_pendingCallables.push(i_callable);
+
+			return;
+		}
 	}
-	else
-	{
-		eval(i_callable);
-	}
+
+	eval(i_callable);
 }
 void fiber_execution_context::clear()
 {
@@ -165,16 +169,18 @@ void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 }
 void thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
-	mutex_guard mg(m_mutex);
+	{
+		mutex_guard mg(m_mutex);
 
-	if(m_alive)
-	{
-		m_pendingCallables.push(i_callable);
+		if(m_alive)
+		{
+			m_pendingCallables.push(i_callable);
+
+			return;
+		}
 	}
-	else
-	{
-		eval(i_callable);
-	}
+
+	eval(i_callable);
 }
 void thread_sheaf_execution_context::clear()
 {
@@ -234,16 +240,18 @@ void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 }
 void fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
-	mutex_guard mg(m_mutex);
+	{
+		mutex_guard mg(m_mutex);
 
-	if(m_alive)
-	{
-		m_pendingCallables.push(i_callable);
+		if(m_alive)
+		{
+			m_pendingCallables.push(i_callable);
+
+			return;
+		}
 	}
-	else
-	{
-		eval(i_callable);
-	}
+
+	eval(i_callable);
 }
 void fiber_sheaf_execution_context::clear()
 {
