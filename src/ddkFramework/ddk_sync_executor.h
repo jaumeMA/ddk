@@ -59,8 +59,8 @@ protected:
 
 private:
 	bool notify() override;
-	executor_context_weak_ptr get_execution_context() override;
-	executor_context_const_weak_ptr get_execution_context() const override;
+	executor_context_lent_ptr get_execution_context() override;
+	executor_context_const_lent_ptr get_execution_context() const override;
 	start_result execute() override;
 	cancel_result cancel() override;
 	bool empty() const override;

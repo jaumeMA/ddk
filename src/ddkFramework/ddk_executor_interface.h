@@ -76,8 +76,8 @@ public:
 	typedef typename async_cancellable_interface::CancelErrorCode CancelErrorCode;
 
 	virtual cancel_result cancel(const ddk::function<bool()>&) = 0;
-	virtual executor_context_weak_ptr get_execution_context() = 0;
-	virtual executor_context_const_weak_ptr get_execution_context() const = 0;
+	virtual executor_context_lent_ptr get_execution_context() = 0;
+	virtual executor_context_const_lent_ptr get_execution_context() const = 0;
 };
 
 template<typename Return, typename ... Args>

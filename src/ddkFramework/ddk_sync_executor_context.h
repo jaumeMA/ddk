@@ -6,29 +6,30 @@
 #include "ddk_fiber.h"
 #include "ddk_thread_sheaf.h"
 #include "ddk_fiber_sheaf.h"
+#include "ddk_lend_from_this.h"
 #include <queue>
 
 namespace ddk
 {
 
-class deferred_execution_context : public executor_context_interface
+class deferred_execution_context : public executor_context_interface, public lend_from_this<deferred_execution_context,executor_context_interface>
 {
 public:
 	void start(const function<void()>&);
 
 private:
-	void enqueue(const function<void()>&) override;
+	bool enqueue(const function<void()>&) override;
 	void clear() override;
 };
 
-class thread_execution_context : public executor_context_interface
+class thread_execution_context : public executor_context_interface, public lend_from_this<thread_execution_context,executor_context_interface>
 {
 public:
 	thread_execution_context(thread i_thread);
 	void start(const function<void()>&);
 
 private:
-	void enqueue(const function<void()>&) override;
+	bool enqueue(const function<void()>&) override;
 	void clear() override;
 
 private:
@@ -38,14 +39,14 @@ private:
 	bool m_alive;
 };
 
-class fiber_execution_context : public executor_context_interface
+class fiber_execution_context : public executor_context_interface, public lend_from_this<fiber_execution_context,executor_context_interface>
 {
 public:
 	fiber_execution_context(fiber i_fiber);
 	void start(const function<void()>&);
 
 private:
-	void enqueue(const function<void()>&) override;
+	bool enqueue(const function<void()>&) override;
 	void clear() override;
 
 private:
@@ -55,14 +56,14 @@ private:
 	bool m_alive;
 };
 
-class thread_sheaf_execution_context : public executor_context_interface
+class thread_sheaf_execution_context : public executor_context_interface, public lend_from_this<thread_sheaf_execution_context,executor_context_interface>
 {
 public:
 	thread_sheaf_execution_context(thread_sheaf i_threadSheaf);
 	void start(const function<void()>&);
 	size_t get_num_failures() const;
 
-	void enqueue(const function<void()>&) override;
+	bool enqueue(const function<void()>&) override;
 	void clear() override;
 
 private:
@@ -74,7 +75,7 @@ private:
 	bool m_alive;
 };
 
-class fiber_sheaf_execution_context : public executor_context_interface
+class fiber_sheaf_execution_context : public executor_context_interface, public lend_from_this<fiber_sheaf_execution_context,executor_context_interface>
 {
 public:
 	fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf);
@@ -83,7 +84,7 @@ public:
 	void clear_fibers();
 	size_t get_num_failures() const;
 
-	void enqueue(const function<void()>&) override;
+	bool enqueue(const function<void()>&) override;
 	void clear() override;
 
 private:

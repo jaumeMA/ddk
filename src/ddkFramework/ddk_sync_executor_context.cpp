@@ -8,9 +8,11 @@ void deferred_execution_context::start(const function<void()>& i_callable)
 {
 	eval(i_callable);
 }
-void deferred_execution_context::enqueue(const function<void()>& i_callable)
+bool deferred_execution_context::enqueue(const function<void()>& i_callable)
 {
 	eval(i_callable);
+
+	return true;
 }
 void deferred_execution_context::clear()
 {
@@ -47,7 +49,7 @@ void thread_execution_context::start(const function<void()>& i_callable)
 		m_mutex.unlock();
 	});
 }
-void thread_execution_context::enqueue(const function<void()>& i_callable)
+bool thread_execution_context::enqueue(const function<void()>& i_callable)
 {
 	{
 		mutex_guard mg(m_mutex);
@@ -56,11 +58,13 @@ void thread_execution_context::enqueue(const function<void()>& i_callable)
 		{
 			m_pendingCallables.push(i_callable);
 
-			return;
+			return true;
 		}
 	}
 
 	eval(i_callable);
+
+	return false;
 }
 void thread_execution_context::clear()
 {
@@ -100,7 +104,7 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 		m_mutex.unlock();
 	});
 }
-void fiber_execution_context::enqueue(const function<void()>& i_callable)
+bool fiber_execution_context::enqueue(const function<void()>& i_callable)
 {
 	{
 		mutex_guard mg(m_mutex);
@@ -109,11 +113,13 @@ void fiber_execution_context::enqueue(const function<void()>& i_callable)
 		{
 			m_pendingCallables.push(i_callable);
 
-			return;
+			return true;
 		}
 	}
 
 	eval(i_callable);
+
+	return false;
 }
 void fiber_execution_context::clear()
 {
@@ -167,7 +173,7 @@ void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 		}
 	});
 }
-void thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
+bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
 	{
 		mutex_guard mg(m_mutex);
@@ -176,11 +182,13 @@ void thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 		{
 			m_pendingCallables.push(i_callable);
 
-			return;
+			return true;
 		}
 	}
 
 	eval(i_callable);
+
+	return false;
 }
 void thread_sheaf_execution_context::clear()
 {
@@ -238,7 +246,7 @@ void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 		}
 	});
 }
-void fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
+bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
 	{
 		mutex_guard mg(m_mutex);
@@ -247,11 +255,13 @@ void fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 		{
 			m_pendingCallables.push(i_callable);
 
-			return;
+			return true;
 		}
 	}
 
 	eval(i_callable);
+
+	return false;
 }
 void fiber_sheaf_execution_context::clear()
 {

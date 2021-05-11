@@ -22,7 +22,7 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 		{
 			try
 			{
-				s_execContext->start([&i_sink,&i_callable]()
+				s_execContext.start([&i_sink,&i_callable]()
 				{
 					eval_unsafe(i_sink,eval_unsafe(i_callable));
 				});
@@ -53,14 +53,14 @@ typename deferred_executor<Return>::cancel_result deferred_executor<Return>::can
 	}
 }
 template<typename Return>
-executor_context_weak_ptr deferred_executor<Return>::get_execution_context()
+executor_context_lent_ptr deferred_executor<Return>::get_execution_context()
 {
-	return weak(s_execContext);
+	return lend(s_execContext);
 }
 template<typename Return>
-executor_context_const_weak_ptr deferred_executor<Return>::get_execution_context() const
+executor_context_const_lent_ptr deferred_executor<Return>::get_execution_context() const
 {
-	return weak(s_execContext);
+	return lend(s_execContext);
 }
 template<typename Return>
 ExecutorState deferred_executor<Return>::get_state() const
@@ -70,7 +70,7 @@ ExecutorState deferred_executor<Return>::get_state() const
 
 template<typename Return>
 fiber_executor<Return>::fiber_executor(fiber i_fiber)
-: m_execContext(make_shared_reference<fiber_execution_context>(std::move(i_fiber)))
+: m_execContext(std::move(i_fiber))
 {
 }
 template<typename Return>
@@ -84,7 +84,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			m_execContext->start([=]()
+			m_execContext.start([=]()
 			{
 				try
 				{
@@ -152,14 +152,14 @@ typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(co
 	}
 }
 template<typename Return>
-executor_context_weak_ptr fiber_executor<Return>::get_execution_context()
+executor_context_lent_ptr fiber_executor<Return>::get_execution_context()
 {
-	return weak(m_execContext);
+	return lend(m_execContext);
 }
 template<typename Return>
-executor_context_const_weak_ptr fiber_executor<Return>::get_execution_context() const
+executor_context_const_lent_ptr fiber_executor<Return>::get_execution_context() const
 {
-	return weak(m_execContext);
+	return lend(m_execContext);
 }
 template<typename Return>
 ExecutorState fiber_executor<Return>::get_state() const
@@ -169,7 +169,7 @@ ExecutorState fiber_executor<Return>::get_state() const
 
 template<typename Return>
 thread_executor<Return>::thread_executor(thread i_thread)
-: m_execContext(make_shared_reference<thread_execution_context>(std::move(i_thread)))
+: m_execContext(std::move(i_thread))
 , m_state(ExecutorState::Idle)
 {
 }
@@ -184,7 +184,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 	{
 		if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 		{
-			m_execContext->start([=]()
+			m_execContext.start([=]()
 			{
 				try
 				{
@@ -243,14 +243,14 @@ typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(
 	}
 }
 template<typename Return>
-executor_context_weak_ptr thread_executor<Return>::get_execution_context()
+executor_context_lent_ptr thread_executor<Return>::get_execution_context()
 {
-	return weak(m_execContext);
+	return lend(m_execContext);
 }
 template<typename Return>
-executor_context_const_weak_ptr thread_executor<Return>::get_execution_context() const
+executor_context_const_lent_ptr thread_executor<Return>::get_execution_context() const
 {
-	return weak(m_execContext);
+	return lend(m_execContext);
 }
 template<typename Return>
 ExecutorState thread_executor<Return>::get_state() const
@@ -259,7 +259,7 @@ ExecutorState thread_executor<Return>::get_state() const
 }
 
 template<typename Return>
-execution_context_executor<Return>::execution_context_executor(executor_context_weak_ptr i_execContext)
+execution_context_executor<Return>::execution_context_executor(executor_context_lent_ptr i_execContext)
 : m_execContext(i_execContext)
 , m_state(ExecutorState::Idle)
 {
@@ -275,14 +275,14 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 	{
 		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 		{
-			executor_context_shared_ptr execContext = share(m_execContext);
+			executor_context_lent_ptr execContext = m_execContext;
 			if(execContext == nullptr)
 			{
 				//by design, if no executor available, use deferred executor
-				execContext = s_execContext;
+				execContext = lend(s_execContext);
 			}
 
-			execContext->enqueue([=]()
+			if(execContext->enqueue([=]()
 			{
 				try
 				{
@@ -301,7 +301,10 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 
 					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 				}
-			});
+			}) == false)
+			{
+				m_execContext = nullptr;
+			}
 
 			return make_result<start_result>(m_state.get());
 		}
@@ -341,12 +344,12 @@ typename execution_context_executor<Return>::cancel_result execution_context_exe
 	}
 }
 template<typename Return>
-executor_context_weak_ptr execution_context_executor<Return>::get_execution_context()
+executor_context_lent_ptr execution_context_executor<Return>::get_execution_context()
 {
 	return m_execContext;
 }
 template<typename Return>
-executor_context_const_weak_ptr execution_context_executor<Return>::get_execution_context() const
+executor_context_const_lent_ptr execution_context_executor<Return>::get_execution_context() const
 {
 	return m_execContext;
 }
