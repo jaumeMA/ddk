@@ -26,6 +26,7 @@ public:
 	~thread_polling_executor();
 	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
 	std::chrono::milliseconds get_update_time() const;
+	bool set_affinity(const cpu_set_t& i_set);
 	void start_thread(const ddk::function<void()>& i_executor);
 	void stop_thread();
 	void signal_thread();
@@ -57,6 +58,7 @@ public:
 	~thread_event_driven_executor();
 	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
 	std::chrono::milliseconds get_update_time() const;
+	bool set_affinity(const cpu_set_t& i_set);
 	void start_thread(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc = nullptr);
 	void stop_thread();
 	void signal_thread();
@@ -90,6 +92,8 @@ public:
 	thread_fire_and_forget_executor(const thread_fire_and_forget_executor&) = delete;
 	thread_fire_and_forget_executor(thread_fire_and_forget_executor&& other);
 	~thread_fire_and_forget_executor();
+
+	bool set_affinity(const cpu_set_t& i_set);
 
 private:
 	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;

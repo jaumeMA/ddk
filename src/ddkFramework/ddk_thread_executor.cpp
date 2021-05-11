@@ -43,6 +43,10 @@ std::chrono::milliseconds thread_polling_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
+bool thread_polling_executor::set_affinity(const cpu_set_t& i_set)
+{
+	return m_updateThread.set_affinity(i_set);
+}
 void thread_polling_executor::start_thread(const ddk::function<void()>& i_executor)
 {
 	const start_result startRes = execute(nullptr,i_executor);
@@ -174,6 +178,10 @@ std::chrono::milliseconds thread_event_driven_executor::get_update_time() const
 {
 	return m_sleepTimeInMS;
 }
+bool thread_event_driven_executor::set_affinity(const cpu_set_t& i_set)
+{
+	return m_updateThread.set_affinity(i_set);
+}
 void thread_event_driven_executor::start_thread(const ddk::function<void()>& i_executor, const ddk::function<bool()>& i_testFunc)
 {
 	if (i_testFunc != nullptr)
@@ -286,6 +294,10 @@ thread_fire_and_forget_executor::thread_fire_and_forget_executor(thread_fire_and
 }
 thread_fire_and_forget_executor::~thread_fire_and_forget_executor()
 {
+}
+bool thread_fire_and_forget_executor::set_affinity(const cpu_set_t& i_set)
+{
+	return m_updateThread.set_affinity(i_set);
 }
 thread_fire_and_forget_executor::start_result thread_fire_and_forget_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
