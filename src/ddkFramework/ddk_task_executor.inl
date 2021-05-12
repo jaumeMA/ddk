@@ -91,8 +91,15 @@ future<Return> task_executor::enqueue(const function<Return()>& i_task)
 
 		if(m_numPendingTasks.get() > m_maxNumPendingTasks)
 		{
-			if(m_pendingTasks.pop())
+			if(optional<unique_pending_task> optTask = m_pendingTasks.pop())
 			{
+				unique_pending_task newTask = optTask.extract();
+
+				if(newTask->empty() == false)
+				{
+					newTask->cancel();
+				}
+
 				atomic_post_decrement(m_numPendingTasks);
 			}
 		}
