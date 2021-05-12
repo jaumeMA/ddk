@@ -100,6 +100,17 @@ future<Return> async_executor<Return>::attach(async_base_lent_ref i_asyncExecuti
 	return as_future();
 }
 template<typename Return>
+future<Return> async_executor<Return>::attach(cancellable_executor_unique_ref<Return> i_execImpl)
+{
+	m_executor = std::move(i_execImpl);
+
+	start_result execRes = execute();
+
+	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
+
+	return as_future();
+}
+template<typename Return>
 future<Return> async_executor<Return>::attach(attachable<Return> i_attachable)
 {
 	m_executor = std::move(i_attachable.m_executorImpl);
@@ -153,6 +164,13 @@ template<typename Return>
 future<Return> async_executor<Return>::deferred_attach(async_base_lent_ref i_asyncExecution)
 {
 	m_executor = make_executor<detail::execution_context_executor<Return>>(i_asyncExecution->get_execution_context());
+
+	return as_future();
+}
+template<typename Return>
+future<Return> async_executor<Return>::deferred_attach(cancellable_executor_unique_ref<Return> i_execImpl)
+{
+	m_executor = std::move(i_execImpl);
 
 	return as_future();
 }

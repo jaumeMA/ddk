@@ -33,6 +33,16 @@ void task_executor::stop()
 		m_state = Idle;
 
 		m_updateThread.stop_thread();
+
+		while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
+		{
+			unique_pending_task newTask = optTask.extract();
+
+			if(newTask->empty() == false)
+			{
+				newTask->cancel();
+			}
+		}
 	}
 }
 void task_executor::set_max_num_pending_tasks(size_t i_maxNumPendingTasks)

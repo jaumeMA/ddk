@@ -1,6 +1,7 @@
 
 #include "ddk_lock_guard.h"
 #include "ddk_async_exceptions.h"
+#include "ddk_task_executor_context.h"
 
 namespace ddk
 {
@@ -17,7 +18,15 @@ task_executor::pending_task_impl<Return>::~pending_task_impl()
 template<typename Return>
 void task_executor::pending_task_impl<Return>::execute(thread i_thread)
 {
-	m_executor->attach(std::move(i_thread));
+	if(executor_context_lent_ptr executorContext = static_shared_cast<async_interface_base>(m_executor)->get_execution_context())
+	{
+		static_lent_cast<delayed_task_execution_context>(executorContext)->attach(std::move(i_thread));
+	}
+	else
+	{
+		m_executor->attach(std::move(i_thread));
+	}
+
 	//once executed no need to hold executor anymore
 	m_executor = nullptr;
 }
@@ -62,7 +71,10 @@ bool task_executor::pending_task_impl<Return>::empty()
 template<typename Return>
 future<Return> task_executor::pending_task_impl<Return>::as_future()
 {
-	return m_executor->as_future();
+	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<detail::delayed_task_executor<Return>>());
+
+	return m_executor->attach((s_allocator) ? make_unique_reference<detail::delayed_task_executor<Return>>(*s_allocator)
+											: make_unique_reference<detail::delayed_task_executor<Return>>());
 }
 
 template<typename Return>

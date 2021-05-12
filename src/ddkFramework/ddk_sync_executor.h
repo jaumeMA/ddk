@@ -40,6 +40,7 @@ public:
 	future<Return> attach(thread_sheaf i_threadSheaf);
 	future<Return> attach(fiber_sheaf i_fiberSheaf);
 	future<Return> attach(async_base_lent_ref i_asyncExecutor);
+	future<Return> attach(cancellable_executor_unique_ref<Return> i_execImpl);
 	future<Return> attach(attachable<Return> i_attachable);
 
 	// delayed attach
@@ -48,6 +49,7 @@ public:
 	future<Return> deferred_attach(thread_sheaf i_threadSheaf);
 	future<Return> deferred_attach(fiber_sheaf i_fiberSheaf);
 	future<Return> deferred_attach(async_base_lent_ref i_asyncExecutor);
+	future<Return> deferred_attach(cancellable_executor_unique_ref<Return> i_execImpl);
 	future<Return> deferred_attach(attachable<Return> i_attachable);
 
 	async_dist_ref store(promise<Return>& i_promise);
