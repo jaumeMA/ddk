@@ -145,7 +145,7 @@ private:
 	executor_context_const_lent_ptr get_execution_context() const override;
 	ExecutorState get_state() const override;
 
-	executor_context_lent_ptr m_execContext;
+	executor_context_lent_ptr m_execContext = nullptr;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 

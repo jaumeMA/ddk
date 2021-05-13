@@ -6,7 +6,7 @@
 namespace ddk
 {
 
-class delayed_task_execution_context : public executor_context_interface,public lend_from_this<delayed_task_execution_context,executor_context_interface>
+class delayed_task_execution_context : public executor_context_interface,public lend_from_this<delayed_task_execution_context>
 {
 public:
 	void start(const function<void()>&);
@@ -21,6 +21,7 @@ private:
 	std::queue<function<void()>> m_pendingCallables;
 	bool m_alive = true;
 	function<void()> m_function;
+	thread m_thread;
 };
 
 namespace detail
@@ -32,7 +33,7 @@ class delayed_task_executor : public cancellable_executor_interface<Return()>
 public:
 	delayed_task_executor();
 
-	void attach(thread i_thread);
+	lent_reference_wrapper<delayed_task_execution_context> get_context();
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;

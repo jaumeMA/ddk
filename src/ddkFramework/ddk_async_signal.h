@@ -32,7 +32,7 @@ class async_signal<void(Types...)> : protected detail::signal_connector
 	typedef detail::async_builtin_message<typename std::remove_const<typename std::remove_reference<Types>::type>::type ...> builtn_message_type;
 
 public:
-	async_signal(unsigned int i_updateTime = k_defaultProcessTimeInMs);
+	async_signal(const std::chrono::milliseconds& i_updateTime = std::chrono::milliseconds(k_defaultProcessTimeInMs));
 	async_signal(thread_executor_unique_ref i_executor);
     detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const;
 	template<typename MessageType>

@@ -309,12 +309,12 @@ bool async_executor<Return>::notify()
 template<typename Return>
 executor_context_lent_ptr async_executor<Return>::get_execution_context()
 {
-	return m_executor->get_execution_context();
+	return (m_executor != nullptr) ? m_executor->get_execution_context() : nullptr;
 }
 template<typename Return>
 executor_context_const_lent_ptr async_executor<Return>::get_execution_context() const
 {
-	return m_executor->get_execution_context();
+	return (m_executor != nullptr) ? m_executor->get_execution_context() : nullptr;
 }
 
 }

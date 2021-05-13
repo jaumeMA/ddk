@@ -10,9 +10,9 @@ delayed_task_executor<Return>::delayed_task_executor()
 {
 }
 template<typename Return>
-void delayed_task_executor<Return>::attach(thread i_thread)
+lent_reference_wrapper<delayed_task_execution_context> delayed_task_executor<Return>::get_context()
 {
-	m_execContext.attach(std::move(i_thread));
+	return lend(m_execContext);
 }
 template<typename Return>
 typename delayed_task_executor<Return>::start_result delayed_task_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink,const ddk::function<Return()>& i_callable)

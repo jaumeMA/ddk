@@ -223,8 +223,6 @@ void private_async_state<T>::notify() const
 	if(m_asyncExecutor)
 	{
 		m_asyncExecutor->notify();
-
-		m_asyncExecutor = nullptr;
 	}
 }
 

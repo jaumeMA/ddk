@@ -1,38 +1,44 @@
 #include "ddk_task_executor_context.h"
+#include "ddk_lock_guard.h"
 
 namespace ddk
 {
 
 void delayed_task_execution_context::attach(thread i_thread)
 {
-	i_thread.start([&]()
+	m_thread = std::move(i_thread);
+
+	m_thread.start([this, callable = std::move(m_function)]()
 	{
-		eval(m_function);
-
-		m_mutex.lock();
-
-		while(m_pendingCallables.empty() == false)
+		if(callable != nullptr)
 		{
-			const function<void()> task = m_pendingCallables.front();
-
-			m_pendingCallables.pop();
-
-			m_mutex.unlock();
-
-			eval(task);
+			eval(callable);
 
 			m_mutex.lock();
+
+			while(m_pendingCallables.empty() == false)
+			{
+				const function<void()> task = m_pendingCallables.front();
+
+				m_pendingCallables.pop();
+
+				m_mutex.unlock();
+
+				eval(task);
+
+				m_mutex.lock();
+			}
+
+			m_alive = false;
+
+			m_mutex.unlock();
 		}
-
-		m_alive = false;
-
-		m_function = nullptr;
-
-		m_mutex.unlock();
 	});
 }
 void delayed_task_execution_context::cancel()
 {
+	mutex_guard mg(m_mutex);
+
 	m_function = nullptr;
 }
 void delayed_task_execution_context::start(const function<void()>& i_callable)

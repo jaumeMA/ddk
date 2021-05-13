@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<typename ... Types>
-async_signal<void(Types...)>::async_signal(unsigned int i_updateTime)
+async_signal<void(Types...)>::async_signal(const std::chrono::milliseconds& i_updateTime)
 : m_id(reinterpret_cast<size_t>(this))
 , m_msgLoop(m_id)
 , m_msgQueue(make_executor<thread_polling_executor>(i_updateTime))

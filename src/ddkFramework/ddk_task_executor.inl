@@ -1,7 +1,7 @@
 
 #include "ddk_lock_guard.h"
 #include "ddk_async_exceptions.h"
-#include "ddk_task_executor_context.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
@@ -18,22 +18,26 @@ task_executor::pending_task_impl<Return>::~pending_task_impl()
 template<typename Return>
 void task_executor::pending_task_impl<Return>::execute(thread i_thread)
 {
-	if(executor_context_lent_ptr executorContext = static_shared_cast<async_interface_base>(m_executor)->get_execution_context())
+	if(async_cancellable_dist_ptr _executor = std::move(m_executor))
 	{
-		static_lent_cast<delayed_task_execution_context>(executorContext)->attach(std::move(i_thread));
+		if(executor_context_lent_ptr _executorImpl = _executor->get_execution_context())
+		{
+			static_lent_cast<delayed_task_execution_context>(_executorImpl)->attach(std::move(i_thread));
+		}
+		else
+		{
+			throw async_exception{ "Trying to execute task with no context." };
+		}
 	}
 	else
 	{
-		m_executor->attach(std::move(i_thread));
+		throw async_exception{"Trying to execute empty task."};
 	}
-
-	//once executed no need to hold executor anymore
-	m_executor = nullptr;
 }
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::execute()
 {
-	if(async_execute_dist_ptr<Return> _executor = m_executor)
+	if(async_execute_dist_ptr<Return> _executor = std::move(m_executor))
 	{
 		return static_cast<bool>(_executor->execute());
 	}
@@ -45,16 +49,15 @@ bool task_executor::pending_task_impl<Return>::execute()
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::cancel()
 {
-	if(async_cancellable_dist_ptr _executor = m_executor)
+	if(async_cancellable_dist_ptr _executor = std::move(m_executor))
 	{
-		const auto res = _executor->cancel();
+		if(_executor->cancel())
+		{
+			return true;
+		}
+	}
 
-		return static_cast<bool>(res);
-	}
-	else
-	{
-		return true;
-	}
+	return true;
 }
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::empty()
