@@ -11,15 +11,14 @@ namespace ddk
 {
 
 template<typename T>
-class shared_future;
-
-template<typename T>
 class future
 {
 	template<typename>
 	friend class future;
 	template<typename>
 	friend class promise;
+	template<typename>
+	friend class shared_future;
 	template<typename>
 	friend class executor_promise;
 	friend inline shared_future<T> share(future<T>&& i_future)
@@ -63,6 +62,7 @@ protected:
 	const_reference get_value() const;
 
 	detail::private_async_state_dist_ptr<T> m_sharedState;
+	char m_depth = 0;
 };
 
 template<>

@@ -134,6 +134,8 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
+		const char currDepth = m_depth;
+
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
 			if constexpr(std::is_same<TT,void>::value)
@@ -148,7 +150,9 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
+			future<TT> res = executor -> attach(asyncExecutor->get_execution_context(),currDepth);
+
+			res.m_depth = currDepth + 1;
 
 			return std::move(res);
 		}
@@ -166,6 +170,8 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
+		const char currDepth = m_depth;
+
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
 			if constexpr(std::is_same<TT,void>::value)
@@ -184,7 +190,9 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
+			future<TT> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+
+			res.m_depth = currDepth + 1;
 
 			return std::move(res);
 		}
@@ -224,6 +232,8 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
+		const char currDepth = m_depth;
+
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_onError]() mutable
 		{
 			try
@@ -250,7 +260,9 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 		
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			future<T> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
+			future<T> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+
+			res.m_depth = currDepth + 1;
 
 			return std::move(res);
 		}
@@ -304,6 +316,8 @@ shared_future<TT> shared_future<T>::then(const function<TT(const_reference)>& i_
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
+		const char currDepth = m_depth;
+
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation]() mutable
 		{
 			if constexpr(std::is_same<TT,void>::value)
@@ -318,7 +332,9 @@ shared_future<TT> shared_future<T>::then(const function<TT(const_reference)>& i_
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			shared_future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
+			future<TT> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+
+			res.m_depth = currDepth + 1;
 
 			return std::move(res);
 		}
@@ -336,6 +352,8 @@ shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
+		const char currDepth = m_depth;
+
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
 			if constexpr(std::is_same<TT,void>::value)
@@ -354,7 +372,9 @@ shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>&
 			
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			shared_future<TT> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
+			future<TT> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+
+			res.m_depth = currDepth + 1;
 
 			return std::move(res);
 		}
@@ -394,6 +414,8 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
+		const char currDepth = m_depth;
+
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_onError]() mutable
 		{
 			try
@@ -420,7 +442,9 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			shared_future<T> res = executor -> attach(promote_to_ref(lend(asyncExecutor)));
+			future<T> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+
+			res.m_depth = currDepth + 1;
 
 			return std::move(res);
 		}

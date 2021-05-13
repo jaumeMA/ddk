@@ -130,7 +130,7 @@ template<typename Return>
 class execution_context_executor : public cancellable_executor_interface<Return()>
 {
 public:
-	execution_context_executor(executor_context_lent_ptr i_execContext);
+	execution_context_executor(executor_context_lent_ptr i_execContext, char i_depth);
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
@@ -147,6 +147,7 @@ private:
 
 	executor_context_lent_ptr m_execContext = nullptr;
 	atomic<ExecutorState::underlying_type> m_state;
+	char m_depth;
 };
 
 }

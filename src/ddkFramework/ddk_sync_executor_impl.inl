@@ -259,9 +259,10 @@ ExecutorState thread_executor<Return>::get_state() const
 }
 
 template<typename Return>
-execution_context_executor<Return>::execution_context_executor(executor_context_lent_ptr i_execContext)
+execution_context_executor<Return>::execution_context_executor(executor_context_lent_ptr i_execContext, char i_depth)
 : m_execContext(i_execContext)
 , m_state(ExecutorState::Idle)
+, m_depth(i_depth)
 {
 }
 template<typename Return>
@@ -301,7 +302,7 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 
 					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 				}
-			}) == false)
+			},m_depth) == false)
 			{
 				m_execContext = nullptr;
 			}

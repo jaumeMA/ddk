@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_executor_interface.h"
+#include "ddk_sync_executor_context.h"
 #include <queue>
 
 namespace ddk
@@ -14,14 +15,13 @@ public:
 	void cancel();
 
 private:
-	bool enqueue(const function<void()>&) override;
+	bool enqueue(const function<void()>&, char i_depth) override;
 	void clear() override;
 
 	mutex m_mutex;
-	std::queue<function<void()>> m_pendingCallables;
-	bool m_alive = true;
 	function<void()> m_function;
 	thread m_thread;
+	detail::async_executor_recipients m_recipients;
 };
 
 namespace detail

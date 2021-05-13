@@ -39,7 +39,7 @@ public:
 	future<Return> attach(fiber i_fiber);
 	future<Return> attach(thread_sheaf i_threadSheaf);
 	future<Return> attach(fiber_sheaf i_fiberSheaf);
-	future<Return> attach(async_base_lent_ref i_asyncExecutor);
+	future<Return> attach(executor_context_lent_ptr i_asyncExecutorContext, char i_depth);
 	future<Return> attach(cancellable_executor_unique_ref<Return> i_execImpl);
 	future<Return> attach(attachable<Return> i_attachable);
 
@@ -48,7 +48,7 @@ public:
 	future<Return> deferred_attach(fiber i_fiber);
 	future<Return> deferred_attach(thread_sheaf i_threadSheaf);
 	future<Return> deferred_attach(fiber_sheaf i_fiberSheaf);
-	future<Return> deferred_attach(async_base_lent_ref i_asyncExecutor);
+	future<Return> deferred_attach(executor_context_lent_ptr i_asyncExecutorContext, char i_depth);
 	future<Return> deferred_attach(cancellable_executor_unique_ref<Return> i_execImpl);
 	future<Return> deferred_attach(attachable<Return> i_attachable);
 

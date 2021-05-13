@@ -16,24 +16,7 @@ void delayed_task_execution_context::attach(thread i_thread)
 		{
 			eval(callable);
 
-			m_mutex.lock();
-
-			while(m_pendingCallables.empty() == false)
-			{
-				const function<void()> task = m_pendingCallables.front();
-
-				m_pendingCallables.pop();
-
-				m_mutex.unlock();
-
-				eval(task);
-
-				m_mutex.lock();
-			}
-
-			m_alive = false;
-
-			m_mutex.unlock();
+			m_recipients.notify();
 		}
 	});
 }
@@ -49,28 +32,20 @@ void delayed_task_execution_context::start(const function<void()>& i_callable)
 
 	m_function = i_callable;
 }
-bool delayed_task_execution_context::enqueue(const function<void()>& i_callable)
+bool delayed_task_execution_context::enqueue(const function<void()>& i_callable, char i_depth)
 {
+	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
-		mutex_guard mg(m_mutex);
+		eval(i_callable);
 
-		if(m_alive)
-		{
-			m_pendingCallables.push(i_callable);
-
-			return true;
-		}
+		return false;
 	}
 
-	eval(i_callable);
-
-	return false;
+	return true;
 }
 void delayed_task_execution_context::clear()
 {
-	mutex_guard mg(m_mutex);
-
-	while(m_pendingCallables.empty() == false) m_pendingCallables.pop();
+	m_recipients.clear();
 }
 
 }

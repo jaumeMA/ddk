@@ -3,12 +3,68 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+void async_executor_recipients::notify()
+{
+	m_mutex.lock();
+
+	while(m_pendingCallables.empty() == false)
+	{
+		std::map<char,std::queue<function<void()>>>::iterator itGroupedMaps = m_pendingCallables.begin();
+		std::queue<function<void()>>& groupedMaps = itGroupedMaps->second;
+
+		while(groupedMaps.empty() == false)
+		{
+			const function<void()> task = groupedMaps.front();
+
+			groupedMaps.pop();
+
+			m_mutex.unlock();
+
+			eval(task);
+
+			m_mutex.lock();
+		}
+
+		m_pendingCallables.erase(itGroupedMaps);
+	}
+
+	m_admissible = false;
+
+	m_mutex.unlock();
+}
+bool async_executor_recipients::accept(const function<void()>& i_callable,char i_depth)
+{
+	mutex_guard mg(m_mutex);
+
+	if(m_admissible)
+	{
+		m_pendingCallables[i_depth].push(i_callable);
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+void async_executor_recipients::clear()
+{
+	mutex_guard mg(m_mutex);
+
+	m_pendingCallables.clear();
+}
+
+}
+
 
 void deferred_execution_context::start(const function<void()>& i_callable)
 {
 	eval(i_callable);
 }
-bool deferred_execution_context::enqueue(const function<void()>& i_callable)
+bool deferred_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
 {
 	eval(i_callable);
 
@@ -20,7 +76,6 @@ void deferred_execution_context::clear()
 
 thread_execution_context::thread_execution_context(thread i_thread)
 : m_thread(std::move(i_thread))
-, m_alive(true)
 {
 }
 void thread_execution_context::start(const function<void()>& i_callable)
@@ -29,53 +84,27 @@ void thread_execution_context::start(const function<void()>& i_callable)
 	{
 		eval(i_callable);
 
-		m_mutex.lock();
-
-		while(m_pendingCallables.empty() == false)
-		{
-			const function<void()> task = m_pendingCallables.front();
-
-			m_pendingCallables.pop();
-
-			m_mutex.unlock();
-
-			eval(task);
-
-			m_mutex.lock();
-		}
-
-		m_alive = false;
-
-		m_mutex.unlock();
+		m_recipients.notify();
 	});
 }
-bool thread_execution_context::enqueue(const function<void()>& i_callable)
+bool thread_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
 {
+	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
-		mutex_guard mg(m_mutex);
+		eval(i_callable);
 
-		if(m_alive)
-		{
-			m_pendingCallables.push(i_callable);
-
-			return true;
-		}
+		return false;
 	}
 
-	eval(i_callable);
-
-	return false;
+	return true;
 }
 void thread_execution_context::clear()
 {
-	mutex_guard mg(m_mutex);
-
-	while(m_pendingCallables.empty() == false) m_pendingCallables.pop();
+	m_recipients.clear();
 }
 
 fiber_execution_context::fiber_execution_context(fiber i_fiber)
 : m_fiber(std::move(i_fiber))
-, m_alive(true)
 {
 }
 void fiber_execution_context::start(const function<void()>& i_callable)
@@ -84,55 +113,29 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 	{
 		eval(i_callable);
 
-		m_mutex.lock();
-
-		while(m_pendingCallables.empty() == false)
-		{
-			const function<void()> task = m_pendingCallables.front();
-
-			m_pendingCallables.pop();
-
-			m_mutex.unlock();
-
-			eval(task);
-
-			m_mutex.lock();
-		}
-
-		m_alive = false;
-
-		m_mutex.unlock();
+		m_recipients.notify();
 	});
 }
-bool fiber_execution_context::enqueue(const function<void()>& i_callable)
+bool fiber_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
 {
+	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
-		mutex_guard mg(m_mutex);
+		eval(i_callable);
 
-		if(m_alive)
-		{
-			m_pendingCallables.push(i_callable);
-
-			return true;
-		}
+		return false;
 	}
 
-	eval(i_callable);
-
-	return false;
+	return true;
 }
 void fiber_execution_context::clear()
 {
-	mutex_guard mg(m_mutex);
-
-	while(m_pendingCallables.empty() == false) m_pendingCallables.pop();
+	m_recipients.clear();
 }
 
 thread_sheaf_execution_context::thread_sheaf_execution_context(thread_sheaf i_threadSheaf)
 : m_threadSheaf(std::move(i_threadSheaf))
 , m_failedThreads(0)
 , m_pendingThreads(m_threadSheaf.size())
-, m_alive(true)
 {
 }
 void thread_sheaf_execution_context::start(const function<void()>& i_callable)
@@ -152,49 +155,28 @@ void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 
 		if(m_pendingThreads.get() == 0)
 		{
-			m_mutex.lock();
-
-			while(m_pendingCallables.empty() == false)
-			{
-				const function<void()> task = m_pendingCallables.front();
-
-				m_pendingCallables.pop();
-
-				m_mutex.unlock();
-
-				eval(task);
-
-				m_mutex.lock();
-			}
-
-			m_alive = false;
-
-			m_mutex.unlock();
+			m_recipients.notify();
 		}
 	});
 }
 bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
+	return enqueue(i_callable,0);
+}
+bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+{
+	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
-		mutex_guard mg(m_mutex);
+		eval(i_callable);
 
-		if(m_alive)
-		{
-			m_pendingCallables.push(i_callable);
-
-			return true;
-		}
+		return false;
 	}
 
-	eval(i_callable);
-
-	return false;
+	return true;
 }
 void thread_sheaf_execution_context::clear()
 {
-	mutex_guard mg(m_mutex);
-
-	while(m_pendingCallables.empty() == false) m_pendingCallables.pop();
+	m_recipients.clear();
 }
 size_t thread_sheaf_execution_context::get_num_failures() const
 {
@@ -205,7 +187,6 @@ fiber_sheaf_execution_context::fiber_sheaf_execution_context(fiber_sheaf i_fiber
 : m_fiberSheaf(std::move(i_fiberSheaf))
 , m_failedThreads(0)
 , m_pendingThreads(m_fiberSheaf.size())
-, m_alive(true)
 {
 }
 void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
@@ -225,49 +206,28 @@ void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 
 		if(m_pendingThreads.get() == 0)
 		{
-			m_mutex.lock();
-
-			while(m_pendingCallables.empty() == false)
-			{
-				const function<void()> task = m_pendingCallables.front();
-
-				m_pendingCallables.pop();
-
-				m_mutex.unlock();
-
-				eval(task);
-
-				m_mutex.lock();
-			}
-
-			m_alive = false;
-
-			m_mutex.unlock();
+			m_recipients.notify();
 		}
 	});
 }
 bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
+	return enqueue(i_callable,0);
+}
+bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+{
+	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
-		mutex_guard mg(m_mutex);
+		eval(i_callable);
 
-		if(m_alive)
-		{
-			m_pendingCallables.push(i_callable);
-
-			return true;
-		}
+		return false;
 	}
 
-	eval(i_callable);
-
-	return false;
+	return true;
 }
 void fiber_sheaf_execution_context::clear()
 {
-	mutex_guard mg(m_mutex);
-
-	while(m_pendingCallables.empty() == false) m_pendingCallables.pop();
+	m_recipients.clear();
 }
 void fiber_sheaf_execution_context::clear_fibers()
 {
