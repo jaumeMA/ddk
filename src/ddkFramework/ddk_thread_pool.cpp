@@ -83,11 +83,11 @@ void worker_thread_impl::execute()
 
 			eval(m_funcToExecute);
 
+			m_state = Idle;
+
 			m_funcToExecute = nullptr;
 
 			thread_impl_interface::clear_yielder();
-
-			m_state = Idle;
 		}
 
 		if(m_state != Stopped)

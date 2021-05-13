@@ -270,19 +270,21 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 {
     if(m_executor == nullptr)
     {
-        throw async_exception{"Trying to cancel from empty executor"};
+        return make_error<cancel_result>(CancelNoAsync);
     }
-
-	const cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
-
-	if (cancelRes == success)
+	else
 	{
-		m_promise.signal();
+		const cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
 
-		m_executor = nullptr;
+		if (cancelRes == success)
+		{
+			m_promise.signal();
+
+			m_executor = nullptr;
+		}
+
+		return cancelRes;
 	}
-
-	return cancelRes;
 }
 template<typename Return>
 bool async_executor<Return>::empty() const

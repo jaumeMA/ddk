@@ -59,10 +59,6 @@ void thread_polling_executor::stop_thread()
 
 	DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 }
-void thread_polling_executor::signal_thread()
-{
-	signal();
-}
 thread_polling_executor::start_result thread_polling_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
@@ -126,7 +122,7 @@ void thread_polling_executor::update() const
 
 			const std::chrono::steady_clock::time_point afterSleep = std::chrono::steady_clock::now();
 
-			//systemDelta += (std::chrono::duration_cast<std::chrono::milliseconds>(afterSleep - beforeSleep) - remainingWaitingTime) / 2;
+			systemDelta += (std::chrono::duration_cast<std::chrono::milliseconds>(afterSleep - beforeSleep) - remainingWaitingTime) / 2;
 		}
 		else
 		{

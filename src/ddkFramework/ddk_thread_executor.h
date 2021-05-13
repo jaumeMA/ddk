@@ -29,7 +29,6 @@ public:
 	bool set_affinity(const cpu_set_t& i_set);
 	void start_thread(const ddk::function<void()>& i_executor);
 	void stop_thread();
-	void signal_thread();
 	bool is_stopped() const;
 
 private:

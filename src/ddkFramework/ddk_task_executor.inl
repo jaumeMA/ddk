@@ -57,7 +57,7 @@ bool task_executor::pending_task_impl<Return>::cancel()
 		}
 	}
 
-	return true;
+	return false;
 }
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::empty()
@@ -98,10 +98,7 @@ future<Return> task_executor::enqueue(const function<Return()>& i_task)
 			{
 				unique_pending_task newTask = optTask.extract();
 
-				if(newTask->empty() == false)
-				{
-					newTask->cancel();
-				}
+				newTask->cancel();
 
 				atomic_post_decrement(m_numPendingTasks);
 			}

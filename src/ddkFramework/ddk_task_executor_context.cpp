@@ -6,6 +6,8 @@ namespace ddk
 
 void delayed_task_execution_context::attach(thread i_thread)
 {
+	mutex_guard mg(m_mutex);
+
 	m_thread = std::move(i_thread);
 
 	m_thread.start([this, callable = std::move(m_function)]()
@@ -43,6 +45,8 @@ void delayed_task_execution_context::cancel()
 }
 void delayed_task_execution_context::start(const function<void()>& i_callable)
 {
+	mutex_guard mg(m_mutex);
+
 	m_function = i_callable;
 }
 bool delayed_task_execution_context::enqueue(const function<void()>& i_callable)
