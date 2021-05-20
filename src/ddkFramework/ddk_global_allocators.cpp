@@ -18,12 +18,18 @@ std::map<size_t,fixed_size_allocator>& __get_global_allocator_map()
 	return s_globalAllocatorMap;
 }
 
+std::map<size_t,fixed_size_allocator>& _get_global_allocator_map()
+{
+	static std::map<size_t,fixed_size_allocator>& s_globalAllocMap = __get_global_allocator_map();
+
+	return s_globalAllocMap;
+}
+
 }
 
 bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& i_entries)
 {
-	//its important this variable is static so initial fixed allocators are inserted only once
-	static std::map<size_t,fixed_size_allocator>& s_globalAllocatorMap = __get_global_allocator_map();
+	std::map<size_t,fixed_size_allocator>& s_globalAllocatorMap = _get_global_allocator_map();
 
 	for(const auto& entry : i_entries)
 	{
@@ -35,7 +41,7 @@ bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& 
 
 const fixed_size_allocator* get_fixed_size_allocator(size_t i_unitSize)
 {
-	const std::map<size_t,fixed_size_allocator>& globalAllocMap = __get_global_allocator_map();
+	const std::map<size_t,fixed_size_allocator>& globalAllocMap = _get_global_allocator_map();
 
 	std::map<size_t,fixed_size_allocator>::const_iterator itAlloc = globalAllocMap.lower_bound(i_unitSize);
 	if(itAlloc != globalAllocMap.end())

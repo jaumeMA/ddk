@@ -32,7 +32,7 @@ void delayed_task_execution_context::start(const function<void()>& i_callable)
 
 	m_function = i_callable;
 }
-bool delayed_task_execution_context::enqueue(const function<void()>& i_callable, char i_depth)
+bool delayed_task_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	if(m_recipients.accept(i_callable,i_depth) == false)
 	{

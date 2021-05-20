@@ -20,12 +20,12 @@ public:
 	async_executor_recipients() = default;
 
 	void notify();
-	bool accept(const function<void()>&,char i_depth);
+	bool accept(const function<void()>&, unsigned char i_depth);
 	void clear();
 
 protected:
 	mutex m_mutex;
-	std::map<char,std::queue<function<void()>>> m_pendingCallables;
+	std::map<unsigned char,std::queue<function<void()>>> m_pendingCallables;
 	bool m_admissible = true;
 };
 
@@ -37,7 +37,7 @@ public:
 	void start(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&,char i_depth) override;
+	bool enqueue(const function<void()>&, unsigned char i_depth) override;
 	void clear() override;
 };
 
@@ -48,7 +48,7 @@ public:
 	void start(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&, char i_depth) override;
+	bool enqueue(const function<void()>&, unsigned char i_depth) override;
 	void clear() override;
 
 	thread m_thread;
@@ -62,7 +62,7 @@ public:
 	void start(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&,char i_depth) override;
+	bool enqueue(const function<void()>&, unsigned char i_depth) override;
 	void clear() override;
 
 	fiber m_fiber;
@@ -79,7 +79,7 @@ public:
 	bool enqueue(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&,char i_depth) override;
+	bool enqueue(const function<void()>&, unsigned char i_depth) override;
 	void clear() override;
 
 	thread_sheaf m_threadSheaf;
@@ -100,7 +100,7 @@ public:
 	bool enqueue(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&,char i_depth) override;
+	bool enqueue(const function<void()>&, unsigned char i_depth) override;
 	void clear() override;
 
 	fiber_sheaf m_fiberSheaf;

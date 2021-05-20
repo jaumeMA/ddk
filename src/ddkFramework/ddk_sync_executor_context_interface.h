@@ -12,7 +12,7 @@ class executor_context_interface
 public:
 	virtual ~executor_context_interface() = default;
 
-	virtual bool enqueue(const function<void()>&, char) = 0;
+	virtual bool enqueue(const function<void()>&, unsigned char) = 0;
 	virtual void clear() = 0;
 };
 

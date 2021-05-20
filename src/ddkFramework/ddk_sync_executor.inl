@@ -89,7 +89,7 @@ future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 	return newAsyncExecutor->as_future();
 }
 template<typename Return>
-future<Return> async_executor<Return>::attach(executor_context_lent_ptr i_asyncExecutorContext, char i_depth)
+future<Return> async_executor<Return>::attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth)
 {
 	m_executor = make_executor<detail::execution_context_executor<Return>>(i_asyncExecutorContext,i_depth);
 
@@ -161,7 +161,7 @@ future<Return> async_executor<Return>::deferred_attach(fiber_sheaf i_fiberSheaf)
 	return newAsyncExecutor->as_future();
 }
 template<typename Return>
-future<Return> async_executor<Return>::deferred_attach(executor_context_lent_ptr i_asyncExecutorContext, char i_depth)
+future<Return> async_executor<Return>::deferred_attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth)
 {
 	m_executor = make_executor<detail::execution_context_executor<Return>>(i_asyncExecutorContext,i_depth);
 

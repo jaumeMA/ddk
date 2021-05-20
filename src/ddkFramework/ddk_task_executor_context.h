@@ -15,7 +15,7 @@ public:
 	void cancel();
 
 private:
-	bool enqueue(const function<void()>&, char i_depth) override;
+	bool enqueue(const function<void()>&, unsigned char i_depth) override;
 	void clear() override;
 
 	mutex m_mutex;

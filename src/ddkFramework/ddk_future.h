@@ -62,7 +62,7 @@ protected:
 	const_reference get_value() const;
 
 	detail::private_async_state_dist_ptr<T> m_sharedState;
-	char m_depth = 0;
+	unsigned char m_depth = 0;
 };
 
 template<>

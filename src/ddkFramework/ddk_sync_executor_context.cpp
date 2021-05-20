@@ -12,7 +12,7 @@ void async_executor_recipients::notify()
 
 	while(m_pendingCallables.empty() == false)
 	{
-		std::map<char,std::queue<function<void()>>>::iterator itGroupedMaps = m_pendingCallables.begin();
+		std::map<unsigned char,std::queue<function<void()>>>::iterator itGroupedMaps = m_pendingCallables.begin();
 		std::queue<function<void()>>& groupedMaps = itGroupedMaps->second;
 
 		while(groupedMaps.empty() == false)
@@ -35,7 +35,7 @@ void async_executor_recipients::notify()
 
 	m_mutex.unlock();
 }
-bool async_executor_recipients::accept(const function<void()>& i_callable,char i_depth)
+bool async_executor_recipients::accept(const function<void()>& i_callable, unsigned char i_depth)
 {
 	mutex_guard mg(m_mutex);
 
@@ -64,7 +64,7 @@ void deferred_execution_context::start(const function<void()>& i_callable)
 {
 	eval(i_callable);
 }
-bool deferred_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+bool deferred_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	eval(i_callable);
 
@@ -87,7 +87,7 @@ void thread_execution_context::start(const function<void()>& i_callable)
 		m_recipients.notify();
 	});
 }
-bool thread_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+bool thread_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
@@ -116,7 +116,7 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 		m_recipients.notify();
 	});
 }
-bool fiber_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+bool fiber_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
@@ -163,7 +163,7 @@ bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
 	return enqueue(i_callable,0);
 }
-bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	if(m_recipients.accept(i_callable,i_depth) == false)
 	{
@@ -214,7 +214,7 @@ bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
 	return enqueue(i_callable,0);
 }
-bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable,char i_depth)
+bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	if(m_recipients.accept(i_callable,i_depth) == false)
 	{

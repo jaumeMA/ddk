@@ -134,7 +134,7 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		const char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
@@ -170,7 +170,7 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		const char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
@@ -232,7 +232,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-		const char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_onError]() mutable
 		{
@@ -316,7 +316,7 @@ shared_future<TT> shared_future<T>::then(const function<TT(const_reference)>& i_
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
-		const char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation]() mutable
 		{
@@ -352,7 +352,7 @@ shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
-		const char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
 		{
@@ -414,7 +414,7 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = this->m_sharedState)
 	{
-		const char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
 		auto executor = make_async_executor(make_function([acquiredFuture = *this,i_onError]() mutable
 		{
