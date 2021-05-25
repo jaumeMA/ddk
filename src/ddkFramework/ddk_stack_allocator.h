@@ -8,6 +8,13 @@
 #include "ddk_stack_allocator_interface.h"
 #include "ddk_fiber_defs.h"
 
+#ifndef DDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES
+
+#define DDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES 1
+
+#endif
+
+
 #if defined(WIN32)
 
 #include <windows.h>
@@ -34,6 +41,8 @@ class stack_allocator
 	friend void segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context);
 
 #endif
+
+	static const size_t s_num_ready_to_use_pages = DDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES;
 
 public:
     typedef stack_allocator allocator;

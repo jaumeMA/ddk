@@ -86,7 +86,7 @@ private:
 	State m_state;
 	atomic_size_t m_numPendingTasks;
 	thread_event_driven_executor m_updateThread;
-	lock_free_stack<unique_pending_task> m_pendingTasks;
+	single_consumer_lock_free_stack<unique_pending_task> m_pendingTasks;
 };
 
 typedef lent_reference_wrapper<task_executor> task_executor_lent_ref;

@@ -38,28 +38,28 @@ void* dynamic_stack_allocator<NumGuardPages>::reserve(size_t i_size) const
 	}
 }
 template<size_t NumGuardPages>
-void* dynamic_stack_allocator<NumGuardPages>::allocate(void* i_ref, size_t i_size) const
+std::pair<void*,void*> dynamic_stack_allocator<NumGuardPages>::allocate(void* i_ref, size_t i_size) const
 {
 	size_t allocSize = i_size * s_pageSize;
 
 #if defined(WIN32)
 
 	//publish initially one page
-	void* stackAddr = VirtualAlloc(reinterpret_cast<char*>(i_ref) - allocSize,allocSize,MEM_COMMIT,PAGE_READWRITE);
+	void* endStackAddr = VirtualAlloc(reinterpret_cast<char*>(i_ref) - allocSize,allocSize,MEM_COMMIT,PAGE_READWRITE);
 
 	//save one page guard
-	VirtualAlloc(reinterpret_cast<char*>(stackAddr) - s_numGuardPages * s_pageSize,s_numGuardPages * s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD);
+	void* deallocStackAddr = VirtualAlloc(reinterpret_cast<char*>(endStackAddr) - s_numGuardPages * s_pageSize,s_numGuardPages * s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD);
 
-	return reinterpret_cast<char*>(stackAddr);
+	return std::make_pair(endStackAddr,deallocStackAddr);
 
 #elif defined(__LINUX__) || defined(__APPLE__)
 
 	//publish initially one page
-	void* stackAddr = reinterpret_cast<char*>(i_ref) - allocSize;
+	void* endStackAddr = reinterpret_cast<char*>(i_ref) - allocSize;
 
 	mprotect(stackAddr,allocSize,PROT_READ|PROT_WRITE);
 
-	return reinterpret_cast<char*>(stackAddr);
+	return std::make_pair(endStackAddr,endStackAddr);
 
 #endif
 }
@@ -68,7 +68,7 @@ bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack&
 {
     static const size_t s_guard_area = NumGuardPages * s_pageSize;
 
-	if(reinterpret_cast<char*>(i_stackAddr.get_init()) > i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.get_init()) - k_maxNumStackPages * s_pageSize))
+	if(reinterpret_cast<char*>(i_stackAddr.get_end()) >= i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.get_init()) - k_maxNumStackPages * s_pageSize))
 	{
 
 #if defined(WIN32)
@@ -76,7 +76,7 @@ bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack&
 		if(VirtualAlloc(reinterpret_cast<char*>(i_stackAddr.get_end()) - ((s_numGuardPages + 1) * s_pageSize),s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD))
 		{
 			i_stackAddr.set_end(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_pageSize);
-			i_stackAddr.set_dealloc(i_stackAddr.get_end());
+			i_stackAddr.set_dealloc(reinterpret_cast<char*>(i_stackAddr.get_dealloc()) - s_pageSize);
 
 			return true;
 		}

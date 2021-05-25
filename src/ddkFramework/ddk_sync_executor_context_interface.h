@@ -7,12 +7,32 @@
 namespace ddk
 {
 
+struct continuation_token
+{
+public:
+	static const size_t ntoken = -1;
+
+	continuation_token(size_t i_token = ntoken);
+	continuation_token(const continuation_token&) = delete;
+	continuation_token(continuation_token&& other);
+
+	continuation_token& operator=(const continuation_token&) = delete;
+	continuation_token& operator=(continuation_token&& other);
+	bool operator==(const continuation_token& other) const;
+	bool operator==(const size_t& other) const;
+	operator bool() const;
+
+private:
+	size_t m_id;
+};
+
 class executor_context_interface
 {
 public:
 	virtual ~executor_context_interface() = default;
 
-	virtual bool enqueue(const function<void()>&, unsigned char) = 0;
+	virtual continuation_token enqueue(const function<void()>&, unsigned char) = 0;
+	virtual bool dismiss(unsigned char, continuation_token) = 0;
 	virtual void clear() = 0;
 };
 

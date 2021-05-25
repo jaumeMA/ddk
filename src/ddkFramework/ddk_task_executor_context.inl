@@ -44,11 +44,32 @@ typename delayed_task_executor<Return>::start_result delayed_task_executor<Retur
 template<typename Return>
 typename delayed_task_executor<Return>::cancel_result delayed_task_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled))
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
-		m_execContext.cancel();
-
 		return ddk::success;
+	}
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
+	{
+		if(m_execContext.cancel())
+		{
+			m_state = ExecutorState::Cancelled;
+
+			return ddk::success;
+		}
+		else if(i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
+		{
+			m_state = ExecutorState::Cancelled;
+
+			return ddk::success;
+		}
+		else
+		{
+			m_state = ExecutorState::Executing;
+
+			std::this_thread::yield();
+
+			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
+		}
 	}
 	else
 	{

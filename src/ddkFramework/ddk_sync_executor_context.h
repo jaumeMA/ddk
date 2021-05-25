@@ -16,16 +16,37 @@ namespace detail
 
 struct async_executor_recipients
 {
+
+struct task
+{
+	friend inline void eval(const task& i_task)
+	{
+		eval(i_task.m_callable);
+	}
+
+public:
+	task(size_t i_token, const function<void()>& i_callable);
+
+	bool operator==(const continuation_token& i_token) const;
+
+private:
+	size_t m_token;
+	function<void()> m_callable;
+};
+
+	typedef std::map<unsigned char,std::list<task>> callable_container;
+
 public:
 	async_executor_recipients() = default;
 
 	void notify();
-	bool accept(const function<void()>&, unsigned char i_depth);
+	continuation_token accept(const function<void()>&, unsigned char i_depth);
+	bool dismiss(unsigned char i_depth, continuation_token i_token);
 	void clear();
 
 protected:
 	mutex m_mutex;
-	std::map<unsigned char,std::queue<function<void()>>> m_pendingCallables;
+	callable_container m_pendingCallables;
 	bool m_admissible = true;
 };
 
@@ -37,7 +58,8 @@ public:
 	void start(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&, unsigned char i_depth) override;
+	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
+	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 };
 
@@ -48,7 +70,8 @@ public:
 	void start(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&, unsigned char i_depth) override;
+	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
+	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
 	thread m_thread;
@@ -62,7 +85,8 @@ public:
 	void start(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&, unsigned char i_depth) override;
+	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
+	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
 	fiber m_fiber;
@@ -76,10 +100,11 @@ public:
 	void start(const function<void()>&);
 	size_t get_num_failures() const;
 
-	bool enqueue(const function<void()>&);
+	continuation_token enqueue(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&, unsigned char i_depth) override;
+	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
+	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
 	thread_sheaf m_threadSheaf;
@@ -97,10 +122,11 @@ public:
 	void clear_fibers();
 	size_t get_num_failures() const;
 
-	bool enqueue(const function<void()>&);
+	continuation_token enqueue(const function<void()>&);
 
 private:
-	bool enqueue(const function<void()>&, unsigned char i_depth) override;
+	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
+	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
 	fiber_sheaf m_fiberSheaf;

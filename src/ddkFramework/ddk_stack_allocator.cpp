@@ -19,7 +19,8 @@ namespace ddk
 
 LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
-	if(pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION)
+	if(pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION ||
+	   pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_STACK_OVERFLOW)
 	{
 		detail::execution_context& currFiberContext = get_current_execution_context();
 		detail::execution_stack& currStack = currFiberContext.get_stack();
@@ -27,7 +28,9 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 		//check that stack pointer is inside our scope
 		if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
 		{
-			if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ContextRecord->Rsp)))
+			get_curr_thread_stack(&currStack);
+
+			if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ExceptionRecord->ExceptionInformation[1])))
 			{
 				//every time we receive an exception under a current fiber arena, reset stack limits
 				set_curr_thread_stack(&currStack);
@@ -102,6 +105,8 @@ namespace ddk
 bool initialize_thread_stack()
 {
 
+#if DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE
+
 #if defined(WIN32)
 
 	AddVectoredExceptionHandler(1,VectoredExceptionHandler);
@@ -125,6 +130,8 @@ bool initialize_thread_stack()
 
 #endif
 
+#endif
+	
 	return true;
 }
 
@@ -161,9 +168,20 @@ detail::execution_stack stack_allocator::allocate() const
 	static const thread_local bool _ = initialize_thread_stack();
 
 	void* initStack = m_stackAllocImpl->reserve(m_numMaxPages);
-	void* endStack = m_stackAllocImpl->allocate(initStack,1);
+	std::pair<void*,void*> endDeallocStack = m_stackAllocImpl->allocate(initStack,s_num_ready_to_use_pages);
 
-	return { initStack,endStack,endStack };
+#if	DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE
+
+	//in this case we "hack" the os so we have full control over reallocations due to page faults
+	return { initStack,endDeallocStack.first,endDeallocStack.first };
+
+#else
+
+	//in this version we allow the os to handle stack growth between end and dealloc addresses
+	return { initStack,endDeallocStack.first,endDeallocStack.second };
+
+#endif
+
 }
 void stack_allocator::deallocate(const detail::execution_stack& i_stack) const
 {

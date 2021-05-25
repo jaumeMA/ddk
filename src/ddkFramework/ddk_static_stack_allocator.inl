@@ -17,13 +17,15 @@ void* static_stack_allocator<Size>::reserve(size_t) const
 	return reinterpret_cast<char*>(reinterpret_cast<size_t>(m_arena.template get_ptr<char>() + (Size + 1) * s_pageSize) & ~0xFFF);
 }
 template<size_t Size>
-void* static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
+std::pair<void*,void*> static_stack_allocator<Size>::allocate(void* i_ref, size_t i_size) const
 {
 	DDK_ASSERT(m_underUse == false, "Trying to allocate in already used arena");
 
 	m_underUse = true;
 
-	return reinterpret_cast<char*>(i_ref) - Size * s_pageSize;
+	void* endStackAddr = reinterpret_cast<char*>(i_ref) - Size * s_pageSize;
+
+	return std::make_pair(endStackAddr,endStackAddr);
 }
 template<size_t Size>
 bool static_stack_allocator<Size>::reallocate(execution_stack& i_stackAddr, void* i_reason) const

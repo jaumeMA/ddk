@@ -27,7 +27,7 @@ public:
 	receiver_id get_id() const;
 
 private:
-	lock_free_stack<MessageType> m_list;
+	single_consumer_lock_free_stack<MessageType> m_list;
 };
 
 template<typename MessageType>

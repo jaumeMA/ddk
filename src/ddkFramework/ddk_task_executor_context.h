@@ -12,10 +12,11 @@ class delayed_task_execution_context : public executor_context_interface,public 
 public:
 	void start(const function<void()>&);
 	void attach(thread i_thread);
-	void cancel();
+	bool cancel();
 
 private:
-	bool enqueue(const function<void()>&, unsigned char i_depth) override;
+	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
+	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
 	mutex m_mutex;

@@ -68,7 +68,7 @@ public:
 
 private:
 	void* reserve(size_t) const override;
-	void* allocate(void* i_ref, size_t i_size) const override;
+	std::pair<void*,void*> allocate(void* i_ref, size_t i_size) const override;
 	bool reallocate(execution_stack& i_stackAddr, void* i_reason) const override;
 	void deallocate(void*,size_t) const override;
 	void release(void*,size_t) const override;

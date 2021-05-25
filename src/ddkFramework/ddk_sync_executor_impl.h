@@ -147,6 +147,7 @@ private:
 
 	executor_context_lent_ptr m_execContext;
 	const unsigned char m_depth;
+	continuation_token m_continuationToken;
 	atomic<ExecutorState::underlying_type> m_state;
 };
 

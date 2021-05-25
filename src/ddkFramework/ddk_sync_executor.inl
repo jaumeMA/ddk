@@ -278,7 +278,7 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 
 		if (cancelRes == success)
 		{
-			m_promise.signal();
+			set_exception(async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
 
 			m_executor = nullptr;
 		}

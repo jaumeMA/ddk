@@ -16,7 +16,7 @@ lock_free_stack_node<T>::lock_free_stack_node(const divider_node_t&)
 template<typename T>
 template<typename ... Args>
 lock_free_stack_node<T>::lock_free_stack_node(Args&& ... i_args)
-	: m_nextNode(nullptr)
+: m_nextNode(nullptr)
 {
 	m_arena.template construct<T>(std::forward<Args>(i_args) ...);
 }

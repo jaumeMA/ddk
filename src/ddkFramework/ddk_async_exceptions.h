@@ -19,8 +19,13 @@ private:
 	fiber_id m_id;
 };
 
+struct cancel_exception : public std::exception
+{
+};
+
 SCOPED_ENUM_DECL(AsyncExceptionCode,
-				 None);
+				 None,
+				 Cancel);
 
 struct async_error
 {

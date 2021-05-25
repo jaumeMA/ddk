@@ -6,24 +6,34 @@ namespace ddk
 namespace detail
 {
 
+async_executor_recipients::task::task(size_t i_token,const function<void()>& i_callable)
+: m_token(i_token)
+, m_callable(i_callable)
+{
+}
+bool async_executor_recipients::task::operator==(const continuation_token& i_token) const
+{
+	return i_token == m_token;
+}
+
 void async_executor_recipients::notify()
 {
 	m_mutex.lock();
 
 	while(m_pendingCallables.empty() == false)
 	{
-		std::map<unsigned char,std::queue<function<void()>>>::iterator itGroupedMaps = m_pendingCallables.begin();
-		std::queue<function<void()>>& groupedMaps = itGroupedMaps->second;
+		callable_container::iterator itGroupedMaps = m_pendingCallables.begin();
+		std::list<task>& groupedMaps = itGroupedMaps->second;
 
 		while(groupedMaps.empty() == false)
 		{
-			const function<void()> task = groupedMaps.front();
+			const task _task = groupedMaps.front();
 
-			groupedMaps.pop();
+			groupedMaps.pop_back();
 
 			m_mutex.unlock();
 
-			eval(task);
+			eval(_task);
 
 			m_mutex.lock();
 		}
@@ -35,13 +45,33 @@ void async_executor_recipients::notify()
 
 	m_mutex.unlock();
 }
-bool async_executor_recipients::accept(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token async_executor_recipients::accept(const function<void()>& i_callable, unsigned char i_depth)
 {
 	mutex_guard mg(m_mutex);
 
 	if(m_admissible)
 	{
-		m_pendingCallables[i_depth].push(i_callable);
+		const size_t token = std::rand();
+
+		m_pendingCallables[i_depth].emplace_back(token,i_callable);
+
+		return {token};
+	}
+	else
+	{
+		return continuation_token::ntoken;
+	}
+}
+bool async_executor_recipients::dismiss(unsigned char i_depth, continuation_token i_token)
+{
+	mutex_guard mg(m_mutex);
+
+	std::list<task>& groupedCallables = m_pendingCallables[i_depth];
+	std::list<task>::iterator itTask = std::find(groupedCallables.begin(),groupedCallables.end(),i_token);
+
+	if(itTask != groupedCallables.end())
+	{
+		groupedCallables.erase(itTask);
 
 		return true;
 	}
@@ -59,16 +89,49 @@ void async_executor_recipients::clear()
 
 }
 
+continuation_token::continuation_token(size_t i_token)
+: m_id(i_token)
+{
+}
+continuation_token::continuation_token(continuation_token&& other)
+: m_id(0)
+{
+	std::swap(m_id,other.m_id);
+}
+continuation_token& continuation_token::operator=(continuation_token&& other)
+{
+	m_id = ntoken;
+
+	std::swap(m_id,other.m_id);
+
+	return *this;
+}
+bool continuation_token::operator==(const continuation_token& other) const
+{
+	return m_id == other.m_id;
+}
+bool continuation_token::operator==(const size_t& other) const
+{
+	return m_id == other;
+}
+continuation_token::operator bool() const
+{
+	return m_id != ntoken;
+}
 
 void deferred_execution_context::start(const function<void()>& i_callable)
 {
 	eval(i_callable);
 }
-bool deferred_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token deferred_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	eval(i_callable);
 
-	return true;
+	return { continuation_token::ntoken };
+}
+bool deferred_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
+{
+	return false;
 }
 void deferred_execution_context::clear()
 {
@@ -87,16 +150,22 @@ void thread_execution_context::start(const function<void()>& i_callable)
 		m_recipients.notify();
 	});
 }
-bool thread_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token thread_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	if(m_recipients.accept(i_callable,i_depth) == false)
+	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
+
+	if(!continuationToken)
 	{
 		eval(i_callable);
 
-		return false;
+		return { continuation_token::ntoken };
 	}
 
-	return true;
+	return std::move(continuationToken);
+}
+bool thread_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
+{
+	return m_recipients.dismiss(i_depth,std::move(i_token));
 }
 void thread_execution_context::clear()
 {
@@ -116,16 +185,22 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 		m_recipients.notify();
 	});
 }
-bool fiber_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token fiber_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	if(m_recipients.accept(i_callable,i_depth) == false)
+	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
+
+	if(!continuationToken)
 	{
 		eval(i_callable);
 
-		return false;
+		return { continuation_token::ntoken };
 	}
 
-	return true;
+	return std::move(continuationToken);
+}
+bool fiber_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
+{
+	return m_recipients.dismiss(i_depth,std::move(i_token));
 }
 void fiber_execution_context::clear()
 {
@@ -159,20 +234,26 @@ void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 		}
 	});
 }
-bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
+continuation_token thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
 	return enqueue(i_callable,0);
 }
-bool thread_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token thread_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	if(m_recipients.accept(i_callable,i_depth) == false)
+	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
+
+	if(!continuationToken)
 	{
 		eval(i_callable);
 
-		return false;
+		return { continuation_token::ntoken };
 	}
 
-	return true;
+	return std::move(continuationToken);
+}
+bool thread_sheaf_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
+{
+	return m_recipients.dismiss(i_depth,std::move(i_token));
 }
 void thread_sheaf_execution_context::clear()
 {
@@ -210,20 +291,26 @@ void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 		}
 	});
 }
-bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
+continuation_token fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
 	return enqueue(i_callable,0);
 }
-bool fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	if(m_recipients.accept(i_callable,i_depth) == false)
+	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
+
+	if(!continuationToken)
 	{
 		eval(i_callable);
 
-		return false;
+		return { continuation_token::ntoken };
 	}
 
-	return true;
+	return std::move(continuationToken);
+}
+bool fiber_sheaf_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
+{
+	return m_recipients.dismiss(i_depth,std::move(i_token));
 }
 void fiber_sheaf_execution_context::clear()
 {

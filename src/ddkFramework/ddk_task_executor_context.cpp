@@ -20,11 +20,18 @@ void delayed_task_execution_context::attach(thread i_thread)
 		}
 	});
 }
-void delayed_task_execution_context::cancel()
+bool delayed_task_execution_context::cancel()
 {
 	mutex_guard mg(m_mutex);
 
-	m_function = nullptr;
+	if(m_function != nullptr)
+	{
+		m_function = nullptr;
+
+		return true;
+	}
+
+	return false;
 }
 void delayed_task_execution_context::start(const function<void()>& i_callable)
 {
@@ -32,16 +39,20 @@ void delayed_task_execution_context::start(const function<void()>& i_callable)
 
 	m_function = i_callable;
 }
-bool delayed_task_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
+continuation_token delayed_task_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	if(m_recipients.accept(i_callable,i_depth) == false)
+	if(continuation_token continuationToken = m_recipients.accept(i_callable,i_depth))
 	{
 		eval(i_callable);
 
-		return false;
+		return std::move(continuationToken);
 	}
 
-	return true;
+	return continuation_token::ntoken;
+}
+bool delayed_task_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
+{
+	return m_recipients.dismiss(i_depth,std::move(i_token));
 }
 void delayed_task_execution_context::clear()
 {

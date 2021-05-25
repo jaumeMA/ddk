@@ -9,6 +9,13 @@ extern "C"
 	void set_curr_thread_stack_limit(void*);
 }
 
+#ifndef DDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES
+
+#define DDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES 60
+
+#endif
+
+
 namespace ddk
 {
 namespace detail
@@ -21,11 +28,11 @@ struct execution_stack;
 class stack_allocator_interface
 {
 public:
-	static const size_t k_maxNumStackPages = 60;
+	static const size_t k_maxNumStackPages = DDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES;
 
 	virtual ~stack_allocator_interface() = default;
 	virtual void* reserve(size_t) const = 0;
-	virtual void* allocate(void*,size_t) const = 0;
+	virtual std::pair<void*,void*> allocate(void*,size_t) const = 0;
 	virtual bool reallocate(detail::execution_stack&, void*) const = 0;
 	virtual void deallocate(void*,size_t) const = 0;
 	virtual void release(void*,size_t) const = 0;

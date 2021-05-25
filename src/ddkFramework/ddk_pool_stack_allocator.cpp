@@ -231,7 +231,7 @@ void* pool_stack_allocator::reserve(size_t i_size) const
 
 	return res;
 }
-void* pool_stack_allocator::allocate(void* i_ref, size_t i_size) const
+std::pair<void*,void*> pool_stack_allocator::allocate(void* i_ref, size_t i_size) const
 {
 	std::set<Buddy>::iterator itBuddy = m_buddyAllocator.find(i_ref);
 	if(itBuddy != m_buddyAllocator.end())
@@ -242,7 +242,7 @@ void* pool_stack_allocator::allocate(void* i_ref, size_t i_size) const
 	}
 	else
 	{
-		return nullptr;
+		return {nullptr,nullptr};
 	}
 }
 bool pool_stack_allocator::reallocate(execution_stack& i_stackAddr, void* i_reason) const

@@ -3,9 +3,12 @@ namespace ddk
 {
 
 template<typename T,typename Allocator>
-lock_free_stack<T,Allocator>::lock_free_stack()
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Allocator,Args...))
+single_consumer_lock_free_stack<T,Allocator>::single_consumer_lock_free_stack(Args&& ... i_args)
 : m_head(leaf_node)
 , m_tail(leaf_node)
+, m_allocator(Allocator(std::forward<Args>(i_args)...))
 {
 	if(void* mem = m_allocator.allocate(1))
 	{
@@ -17,23 +20,26 @@ lock_free_stack<T,Allocator>::lock_free_stack()
 
 }
 template<typename T,typename Allocator>
-lock_free_stack<T,Allocator>::~lock_free_stack()
+single_consumer_lock_free_stack<T,Allocator>::~single_consumer_lock_free_stack()
 {
 	clear();
 }
 template<typename T,typename Allocator>
-void lock_free_stack<T,Allocator>::clear()
+void single_consumer_lock_free_stack<T,Allocator>::clear()
 {
 	while(empty() == false)
 	{
 		pop();
 	}
 
-	deallocate_node(m_head.get_next());
+	if(lock_free_stack_node<T>* divisorNode = m_head.get_next())
+	{
+		deallocate_node(divisorNode);
+	}
 }
 template<typename T,typename Allocator>
 template<typename ... Args>
-void lock_free_stack<T,Allocator>::push(Args&& ... i_args)
+void single_consumer_lock_free_stack<T,Allocator>::push(Args&& ... i_args)
 {
 	if(lock_free_stack_node<T>* newNode = allocate_node(std::forward<Args>(i_args) ...))
 	{
@@ -41,13 +47,13 @@ void lock_free_stack<T,Allocator>::push(Args&& ... i_args)
 	}
 }
 template<typename T,typename Allocator>
-optional<T> lock_free_stack<T,Allocator>::pop()
+optional<T> single_consumer_lock_free_stack<T,Allocator>::pop()
 {
-	lock_free_stack_node<T>* firstNode = nullptr;
-	lock_free_stack_node<T>* nextNode = nullptr;
-
 	if(empty() == false)
 	{
+		lock_free_stack_node<T>* firstNode = nullptr;
+		lock_free_stack_node<T>* nextNode = nullptr;
+
 		do
 		{
 			firstNode = m_head.get_next();
@@ -58,31 +64,34 @@ optional<T> lock_free_stack<T,Allocator>::pop()
 			}
 
 			nextNode = firstNode->get_next();
-		} while(m_head.compareAndExchangeNextNode(firstNode,nextNode) == false);
 
-		if(firstNode->is_divider() == false)
-		{
-			T res = firstNode->extract_value();
+			if(m_head.compareAndExchangeNextNode(firstNode,nextNode))
+			{
+				break;
+			}
+			else
+			{
+				std::this_thread::yield();
+			}
 
-			deallocate_node(firstNode);
+		} while(true);
 
-			return std::move(res);
-		}
-		else
-		{
-			DDK_FAIL("Unconsistent situation");
-		}
+		T res = firstNode->extract_value();
+
+		deallocate_node(firstNode);
+
+		return std::move(res);
 	}
 
 	return none;
 }
 template<typename T,typename Allocator>
-bool lock_free_stack<T,Allocator>::empty() const
+bool single_consumer_lock_free_stack<T,Allocator>::empty() const
 {
 	return m_head.get_next()->is_divider();
 }
 template<typename T,typename Allocator>
-void lock_free_stack<T,Allocator>::_push(lock_free_stack_node<T>* i_newNode)
+void single_consumer_lock_free_stack<T,Allocator>::_push(lock_free_stack_node<T>* i_newNode)
 {
 	static const int s_sleepTime = 5;
 	lock_free_stack_node<T>* lastNode = nullptr;
@@ -91,7 +100,16 @@ void lock_free_stack<T,Allocator>::_push(lock_free_stack_node<T>* i_newNode)
 	do
 	{
 		lastNode = m_tail.get_next();
-	} while(m_tail.compareAndExchangeNextNode(lastNode,i_newNode) == false);
+
+		if(m_tail.compareAndExchangeNextNode(lastNode,i_newNode))
+		{
+			break;
+		}
+		else
+		{
+			std::this_thread::yield();
+		}
+	} while(true);
 
 	while(lastNode->is_divider() == false)
 	{
@@ -108,7 +126,7 @@ void lock_free_stack<T,Allocator>::_push(lock_free_stack_node<T>* i_newNode)
 }
 template<typename T,typename Allocator>
 template<typename ... Args>
-lock_free_stack_node<T>* lock_free_stack<T,Allocator>::allocate_node(Args&& ... i_args)
+lock_free_stack_node<T>* single_consumer_lock_free_stack<T,Allocator>::allocate_node(Args&& ... i_args)
 {
 	if(void* mem = m_allocator.allocate(1))
 	{
@@ -120,14 +138,63 @@ lock_free_stack_node<T>* lock_free_stack<T,Allocator>::allocate_node(Args&& ... 
 	}
 }
 template<typename T,typename Allocator>
-void lock_free_stack<T,Allocator>::deallocate_node(lock_free_stack_node<T>* i_node)
+void single_consumer_lock_free_stack<T,Allocator>::deallocate_node(lock_free_stack_node<T>* i_ptr)
 {
-	if(i_node)
-	{
-		i_node->~lock_free_stack_node<T>();
+	i_ptr->~lock_free_stack_node<T>();
 
-		m_allocator.deallocate(i_node);
-	}
+	m_allocator.deallocate(i_ptr);
 }
+
+template<typename T,typename Allocator>
+optional<T> multiple_consumer_lock_free_stack<T,Allocator>::pop()
+{
+	if(empty() == false)
+	{
+		lock_free_stack_node<T>* firstNode = nullptr;
+		lock_free_stack_node<T>* nextNode = nullptr;
+
+		do
+		{
+			m_barrier.lock_exclusive();
+
+			firstNode = m_head.get_next();
+
+			if(firstNode->is_divider())
+			{
+				m_barrier.unlock_exclusive();
+
+				return none;
+			}
+
+			nextNode = firstNode->get_next();
+
+			m_barrier.unlock_exclusive();
+
+			if(m_head.compareAndExchangeNextNode(firstNode,nextNode))
+			{
+				break;
+			}
+			else
+			{
+				std::this_thread::yield();
+			}
+
+		} while(true);
+
+
+		T res = firstNode->extract_value();
+
+		m_barrier.lock();
+
+		deallocate_node(firstNode);
+
+		m_barrier.unlock();
+
+		return std::move(res);
+	}
+
+	return none;
+}
+
 
 }

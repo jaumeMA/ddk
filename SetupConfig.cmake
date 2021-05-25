@@ -1,5 +1,8 @@
 
 if(NOT SET_UP_CONFIGURATIONS_DONE)
+	
+	include(CMakeConfig.txt)
+
     set(SET_UP_CONFIGURATIONS_DONE 1)
 
     # No reason to set CMAKE_CONFIGURATION_TYPES if it's not a multiconfig generator
