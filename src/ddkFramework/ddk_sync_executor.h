@@ -18,6 +18,7 @@ class async_executor : public async_cancellable_interface, public async_execute_
 	using typename async_execute_interface<Return>::StartErrorCode;
 	typedef typename executor_interface<Return()>::start_result nested_start_result;
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
+	typedef typename executor_interface<Return()>::sink_result sink_result;
 
 public:
 	typedef distributed_reference_wrapper<async_executor<Return>> async_dist_ref;
@@ -67,8 +68,7 @@ private:
 	cancel_result cancel() override;
 	bool empty() const override;
 
-	void set_value(sink_reference i_value);
-	void set_exception(const async_exception& i_excp);
+	void set_result(sink_result i_value);
 
 	ddk::function<Return()> m_function;
 	ddk::function<bool()> m_cancelFunc;

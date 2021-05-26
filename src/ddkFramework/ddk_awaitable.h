@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_await_executor.h"
+#include "ddk_variant.h"
 #include "ddk_none.h"
 
 namespace ddk
@@ -27,6 +28,8 @@ public:
 	typedef typename std::add_const<reference>::type const_reference;
 	typedef typename std::add_pointer<T>::type pointer;
 	typedef typename std::add_const<pointer>::type const_pointer;
+	typedef variant<T,async_exception> result_type;
+	typedef variant<reference,async_exception> result_reference;
 
 	awaited_result() = default;
 	awaited_result(const detail::none_t&);
@@ -38,13 +41,11 @@ public:
 	awaited_result<T>& operator=(const awaited_result<T>&) = delete;
 	awaited_result<T>& operator=(awaited_result<T>&&);
 	const_reference get() const;
-	const_pointer get_ptr() const;
 	reference get();
-	pointer get_ptr();
 	explicit operator bool() const;
 	explicit operator const_reference() const;
 	explicit operator reference();
-	void set(reference i_content);
+	void set(result_reference i_content);
 
 private:
 	typed_arena<T> m_content;

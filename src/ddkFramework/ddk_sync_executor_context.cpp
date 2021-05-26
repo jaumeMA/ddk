@@ -215,23 +215,9 @@ thread_sheaf_execution_context::thread_sheaf_execution_context(thread_sheaf i_th
 }
 void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 {
-	m_threadSheaf.start([=]()
+	m_threadSheaf.start([i_callable]()
 	{
-		try
-		{
-			eval(i_callable);
-		}
-		catch(...)
-		{
-			atomic_post_increment(m_failedThreads);
-		}
-
-		atomic_post_decrement(m_pendingThreads);
-
-		if(m_pendingThreads.get() == 0)
-		{
-			m_recipients.notify();
-		}
+		eval(i_callable);
 	});
 }
 continuation_token thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
@@ -259,36 +245,38 @@ void thread_sheaf_execution_context::clear()
 {
 	m_recipients.clear();
 }
-size_t thread_sheaf_execution_context::get_num_failures() const
+void thread_sheaf_execution_context::notify_recipients()
 {
-	return m_failedThreads.get();
+	m_recipients.notify();
+}
+size_t thread_sheaf_execution_context::add_failure()
+{
+	return atomic_post_increment(m_failedThreads);
+}
+size_t thread_sheaf_execution_context::remove_pending_fiber()
+{
+	return atomic_post_decrement(m_pendingThreads);
+}
+bool thread_sheaf_execution_context::has_pending_threads() const
+{
+	return m_pendingThreads.get() > 0;
+}
+bool thread_sheaf_execution_context::has_failures() const
+{
+	return m_failedThreads.get() > 0;
 }
 
 fiber_sheaf_execution_context::fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf)
 : m_fiberSheaf(std::move(i_fiberSheaf))
-, m_failedThreads(0)
-, m_pendingThreads(m_fiberSheaf.size())
+, m_failedFibers(0)
+, m_pendingFibers(m_fiberSheaf.size())
 {
 }
 void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 {
-	m_fiberSheaf.start([=]()
+	m_fiberSheaf.start([i_callable]()
 	{
-		try
-		{
-			eval(i_callable);
-		}
-		catch(...)
-		{
-			atomic_post_increment(m_failedThreads);
-		}
-
-		atomic_post_decrement(m_pendingThreads);
-
-		if(m_pendingThreads.get() == 0)
-		{
-			m_recipients.notify();
-		}
+		eval(i_callable);
 	});
 }
 continuation_token fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
@@ -320,9 +308,25 @@ void fiber_sheaf_execution_context::clear_fibers()
 {
 	m_fiberSheaf.clear();
 }
-size_t fiber_sheaf_execution_context::get_num_failures() const
+void fiber_sheaf_execution_context::notify_recipients()
 {
-	return m_failedThreads.get();
+	m_recipients.notify();
+}
+size_t fiber_sheaf_execution_context::add_failure()
+{
+	return atomic_post_increment(m_failedFibers);
+}
+size_t fiber_sheaf_execution_context::remove_pending_thread()
+{
+	return atomic_post_decrement(m_pendingFibers);
+}
+bool fiber_sheaf_execution_context::has_pending_fibers() const
+{
+	return m_pendingFibers.get() > 0;
+}
+bool fiber_sheaf_execution_context::has_failures() const
+{
+	return m_failedFibers.get() > 0;
 }
 
 }

@@ -46,7 +46,7 @@ void fiber_polling_executor::stop()
 {
 	resume();
 }
-fiber_polling_executor::start_result fiber_polling_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
+fiber_polling_executor::start_result fiber_polling_executor::execute(const sink_type& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
@@ -163,7 +163,7 @@ void fiber_event_driven_executor::stop()
 {
 	resume();
 }
-fiber_event_driven_executor::start_result fiber_event_driven_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
+fiber_event_driven_executor::start_result fiber_event_driven_executor::execute(const sink_type& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
@@ -233,7 +233,7 @@ fiber_fire_and_forget_executor::~fiber_fire_and_forget_executor()
 {
 	m_fiber.stop();
 }
-fiber_fire_and_forget_executor::start_result fiber_fire_and_forget_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
+fiber_fire_and_forget_executor::start_result fiber_fire_and_forget_executor::execute(const sink_type& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_fiber.ready())
 	{

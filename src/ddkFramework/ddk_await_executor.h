@@ -18,6 +18,7 @@ class await_executor: public scheduler_interface, private yielder_interface, pro
     friend class lend_from_this<await_executor<Return>,detail::scheduler_interface>;
 
 public:
+	typedef typename detail::sink_type_resolver<Return>::result_t sink_result;
 	typedef typename detail::sink_type_resolver<Return>::type sink_type;
 
 	await_executor();

@@ -15,7 +15,7 @@ lent_reference_wrapper<delayed_task_execution_context> delayed_task_executor<Ret
 	return lend(m_execContext);
 }
 template<typename Return>
-typename delayed_task_executor<Return>::start_result delayed_task_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink,const ddk::function<Return()>& i_callable)
+typename delayed_task_executor<Return>::start_result delayed_task_executor<Return>::execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable)
 {
 	if(i_callable != nullptr)
 	{

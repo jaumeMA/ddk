@@ -23,7 +23,7 @@ struct co_iterator_allocator_info<std::vector<T,Alloc>>
 	//although max num pages coul be 1, we shall reserve 3 pages because of stack unwinding
 	static const size_t s_max_num_pages = 6;
 
-	typedef detail::dynamic_stack_allocator<1> allocator;
+	typedef detail::static_stack_allocator<s_max_num_pages> allocator;
 };
 
 //...

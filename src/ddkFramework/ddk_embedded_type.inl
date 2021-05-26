@@ -78,13 +78,13 @@ constexpr embedded_type<T&>::operator cref_type() const
 template<typename T>
 void embedded_type<T&>::inplace_construct(T& val)
 {
-	new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(val);
+	new(this) embedded_type(val);
 }
 template<typename T>
 void embedded_type<T&>::inplace_assign(T& val)
 {
 	//references must be reconstructed every time
-	new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(val);
+	new(this) embedded_type(val);
 }
 template<typename T>
 void embedded_type<T&>::inplace_destroy()
@@ -177,13 +177,13 @@ constexpr embedded_type<T&&>::operator cref_type() const
 template<typename T>
 void embedded_type<T&&>::inplace_construct(T&& val)
 {
-	new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(std::move(val));
+	new(this) embedded_type(std::move(val));
 }
 template<typename T>
 void embedded_type<T&&>::inplace_assign(T&& val)
 {
 	//references must be reconstructed every time
-	new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type(std::move(val));
+	new(this) embedded_type(std::move(val));
 }
 template<typename T>
 void embedded_type<T&&>::inplace_destroy()
@@ -319,7 +319,7 @@ template<typename T>
 template<typename ... Args>
 void embedded_type<T>::inplace_construct(Args&& ... i_args)
 {
-	new(const_cast<void*>(reinterpret_cast<const void*>(&m_data)))embedded_type{ std::forward<Args>(i_args)... };
+	new(this) embedded_type{ std::forward<Args>(i_args)... };
 }
 template<typename T>
 template<typename ... Args>

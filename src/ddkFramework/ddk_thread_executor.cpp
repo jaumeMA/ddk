@@ -59,7 +59,7 @@ void thread_polling_executor::stop_thread()
 
 	DDK_ASSERT(stopRes == success, "Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
 }
-thread_polling_executor::start_result thread_polling_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
+thread_polling_executor::start_result thread_polling_executor::execute(const sink_type& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
@@ -204,7 +204,7 @@ void thread_event_driven_executor::signal_thread()
 {
 	signal();
 }
-thread_event_driven_executor::start_result thread_event_driven_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
+thread_event_driven_executor::start_result thread_event_driven_executor::execute(const sink_type& i_sink, const ddk::function<void()>& i_executor)
 {
 	if(m_stopped == true)
 	{
@@ -300,7 +300,7 @@ bool thread_fire_and_forget_executor::set_affinity(const cpu_set_t& i_set)
 {
 	return m_updateThread.set_affinity(i_set);
 }
-thread_fire_and_forget_executor::start_result thread_fire_and_forget_executor::execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor)
+thread_fire_and_forget_executor::start_result thread_fire_and_forget_executor::execute(const sink_type& i_sink, const ddk::function<void()>& i_executor)
 {
 	m_executor = i_executor;
 

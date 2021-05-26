@@ -54,6 +54,7 @@ constexpr variant_impl<Types...>::variant_impl(variant_impl<Types...>&& other)
 : m_currentType(other.m_currentType)
 , m_storage(none)
 {
+
 	if (other.m_currentType < s_numTypes)
 	{
 		constructor_visitor<data_type,Types...> ctr(m_storage);

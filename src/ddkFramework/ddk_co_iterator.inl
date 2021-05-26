@@ -21,8 +21,7 @@ template<typename T>
 co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other,const stack_allocator& i_stackAllocator)
 : m_function(other.m_function)
 , m_currState(other.m_currState)
-, m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_forward_iterator<T>::acquire_iterable_value))
-			,{ i_stackAllocator.get_alloc_impl(),i_stackAllocator.get_num_max_pages() })
+, m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_forward_iterator<T>::acquire_iterable_value)),share(i_stackAllocator))
 {
 	if(other.m_iteratorValueContainer.empty() == false)
 	{
@@ -278,8 +277,7 @@ template<typename T>
 co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_iterator& other,const stack_allocator& i_stackAllocator)
 : m_function(other.m_function)
 , m_currState(other.m_currState)
-, m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_random_access_iterator<T>::acquire_iterable_value))
-    		,{ i_stackAllocator.get_alloc_impl(),i_stackAllocator.get_num_max_pages() })
+, m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_random_access_iterator<T>::acquire_iterable_value)),share(i_stackAllocator))
 {
 	if(other.m_iteratorValueContainer.empty() == false)
 	{

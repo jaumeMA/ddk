@@ -203,31 +203,10 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
         throw async_exception{"Trying to execute empty executor"};
     }
 
-	const nested_start_result execRes = m_executor->execute(make_function(this,&async_executor<Return>::set_value),
+	const nested_start_result execRes = m_executor->execute(make_function(this,&async_executor<Return>::set_result),
 	make_function([self = this->ref_from_this()]() mutable
 	{
-		try
-		{
-			return eval(self->m_function);
-		}
-		catch(const async_exception& i_excp)
-		{
-			self->set_exception(i_excp);
-
-			throw;
-		}
-		catch(const std::exception& i_excp)
-		{
-			self->set_exception(async_exception{ i_excp.what() });
-
-			throw;
-		}
-		catch(...)
-		{
-			self->set_exception(async_exception{ "Unkwon exception" });
-
-			throw;
-		}
+		return eval(self->m_function);
 	}));
 
 	if(execRes == success)
@@ -249,14 +228,16 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 	}
 }
 template<typename Return>
-void async_executor<Return>::set_value(sink_reference i_value)
+void async_executor<Return>::set_result(sink_result i_value)
 {
-	m_promise.set_value(std::forward<sink_reference>(i_value));
-}
-template<typename Return>
-void async_executor<Return>::set_exception(const async_exception& i_excp)
-{
-	m_promise.set_exception(i_excp);
+	if(i_value.template is<sink_reference>())
+	{
+		m_promise.set_value(std::forward<sink_reference>(i_value.template get<sink_reference>()));
+	}
+	else
+	{
+		m_promise.set_exception(i_value.template get<async_exception>());
+	}
 }
 template<typename Return>
 future<Return> async_executor<Return>::as_future()
@@ -278,7 +259,7 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 
 		if (cancelRes == success)
 		{
-			set_exception(async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			m_promise.set_exception(async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
 
 			m_executor = nullptr;
 		}

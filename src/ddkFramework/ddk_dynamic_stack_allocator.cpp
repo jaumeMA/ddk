@@ -4,9 +4,9 @@
 namespace ddk
 {
 
-stack_alloc_shared_ref make_default_dynamic_stack_allocator()
+stack_alloc_dist_ref make_default_dynamic_stack_allocator()
 {
-	return make_shared_reference<detail::default_dynamic_stack_allocator>();
+	return make_distributed_reference<detail::default_dynamic_stack_allocator>();
 }
 
 }

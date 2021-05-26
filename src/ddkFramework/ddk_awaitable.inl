@@ -27,7 +27,7 @@ awaited_result<T>::~awaited_result()
 {
 	if(m_content.empty() == false)
 	{
-        m_content.template destroy<T>();
+		m_content.template destroy<T>();
 	}
 }
 template<typename T>
@@ -35,19 +35,19 @@ awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
 {
 	if(other.m_content.empty() == false)
 	{
-	    if(m_content.empty())
-	    {
-            m_content.template construct<T>(other.m_content.template extract<T>());
-	    }
-        else
-        {
-            m_content.template assign<T>(other.m_content.template extract<T>());
-        }
+		if(m_content.empty())
+		{
+			m_content.template construct<T>(other.m_content.template extract<T>());
+		}
+		else
+		{
+			m_content.template assign<T>(other.m_content.template extract<T>());
+		}
 	}
-    else if(m_content.empty() == false)
-    {
-        m_content.template destroy<T>();
-    }
+	else if(m_content.empty() == false)
+	{
+		m_content.template destroy<T>();
+	}
 
 	return *this;
 }
@@ -57,19 +57,9 @@ typename awaited_result<T>::const_reference awaited_result<T>::get() const
 	return m_content.template get<T>();
 }
 template<typename T>
-typename awaited_result<T>::const_pointer awaited_result<T>::get_ptr() const
-{
-	return m_content.template get_ptr<T>();
-}
-template<typename T>
 typename awaited_result<T>::reference awaited_result<T>::get()
 {
 	return m_content.template get<T>();
-}
-template<typename T>
-typename awaited_result<T>::pointer awaited_result<T>::get_ptr()
-{
-	return m_content.template get_ptr<T>();
 }
 template<typename T>
 awaited_result<T>::operator bool() const
@@ -87,9 +77,12 @@ awaited_result<T>::operator reference()
 	return m_content.template get<T>();
 }
 template<typename T>
-void awaited_result<T>::set(reference i_content)
+void awaited_result<T>::set(result_reference i_content)
 {
-	m_content.template assign<T>(std::forward<reference>(i_content));
+	if(i_content.template is<reference>())
+	{
+		m_content.template construct<T>(std::forward<reference>(i_content.template get<reference>()));
+	}
 }
 
 template<typename T, typename Result>

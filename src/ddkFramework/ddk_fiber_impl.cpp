@@ -47,7 +47,7 @@ void this_fiber_t::set_typed_context(yielder_context* i_context)
 fiber_impl::fiber_impl(yielder_interface& i_yielder)
 : m_id(reinterpret_cast<size_t>(this))
 , m_state(FiberExecutionState::Idle)
-, m_alloc(make_shared_reference<default_dynamic_stack_allocator>())
+, m_alloc(make_distributed_reference<default_dynamic_stack_allocator>())
 , m_fiberContext(m_id,i_yielder,m_alloc.get_alloc_impl_ref())
 {
 }

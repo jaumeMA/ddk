@@ -116,13 +116,13 @@ private:
 };
 
 template<typename Comparator = void>
-using fiber_scheduler_shared_ref = shared_reference_wrapper<fiber_scheduler<Comparator>>;
+using fiber_scheduler_dist_ref = distributed_reference_wrapper<fiber_scheduler<Comparator>>;
 template<typename Comparator = void>
-using fiber_scheduler_const_shared_ref = shared_reference_wrapper<const fiber_scheduler<Comparator>>;
+using fiber_scheduler_const_dist_ref = distributed_reference_wrapper<const fiber_scheduler<Comparator>>;
 template<typename Comparator = void>
-using fiber_scheduler_shared_ptr = shared_pointer_wrapper<fiber_scheduler<Comparator>>;
+using fiber_scheduler_dist_ptr = distributed_pointer_wrapper<fiber_scheduler<Comparator>>;
 template<typename Comparator = void>
-using fiber_scheduler_const_shared_ptr = shared_pointer_wrapper<const fiber_scheduler<Comparator>>;
+using fiber_scheduler_const_dist_ptr = distributed_pointer_wrapper<const fiber_scheduler<Comparator>>;
 
 template<typename Comparator = void>
 using fiber_scheduler_lent_ref = lent_reference_wrapper<fiber_scheduler<Comparator>>;

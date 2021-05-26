@@ -31,11 +31,11 @@ public:
 	using acquire_result = result<T,AcquireErrorCode>;
 
 	explicit fiber_pool(Policy i_policy, size_t i_initialSize, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
-	explicit fiber_pool(Policy i_policy, size_t i_initialSize, stack_alloc_const_shared_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
+	explicit fiber_pool(Policy i_policy, size_t i_initialSize, stack_alloc_const_dist_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
 	template<typename Comparator>
-	explicit fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_shared_ref<Comparator> i_fiberScheduler, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
+	explicit fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_dist_ref<Comparator> i_fiberScheduler, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
 	template<typename Comparator>
-	explicit fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_shared_ref<Comparator> i_fiberScheduler, stack_alloc_const_shared_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
+	explicit fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_dist_ref<Comparator> i_fiberScheduler, stack_alloc_const_dist_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber = k_maxNumPagesPerFiber);
 	~fiber_pool();
 
 	acquire_result<fiber> aquire_fiber();
@@ -51,8 +51,8 @@ private:
 	size_t m_numMaxPages;
 	mutable fiber_container m_fiberCtr;
 	mutable size_t m_inUseFibers = 0;
-	mutable fiber_scheduler_shared_ref<> m_fiberScheduler;
-	stack_alloc_const_shared_ref m_stackAllocator;
+	mutable fiber_scheduler_dist_ref<> m_fiberScheduler;
+	stack_alloc_const_dist_ref m_stackAllocator;
 	mutable mutex m_mutex;	
 };
 

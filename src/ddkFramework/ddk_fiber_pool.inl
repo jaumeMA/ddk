@@ -6,7 +6,7 @@ namespace ddk
 {
 
 template<typename Comparator>
-fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_shared_ref<Comparator> i_fiberScheduler, size_t i_maxNumPagesPerFiber)
+fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_dist_ref<Comparator> i_fiberScheduler, size_t i_maxNumPagesPerFiber)
 : m_fiberScheduler(i_fiberScheduler)
 , m_policy(i_policy)
 , m_stackAllocator(make_shared_reference<detail::pool_stack_allocator>(make_shared_reference<detail::default_dynamic_stack_allocator>(),i_initialSize,i_maxNumPagesPerFiber))
@@ -20,7 +20,7 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_sh
 	m_fiberScheduler->start();
 }
 template<typename Comparator>
-fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_shared_ref<Comparator> i_fiberScheduler, stack_alloc_const_shared_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber)
+fiber_pool::fiber_pool(Policy i_policy, size_t i_initialSize, fiber_scheduler_dist_ref<Comparator> i_fiberScheduler, stack_alloc_const_dist_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber)
 : m_fiberScheduler(i_fiberScheduler)
 , m_policy(i_policy)
 , m_stackAllocator(make_shared_reference<detail::pool_stack_allocator>(i_nestedAlloc,i_initialSize,i_maxNumPagesPerFiber))

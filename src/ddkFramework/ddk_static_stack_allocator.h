@@ -17,6 +17,8 @@ public:
 	~static_stack_allocator();
 
 private:
+	stack_alloc_const_dist_ref share() const override;
+	stack_alloc_dist_ref share() override;
 	void* reserve(size_t) const override;
 	std::pair<void*,void*> allocate(void* i_ref, size_t i_size) const override;
 	bool reallocate(execution_stack& i_stackAddr, void* i_reason) const override;
@@ -31,7 +33,7 @@ private:
 }
 
 template<size_t Size>
-stack_alloc_shared_ref make_static_stack_allocator();
+stack_alloc_dist_ref make_static_stack_allocator();
 
 }
 

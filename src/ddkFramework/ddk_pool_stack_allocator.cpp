@@ -1,5 +1,6 @@
 #include "ddk_pool_stack_allocator.h"
 #include "ddk_macros.h"
+#include "ddk_reference_wrapper.h"
 #include <algorithm>
 #include <cmath>
 
@@ -185,7 +186,7 @@ pool_stack_allocator::Buddy::operator bool() const
 	return m_initialAddr != nullptr;
 }
 
-pool_stack_allocator::pool_stack_allocator(stack_alloc_const_shared_ref i_nestedAllocator, size_t i_numStacks, size_t i_stackSize)
+pool_stack_allocator::pool_stack_allocator(stack_alloc_const_dist_ref i_nestedAllocator, size_t i_numStacks, size_t i_stackSize)
 : m_nestedAllocator(i_nestedAllocator)
 , m_maxPages(0)
 {
@@ -193,11 +194,25 @@ pool_stack_allocator::pool_stack_allocator(stack_alloc_const_shared_ref i_nested
 
 	m_allocAddr = m_nestedAllocator->reserve(m_maxPages);
 }
+pool_stack_allocator::pool_stack_allocator(stack_alloc_const_dist_ref i_nestedAllocator,size_t i_maxPages)
+: m_nestedAllocator(i_nestedAllocator)
+, m_maxPages(i_maxPages)
+{
+	m_allocAddr = m_nestedAllocator->reserve(m_maxPages);
+}
 pool_stack_allocator::~pool_stack_allocator()
 {
 	DDK_ASSERT(m_buddyAllocator.empty(), "Pending allocations on destruction");
 
 	m_nestedAllocator->release(m_allocAddr,m_maxPages);
+}
+stack_alloc_const_dist_ref pool_stack_allocator::share() const
+{
+	return make_distributed_reference<pool_stack_allocator>(m_nestedAllocator->share(),m_maxPages);
+}
+stack_alloc_dist_ref pool_stack_allocator::share()
+{
+	return make_distributed_reference<pool_stack_allocator>(m_nestedAllocator->share(),m_maxPages);
 }
 void* pool_stack_allocator::reserve(size_t i_size) const
 {

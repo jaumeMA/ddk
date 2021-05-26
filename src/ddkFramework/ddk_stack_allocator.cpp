@@ -150,7 +150,7 @@ size_t getpagesize()
 
 size_t stack_allocator_interface::s_pageSize = getpagesize();
 
-stack_allocator::stack_allocator(stack_alloc_const_shared_ref i_stackAllocImpl, size_t i_numMaxPages)
+stack_allocator::stack_allocator(stack_alloc_const_dist_ref i_stackAllocImpl, size_t i_numMaxPages)
 : m_stackAllocImpl(i_stackAllocImpl)
 , m_numMaxPages(i_numMaxPages)
 {
@@ -196,7 +196,7 @@ size_t stack_allocator::get_num_guard_pages() const
 {
 	return m_stackAllocImpl->get_num_guard_pages();
 }
-stack_alloc_const_shared_ref stack_allocator::get_alloc_impl() const
+stack_alloc_const_dist_ref stack_allocator::get_alloc_impl() const
 {
 	return m_stackAllocImpl;
 }

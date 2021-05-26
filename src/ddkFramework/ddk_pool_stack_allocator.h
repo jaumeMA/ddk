@@ -63,10 +63,13 @@ class pool_stack_allocator : public stack_allocator_interface
 	static const size_t k_numGuardPages = 3;
 
 public:
-	pool_stack_allocator(stack_alloc_const_shared_ref i_nestedAllocator, size_t i_numStacks, size_t i_stackSize);
+	pool_stack_allocator(stack_alloc_const_dist_ref i_nestedAllocator, size_t i_numStacks, size_t i_stackSize);
+	pool_stack_allocator(stack_alloc_const_dist_ref i_nestedAllocator,size_t i_maxPages);
 	~pool_stack_allocator();
 
 private:
+	stack_alloc_const_dist_ref share() const override;
+	stack_alloc_dist_ref share() override;
 	void* reserve(size_t) const override;
 	std::pair<void*,void*> allocate(void* i_ref, size_t i_size) const override;
 	bool reallocate(execution_stack& i_stackAddr, void* i_reason) const override;
@@ -74,7 +77,7 @@ private:
 	void release(void*,size_t) const override;
 	size_t get_num_guard_pages() const override;
 
-	stack_alloc_const_shared_ref m_nestedAllocator;
+	stack_alloc_const_dist_ref m_nestedAllocator;
 	mutable std::set<Buddy> m_buddyAllocator;
 	void* m_allocAddr = nullptr;
 	size_t m_maxPages = 0;

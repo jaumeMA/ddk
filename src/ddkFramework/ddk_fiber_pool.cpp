@@ -12,8 +12,8 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_maxNumFibers, size_t i_maxNumPa
 : m_policy(i_policy)
 , m_maxNumFibers(i_maxNumFibers)
 , m_numMaxPages(i_maxNumPagesPerFiber)
-, m_fiberScheduler(make_shared_reference<fiber_scheduler<>>())
-, m_stackAllocator(make_shared_reference<detail::pool_stack_allocator>(make_shared_reference<detail::default_dynamic_stack_allocator>(),i_maxNumFibers,i_maxNumPagesPerFiber))
+, m_fiberScheduler(make_distributed_reference<fiber_scheduler<>>())
+, m_stackAllocator(make_distributed_reference<detail::pool_stack_allocator>(make_distributed_reference<detail::default_dynamic_stack_allocator>(),i_maxNumFibers,i_maxNumPagesPerFiber))
 {
 	size_t initialSize = (m_policy == FixedSize) ? m_maxNumFibers : 1;
 
@@ -25,12 +25,12 @@ fiber_pool::fiber_pool(Policy i_policy, size_t i_maxNumFibers, size_t i_maxNumPa
 
 	m_fiberScheduler->start();
 }
-fiber_pool::fiber_pool(Policy i_policy, size_t i_maxNumFibers, stack_alloc_const_shared_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber)
+fiber_pool::fiber_pool(Policy i_policy, size_t i_maxNumFibers, stack_alloc_const_dist_ref i_nestedAlloc, size_t i_maxNumPagesPerFiber)
 : m_policy(i_policy)
 , m_maxNumFibers(i_maxNumFibers)
 , m_numMaxPages(i_maxNumPagesPerFiber)
-, m_fiberScheduler(make_shared_reference<fiber_scheduler<>>())
-, m_stackAllocator(make_shared_reference<detail::pool_stack_allocator>(i_nestedAlloc,i_maxNumFibers,i_maxNumPagesPerFiber))
+, m_fiberScheduler(make_distributed_reference<fiber_scheduler<>>())
+, m_stackAllocator(make_distributed_reference<detail::pool_stack_allocator>(i_nestedAlloc,i_maxNumFibers,i_maxNumPagesPerFiber))
 {
 	size_t initialSize = (m_policy == FixedSize) ? m_maxNumFibers : 1;
 

@@ -43,7 +43,7 @@ private:
 	using typename cancellable_executor_interface<Return()>::cancel_result;
 	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
-	start_result execute(const ddk::function<void(sink_reference)>& i_sink,const ddk::function<Return()>& i_callable) override;
+	start_result execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable) override;
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;

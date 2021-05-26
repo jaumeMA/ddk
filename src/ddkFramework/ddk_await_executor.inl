@@ -15,7 +15,7 @@ template<typename Return>
 await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable)
 : m_callable(i_callable)
 , m_state(ExecutorState::Executing)
-,m_callee(*this)
+, m_callee(*this)
 {
 	m_callee.set_executor(this->ref_from_this());
 

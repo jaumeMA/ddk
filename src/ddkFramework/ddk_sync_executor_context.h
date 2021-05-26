@@ -82,6 +82,7 @@ class fiber_execution_context : public executor_context_interface, public lend_f
 {
 public:
 	fiber_execution_context(fiber i_fiber);
+
 	void start(const function<void()>&);
 
 private:
@@ -98,7 +99,11 @@ class thread_sheaf_execution_context : public executor_context_interface, public
 public:
 	thread_sheaf_execution_context(thread_sheaf i_threadSheaf);
 	void start(const function<void()>&);
-	size_t get_num_failures() const;
+	void notify_recipients();
+	size_t add_failure();
+	size_t remove_pending_fiber();
+	bool has_pending_threads() const;
+	bool has_failures() const;
 
 	continuation_token enqueue(const function<void()>&);
 
@@ -120,7 +125,11 @@ public:
 
 	void start(const function<void()>&);
 	void clear_fibers();
-	size_t get_num_failures() const;
+	size_t add_failure();
+	size_t remove_pending_thread();
+	void notify_recipients();
+	bool has_pending_fibers() const;
+	bool has_failures() const;
 
 	continuation_token enqueue(const function<void()>&);
 
@@ -130,8 +139,8 @@ private:
 	void clear() override;
 
 	fiber_sheaf m_fiberSheaf;
-	atomic_size_t m_failedThreads;
-	atomic_size_t m_pendingThreads;
+	atomic_size_t m_failedFibers;
+	atomic_size_t m_pendingFibers;
 	detail::async_executor_recipients m_recipients;
 };
 

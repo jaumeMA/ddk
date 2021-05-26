@@ -12,6 +12,16 @@ static_stack_allocator<Size>::~static_stack_allocator()
 	DDK_ASSERT(m_underUse == false, "Memory under use while destroying stack");
 }
 template<size_t Size>
+stack_alloc_const_dist_ref static_stack_allocator<Size>::share() const
+{
+	return make_static_stack_allocator<Size>();
+}
+template<size_t Size>
+stack_alloc_dist_ref static_stack_allocator<Size>::share()
+{
+	return make_static_stack_allocator<Size>();
+}
+template<size_t Size>
 void* static_stack_allocator<Size>::reserve(size_t) const
 {
 	return reinterpret_cast<char*>(reinterpret_cast<size_t>(m_arena.template get_ptr<char>() + (Size + 1) * s_pageSize) & ~0xFFF);
@@ -55,9 +65,9 @@ size_t static_stack_allocator<Size>::get_num_guard_pages() const
 }
 
 template<size_t Size>
-stack_alloc_shared_ref make_static_stack_allocator()
+stack_alloc_dist_ref make_static_stack_allocator()
 {
-	return make_shared_reference<detail::static_stack_allocator<Size>>();
+	return make_distributed_reference<detail::static_stack_allocator<Size>>();
 }
 
 }

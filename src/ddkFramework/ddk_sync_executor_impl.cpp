@@ -13,7 +13,7 @@ thread_sheaf_executor::thread_sheaf_executor(thread_sheaf i_threadSheaf)
 , m_state(ExecutorState::Idle)
 {
 }
-thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
+thread_sheaf_executor::start_result thread_sheaf_executor::execute(const sink_type& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -25,21 +25,32 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const ddk::fu
 		{
 			m_execContext.start([this,i_sink,i_callable]()
 			{
-				eval(i_callable);
-			});
-
-			m_execContext.enqueue([=]()
-			{
-				while(m_state.get() == ExecutorState::Cancelling)
+				try
 				{
-					std::this_thread::yield();
+					eval_unsafe(i_callable);
+				}
+				catch(...)
+				{
+					m_execContext.add_failure();
 				}
 
-				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+				if(m_execContext.remove_pending_fiber() == 0)
 				{
-					if(m_execContext.get_num_failures() == 0)
+					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 					{
-						eval(i_sink,_void);
+						if(m_execContext.has_failures())
+						{
+							//improve exception report
+							eval_unsafe(i_sink,async_exception{ "Some threads triggered exception" });
+						}
+						else
+						{
+							eval_unsafe(i_sink,_void);
+						}
+
+						m_execContext.notify_recipients();
 					}
 				}
 			});
@@ -98,7 +109,7 @@ fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
 , m_state(ExecutorState::Idle)
 {
 }
-fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::function<void(const detail::void_t&)>& i_sink, const ddk::function<detail::void_t()>& i_callable)
+fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const sink_type& i_sink, const ddk::function<detail::void_t()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -110,24 +121,35 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const ddk::func
 		{
 			m_execContext.start([this,i_sink,i_callable]()
 			{
-				eval(i_callable);
-			});
-
-			m_execContext.enqueue([=]()
-			{
-				m_execContext.clear_fibers();
-
-				while(m_state.get() == ExecutorState::Cancelling)
+				try
 				{
-					std::this_thread::yield();
+					eval_unsafe(i_callable);
+				}
+				catch(...)
+				{
+					m_execContext.add_failure();
 				}
 
-				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+				if(m_execContext.remove_pending_thread() == 0)
 				{
-					if(m_execContext.get_num_failures() == 0)
+					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 					{
-						eval(i_sink,_void);
+						if(m_execContext.has_failures())
+						{
+							//improve exception report
+							eval_unsafe(i_sink,async_exception{ "Some threads triggered exception" });
+						}
+						else
+						{
+							eval_unsafe(i_sink,_void);
+						}
 					}
+
+					m_execContext.clear_fibers();
+
+					m_execContext.notify_recipients();
 				}
 			});
 

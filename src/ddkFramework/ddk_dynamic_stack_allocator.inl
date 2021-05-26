@@ -15,6 +15,16 @@ namespace detail
 {
 
 template<size_t NumGuardPages>
+stack_alloc_const_dist_ref dynamic_stack_allocator<NumGuardPages>::share() const
+{
+	return ref_from_this();
+}
+template<size_t NumGuardPages>
+stack_alloc_dist_ref dynamic_stack_allocator<NumGuardPages>::share()
+{
+	return ref_from_this();
+}
+template<size_t NumGuardPages>
 void* dynamic_stack_allocator<NumGuardPages>::reserve(size_t i_size) const
 {
 
@@ -140,9 +150,9 @@ size_t dynamic_stack_allocator<NumGuardPages>::get_num_guard_pages() const
 }
 
 template<size_t NumGuardPages>
-stack_alloc_shared_ref make_dynamic_stack_allocator()
+stack_alloc_dist_ref make_dynamic_stack_allocator()
 {
-	return make_shared_reference<detail::dynamic_stack_allocator<NumGuardPages>>();
+	return make_distributed_reference<detail::dynamic_stack_allocator<NumGuardPages>>();
 }
 
 }

@@ -16,13 +16,15 @@ template<typename T>
 struct sink_type_resolver
 {
 	typedef typename mpl::static_if<std::is_reference<T>::value,T,typename mpl::static_if<std::is_copy_constructible<T>::value,const T&,T&&>::type>::type reference;
-	typedef function<void(reference)> type;
+	typedef variant<reference,async_exception> result_t;
+	typedef function<void(result_t)> type;
 };
 template<>
 struct sink_type_resolver<void>
 {
-	typedef void reference;
-	typedef function<void()> type;
+	typedef detail::void_t reference;
+	typedef variant<detail::void_t,async_exception> result_t;
+	typedef function<void(result_t)> type;
 };
 
 }
@@ -51,6 +53,7 @@ public:
 		StartNotAvailable
 	};
 	typedef result<ExecutorState,StartErrorCode> start_result;
+	typedef typename detail::sink_type_resolver<Return>::result_t sink_result;
 	typedef typename detail::sink_type_resolver<Return>::type sink_type;
 	typedef typename detail::sink_type_resolver<Return>::reference sink_reference;
 

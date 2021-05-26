@@ -25,6 +25,8 @@ public:
 private:
 	static const size_t s_numGuardPages = NumGuardPages;
 
+	stack_alloc_const_dist_ref share() const override;
+	stack_alloc_dist_ref share() override;
 	void* reserve(size_t) const override;
 	std::pair<void*,void*> allocate(void* i_ref, size_t i_size) const override;
 	bool reallocate(detail::execution_stack& i_stackAddr, void* i_reason) const override;
@@ -37,10 +39,10 @@ typedef dynamic_stack_allocator<k_defaultGuardPages> default_dynamic_stack_alloc
 
 }
 
-stack_alloc_shared_ref make_default_dynamic_stack_allocator();
+stack_alloc_dist_ref make_default_dynamic_stack_allocator();
 
 template<size_t NumGuardPages = detail::k_defaultGuardPages>
-stack_alloc_shared_ref make_dynamic_stack_allocator();
+stack_alloc_dist_ref make_dynamic_stack_allocator();
 
 }
 

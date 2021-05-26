@@ -32,7 +32,7 @@ public:
 	bool is_stopped() const;
 
 private:
-	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
+	virtual start_result execute(const sink_type& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
@@ -64,7 +64,7 @@ public:
 	bool is_stopped() const;
 
 private:
-	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
+	virtual start_result execute(const sink_type& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
@@ -95,7 +95,7 @@ public:
 	bool set_affinity(const cpu_set_t& i_set);
 
 private:
-	virtual start_result execute(const ddk::function<void()>& i_sink, const ddk::function<void()>& i_executor) override;
+	virtual start_result execute(const sink_type& i_sink, const ddk::function<void()>& i_executor) override;
 	virtual ExecutorState get_state() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;

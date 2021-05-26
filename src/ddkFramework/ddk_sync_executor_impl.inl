@@ -14,7 +14,7 @@ deferred_executor<Return>::deferred_executor()
 {
 }
 template<typename Return>
-typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
+typename deferred_executor<Return>::start_result deferred_executor<Return>::execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable != nullptr)
 	{
@@ -24,7 +24,31 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 			{
 				s_execContext.start([&i_sink,&i_callable]()
 				{
-					eval_unsafe(i_sink,eval_unsafe(i_callable));
+					try
+					{
+						if constexpr (std::is_same<void,Return>::value)
+						{
+							eval_unsafe(i_callable);
+
+							eval_unsafe(i_sink,_void);
+						}
+						else
+						{
+							eval_unsafe(i_sink,eval_unsafe(i_callable));
+						}
+					}
+					catch(const async_exception& i_excp)
+					{
+						eval_unsafe(i_sink,i_excp);
+					}
+					catch(const std::exception& i_excp)
+					{
+						eval_unsafe(i_sink,async_exception{ i_excp.what() });
+					}
+					catch(...)
+					{
+						eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
+					}
 				});
 			}
 			catch(...)
@@ -74,7 +98,7 @@ fiber_executor<Return>::fiber_executor(fiber i_fiber)
 {
 }
 template<typename Return>
-typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
+typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -88,21 +112,47 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 			{
 				try
 				{
-					sink_reference res = eval_unsafe(i_callable);
-
-					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+					if constexpr(std::is_same<void,Return>::value)
 					{
-						eval_unsafe(i_sink,res);
+						eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
+							eval_unsafe(i_sink,_void);
+						}
 					}
+					else
+					{
+						sink_reference res = eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
+							eval_unsafe(i_sink,res);
+						}
+					}
+
+					return;
+				}
+				catch(const async_exception& i_excp)
+				{
+					eval_unsafe(i_sink,i_excp);
+				}
+				catch(const std::exception& i_excp)
+				{
+					eval_unsafe(i_sink,async_exception{ i_excp.what() });
 				}
 				catch(...)
 				{
-					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
+					eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
 				}
+
+				while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 			});
 
 			return make_result<start_result>(ExecutorState::Executing);
@@ -174,7 +224,7 @@ thread_executor<Return>::thread_executor(thread i_thread)
 {
 }
 template<typename Return>
-typename thread_executor<Return>::start_result thread_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink, const ddk::function<Return()>& i_callable)
+typename thread_executor<Return>::start_result thread_executor<Return>::execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -188,21 +238,47 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 			{
 				try
 				{
-					sink_reference res = eval_unsafe(i_callable);
-
-					while (m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Executed))
+					if constexpr(std::is_same<void,Return>::value)
 					{
-						eval_unsafe(i_sink,std::forward<sink_reference>(res));
+						eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
+							eval_unsafe(i_sink,_void);
+						}
 					}
+					else
+					{
+						sink_reference res = eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
+							eval_unsafe(i_sink,res);
+						}
+					}
+
+					return;
+				}
+				catch(const async_exception& i_excp)
+				{
+					eval_unsafe(i_sink,i_excp);
+				}
+				catch(const std::exception& i_excp)
+				{
+					eval_unsafe(i_sink,async_exception{ i_excp.what() });
 				}
 				catch(...)
 				{
-					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
+					eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
 				}
+
+				while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 			});
 
 			return make_result<start_result>(ExecutorState::Executing);
@@ -266,7 +342,7 @@ execution_context_executor<Return>::execution_context_executor(executor_context_
 {
 }
 template<typename Return>
-typename execution_context_executor<Return>::start_result execution_context_executor<Return>::execute(const ddk::function<void(sink_reference)>& i_sink,const ddk::function<Return()>& i_callable)
+typename execution_context_executor<Return>::start_result execution_context_executor<Return>::execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
 	{
@@ -287,21 +363,47 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 			{
 				try
 				{
-					sink_reference res = eval_unsafe(i_callable);
-
-					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+					if constexpr(std::is_same<void,Return>::value)
 					{
-						eval_unsafe(i_sink,std::forward<sink_reference>(res));
+						eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
+							eval_unsafe(i_sink,_void);
+						}
 					}
+					else
+					{
+						sink_reference res = eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
+							eval_unsafe(i_sink,res);
+						}
+					}
+
+					return;
+				}
+				catch(const async_exception& i_excp)
+				{
+					eval_unsafe(i_sink,i_excp);
+				}
+				catch(const std::exception& i_excp)
+				{
+					eval_unsafe(i_sink,async_exception{ i_excp.what() });
 				}
 				catch(...)
 				{
-					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
+					eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
 				}
+
+				while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 			},m_depth)))
 			{
 				m_execContext = nullptr;
