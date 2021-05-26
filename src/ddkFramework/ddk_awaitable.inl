@@ -12,41 +12,40 @@ template<typename T>
 template<typename Arg>
 awaited_result<T>::awaited_result(Arg&& i_arg)
 {
-	m_content.template construct<T>(std::forward<Arg>(i_arg));
+	m_content.template construct<result_type>(std::forward<Arg>(i_arg));
 }
 template<typename T>
 awaited_result<T>::awaited_result(awaited_result&& other)
 {
 	if(other.m_content.empty() == false)
 	{
-		m_content.template construct<T>(other.m_content.template extract<T>());
+		m_content.template construct<result_type>(other.m_content.template extract<result_type>());
 	}
 }
 template<typename T>
 awaited_result<T>::~awaited_result()
 {
-	if(m_content.empty() == false)
-	{
-		m_content.template destroy<T>();
-	}
+	m_content.template destroy<result_type>();
 }
 template<typename T>
 awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
 {
 	if(other.m_content.empty() == false)
 	{
-		if(m_content.empty())
+		if constexpr (std::is_copy_assignable<result_type>::value)
 		{
-			m_content.template construct<T>(other.m_content.template extract<T>());
+			m_content.template assign<result_type>(other.m_content.template extract<result_type>());
 		}
 		else
 		{
-			m_content.template assign<T>(other.m_content.template extract<T>());
+			m_content.template destroy<result_type>();
+
+			m_content.template construct<result_type>(other.m_content.template extract<result_type>());
 		}
 	}
 	else if(m_content.empty() == false)
 	{
-		m_content.template destroy<T>();
+		m_content.template destroy<result_type>();
 	}
 
 	return *this;
@@ -54,34 +53,69 @@ awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
 template<typename T>
 typename awaited_result<T>::const_reference awaited_result<T>::get() const
 {
-	return m_content.template get<T>();
+	if(m_content.empty())
+	{
+		throw async_exception{ "Trying to access empty result." };
+	}
+	else
+	{
+		const result_type& res = m_content.template get<result_type>();
+
+		if(res.template is<T>())
+		{
+			return res.template get<T>();
+		}
+		else
+		{
+			throw res.template get<async_exception>();
+		}
+	}
 }
 template<typename T>
 typename awaited_result<T>::reference awaited_result<T>::get()
 {
-	return m_content.template get<T>();
+	if(m_content.empty())
+	{
+		throw async_exception{ "Trying to access empty result." };
+	}
+	else
+	{
+		result_type& res = m_content.template get<result_type>();
+
+		if(res.template is<T>())
+		{
+			return res.template get<T>();
+		}
+		else
+		{
+			throw res.template get<async_exception>();
+		}
+	}
 }
 template<typename T>
 awaited_result<T>::operator bool() const
 {
-	return m_content.empty() == false;
-}
-template<typename T>
-awaited_result<T>::operator const_reference() const
-{
-	return m_content.template get<T>();
-}
-template<typename T>
-awaited_result<T>::operator reference()
-{
-	return m_content.template get<T>();
+	if(m_content.empty() == false)
+	{
+		const result_type& res = m_content.template get<result_type>();
+
+		return res.template is<T>();
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename T>
 void awaited_result<T>::set(result_reference i_content)
 {
 	if(i_content.template is<reference>())
 	{
-		m_content.template construct<T>(std::forward<reference>(i_content.template get<reference>()));
+		m_content.template construct<result_type>(std::forward<reference>(i_content.template get<reference>()));
+	}
+	else
+	{
+		m_content.template construct<result_type>(i_content.template get<async_exception>());
 	}
 }
 

@@ -43,12 +43,10 @@ public:
 	const_reference get() const;
 	reference get();
 	explicit operator bool() const;
-	explicit operator const_reference() const;
-	explicit operator reference();
 	void set(result_reference i_content);
 
 private:
-	typed_arena<T> m_content;
+	typed_arena<result_type> m_content;
 };
 
 template<>

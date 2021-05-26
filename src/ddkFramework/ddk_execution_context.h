@@ -5,6 +5,26 @@
 #include "ddk_execution_stack.h"
 #include "ddk_ucontext.h"
 
+#ifdef DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE \
+
+#define load_switch_execution_context(i_oldCtxt,i_newCtxt) \
+	\
+	set_current_execution_context(i_newCtxt); \
+	\
+	load_switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
+	\
+	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
+
+#define switch_execution_context(i_oldCtxt,i_newCtxt) \
+	\
+	set_current_execution_context(i_newCtxt); \
+	\
+	switch_execution_stack(i_newCtxt.m_stack) \
+	\
+	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
+
+#else
+
 #define load_switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
 	set_current_execution_context(i_newCtxt); \
@@ -24,6 +44,8 @@
 	switch_execution_stack(i_newCtxt.m_stack) \
 	\
 	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
+
+#endif
 
 #define switch_execution(i_newCtxt) \
 	\

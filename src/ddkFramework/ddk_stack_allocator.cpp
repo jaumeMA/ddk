@@ -28,8 +28,6 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 		//check that stack pointer is inside our scope
 		if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
 		{
-			get_curr_thread_stack(&currStack);
-
 			if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ExceptionRecord->ExceptionInformation[1])))
 			{
 				//every time we receive an exception under a current fiber arena, reset stack limits

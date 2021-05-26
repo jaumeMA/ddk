@@ -5,6 +5,8 @@
 #include "ddk_lend_from_this.h"
 #include "ddk_embedded_type.h"
 #include "ddk_fiber_defs.h"
+#include "ddk_async_exceptions.h"
+#include "ddk_variant.h"
 
 namespace ddk
 {
@@ -36,6 +38,7 @@ public:
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
 	typedef typename embedded_type<T>::raw_type value_type;
+	typedef variant<T,async_exception> result_type;
 
 	typed_yielder_context() = default;
     template<typename TT>
@@ -44,14 +47,16 @@ public:
 	inline typed_yielder_context(typed_yielder_context&& other);
 	inline ~typed_yielder_context();
 
-	inline typed_yielder_context& operator=(const typed_yielder_context& other);
-	inline typed_yielder_context& operator=(typed_yielder_context&& other);
-	inline void insert_value(T i_value);
-	inline const_reference get_value() const;
-	inline reference get_value();
+	inline typed_yielder_context& operator=(const typed_yielder_context&) = delete;
+	inline typed_yielder_context& operator=(typed_yielder_context&&) = delete;
+	TEMPLATE(typename Arg)
+	REQUIRES(IS_CONSTRUCTIBLE(result_type,Arg))
+	inline void insert_value(Arg&& i_value);
+	inline const result_type& get_value() const;
+	inline result_type& get_value();
 
 private:
-	mutable typed_arena<T> m_value;
+	mutable typed_arena<result_type> m_value;
 };
 
 template<>

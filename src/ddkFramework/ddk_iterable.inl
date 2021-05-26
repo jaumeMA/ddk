@@ -198,7 +198,7 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_
 
 			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
 			{
-				//if consolidation has been completed just pass to the another context
+				//we already destroyed arena by extraction
 				m_iterableValueContainer.template construct<const_reference>(i_value);
 
 				m_executor.yield();
@@ -206,6 +206,7 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_
 		}
 		else
 		{
+			//we already destroyed arena by extraction
 			m_iterableValueContainer.template construct<const_reference>(i_value);
 
 			m_executor.yield();
@@ -229,7 +230,7 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(const_refere
 
 			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
 			{
-				//if consolidation has been completed just pass to the another context
+				//we already destroyed arena by extraction
 				m_iterableValueContainer.template construct<const_reference>(i_value);
 
 				m_executor.yield();
@@ -237,6 +238,7 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(const_refere
 		}
 		else
 		{
+			//we already destroyed arena by extraction
 			m_iterableValueContainer.template construct<const_reference>(i_value);
 
 			m_executor.yield();

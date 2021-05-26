@@ -37,6 +37,18 @@ inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* 
 		catch(const suspend_exception&)
 		{
 		}
+		catch(const async_exception& i_excp)
+		{
+			yield(i_excp);
+		}
+		catch(const std::exception& i_excp)
+		{
+			yield(async_exception{ i_excp.what() });
+		}
+		catch(...)
+		{
+			yield(async_exception{ "Unkwon exception" });
+		}
 	}
 
 	i_fiber->set_state(FiberExecutionState::Done);

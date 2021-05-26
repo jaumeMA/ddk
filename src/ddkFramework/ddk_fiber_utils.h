@@ -26,7 +26,7 @@ void suspend();
 void yield();
 
 template<typename T>
-void yield(T&& i_value);
+inline void yield(T&& i_value);
 
 }
 
