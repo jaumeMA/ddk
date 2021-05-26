@@ -10,8 +10,6 @@ extern "C"
 
 #define load_switch_execution_stack(i_oldStack,i_newStack) \
 	\
-	get_curr_thread_stack(&(i_oldStack)); \
-	\
 	set_curr_thread_stack(&(i_newStack));
 
 #define switch_execution_stack(i_newStack) \

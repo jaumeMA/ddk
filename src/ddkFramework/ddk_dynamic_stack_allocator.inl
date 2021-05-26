@@ -83,7 +83,7 @@ bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack&
 
 #if defined(WIN32)
 
-		if(VirtualAlloc(reinterpret_cast<char*>(i_stackAddr.get_end()) - ((s_numGuardPages + 1) * s_pageSize),s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD))
+		if(VirtualAlloc(reinterpret_cast<char*>(i_stackAddr.get_dealloc()) - s_pageSize,s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD))
 		{
 			i_stackAddr.set_end(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_pageSize);
 			i_stackAddr.set_dealloc(reinterpret_cast<char*>(i_stackAddr.get_dealloc()) - s_pageSize);

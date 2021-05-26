@@ -9,6 +9,8 @@
 	\
 	set_current_execution_context(i_newCtxt); \
 	\
+	get_curr_thread_stack(&(i_oldCtxt.m_stack)); \
+	\
 	load_switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
 	\
 	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
@@ -16,6 +18,8 @@
 #define switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
 	set_current_execution_context(i_newCtxt); \
+	\
+	get_curr_thread_stack(&(i_oldCtxt.m_stack)); \
 	\
 	switch_execution_stack(i_newCtxt.m_stack) \
 	\
