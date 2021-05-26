@@ -251,7 +251,11 @@ void fiber_scheduler<Comparator>::run()
 
 					currFiber->start_from(m_caller,callableObject);
 
+					m_fiberMutex.lock();
+
 					m_runningFibers.emplace(currFiber,0);
+
+					m_fiberMutex.unlock();
 				}
 				else
 				{
@@ -270,18 +274,20 @@ void fiber_scheduler<Comparator>::run()
 			m_fiberMutex.unlock();
 		}
 
+		m_fiberMutex.lock();
+
 		if(m_runningFibers.empty() == false)
 		{
 			m_callee = m_runningFibers.top();
 
 			m_runningFibers.pop();
 
+			m_fiberMutex.unlock();
+
 			m_callee->resume_from(m_caller);
 		}
 		else
 		{
-			m_fiberMutex.lock();
-
 			if (m_stop == false)
 			{
 				m_fiberCondVar.wait(m_fiberMutex);
