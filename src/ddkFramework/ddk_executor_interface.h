@@ -36,6 +36,7 @@ class cancellable_executor_interface;
 
 SCOPED_ENUM_DECL(ExecutorState,
 	Idle,
+	Pending,
 	Executing,
 	Executed,
 	Cancelling,
@@ -58,8 +59,8 @@ public:
 	typedef typename detail::sink_type_resolver<Return>::reference sink_reference;
 
 	virtual ~executor_interface() = default;
-	virtual ExecutorState get_state() const = 0;
 	virtual start_result execute(const sink_type&, const ddk::function<Return()>&) = 0;
+	virtual bool pending() const = 0;
 };
 
 template<typename Return, typename ... Args>

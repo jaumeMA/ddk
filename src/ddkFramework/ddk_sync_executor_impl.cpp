@@ -99,9 +99,9 @@ executor_context_const_lent_ptr thread_sheaf_executor::get_execution_context() c
 {
 	return lend(m_execContext);
 }
-ExecutorState thread_sheaf_executor::get_state() const
+bool thread_sheaf_executor::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
@@ -197,9 +197,9 @@ executor_context_const_lent_ptr fiber_sheaf_executor::get_execution_context() co
 {
 	return lend(m_execContext);
 }
-ExecutorState fiber_sheaf_executor::get_state() const
+bool fiber_sheaf_executor::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 }

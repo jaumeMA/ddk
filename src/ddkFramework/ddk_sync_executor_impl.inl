@@ -20,41 +20,54 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 	{
 		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 		{
-			try
+			s_execContext.start([=]()
 			{
-				s_execContext.start([&i_sink,&i_callable]()
+				try
 				{
-					try
+					if constexpr (std::is_same<void,Return>::value)
 					{
-						if constexpr (std::is_same<void,Return>::value)
-						{
-							eval_unsafe(i_callable);
+						eval_unsafe(i_callable);
 
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+						{
 							eval_unsafe(i_sink,_void);
 						}
-						else
+
+					}
+					else
+					{
+						sink_reference res = eval_unsafe(i_callable);
+
+						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 						{
-							eval_unsafe(i_sink,eval_unsafe(i_callable));
+							eval_unsafe(i_sink,res);
 						}
 					}
-					catch(const async_exception& i_excp)
-					{
-						eval_unsafe(i_sink,i_excp);
-					}
-					catch(const std::exception& i_excp)
-					{
-						eval_unsafe(i_sink,async_exception{ i_excp.what() });
-					}
-					catch(...)
-					{
-						eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
-					}
-				});
-			}
-			catch(...)
-			{
+
+					ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed);
+						
+					return;
+				}
+				catch(const async_exception& i_excp)
+				{
+					eval_unsafe(i_sink,i_excp);
+				}
+				catch(const std::exception& i_excp)
+				{
+					eval_unsafe(i_sink,async_exception{ i_excp.what() });
+				}
+				catch(...)
+				{
+					eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
+				}
+
+				//since there has been an exception,if executing pass it to cancelled
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
-			}
+			});
 		}
 
 		return make_result<start_result>(m_state.get());
@@ -70,6 +83,23 @@ typename deferred_executor<Return>::cancel_result deferred_executor<Return>::can
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
 		return ddk::success;
+	}
+	else if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
+	{
+		if(i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
+		{
+			m_state = ExecutorState::Cancelled;
+
+			return ddk::success;
+		}
+		else
+		{
+			m_state = ExecutorState::Executing;
+
+			std::this_thread::yield();
+
+			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
+		}
 	}
 	else
 	{
@@ -87,9 +117,9 @@ executor_context_const_lent_ptr deferred_executor<Return>::get_execution_context
 	return lend(s_execContext);
 }
 template<typename Return>
-ExecutorState deferred_executor<Return>::get_state() const
+bool deferred_executor<Return>::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 template<typename Return>
@@ -152,6 +182,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 
 				while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
 
+				//since there has been an exception,if executing pass it to cancelled
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 			});
 
@@ -212,9 +243,9 @@ executor_context_const_lent_ptr fiber_executor<Return>::get_execution_context() 
 	return lend(m_execContext);
 }
 template<typename Return>
-ExecutorState fiber_executor<Return>::get_state() const
+bool fiber_executor<Return>::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 template<typename Return>
@@ -278,6 +309,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 
 				while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
 
+				//since there has been an exception,if executing pass it to cancelled
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
 			});
 
@@ -329,9 +361,9 @@ executor_context_const_lent_ptr thread_executor<Return>::get_execution_context()
 	return lend(m_execContext);
 }
 template<typename Return>
-ExecutorState thread_executor<Return>::get_state() const
+bool thread_executor<Return>::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 template<typename Return>
@@ -350,64 +382,79 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 	}
 	else
 	{
-		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
+		executor_context_lent_ptr execContext = m_execContext;
+		if(execContext == nullptr)
 		{
-			executor_context_lent_ptr execContext = m_execContext;
-			if(execContext == nullptr)
+			//by design, if no executor available, use deferred executor
+			execContext = lend(s_execContext);
+		}
+
+		auto callable = [=]()
+		{
+			try
 			{
-				//by design, if no executor available, use deferred executor
-				execContext = lend(s_execContext);
+				if constexpr(std::is_same<void,Return>::value)
+				{
+					eval_unsafe(i_callable);
+
+					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+					{
+						eval_unsafe(i_sink,_void);
+					}
+				}
+				else
+				{
+					sink_reference res = eval_unsafe(i_callable);
+
+					while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+					{
+						eval_unsafe(i_sink,res);
+					}
+				}
+
+				return;
+			}
+			catch(const async_exception& i_excp)
+			{
+				eval_unsafe(i_sink,i_excp);
+			}
+			catch(const std::exception& i_excp)
+			{
+				eval_unsafe(i_sink,async_exception{ i_excp.what() });
+			}
+			catch(...)
+			{
+				eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
 			}
 
-			if((m_continuationToken = execContext->enqueue([=]()
-			{
-				try
-				{
-					if constexpr(std::is_same<void,Return>::value)
-					{
-						eval_unsafe(i_callable);
+			while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
 
-						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+			//since there has been an exception,if executing pass it to cancelled
+			ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
+		};
 
-						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
-						{
-							eval_unsafe(i_sink,_void);
-						}
-					}
-					else
-					{
-						sink_reference res = eval_unsafe(i_callable);
-
-						while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
-						{
-							eval_unsafe(i_sink,res);
-						}
-					}
-
-					return;
-				}
-				catch(const async_exception& i_excp)
-				{
-					eval_unsafe(i_sink,i_excp);
-				}
-				catch(const std::exception& i_excp)
-				{
-					eval_unsafe(i_sink,async_exception{ i_excp.what() });
-				}
-				catch(...)
-				{
-					eval_unsafe(i_sink,async_exception{ "Unkwon exception" });
-				}
-
-				while(m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelled);
-			},m_depth)))
+		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
+		{
+			if(m_continuationToken = execContext->enqueue(callable,m_depth))
 			{
 				m_execContext = nullptr;
 			}
+			else
+			{
+				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Pending);
+			}
+
+			return make_result<start_result>(m_state.get());
+		}
+		else if(ddk::atomic_compare_exchange(m_state,ExecutorState::Pending,ExecutorState::Executing))
+		{
+			execContext->start(callable);
+
+			m_execContext = nullptr;
 
 			return make_result<start_result>(m_state.get());
 		}
@@ -420,7 +467,8 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 template<typename Return>
 typename execution_context_executor<Return>::cancel_result execution_context_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
 {
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled) ||
+	   ddk::atomic_compare_exchange(m_state,ExecutorState::Pending,ExecutorState::Cancelled))
 	{
 		return ddk::success;
 	}
@@ -468,9 +516,9 @@ executor_context_const_lent_ptr execution_context_executor<Return>::get_executio
 	return m_execContext;
 }
 template<typename Return>
-ExecutorState execution_context_executor<Return>::get_state() const
+bool execution_context_executor<Return>::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 }

@@ -87,9 +87,9 @@ executor_context_const_lent_ptr delayed_task_executor<Return>::get_execution_con
 	return lend(m_execContext);
 }
 template<typename Return>
-ExecutorState delayed_task_executor<Return>::get_state() const
+bool delayed_task_executor<Return>::pending() const
 {
-	return m_state.get();
+	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
 }
 
 }

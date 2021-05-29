@@ -22,7 +22,7 @@ public:
 
 private:
 	virtual start_result execute(const sink_type& i_sink, const ddk::function<void()>& i_executor) override;
-	virtual ExecutorState get_state() const override;
+	virtual bool pending() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
 	void update();
@@ -47,7 +47,7 @@ public:
 
 private:
 	virtual start_result execute(const sink_type& i_sink, const ddk::function<void()>& i_executor) override;
-	virtual ExecutorState get_state() const override;
+	virtual bool pending() const override;
 	virtual resume_result resume() override;
 	virtual void signal() override;
 	void update();
@@ -72,7 +72,7 @@ public:
 
 private:
 	start_result execute(const sink_type& i_sink, const ddk::function<void()>& i_executor) override;
-	virtual ExecutorState get_state() const override;
+	virtual bool pending() const override;
 	resume_result resume() override;
 	void signal() override;
 

@@ -106,17 +106,17 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 		m_condVar.wait(m_mutex);
 	}
 
-	if (m_arena.template is<detail::none_t>())
-	{
-		throw async_exception("Accessing empty async shared state");
-	}
-	else if(m_arena.template is<T>())
+	if(m_arena.template is<T>())
 	{
 		return m_arena.template get<T>();
 	}
-	else
+	else if(m_arena.template is<async_exception>())
 	{
 		throw m_arena.template get<async_exception>();
+	}
+	else
+	{
+		throw async_exception("Accessing empty async shared state");
 	}
 }
 template<typename T>
@@ -134,17 +134,17 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 		m_condVar.wait(m_mutex);
 	}
 
-	if(m_arena.template is<detail::none_t>())
-	{
-		throw async_exception("Accessing empty async shared state");
-	}
-	else if(m_arena.template is<T>())
+	if(m_arena.template is<T>())
 	{
 		return m_arena.template get<T>();
 	}
-	else
+	else if(m_arena.template is<async_exception>())
 	{
 		throw m_arena.template get<async_exception>();
+	}
+	else
+	{
+		throw async_exception("Accessing empty async shared state");
 	}
 }
 template<typename T>
@@ -162,12 +162,7 @@ embedded_type<T> private_async_state<T>::extract_value()
 		m_condVar.wait(m_mutex);
 	}
 
-	if(m_arena.template is<detail::none_t>())
-	{
-		m_condVar.wait(m_mutex);
-		throw async_exception("Accessing empty async shared state");
-	}
-	else if(m_arena.template is<T>())
+	if(m_arena.template is<T>())
 	{
 		embedded_type<T> res = std::move(m_arena).template extract<T>();
 
@@ -175,9 +170,13 @@ embedded_type<T> private_async_state<T>::extract_value()
 
 		return std::move(res);
 	}
+	else if(m_arena.template is<async_exception>())
+	{
+		throw std::move(m_arena).template extract<async_exception>();
+	}
 	else
 	{
-		throw m_arena.template get<async_exception>();
+		throw async_exception("Accessing empty async shared state");
 	}
 }
 template<typename T>

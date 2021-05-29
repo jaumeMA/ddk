@@ -125,8 +125,6 @@ void deferred_execution_context::start(const function<void()>& i_callable)
 }
 continuation_token deferred_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	eval(i_callable);
-
 	return { continuation_token::ntoken };
 }
 bool deferred_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)

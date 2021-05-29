@@ -1,6 +1,5 @@
 #include "ddk_thread_pool.h"
 #include "ddk_reference_wrapper.h"
-#include "ddk_fiber_impl.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_lock_guard.h"
 
@@ -147,10 +146,6 @@ thread_pool::~thread_pool()
 		itInUseThread = m_underUseThreads.begin();
 	}
 
-	m_mutex.unlock();
-
-	mutex_guard lg(m_mutex);
-
 	m_condVar.wait_until(m_mutex,[this](){ return m_underUseThreads.empty() == false; });
 
 	thread_container::iterator itThread = m_availableThreads.begin();
@@ -158,6 +153,8 @@ thread_pool::~thread_pool()
 	{
 		delete(*itThread);
 	}
+
+	m_mutex.unlock();
 }
 bool thread_pool::set_affinity(const cpu_set_t& i_set)
 {
@@ -214,10 +211,10 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 {
 	mutex_guard lg(m_mutex);
 
-	const size_t missingFibers = (m_availableThreads.size() < i_size) ? i_size - m_availableThreads.size() : 0;
-	if(missingFibers == 0 || m_policy == GrowsOnDemand && m_underUseThreads.size() < (m_maxNumThreads - missingFibers))
+	const size_t missingThreads = (m_availableThreads.size() < i_size) ? i_size - m_availableThreads.size() : 0;
+	if(missingThreads == 0 || m_policy == GrowsOnDemand && m_underUseThreads.size() < (m_maxNumThreads - missingThreads))
 	{
-		const size_t availableThreads = i_size - missingFibers;
+		const size_t availableThreads = i_size - missingThreads;
 		thread_sheaf threadSheaf;
 		threadSheaf.m_threadCtr.reserve(i_size);
 		m_underUseThreads.reserve(m_underUseThreads.size() + i_size);
@@ -233,7 +230,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 		}
 		m_availableThreads.erase(m_availableThreads.begin(),m_availableThreads.begin() + availableThreads);
 
-		for(size_t fiberIndex = 0; fiberIndex < missingFibers; ++fiberIndex)
+		for(size_t threadIndex = 0; threadIndex < missingThreads; ++threadIndex)
 		{
 			detail::thread_impl_interface* newThread = new detail::worker_thread_impl();
 

@@ -26,7 +26,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	atomic<ExecutorState::underlying_type> m_state;
 };
@@ -50,7 +50,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	fiber_execution_context m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
@@ -72,7 +72,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	fiber_sheaf_execution_context m_execContext;
 	atomic32<ExecutorState::underlying_type> m_state;
@@ -98,7 +98,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	thread_execution_context m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
@@ -120,7 +120,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	thread_sheaf_execution_context m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;
@@ -143,7 +143,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	executor_context_lent_ptr m_execContext;
 	const unsigned char m_depth;

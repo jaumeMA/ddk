@@ -74,9 +74,9 @@ thread_polling_executor::start_result thread_polling_executor::execute(const sin
 		return make_error<start_result>(StartNotExecutable);
 	}
 }
-ExecutorState thread_polling_executor::get_state() const
+bool thread_polling_executor::pending() const
 {
-	return (m_updateThread.joinable()) ? ExecutorState::Executed : ExecutorState::Idle;
+	return m_updateThread.joinable();
 }
 thread_polling_executor::resume_result thread_polling_executor::resume()
 {
@@ -219,9 +219,9 @@ thread_event_driven_executor::start_result thread_event_driven_executor::execute
 		return make_error<start_result>(StartNotExecutable);
 	}
 }
-ExecutorState thread_event_driven_executor::get_state() const
+bool thread_event_driven_executor::pending() const
 {
-	return (m_updateThread.joinable()) ? ExecutorState::Executed : ExecutorState::Idle;
+	return m_updateThread.joinable();
 }
 thread_event_driven_executor::resume_result thread_event_driven_executor::resume()
 {
@@ -306,9 +306,9 @@ thread_fire_and_forget_executor::start_result thread_fire_and_forget_executor::e
 
 	return make_result<start_result>(ExecutorState::Executed);
 }
-ExecutorState thread_fire_and_forget_executor::get_state() const
+bool thread_fire_and_forget_executor::pending() const
 {
-	return (m_updateThread.joinable()) ? ExecutorState::Executed : ExecutorState::Idle;
+	return m_updateThread.joinable();
 }
 thread_fire_and_forget_executor::resume_result thread_fire_and_forget_executor::resume()
 {

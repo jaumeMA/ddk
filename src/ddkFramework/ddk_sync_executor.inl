@@ -28,7 +28,7 @@ async_executor<Return>::async_executor(async_executor&& other)
 template<typename Return>
 async_executor<Return>::~async_executor()
 {
-	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
+	if(m_executor && m_executor->pending())
 	{
 		eval(m_function);
 	}
@@ -276,7 +276,7 @@ template<typename Return>
 bool async_executor<Return>::notify()
 {
 	//if not executed, excute
-	if(m_executor && m_executor->get_state() == ExecutorState::Idle)
+	if(m_executor && m_executor->pending())
 	{
 		start_result execRes = execute();
 

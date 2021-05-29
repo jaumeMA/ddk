@@ -47,7 +47,7 @@ private:
 	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	ExecutorState get_state() const override;
+	bool pending() const override;
 
 	delayed_task_execution_context m_execContext;
 	atomic<ExecutorState::underlying_type> m_state;

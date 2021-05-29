@@ -61,9 +61,9 @@ fiber_polling_executor::start_result fiber_polling_executor::execute(const sink_
 		return make_error<start_result>(StartNotExecutable);
 	}
 }
-ExecutorState fiber_polling_executor::get_state() const
+bool fiber_polling_executor::pending() const
 {
-	return (m_fiber.ready() == false) ? ExecutorState::Executed : ExecutorState::Idle;
+	return m_fiber.ready();
 }
 fiber_polling_executor::resume_result fiber_polling_executor::resume()
 {
@@ -178,9 +178,9 @@ fiber_event_driven_executor::start_result fiber_event_driven_executor::execute(c
 		return make_error<start_result>(StartNotExecutable);
 	}
 }
-ExecutorState fiber_event_driven_executor::get_state() const
+bool fiber_event_driven_executor::pending() const
 {
-	return (m_fiber.ready() == false) ? ExecutorState::Executed : ExecutorState::Idle;
+	return m_fiber.ready();
 }
 fiber_event_driven_executor::resume_result fiber_event_driven_executor::resume()
 {
@@ -246,9 +246,9 @@ fiber_fire_and_forget_executor::start_result fiber_fire_and_forget_executor::exe
 		return make_error<start_result>(StartNotExecutable);
 	}
 }
-ExecutorState fiber_fire_and_forget_executor::get_state() const
+bool fiber_fire_and_forget_executor::pending() const
 {
-	return (m_fiber.ready() == false) ? ExecutorState::Executed : ExecutorState::Idle;
+	return m_fiber.ready();
 }
 fiber_fire_and_forget_executor::resume_result fiber_fire_and_forget_executor::resume()
 {

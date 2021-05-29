@@ -46,11 +46,20 @@ fiber_pool::~fiber_pool()
 {
 	m_fiberScheduler->stop();
 
+	m_mutex.lock();
+
+	m_condVar.wait_until(m_mutex,[this]() { return m_inUseFibers > 0; });
+
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 	for(;itFiber!=m_fiberCtr.end();++itFiber)
 	{
-		delete *itFiber;
+		if(detail::fiber_impl* fiberImpl = *itFiber)
+		{
+			delete fiberImpl;
+		}
 	}
+
+	m_mutex.unlock();
 }
 fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 {
@@ -58,81 +67,94 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 
 	if(m_fiberCtr.empty())
 	{
-		//depending on the policy
 		if(m_policy == GrowsOnDemand && m_inUseFibers < m_maxNumFibers)
 		{
-			m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler));
+			m_inUseFibers++;
+
+			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),{ ref_from_this(),AllocationMode::ConstructionProvided });
+
+			m_fiberScheduler->register_fiber(acquiredFiber);
+
+			return make_result<acquire_result<fiber>>(std::move(acquiredFiber));
 		}
 		else
 		{
 			return make_error<acquire_result<fiber>>(NoFiberAvailable);
 		}
 	}
+	else
+	{
+		m_inUseFibers++;
 
-	fiber_container::iterator itFiber = m_fiberCtr.begin();
+		fiber_container::iterator itFiber = m_fiberCtr.begin() + m_fiberCtr.size() - 1;
 
-	fiber acquiredFiber = as_unique_reference(*itFiber,{ref_from_this(),AllocationMode::ConstructionProvided});
+		fiber acquiredFiber = as_unique_reference(*itFiber,{ ref_from_this(),AllocationMode::ConstructionProvided });
 
-	m_fiberScheduler->register_fiber(acquiredFiber);
+		m_fiberCtr.erase(itFiber);
 
-	m_fiberCtr.erase(itFiber);
+		m_fiberScheduler->register_fiber(acquiredFiber);
 
-	m_inUseFibers++;
-
-	return make_result<acquire_result<fiber>>(std::move(acquiredFiber));
+		return make_result<acquire_result<fiber>>(std::move(acquiredFiber));
+	}
 }
 fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 {
 	mutex_guard lg(m_mutex);
 
-	if(m_fiberCtr.size() < i_size)
+	const size_t missingFibers = (m_fiberCtr.size() < i_size) ? i_size - m_fiberCtr.size() : 0;
+	if(missingFibers == 0 || m_policy == GrowsOnDemand && m_inUseFibers < (m_maxNumFibers  - missingFibers))
 	{
-		const size_t missingFibers = i_size - m_fiberCtr.size();
+		const size_t availableThreads = i_size - missingFibers;
+		fiber_sheaf fiberSheaf;
+		fiberSheaf.m_fiberCtr.reserve(i_size);
 
-		//depending on the policy
-		if(m_policy == GrowsOnDemand && m_inUseFibers < m_maxNumFibers - missingFibers)
+		m_inUseFibers += i_size;
+
+		m_fiberScheduler->resize(i_size);
+
+		fiber_container::iterator itFiber = m_fiberCtr.begin();
+		for(size_t threadIndex = 0; threadIndex < availableThreads; ++threadIndex,++itFiber)
 		{
-			m_fiberCtr.reserve(i_size);
-			for(size_t fiberIndex=0;fiberIndex<missingFibers;++fiberIndex)
+			fiber acquiredFiber = as_unique_reference(*itFiber,{ ref_from_this(),AllocationMode::ConstructionProvided });
+
+			fiber_secheduler_t::register_fiber_result regRes = m_fiberScheduler->register_fiber(acquiredFiber);
+
+			if(regRes == success)
 			{
-				m_fiberCtr.emplace_back(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages }, *m_fiberScheduler));
+				fiberSheaf.m_fiberCtr.push_back(std::move(acquiredFiber));
+
+			}
+			else
+			{
+				return make_error<acquire_result<fiber_sheaf>>(ErrorRegisteringFiber);
 			}
 		}
-		else
+
+		m_fiberCtr.erase(m_fiberCtr.begin(),m_fiberCtr.begin() + availableThreads);
+
+		for(size_t fiberIndex = 0; fiberIndex < missingFibers; ++fiberIndex)
 		{
-			return make_error<acquire_result<fiber_sheaf>>(NoFiberAvailable);
+			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),{ ref_from_this(),AllocationMode::ConstructionProvided });
+
+			fiber_secheduler_t::register_fiber_result regRes = m_fiberScheduler->register_fiber(acquiredFiber);
+
+			if(regRes == success)
+			{
+				fiberSheaf.m_fiberCtr.push_back(std::move(acquiredFiber));
+
+			}
+			else
+			{
+				return make_error<acquire_result<fiber_sheaf>>(ErrorRegisteringFiber);
+			}
 		}
+
+		return make_result<acquire_result<fiber_sheaf>>(std::move(fiberSheaf));
 	}
-
-	fiber_sheaf fiberSheaf;
-	fiberSheaf.m_fiberCtr.reserve(i_size);
-
-	m_fiberScheduler->resize(i_size);
-
-	fiber_container::iterator itFiber = m_fiberCtr.begin();
-	for(size_t fiberIndex=0;fiberIndex<i_size;++fiberIndex,++itFiber)
+	else
 	{
-		fiber acquiredFiber = as_unique_reference(*itFiber,{ ref_from_this(),AllocationMode::ConstructionProvided });
-
-		fiber_id fiberId = acquiredFiber.get_id();
-
-		fiber_secheduler_t::register_fiber_result regRes = m_fiberScheduler->register_fiber(acquiredFiber);
-
-		if(regRes == success)
-		{
-			fiberSheaf.m_fiberCtr.push_back(std::move(acquiredFiber));
-
-		}
-		else
-		{
-			return make_error<acquire_result<fiber_sheaf>>(ErrorRegisteringFiber);
-		}
+		return make_error<acquire_result<fiber_sheaf>>(NoFiberAvailable);
 	}
-
-	m_fiberCtr.erase(m_fiberCtr.begin(),m_fiberCtr.begin()+i_size);
-	m_inUseFibers += fiberSheaf.size();
-
-	return make_result<acquire_result<fiber_sheaf>>(std::move(fiberSheaf));
 }
 bool fiber_pool::empty() const
 {
@@ -157,6 +179,10 @@ void fiber_pool::deallocate(const void* i_object) const
 			mutex_guard lg(m_mutex);
 
 			m_fiberCtr.push_back(acquiredFiber);
+
+			m_inUseFibers--;
+
+			m_condVar.notify_one();
 		}
 	}
 }

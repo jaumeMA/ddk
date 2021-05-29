@@ -55,7 +55,7 @@ protected:
 class deferred_execution_context : public executor_context_interface, public lend_from_this<deferred_execution_context,executor_context_interface>
 {
 public:
-	void start(const function<void()>&);
+	void start(const function<void()>&) override;
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -67,7 +67,7 @@ class thread_execution_context : public executor_context_interface, public lend_
 {
 public:
 	thread_execution_context(thread i_thread);
-	void start(const function<void()>&);
+	void start(const function<void()>&) override;
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -83,7 +83,7 @@ class fiber_execution_context : public executor_context_interface, public lend_f
 public:
 	fiber_execution_context(fiber i_fiber);
 
-	void start(const function<void()>&);
+	void start(const function<void()>&) override;
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -98,14 +98,14 @@ class thread_sheaf_execution_context : public executor_context_interface, public
 {
 public:
 	thread_sheaf_execution_context(thread_sheaf i_threadSheaf);
-	void start(const function<void()>&);
 	void notify_recipients();
 	size_t add_failure();
 	size_t remove_pending_fiber();
 	bool has_pending_threads() const;
 	bool has_failures() const;
-
 	continuation_token enqueue(const function<void()>&);
+
+	void start(const function<void()>&) override;
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -123,15 +123,15 @@ class fiber_sheaf_execution_context : public executor_context_interface, public 
 public:
 	fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf);
 
-	void start(const function<void()>&);
 	void clear_fibers();
 	size_t add_failure();
 	size_t remove_pending_thread();
 	void notify_recipients();
 	bool has_pending_fibers() const;
 	bool has_failures() const;
-
 	continuation_token enqueue(const function<void()>&);
+
+	void start(const function<void()>&) override;
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;

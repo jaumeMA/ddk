@@ -176,13 +176,13 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 		{
 			if constexpr(std::is_same<TT,void>::value)
 			{
-				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
 
 				nestedFuture.wait();
 			}
 			else
 			{
-				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value()))->attach(std::forward<TTT>(acquiredExecContext));
+				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
 
 				return nestedFuture.extract_value();
 			}
@@ -222,10 +222,8 @@ future<TT> future<T>::async(const function<TT(const_reference)>& i_continuation,
 			}
 		})) -> attach(std::forward<TTT>(i_execContext));
 	}
-	else
-	{
-		throw future_exception("Accessing empty future");
-	}
+
+	throw future_exception("Accessing empty future");
 }
 template<typename T>
 future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&

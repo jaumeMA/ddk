@@ -53,7 +53,8 @@ private:
 	mutable size_t m_inUseFibers = 0;
 	mutable fiber_scheduler_dist_ref<> m_fiberScheduler;
 	stack_alloc_const_dist_ref m_stackAllocator;
-	mutable mutex m_mutex;	
+	mutable mutex m_mutex;
+	mutable cond_var m_condVar;
 };
 
 }
