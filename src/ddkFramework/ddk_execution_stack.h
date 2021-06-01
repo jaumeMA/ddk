@@ -8,11 +8,21 @@ extern "C"
 	void set_curr_thread_stack(void*);
 }
 
+#if defined(DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE)
+
 #define load_switch_execution_stack(i_oldStack,i_newStack) \
 	\
 	get_curr_thread_stack(&(i_oldStack)); \
 	\
 	set_curr_thread_stack(&(i_newStack));
+
+#else
+
+#define load_switch_execution_stack(i_oldStack,i_newStack) \
+	\
+	set_curr_thread_stack(&(i_newStack));
+
+#endif
 
 #define switch_execution_stack(i_newStack) \
 	\

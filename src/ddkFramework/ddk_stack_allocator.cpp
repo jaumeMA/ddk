@@ -168,7 +168,7 @@ detail::execution_stack stack_allocator::allocate() const
 	void* initStack = m_stackAllocImpl->reserve(m_numMaxPages);
 	std::pair<void*,void*> endDeallocStack = m_stackAllocImpl->allocate(initStack,s_num_ready_to_use_pages);
 
-#if	DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE
+#ifdef	DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE
 
 	//in this case we "hack" the os so we have full control over reallocations due to page faults
 	return { initStack,endDeallocStack.first,endDeallocStack.first };
