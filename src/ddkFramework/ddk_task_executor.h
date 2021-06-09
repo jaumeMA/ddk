@@ -67,7 +67,7 @@ public:
 	void set_max_num_pending_tasks(size_t i_maxNumPendingTasks);
 	size_t get_max_num_pending_tasks();
 	bool running() const;
-	bool set_affinity(const cpu_set_t& i_set);
+	size_t set_affinity(const cpu_set_t& i_set);
 
 	template<typename Return>
 	future<Return> enqueue(const function<Return()>& i_task);

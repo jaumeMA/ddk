@@ -78,7 +78,7 @@ public:
 	~thread_pool();
 	thread_pool& operator=(const thread_pool&) = delete;
 
-	bool set_affinity(const cpu_set_t& i_set);
+	size_t set_affinity(const cpu_set_t& i_set);
 	acquire_result<thread> aquire_thread();
 	acquire_result<thread_sheaf> acquire_sheaf(size_t i_size);
 	bool available_threads() const;

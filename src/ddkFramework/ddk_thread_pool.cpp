@@ -156,9 +156,9 @@ thread_pool::~thread_pool()
 
 	m_mutex.unlock();
 }
-bool thread_pool::set_affinity(const cpu_set_t& i_set)
+size_t thread_pool::set_affinity(const cpu_set_t& i_set)
 {
-	bool res = true;
+	size_t res = 0;
 
 	mutex_guard lg(m_mutex);
 	thread_container::iterator itThread = m_availableThreads.begin();
@@ -166,9 +166,9 @@ bool thread_pool::set_affinity(const cpu_set_t& i_set)
 	{
 		if(detail::thread_impl_interface* threadImpl = *itThread)
 		{
-			if(threadImpl->set_affinity(i_set) == false)
+			if(threadImpl->set_affinity(i_set))
 			{
-				res = false;
+				++res;
 			}
 		}
 	}
