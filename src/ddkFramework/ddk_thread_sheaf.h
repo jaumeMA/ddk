@@ -29,6 +29,7 @@ public:
 	const_iterator end() const;
 	void insert(thread i_thread);
 	optional<thread> extract();
+	void clear();
 	size_t size() const;
 	bool empty();
 

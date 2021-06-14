@@ -31,7 +31,7 @@ fixed_size_allocator::fixed_size_allocator(fixed_size_allocator&& other)
 , m_pool(std::move(other.m_pool))
 , m_nextChunkArr(std::move(other.m_nextChunkArr))
 #ifdef MEM_CHECK
-, m_numCurrentAllocations(other.m_numCurrentAllocations);
+, m_numCurrentAllocations(other.m_numCurrentAllocations)
 #endif
 {
 #ifdef MEM_CHECK

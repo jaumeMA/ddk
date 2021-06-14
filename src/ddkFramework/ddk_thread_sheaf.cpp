@@ -84,6 +84,10 @@ optional<thread> thread_sheaf::extract()
 
 	return none;
 }
+void thread_sheaf::clear()
+{
+	m_threadCtr.clear();
+}
 size_t thread_sheaf::size() const
 {
 	return m_threadCtr.size();

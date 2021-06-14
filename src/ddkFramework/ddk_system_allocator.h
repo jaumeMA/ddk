@@ -6,7 +6,7 @@
 namespace ddk
 {
 
-class system_allocator: public resource_deleter_interface
+class system_allocator : public resource_deleter_interface
 {
 public:
     typedef system_allocator allocator;

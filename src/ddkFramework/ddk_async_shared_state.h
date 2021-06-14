@@ -40,11 +40,11 @@ public:
 	struct reference_counter : public distributed_reference_counter
 	{
 	public:
-		reference_counter(async_cancellable_dist_ptr& i_asyncExec);
+		reference_counter(private_async_state& i_asyncSharedState);
 		unsigned int decrementSharedReference();
 
 	private:
-		async_cancellable_dist_ptr& m_asyncExec;
+		private_async_state& m_asyncSharedState;
 	};
 
 	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename mpl::static_if<std::is_copy_constructible<T>::value,embedded_type<T>,embedded_type<T&&>>::type::cref_type>::type sink_type;

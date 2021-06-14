@@ -80,9 +80,18 @@ result<void,Error>::operator bool() const
     return m_nestedRes.empty();
 }
 template<typename Error>
-void result<void,Error>::detach() const
+result<void,Error>& result<void,Error>::dismiss()
 {
     SET_CHECK_RESULT(*this,true)
+
+    return *this;
+}
+template<typename Error>
+const result<void,Error>& result<void,Error>::dismiss() const
+{
+    SET_CHECK_RESULT(*this,true)
+
+    return *this;
 }
 template<typename Error>
 bool result<void,Error>::operator==(const result_success_t&) const
@@ -204,9 +213,18 @@ result<T,Error>::operator bool() const
     return m_nestedRes.template is<Error>() == false;
 }
 template<typename T,typename Error>
-void result<T,Error>::detach() const
+result<T,Error>& result<T,Error>::dismiss()
 {
     SET_CHECK_RESULT(*this,true)
+
+    return *this;
+}
+template<typename T,typename Error>
+const result<T,Error>& result<T,Error>::dismiss() const
+{
+    SET_CHECK_RESULT(*this,true)
+
+    return *this;
 }
 template<typename T, typename Error>
 bool result<T,Error>::operator==(const result_success_t&) const

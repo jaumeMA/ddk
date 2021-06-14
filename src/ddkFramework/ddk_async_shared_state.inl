@@ -10,8 +10,8 @@ namespace detail
 {
 
 template<typename T>
-private_async_state<T>::reference_counter::reference_counter(async_cancellable_dist_ptr& i_asyncExec)
-: m_asyncExec(i_asyncExec)
+private_async_state<T>::reference_counter::reference_counter(private_async_state& i_asyncSharedState)
+: m_asyncSharedState(i_asyncSharedState)
 {
 }
 template<typename T>
@@ -22,7 +22,7 @@ unsigned int private_async_state<T>::reference_counter::decrementSharedReference
 	//in case we descend to 1 reference (that of the promise), please trigger its execution by means of removing our reference of async execution (check async_executor destructor).
 	if(res == 1)
 	{
-		m_asyncExec = nullptr;
+		m_asyncSharedState.attach(nullptr);
 	}
 
 	return res;
@@ -32,12 +32,14 @@ template<typename T>
 private_async_state<T>::private_async_state()
 : m_arena(none)
 , m_mutex(MutexType::Recursive)
-, m_refCounter(m_asyncExecutor)
+, m_refCounter(*this)
 {
 }
 template<typename T>
 typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
 {
+	mutex_guard lg(m_mutex);
+
 	if(m_asyncExecutor)
 	{
 		return m_asyncExecutor->cancel();
@@ -50,11 +52,15 @@ typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
 template<typename T>
 void private_async_state<T>::attach(async_cancellable_dist_ptr i_executor)
 {
+	mutex_guard lg(m_mutex);
+
 	m_asyncExecutor = i_executor;
 }
 template<typename T>
 void private_async_state<T>::detach()
 {
+	mutex_guard lg(m_mutex);
+
 	m_asyncExecutor = nullptr;
 }
 template<typename T>
@@ -219,6 +225,8 @@ bool private_async_state<T>::ready() const
 template<typename T>
 void private_async_state<T>::notify() const
 {
+	mutex_guard lg(m_mutex);
+
 	if(m_asyncExecutor)
 	{
 		m_asyncExecutor->notify();
