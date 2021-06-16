@@ -22,7 +22,7 @@ unsigned int private_async_state<T>::reference_counter::decrementSharedReference
 	//in case we descend to 1 reference (that of the promise), please trigger its execution by means of removing our reference of async execution (check async_executor destructor).
 	if(res == 1)
 	{
-		m_asyncSharedState.attach(nullptr);
+		m_asyncSharedState.detach();
 	}
 
 	return res;
@@ -34,6 +34,12 @@ private_async_state<T>::private_async_state()
 , m_mutex(MutexType::Recursive)
 , m_refCounter(*this)
 {
+}
+template<typename T>
+private_async_state<T>::~private_async_state()
+{
+	//just to avoid races on destruction
+	mutex_guard lg(m_mutex);
 }
 template<typename T>
 typename private_async_state<T>::cancel_result private_async_state<T>::cancel()

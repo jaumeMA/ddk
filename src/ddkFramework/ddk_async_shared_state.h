@@ -54,6 +54,7 @@ public:
 	typedef typename async_cancellable_interface::cancel_result cancel_result;
 
 	private_async_state();
+	~private_async_state();
 	cancel_result cancel();
 	void attach(async_cancellable_dist_ptr i_executor);
 	void detach();
