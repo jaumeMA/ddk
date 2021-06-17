@@ -22,7 +22,7 @@ public:
     template<typename ... TT>
     map_node(const Key& i_key,TT&& ... i_args);
     virtual ~map_node();
-    inline void replace_node(unique_reference_wrapper<map_node<Key,Value>> other);
+    inline unique_pointer_wrapper<map_node<Key,Value>> replace_node(unique_reference_wrapper<map_node<Key,Value>> other);
     template<typename Map>
     inline unique_reference_wrapper<map_node<Key,Value>> extract_node(lent_pointer_wrapper<Map> i_map = nullptr);
     inline lent_pointer_wrapper<map_node<Key,Value>> get_parent();
@@ -88,6 +88,7 @@ class map_impl : protected lend_from_this<map_impl<Key,Value,Node,Allocator,Bala
 public:
     struct map_iterator
     {
+        friend class map_impl<Key,Value,Node,Allocator,Balancer>;
     public:
         typedef std::pair<const Key,Value&> reference;
         typedef std::pair<const Key,const Value&> const_reference;
@@ -110,6 +111,7 @@ public:
     };
     struct const_map_iterator
     {
+        friend class map_impl<Key,Value,Node,Allocator,Balancer>;
     public:
         typedef std::pair<const Key,Value&> reference;
         typedef std::pair<const Key,const Value&> const_reference;
@@ -162,6 +164,9 @@ public:
     reference operator[](const_key_reference key);
     template<typename ... Args>
     std::pair<bool,iterator> emplace(const_key_reference i_key,Args&& ... i_args);
+    iterator erase(const iterator& itMap);
+    const_iterator erase(const const_iterator& itMap);
+    iterator erase(const_key_reference i_key);
     void clear();
     iterator begin();
     const_iterator begin() const;

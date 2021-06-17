@@ -18,6 +18,11 @@ avl_node<Key,Value>::avl_node(const Key& key, Args&& ... i_args)
 {
 }
 template<typename Key,typename Value>
+unique_pointer_wrapper<avl_node<Key,Value>> avl_node<Key,Value>::replace_node(unique_reference_wrapper<avl_node<Key,Value>> other)
+{
+    return static_unique_cast<avl_node<Key,Value>>(map_node<Key,Value>::replace_node(std::move(other)));
+}
+template<typename Key,typename Value>
 template<typename Map>
 unique_reference_wrapper<avl_node<Key,Value>> avl_node<Key,Value>::extract_node(lent_pointer_wrapper<Map> i_map)
 {

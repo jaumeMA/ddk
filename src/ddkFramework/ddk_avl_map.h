@@ -20,6 +20,7 @@ public:
     avl_node(avl_node&& other) = default;
     avl_node& operator=(const avl_node& other) = default;
 
+    inline unique_pointer_wrapper<avl_node<Key,Value>> replace_node(unique_reference_wrapper<avl_node<Key,Value>> other);
     template<typename Map>
     inline unique_reference_wrapper<avl_node<Key,Value>> extract_node(lent_pointer_wrapper<Map> i_map = nullptr);
     inline lent_pointer_wrapper<avl_node<Key,Value>> get_parent();

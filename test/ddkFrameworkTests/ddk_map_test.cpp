@@ -37,8 +37,8 @@ TEST(DDKMapTest,defaultConstruction)
 	const size_t mapSize = prova.size();
 	const bool emptyMap = prova.empty();
 
-	for(;itBegin!=itEnd;++itBegin)
+	for(;itBegin!=itEnd;)
 	{
-		const std::pair<const std::string,int&> value = *itBegin;
+		itBegin = prova.erase(itBegin);
 	}
 }
