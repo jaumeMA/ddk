@@ -53,7 +53,8 @@ lent_pointer_wrapper<T>::lent_pointer_wrapper(lent_pointer_wrapper&& other)
 	MOVE_STACCK_TRACE(other,THIS_OBJECT)
 }
 template<typename T>
-template<typename TT>
+TEMPLATE(typename TT)
+REQUIRED(IS_BASE_OF(T,TT))
 lent_pointer_wrapper<T>::lent_pointer_wrapper(const lent_pointer_wrapper<TT>& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
@@ -68,7 +69,8 @@ lent_pointer_wrapper<T>::lent_pointer_wrapper(const lent_pointer_wrapper<TT>& ot
 	REGISTER_STACK_TRACE(THIS_OBJECT);
 }
 template<typename T>
-template<typename TT>
+TEMPLATE(typename TT)
+REQUIRED(IS_BASE_OF(T,TT))
 lent_pointer_wrapper<T>::lent_pointer_wrapper(lent_pointer_wrapper<TT>&& other)
 : m_data(nullptr)
 , m_refCounter(nullptr)
@@ -156,7 +158,8 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(lent_pointer_wrapper
 	return *this;
 }
 template<typename T>
-template<typename TT>
+TEMPLATE(typename TT)
+REQUIRED(IS_BASE_OF(T,TT))
 lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(const lent_pointer_wrapper<TT>& other)
 {
 	if(m_data != static_cast<const T*>(other.m_data))
@@ -181,7 +184,8 @@ lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(const lent_pointer_w
 	return *this;
 }
 template<typename T>
-template<typename TT>
+TEMPLATE(typename TT)
+REQUIRED(IS_BASE_OF(T,TT))
 lent_pointer_wrapper<T>& lent_pointer_wrapper<T>::operator=(lent_pointer_wrapper<TT>&& other)
 {
 	if(m_data != static_cast<const T*>(other.m_data))
