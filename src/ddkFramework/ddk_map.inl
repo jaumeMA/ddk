@@ -80,25 +80,13 @@ unique_reference_wrapper<map_node<Key,Value>> map_node<Key,Value>::extract_node(
 {
     if(m_parent)
     {
-        lent_pointer_wrapper<map_node> parent = std::move(m_parent);
-
-        if(parent->m_leftChild.get() == this)
+        if(m_parent->m_leftChild.get() == this)
         {
-            if(parent->m_leftChild)
-            {
-                parent->m_leftChild->m_parent = nullptr;
-            }
-
-            return promote_to_ref(std::move(parent->m_leftChild));
+            return promote_to_ref(std::move(m_parent->m_leftChild));
         }
         else
         {
-            if(parent->m_rightChild)
-            {
-                parent->m_rightChild->m_parent = nullptr;
-            }
-
-            return promote_to_ref(std::move(parent->m_rightChild));
+            return promote_to_ref(std::move(m_parent->m_rightChild));
         }
     }
     else if(i_map)

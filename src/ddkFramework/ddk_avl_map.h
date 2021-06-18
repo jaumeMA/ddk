@@ -31,7 +31,7 @@ public:
     inline void set_height(signed short i_height);
     inline signed short get_height() const;
 
-    signed short  m_height;
+    signed short  m_height = 0;
 };
 
 }

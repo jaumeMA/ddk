@@ -7,7 +7,7 @@ namespace detail
 template<typename Key,typename Value>
 avl_node<Key,Value>::avl_node()
 : cMapNode<T,R>()
-,m_height(0)
+, m_height(0)
 {
 }
 template<typename Key,typename Value>

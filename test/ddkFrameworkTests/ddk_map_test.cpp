@@ -42,3 +42,14 @@ TEST(DDKMapTest,defaultConstruction)
 		itBegin = prova.erase(itBegin);
 	}
 }
+TEST(DDKMapTest,degenerateConstruction)
+{
+	std::map<int,int> prova;
+
+	for(size_t index=0;index<1000000;++index)
+	{
+		prova[index] = index;
+	}
+
+
+}

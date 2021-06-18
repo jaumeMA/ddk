@@ -38,7 +38,7 @@ public:
 
 private:
     std::pair<const Key,Value> m_value;
-    lent_pointer_wrapper<map_node<Key,Value>> m_parent;
+    lent_pointer_wrapper<map_node<Key,Value>> m_parent = nullptr;
     unique_pointer_wrapper<map_node<Key,Value>> m_leftChild;
     unique_pointer_wrapper<map_node<Key,Value>> m_rightChild;
 };
