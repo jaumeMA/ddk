@@ -3,6 +3,8 @@
 #include "ddk_reference_counter.h"
 #include "ddk_tagged_pointer.h"
 #include "ddk_container_exceptions.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -132,17 +134,21 @@ public:
 	lent_pointer_wrapper(const std::nullptr_t&);
 	lent_pointer_wrapper(const lent_pointer_wrapper& other);
 	lent_pointer_wrapper(lent_pointer_wrapper&& other);
-	template<typename TT>
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
 	lent_pointer_wrapper(const lent_pointer_wrapper<TT>& other);
-	template<typename TT>
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
 	lent_pointer_wrapper(lent_pointer_wrapper<TT>&& other);
 	~lent_pointer_wrapper();
 	lent_pointer_wrapper& operator=(const std::nullptr_t&);
 	lent_pointer_wrapper& operator=(const lent_pointer_wrapper& other);
 	lent_pointer_wrapper& operator=(lent_pointer_wrapper&& other);
-	template<typename TT>
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
 	lent_pointer_wrapper& operator=(const lent_pointer_wrapper<TT>& other);
-	template<typename TT>
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
 	lent_pointer_wrapper& operator=(lent_pointer_wrapper<TT>&& other);
 	inline bool operator==(std::nullptr_t) const;
 	inline bool operator!=(std::nullptr_t) const;
