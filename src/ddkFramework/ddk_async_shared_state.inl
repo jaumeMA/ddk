@@ -17,13 +17,15 @@ private_async_state<T>::reference_counter::reference_counter(private_async_state
 template<typename T>
 unsigned int private_async_state<T>::reference_counter::decrementSharedReference()
 {
-	const unsigned int res = distributed_reference_counter::decrementSharedReference();
+	unsigned int res = 0;
 
-	//in case we descend to 1 reference (that of the promise), please trigger its execution by means of removing our reference of async execution (check async_executor destructor).
-	if(res == 1)
+	m_asyncSharedState.detach_if([&]() mutable
 	{
-		m_asyncSharedState.detach();
-	}
+		res = distributed_reference_counter::decrementSharedReference();
+
+		//in case we descend to 1 reference (that of the promise), please trigger its execution by means of removing our reference of async execution (check async_executor destructor).
+		return res == 1;
+	});
 
 	return res;
 }
@@ -68,6 +70,23 @@ void private_async_state<T>::detach()
 	mutex_guard lg(m_mutex);
 
 	m_asyncExecutor = nullptr;
+}
+template<typename T>
+template<typename Predicate>
+bool private_async_state<T>::detach_if(Predicate&& i_predicate)
+{
+	mutex_guard lg(m_mutex);
+
+	if(ddk::eval(std::forward<Predicate>(i_predicate)))
+	{
+		m_asyncExecutor = nullptr;
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename T>
 async_base_dist_ptr private_async_state<T>::get_aync_execution() const
