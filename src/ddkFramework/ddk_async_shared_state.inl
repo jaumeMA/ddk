@@ -18,7 +18,7 @@ template<typename T>
 unsigned int private_async_state<T>::reference_counter::decrementSharedReference()
 {
 	unsigned int res = 0;
-		
+
 	m_asyncSharedState.detach_if([&]() mutable
 	{
 		res = distributed_reference_counter::decrementSharedReference();
