@@ -39,6 +39,11 @@ lent_pointer_wrapper<avl_node<Key,Value>> avl_node<Key,Value>::get_left_child()
     return static_lent_cast<avl_node<Key,Value>>(map_node<Key,Value>::get_left_child());
 }
 template<typename Key,typename Value>
+lent_pointer_wrapper<const avl_node<Key,Value>> avl_node<Key,Value>::get_left_child() const
+{
+    return static_lent_cast<const avl_node<Key,Value>>(map_node<Key,Value>::get_left_child());
+}
+template<typename Key,typename Value>
 unique_pointer_wrapper<avl_node<Key,Value>> avl_node<Key,Value>::extract_left_child()
 {
     return static_unique_cast<avl_node<Key,Value>>(map_node<Key,Value>::extract_left_child());
@@ -47,6 +52,11 @@ template<typename Key,typename Value>
 lent_pointer_wrapper<avl_node<Key,Value>> avl_node<Key,Value>::get_right_child()
 {
     return static_lent_cast<avl_node<Key,Value>>(map_node<Key,Value>::get_right_child());
+}
+template<typename Key,typename Value>
+lent_pointer_wrapper<const avl_node<Key,Value>> avl_node<Key,Value>::get_right_child() const
+{
+    return static_lent_cast<const avl_node<Key,Value>>(map_node<Key,Value>::get_right_child());
 }
 template<typename Key,typename Value>
 unique_pointer_wrapper<avl_node<Key,Value>> avl_node<Key,Value>::extract_right_child()

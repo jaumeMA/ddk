@@ -25,8 +25,10 @@ public:
     inline unique_reference_wrapper<avl_node<Key,Value>> extract_node(lent_pointer_wrapper<Map> i_map = nullptr);
     inline lent_pointer_wrapper<avl_node<Key,Value>> get_parent();
     inline lent_pointer_wrapper<avl_node<Key,Value>> get_left_child();
+    inline lent_pointer_wrapper<const avl_node<Key,Value>> get_left_child() const;
     inline unique_pointer_wrapper<avl_node<Key,Value>> extract_left_child();
     inline lent_pointer_wrapper<avl_node<Key,Value>> get_right_child();
+    inline lent_pointer_wrapper<const avl_node<Key,Value>> get_right_child() const;
     inline unique_pointer_wrapper<avl_node<Key,Value>> extract_right_child();
     inline void set_height(signed short i_height);
     inline signed short get_height() const;

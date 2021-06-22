@@ -58,6 +58,8 @@ public:
 	cancel_result cancel();
 	void attach(async_cancellable_dist_ptr i_executor);
 	void detach();
+	template<typename Predicate>
+	bool detach_if(Predicate&& i_predicate);
 	void set_value(sink_type i_value);
 	void set_exception(const async_exception& i_exception);
 	void signal() const;

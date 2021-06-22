@@ -22,7 +22,7 @@ public:
     typedef Value underlying_type;
     typedef typename map_t::map_node_t map_node_t;
     typedef typename std::add_lvalue_reference<Value>::type reference;
-    typedef typename std::add_const<reference>::type const_reference;
+    typedef typename std::add_lvalue_reference<typename std::add_const<Value>::type>::type const_reference;
     typedef typename map_t::value_t value_t;
     typedef typename map_t::key_t key_t;
     typedef typename map_t::iterator iterator;
@@ -43,7 +43,7 @@ public:
     multi_map_value& operator=(multi_map_value&& other);
     multi_map_value& operator=(Value&& i_val);
     inline reference get_value();
-    inline const_reference getValue() const;
+    inline const_reference get_value() const;
     inline operator reference();
     inline operator const_reference() const;
     inline reference at();
@@ -54,15 +54,9 @@ public:
     TEMPLATE(typename ... Keys)
     REQUIRES(IS_CONVERTIBLE(Keys,Key)...)
     inline const_reference at(const Key& i_key, Keys&& ... i_keys) const;
-    inline void set_holder(lent_reference_wrapper<multi_map_value> i_parent);
-    inline void set_holder(const std::nullptr_t&);
-    inline void set_node_location(lent_reference_wrapper<map_node_t> i_loc);
-    inline void set_references();
     inline size_t size(const function<bool(const_reference)>& filter = nullptr) const;
 
 protected:
-    lent_pointer_wrapper<multi_map_value> m_holder = nullptr;
-    lent_pointer_wrapper<map_node_t> m_nodeLocation = nullptr;
     Value m_value;
 };
 
@@ -70,7 +64,7 @@ template<typename Key,typename Value,template<typename,typename,template<typenam
 class multi_map_impl : public Map<Key,Value,Allocator>
 {
 public:
-    typedef map<Key,Value,Allocator,Balancer> map_t;
+    typedef Map<Key,Value,Allocator> map_t;
     typedef typename Value::underlying_type underlying_type;
     typedef typename map_t::map_node_t map_node_t;
     typedef typename map_t::reference reference;
@@ -88,15 +82,12 @@ public:
     REQUIRES(IS_CONVERTIBLE(Keys,Key)...)
     const underlying_type& at(const Key& i_key, Keys&& ... i_keys) const;
     size_t size(const function<bool(const_reference)>& filter = nullptr) const;
-
-private:
-    void set_references();
 };
 
 }
 
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator = typed_system_allocator>
-using multi_map = detail::multi_map_impl<Key,detail::multi_map_value<Key,Value,Map,Allocator,recursive_balancer<Map>::template Balancer>,Map,Allocator,multi_balancer<Map>::template Balancer>;
+using multi_map = detail::multi_map_impl<Key,detail::multi_map_value<Key,Value,Map,Allocator,recursive_balancer::template Balancer>,Map,Allocator,multi_balancer::template Balancer>;
 
 }
 

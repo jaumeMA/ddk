@@ -60,10 +60,10 @@ lent_reference_wrapper<Node> avl_balancer<Map,Node>::balance_simple_to_left(lent
 {
     unique_pointer_wrapper<Node> acquiredRightChild = fromNode->extract_right_child();
     lent_pointer_wrapper<Node> acquiredRightChildRef = lend(acquiredRightChild);
-    unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
 
     if(acquiredRightChild)
     {
+        unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
         unique_pointer_wrapper<Node> rightLeftChild = acquiredRightChild->extract_left_child();
 
         acquiredRightChild->set_height(0);
@@ -83,15 +83,15 @@ lent_reference_wrapper<Node> avl_balancer<Map,Node>::balance_simple_to_right(len
 {
     unique_pointer_wrapper<Node> acquiredLeftChild = fromNode->extract_left_child();
     lent_pointer_wrapper<Node> acquiredLeftChildRef = lend(acquiredLeftChild);
-    unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
 
     //the left child is going to be the parent of the current node
     if(acquiredLeftChild)
     {
+        unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
         unique_pointer_wrapper<Node> leftRightChild = acquiredLeftChild->extract_right_child();
 
         acquiredLeftChild->set_height(0);
-        fromNode->set_height(0);
+        acquiredFromNode->set_height(0);
 
         re_parent(fromMap,fromNode,std::move(acquiredLeftChild));
 
@@ -107,7 +107,6 @@ lent_reference_wrapper<Node> avl_balancer<Map,Node>::balance_double_to_left(lent
 {
     unique_pointer_wrapper<Node> acquiredRightChild = fromNode->extract_right_child();
     lent_pointer_wrapper<Node> acquiredRightChildRef = lend(acquiredRightChild);
-    unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
     unique_pointer_wrapper<Node> acquiredRightLeftChild = (acquiredRightChildRef) ? acquiredRightChildRef->extract_left_child() : nullptr;
     lent_pointer_wrapper<Node> acquiredRightLeftChildRef = lend(acquiredRightLeftChild);
 
@@ -115,6 +114,7 @@ lent_reference_wrapper<Node> avl_balancer<Map,Node>::balance_double_to_left(lent
 
     if(acquiredRightChild)
     {
+        unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
         unique_pointer_wrapper<Node> rightLeftRightChild = (acquiredRightLeftChild) ? acquiredRightLeftChild->extract_right_child() : nullptr;
         unique_pointer_wrapper<Node> rightLeftLeftChild = (acquiredRightLeftChild) ? acquiredRightLeftChild->extract_left_child() : nullptr;
 
@@ -145,7 +145,6 @@ lent_reference_wrapper<Node> avl_balancer<Map,Node>::balance_double_to_right(len
 {
     unique_pointer_wrapper<Node> acquiredLeftChild = fromNode->extract_left_child();
     lent_pointer_wrapper<Node> acquiredLeftChildRef = lend(acquiredLeftChild);
-    unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
     unique_pointer_wrapper<Node> acquiredLeftRightChild = (acquiredLeftChildRef) ? acquiredLeftChildRef->extract_right_child() : nullptr;
     lent_pointer_wrapper<Node> acquiredLeftRightChildRef = lend(acquiredLeftRightChild);
 
@@ -153,6 +152,7 @@ lent_reference_wrapper<Node> avl_balancer<Map,Node>::balance_double_to_right(len
 
     if(acquiredLeftChild)
     {
+        unique_reference_wrapper<Node> acquiredFromNode = fromNode->extract_node(fromMap);
         unique_pointer_wrapper<Node> leftRightLeftChild = (acquiredLeftRightChild) ? acquiredLeftRightChild->extract_left_child() : nullptr;
         unique_pointer_wrapper<Node> leftRightRightChild = (acquiredLeftRightChild) ? acquiredLeftRightChild->extract_right_child() : nullptr;
 

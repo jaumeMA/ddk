@@ -29,8 +29,10 @@ public:
     inline void set_parent(lent_pointer_wrapper<map_node<Key,Value>> parent);
     inline void set_left_child(unique_pointer_wrapper<map_node<Key,Value>> i_left);
     inline lent_pointer_wrapper<map_node<Key,Value>> get_left_child();
+    inline lent_pointer_wrapper<const map_node<Key,Value>> get_left_child() const;
     inline unique_pointer_wrapper<map_node<Key,Value>> extract_left_child();
     inline void set_right_child(unique_pointer_wrapper<map_node<Key,Value>> i_right);
+    inline lent_pointer_wrapper<const map_node<Key,Value>> get_right_child() const;
     inline lent_pointer_wrapper<map_node<Key,Value>> get_right_child();
     inline unique_pointer_wrapper<map_node<Key,Value>> extract_right_child();
     inline std::pair<const Key,Value>& get_value();
@@ -81,8 +83,8 @@ class map_impl : protected lend_from_this<map_impl<Key,Value,Node,Allocator,Bala
     typedef lent_reference_wrapper<const Node> map_node_const_lent_ref;
     typedef lent_pointer_wrapper<Node> map_node_lent_ptr;
     typedef lent_pointer_wrapper<const Node> map_node_const_lent_ptr;
-    typedef Balancer<map_impl<Key,Value,Node,Allocator,Balancer>,Node> balancer_t;
-    friend class balancer_t;
+    typedef Balancer<map_impl<Key,Value,Node,Allocator,Balancer>,Node> _balancer_t;
+    friend class _balancer_t;
     friend class map_node<Key,Value>;
 
 public:
@@ -92,11 +94,15 @@ public:
     public:
         typedef std::pair<const Key,Value&> reference;
         typedef std::pair<const Key,const Value&> const_reference;
+        typedef std::pair<const Key,Value>* pointer;
+        typedef const std::pair<const Key,Value>* const_pointer;
 
         map_iterator() = default;
         map_iterator(lent_pointer_wrapper<map_impl> i_mapImpl, map_node_lent_ptr i_currNode);
 
         reference operator*();
+        pointer operator->();
+        const_pointer operator->() const;
         const_reference operator*() const;
         map_iterator operator++() const;
         map_iterator operator++(int) const;
@@ -115,12 +121,15 @@ public:
     public:
         typedef std::pair<const Key,Value&> reference;
         typedef std::pair<const Key,const Value&> const_reference;
+        typedef std::pair<const Key,Value>* pointer;
+        typedef const std::pair<const Key,Value>* const_pointer;
 
         const_map_iterator() = default;
         const_map_iterator(lent_pointer_wrapper<const map_impl> i_mapImpl,map_node_const_lent_ptr i_currNode);
         const_map_iterator(const map_iterator& other);
 
         const_reference operator*() const;
+        const_pointer operator->() const;
         const_map_iterator operator++() const;
         const_map_iterator operator++(int) const;
         const_map_iterator operator--() const;
@@ -148,6 +157,8 @@ public:
     typedef function<bool(const_key_reference,const_key_reference)> compare_func;
     typedef map_iterator iterator;
     typedef const_map_iterator const_iterator;
+    template<typename MMap,typename NNode>
+    using balancer = Balancer<MMap,NNode>;
 
     map_impl();
     map_impl(const compare_func& i_compare);
@@ -169,7 +180,9 @@ public:
     iterator erase(const_key_reference i_key);
     void clear();
     iterator begin();
+    iterator last();
     const_iterator begin() const;
+    const_iterator last() const;
     iterator end();
     const_iterator end() const;
     size_t size() const;
@@ -182,10 +195,10 @@ private:
     map_node_lent_ref add_node(const std::pair<const Key,Value>& i_value);
     inline void _onNodeInserted(map_node_lent_ref node);
     inline void _onNodeErased(map_node_lent_ref node);
-    inline map_node_lent_ptr search(const Key& key, map_node_lent_ref i_rootNode) const;
+    inline map_node_lent_ptr search(const Key& key) const;
     inline void insert(map_node_unique_ref other, map_node_lent_ref i_rootNode) const;
-    inline map_node_lent_ref get_closest_smaller_node(const_key_reference i_key,map_node_lent_ref i_rootNode) const;
-    inline map_node_lent_ref get_closest_bigger_node(const_key_reference i_key,map_node_lent_ref i_rootNode) const;
+    inline map_node_lent_ptr get_closest_smaller_node(const_key_reference i_key) const;
+    inline map_node_lent_ptr get_closest_bigger_node(const_key_reference i_key) const;
 
 protected:
     typedef Allocator<map_node_t> allocator_t;

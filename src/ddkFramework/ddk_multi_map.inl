@@ -46,19 +46,6 @@ lent_pointer_wrapper<typename multi_map_value<Key,Value,Map,Allocator,Balancer>:
     return m_pNodeLocation;
 }
 template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-void multi_map_value<Key,Value,Map,Allocator,Balancer>::set_holder(lent_reference_wrapper<multi_map_value> i_parent)
-{
-    if(m_holder != i_parent)
-    {
-        m_holder = i_parent;
-    }
-}
-template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator,template<typename,typename> class Balancer>
-void multi_map_value<Key,Value,Map,Allocator,Balancer>::set_holder(const std::nullptr_t&)
-{
-    m_holder = nullptr;
-}
-template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
 multi_map_value<Key,Value,Map,Allocator,Balancer>& multi_map_value<Key,Value,Map,Allocator,Balancer>::operator=(const multi_map_value& other)
 {
     m_value = other.m_value;
@@ -81,16 +68,12 @@ multi_map_value<Key,Value,Map,Allocator,Balancer>& multi_map_value<Key,Value,Map
 
     map_t::operator=(std::move(other));
 
-    set_references();
-
     return *this;
 }
 template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
 multi_map_value<Key,Value,Map,Allocator,Balancer>& multi_map_value<Key,Value,Map,Allocator,Balancer>::operator=(Value&& i_val)
 {
     m_value = std::move(i_val);
-
-    set_references();
 
     return *this;
 }
@@ -100,7 +83,7 @@ typename multi_map_value<Key,Value,Map,Allocator,Balancer>::reference multi_map_
     return m_value;
 }
 template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-typename multi_map_value<Key,Value,Map,Allocator,Balancer>::const_reference multi_map_value<Key,Value,Map,Allocator,Balancer>::getValue() const
+typename multi_map_value<Key,Value,Map,Allocator,Balancer>::const_reference multi_map_value<Key,Value,Map,Allocator,Balancer>::get_value() const
 {
     return m_value;
 }
@@ -132,27 +115,6 @@ size_t multi_map_value<Key,Value,Map,Allocator,Balancer>::size(const function<bo
     }
 
     return res;
-}
-template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-void multi_map_value<Key,Value,Map,Allocator,Balancer>::set_node_location(lent_reference_wrapper<map_node_t> i_loc)
-{
-    m_nodeLocation = i_loc;
-}
-template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-void multi_map_value<Key,Value,Map,Allocator,Balancer>::set_references()
-{
-    if(lent_pointer_wrapper<map_node_t> currNode = static_lent_cast<map_node_t>(this->get_first_elem()))
-    {
-        do
-        {
-            currNode->get_value().second.set_holder(static_lent_cast<multi_map_value>(this->ref_from_this()));
-
-            currNode->get_value().second.set_node_location(promote_to_ref(currNode));
-
-            currNode->get_value().second.set_references();
-        }
-        while(currNode = static_lent_cast<map_node_t>(this->get_next_elem(promote_to_ref(currNode))));
-    }
 }
 template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
 typename multi_map_value<Key,Value,Map,Allocator,Balancer>::reference multi_map_value<Key,Value,Map,Allocator,Balancer>::at()
@@ -187,14 +149,11 @@ template<typename Key,typename Value,template<typename,typename,template<typenam
 multi_map_impl<Key,Value,Map,Allocator,Balancer>::multi_map_impl(const multi_map_impl& other)
 : map_t(other)
 {
-    set_references();
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator,template<typename,typename> class Balancer>
 multi_map_impl<Key,Value,Map,Allocator,Balancer>& multi_map_impl<Key,Value,Map,Allocator,Balancer>::operator=(const multi_map_impl& other)
 {
     map_t::operator=(other);
-
-    set_references();
 
     return *this;
 }
@@ -234,22 +193,6 @@ const typename multi_map_impl<Key,Value,Map,Allocator,Balancer>::underlying_type
     const Value& foundValue = map_t::operator[](i_key);
 
     return foundValue.at(std::forward<Keys>(i_keys)...);
-}
-template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator,template<typename,typename> class Balancer>
-void multi_map_impl<Key,Value,Map,Allocator,Balancer>::set_references()
-{
-    if(lent_pointer_wrapper<map_node_t> currNode = static_lent_cast<map_node_t>(this->get_first_elem()))
-    {
-        const auto headNode = this->getHead();
-
-        do
-        {
-            currNode->m_value.second.set_node_location(currNode);
-
-            currNode->m_value.second.set_references();
-        }
-        while(currNode = static_lent_cast<map_node_t>(this->get_next_elem(currNode)));
-    }
 }
 
 }

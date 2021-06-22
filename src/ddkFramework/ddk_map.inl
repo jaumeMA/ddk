@@ -3,7 +3,8 @@
 #include "ddk_reference_wrapper.h"
 #include "ddk_container_exceptions.h"
 
-#define LESS_THAN(_A,_B) eval(m_compare,_A,_B)
+#define LESS_THAN(_A,_B) (_A < _B)
+//#define LESS_THAN(_A,_B) ((m_compare != nullptr) ? eval(m_compare,_A,_B) : _A < _B)
 
 namespace ddk
 {
@@ -119,6 +120,11 @@ map_node_lent_ptr<Key,Value> map_node<Key,Value>::get_left_child()
     return lend(m_leftChild);
 }
 template<typename Key,typename Value>
+map_node_const_lent_ptr<Key,Value> map_node<Key,Value>::get_left_child() const
+{
+    return lend(m_leftChild);
+}
+template<typename Key,typename Value>
 unique_pointer_wrapper<map_node<Key,Value>> map_node<Key,Value>::extract_left_child()
 {
     if(m_leftChild)
@@ -135,6 +141,11 @@ void map_node<Key,Value>::set_right_child(unique_pointer_wrapper<map_node<Key,Va
 }
 template<typename Key,typename Value>
 map_node_lent_ptr<Key,Value> map_node<Key,Value>::get_right_child()
+{
+    return lend(m_rightChild);
+}
+template<typename Key,typename Value>
+map_node_const_lent_ptr<Key,Value> map_node<Key,Value>::get_right_child() const
 {
     return lend(m_rightChild);
 }
@@ -169,6 +180,16 @@ template<typename Key,typename Value,typename Node,template<typename> class Allo
 typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::reference map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::operator*()
 {
     return reference(m_currNode->get_value().first,m_currNode->get_value().second);
+}
+template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
+typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::pointer map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::operator->()
+{
+    return &(m_currNode->get_value());
+}
+template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
+typename typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::const_pointer map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::operator->() const
+{
+    return &(m_currNode->get_value());
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::const_reference map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::operator*() const
@@ -253,12 +274,17 @@ map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::const_map_itera
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::const_reference map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::operator*() const
 {
-    return const_reference(m_currNode->m_value.first,m_currNode->m_value.second);
+    return const_reference(m_currNode->get_value().first,m_currNode->get_value().second);
+}
+template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
+typename typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::const_pointer map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::operator->() const
+{
+    return &(m_currNode->get_value());
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::operator++() const
 {
-    m_currNode = (m_currNode) ? m_mapImpl->get_next_elem(promote_to_ref(m_currNode)) : nullptr;
+    m_currNode = (m_currNode) ? m_mapImpl->get_next_elem(const_lent_cast<Node>(promote_to_ref(m_currNode))) : nullptr;
 
     return *this;
 }
@@ -269,7 +295,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator map_imp
 
     if(m_mapImpl)
     {
-        m_currNode = (m_currNode) ? m_mapImpl->get_next_elem(promote_to_ref(m_currNode)) : nullptr;
+        m_currNode = (m_currNode) ? m_mapImpl->get_next_elem(const_lent_cast<Node>(promote_to_ref(m_currNode))) : nullptr;
     }
 
     return res;
@@ -279,7 +305,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator map_imp
 {
     if(m_mapImpl)
     {
-        m_currNode = (m_currNode) ? m_mapImpl->get_prev_elem(promote_to_ref(m_currNode)) : nullptr;
+        m_currNode = (m_currNode) ? m_mapImpl->get_prev_elem(const_lent_cast<Node>(promote_to_ref(m_currNode))) : nullptr;
     }
 
     return *this;
@@ -289,7 +315,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator map_imp
 {
     const_map_iterator res = *this;
 
-    m_currNode = (m_currNode) ? m_mapImpl->get_prev_elem(promote_to_ref(m_currNode)) : nullptr;
+    m_currNode = (m_currNode) ? m_mapImpl->get_prev_elem(const_lent_cast<Node>(promote_to_ref(m_currNode))) : nullptr;
 
     return res;
 }
@@ -329,7 +355,7 @@ void map_impl<Key,Value,Node,Allocator,Balancer>::create_tree(const map_impl& i_
 {
     if(map_node_const_lent_ptr rootNode = ddk::lend(i_tree.m_root))
     {
-        m_rootNode = allocate(promote_to_ref(rootNode));
+        m_root = allocate(promote_to_ref(rootNode));
     }
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
@@ -423,18 +449,22 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_unique_ref map_im
 {
     if(void* mem = (void*)m_alloc.allocate(1))
     {
-        map_node_unique_ref newNode = as_unique_reference(new(mem) map_node_t(i_node->m_value.first,i_node->m_value.second),{ ddk::lend(m_alloc),ddk::AllocationMode::AllocationOnly });
+        map_node_unique_ref newNode = as_unique_reference(new(mem) map_node_t(i_node->get_value().first,i_node->get_value().second),{ ddk::lend(m_alloc),ddk::AllocationMode::AllocationOnly });
 
-        if(i_node->m_leftChild)
+        if(lent_pointer_wrapper<const Node> leftChild = i_node->get_left_child())
         {
-            newNode->m_leftChild = allocate(promote_to_ref(lend(i_node->m_leftChild)));
-            newNode->m_leftChild->set_parent(lend(newNode));
+            map_node_unique_ref newLeftNode = allocate(promote_to_ref(leftChild));
+
+            newLeftNode->set_parent(ddk::lend(newNode));
+            newNode->set_left_child(std::move(newLeftNode));
         }
 
-        if(i_node->m_rightChild)
+        if(lent_pointer_wrapper<const Node> rightChild = i_node->get_right_child())
         {
-            newNode->m_rightChild = allocate(promote_to_ref(lend(i_node->m_pRightChild)));
-            newNode->m_rightChild->set_parent(lend(newNode));
+            map_node_unique_ref newRightNode = allocate(promote_to_ref(rightChild));
+
+            newRightNode->set_parent(ddk::lend(newNode));
+            newNode->set_right_child(std::move(newRightNode));
         }
 
         return std::move(newNode);
@@ -478,10 +508,8 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl<Key,Value,Node,Allocator,Balancer>::add_node(const std::pair<const Key,Value>& i_value)
 {
-    if(map_node_lent_ptr root = lend(m_root))
+    if(map_node_lent_ptr foundNode = get_closest_bigger_node(i_value.first))
     {
-        map_node_lent_ref foundNode = get_closest_bigger_node(i_value.first,root);
-
         if(foundNode->m_value.first == i_value.first)
         {
             foundNode->m_value.second = std::forward<typename mpl::PairType<R,T>::second_type>(i_value.second);
@@ -513,7 +541,6 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 map_impl<Key,Value,Node,Allocator,Balancer>::map_impl()
 : m_alloc(allocator_t{})
-, m_compare(ddk::make_function([](const_key_reference i_lhs,const_key_reference i_rhs) { return i_lhs < i_rhs; }))
 {
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
@@ -525,7 +552,6 @@ map_impl<Key,Value,Node,Allocator,Balancer>::map_impl(const compare_func& i_comp
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 map_impl<Key,Value,Node,Allocator,Balancer>::map_impl(const_reference value,const_key_reference key)
 : m_alloc(allocator_t{})
-, m_compare(ddk::make_function([](const_key_reference i_lhs,const_key_reference i_rhs) { return i_lhs < i_rhs; }))
 {
     add_node(std::make_pair(key,value));
 }
@@ -582,11 +608,9 @@ map_impl<Key,Value,Node,Allocator,Balancer>& map_impl<Key,Value,Node,Allocator,B
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Key,Value,Node,Allocator,Balancer>::find(const_key_reference key) const
 {
-    node_pointer_type rootNode = this->getRootNode();
-
-    if(rootNode != iterable_type::m_pHead)
+    if(m_root)
     {
-        return {*this,search(key,detail::receiveNodeFromIterator<cMapNode<T,R>*>(rootNode))};
+        return {*this,search(key)};
     }
 
     return {};
@@ -594,11 +618,9 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Ke
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Value,Node,Allocator,Balancer>::find(const_key_reference key)
 {
-    node_pointer_type rootNode = this->getRootNode();
-
-    if(rootNode != iterable_type::m_pHead)
+    if(m_root)
     {
-        return {*this,search(key,detail::receiveNodeFromIterator<cMapNode<T,R>*>(rootNode))};
+        return {*this,search(key)};
     }
 
     return {};
@@ -608,9 +630,9 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_reference map_impl<K
 {
     if(m_root)
     {
-        if(map_node_lent_ptr foundNode = search(key,promote_to_ref(lend(m_root))))
+        if(map_node_lent_ptr foundNode = search(key))
         {
-            return foundNode->m_value.second;
+            return foundNode->get_value().second;
         }
         else
         {
@@ -625,7 +647,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_reference map_impl<K
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::reference map_impl<Key,Value,Node,Allocator,Balancer>::operator[](const_key_reference key)
 {
-    map_node_lent_ptr foundNode = (m_root) ? map_node_lent_ptr{get_closest_bigger_node(key,promote_to_ref(ddk::lend(m_root)))} : nullptr;
+    map_node_lent_ptr foundNode = get_closest_bigger_node(key);
 
     if(foundNode && foundNode->get_value().first == key)
     {
@@ -655,7 +677,7 @@ template<typename Key, typename Value, typename Node, template<typename> class A
 template<typename ... Args>
 std::pair<bool,typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator> map_impl<Key,Value,Node,Allocator,Balancer>::emplace(const_key_reference i_key, Args&& ... i_args)
 {
-    map_node_lent_ptr foundNode = (m_root) ? map_node_lent_ptr{get_closest_bigger_node(key,promote_to_ref(ddk::lend(m_root)))} : nullptr;
+    map_node_lent_ptr foundNode = get_closest_bigger_node(key);
 
     if(foundNode && foundNode->m_value.first == i_key)
     {
@@ -766,6 +788,30 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Ke
     }
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
+typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Value,Node,Allocator,Balancer>::last()
+{
+    if(map_node_lent_ptr firstElem = get_last_elem())
+    {
+        return { this->ref_from_this(),promote_to_ref(firstElem) };
+    }
+    else
+    {
+        return {};
+    }
+}
+template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
+typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Key,Value,Node,Allocator,Balancer>::last() const
+{
+    if(map_node_lent_ptr firstElem = get_last_elem())
+    {
+        return { this->ref_from_this(),promote_to_ref(firstElem) };
+    }
+    else
+    {
+        return {};
+    }
+}
+template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Value,Node,Allocator,Balancer>::end()
 {
     return { this->ref_from_this(),nullptr };
@@ -835,10 +881,8 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl
         {
             nextElem = findMin(promote_to_ref(rightChild));
         }
-        else
+        else if(map_node_lent_ptr currGrandParent = currParent->get_parent())
         {
-            //look for the first parent which is the left one
-            map_node_lent_ptr currGrandParent = i_currNode->get_parent();
             map_node_lent_ptr rightGrandSon = currGrandParent->get_right_child();
 
             while(currGrandParent && currParent == rightGrandSon)
@@ -868,16 +912,14 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl
     {
         if(currParent->get_right_child() == i_currNode)
         {
-            prevElem = (leftChild) ? findMax(promote_to_ref(leftChild)) : currNodeParent;
+            prevElem = (leftChild) ? findMax(promote_to_ref(leftChild)) : currParent;
         }
         else if(leftChild)
         {
             prevElem = findMax(promote_to_ref(leftChild));
         }
-        else
+        else if(map_node_lent_ptr currGrandParent = currParent->get_parent())
         {
-            //look for the first parent which is the left one
-            map_node_lent_ptr currGrandParent = i_currNode->get_parent();
             map_node_lent_ptr leftGrandSon = currGrandParent->get_left_child();
 
             while(currGrandParent && currParent == leftGrandSon)
@@ -886,7 +928,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl
                 currGrandParent = currParent->get_parent();
             }
 
-            prevElem = currNodeGrandParent;
+            prevElem = currGrandParent;
         }
     }
     else if(leftChild)
@@ -913,22 +955,22 @@ void map_impl<Key,Value,Node,Allocator,Balancer>::_onNodeErased(map_node_lent_re
     }
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
-typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl<Key,Value,Node,Allocator,Balancer>::get_closest_bigger_node(const_key_reference i_key, map_node_lent_ref i_rootNode) const
+typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl<Key,Value,Node,Allocator,Balancer>::get_closest_bigger_node(const_key_reference i_key) const
 {
-    map_node_lent_ptr currNode = i_rootNode;
-    map_node_lent_ref candidate = i_rootNode;
+    map_node_lent_ptr currNode = ddk::lend(m_root);
+    map_node_lent_ptr candidate = nullptr;
 
     while(currNode)
     {
         if(i_key == currNode->get_value().first)
         {
-            candidate = promote_to_ref(currNode);
+            candidate = currNode;
 
             break;
         }
         else if(LESS_THAN(i_key,currNode->get_value().first))
         {
-            candidate = promote_to_ref(currNode);
+            candidate = currNode;
 
             currNode = currNode->get_left_child();
         }
@@ -941,16 +983,16 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl
     return candidate;
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
-typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl<Key,Value,Node,Allocator,Balancer>::get_closest_smaller_node(const_key_reference i_key, map_node_lent_ref i_rootNode) const
+typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl<Key,Value,Node,Allocator,Balancer>::get_closest_smaller_node(const_key_reference i_key) const
 {
-    map_node_lent_ptr currNode = i_rootNode;
-    map_node_lent_ref candidate = i_rootNode;
+    map_node_lent_ptr currNode = ddk::lend(m_root);
+    map_node_lent_ptr candidate = nullptr;
 
     while(currNode)
     {
         if(i_key == currNode->get_value().first)
         {
-            candidate = promote_to_ref(currNode);
+            candidate = currNode;
 
             break;
         }
@@ -969,14 +1011,14 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl
     return candidate;
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
-typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl<Key,Value,Node,Allocator,Balancer>::search(const Key& key, map_node_lent_ref i_rootNode) const
+typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ptr map_impl<Key,Value,Node,Allocator,Balancer>::search(const Key& key) const
 {
-    map_node_lent_ptr currNode = i_rootNode;
+    map_node_lent_ptr currNode = ddk::lend(m_root);
     map_node_lent_ptr candidate = nullptr;
 
     while(currNode)
     {
-        if(key == currNode->m_value.first)
+        if(key == currNode->get_value().first)
         {
             candidate = currNode;
 

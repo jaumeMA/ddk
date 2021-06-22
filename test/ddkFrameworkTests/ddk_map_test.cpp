@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include "ddk_avl_map.h"
-#include "ddk_multi_map.h"
+#include "ddk_multi_map_adaptor.h"
+#include "ddk_iterable_utils.h"
+#include "ddk_formatter.h"
 #include <utility>
 
 using namespace testing;
@@ -15,11 +17,13 @@ TEST(DDKMapTest,defaultConstruction)
 	ddk::multi_map<std::string,int,ddk::avl_map> provaMultiMap;
 
 	provaMultiMap[std::string("hola")][std::string("adeu")] = 1050;
-	provaMultiMap[std::string("hola")][std::string("adeudeu")] = 1060;
+	provaMultiMap[std::string("hola")][std::string("adeudeu")][std::string("ladilla")] = 1060;
 	provaMultiMap[std::string("hola")][std::string("adeudeuadeu")] = 1070;
 	provaMultiMap[std::string("adeu")][std::string("adeu")] = 1080;
 	provaMultiMap[std::string("adeu")][std::string("adeudeuadeu")] = 1090;
 	provaMultiMap[std::string("adeu")][std::string("adeudeu")] = 1100;
+
+	ddk::make_function([](const std::pair<const std::vector<std::string>,int>& i_pair){ printf("multimap value %s, %d. \n",ddk::formatter<std::string>::format(i_pair.first).c_str(),i_pair.second); }) <<= provaMultiMap;
 
 	const int str1 = provaMultiMap[std::string("hola")][std::string("adeu")];
 	const int str2 = provaMultiMap[std::string("hola")][std::string("adeudeu")];
@@ -42,6 +46,7 @@ TEST(DDKMapTest,defaultConstruction)
 		itBegin = prova.erase(itBegin);
 	}
 }
+
 TEST(DDKMapTest,degenerateConstruction)
 {
 	std::map<int,int> prova;
@@ -50,6 +55,4 @@ TEST(DDKMapTest,degenerateConstruction)
 	{
 		prova[index] = index;
 	}
-
-
 }
