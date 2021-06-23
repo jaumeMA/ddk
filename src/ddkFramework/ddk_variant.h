@@ -72,6 +72,8 @@ public:
 	template<size_t Pos>
 	constexpr bool is() const;
 	constexpr char which() const;
+	template<typename TType>
+	static constexpr bool contains();
 	TEMPLATE(typename Visitor)
 	REQUIRES(IS_CALLABLE(Visitor,Type))
 	constexpr auto visit(Visitor&& visitor);
@@ -126,6 +128,8 @@ public:
 	constexpr bool operator==(T&& other) const;
 	template<typename T>
 	constexpr bool operator!=(T&& other) const;
+	template<typename Type>
+	static constexpr bool contains();
 };
 
 template<typename ... T>

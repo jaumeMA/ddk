@@ -92,6 +92,12 @@ constexpr bool variant<Type>::is() const
 }
 template<typename Type>
 template<typename TType>
+constexpr bool variant<Type>::contains()
+{
+	return std::is_same<TType,Type>::value;
+}
+template<typename Type>
+template<typename TType>
 constexpr typename embedded_type<TType>::cref_type variant<Type>::get_as() const
 {
 	return m_value;
@@ -287,6 +293,12 @@ constexpr bool variant<Types...>::operator!=(T&& other) const
 
 		return detail::variant_impl<Types...>::template compare<mpl::type_match_pos<T,Types...>>(std::forward<T>(other)) == false;
 	}
+}
+template<typename ... Types>
+template<typename Type>
+constexpr bool variant<Types...>::contains()
+{
+	return mpl::is_among_types<Type,Types...>;
 }
 
 TEMPLATE(typename Return, typename Visitor,typename Variant)

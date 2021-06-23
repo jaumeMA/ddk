@@ -81,7 +81,6 @@ public:
     TEMPLATE(typename ... Keys)
     REQUIRES(IS_CONVERTIBLE(Keys,Key)...)
     const underlying_type& at(const Key& i_key, Keys&& ... i_keys) const;
-    size_t size(const function<bool(const_reference)>& filter = nullptr) const;
 };
 
 }

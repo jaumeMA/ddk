@@ -14,8 +14,9 @@ class iterable_adaptor<multi_map<Key,Value,Map,Allocator>>
 	typedef typename value_t::iterator iterator;
 
 public:
-	typedef std::pair<const std::vector<Key>,Value&> reference;
-	typedef std::pair<const std::vector<Key>,const Value&> const_reference;
+	typedef std::pair<const std::vector<Key>,Value&> value_type;
+	typedef std::pair<const std::vector<Key>,Value&>& reference;
+	typedef std::pair<const std::vector<Key>,const Value&>& const_reference;
 	typedef long long difference_type;
 
 	iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable,const ddk::shift_action& i_initialAction);
@@ -30,11 +31,11 @@ public:
 	inline bool valid() const noexcept;
 
 private:
-	reference& navigate(const ddk::shift_action& i_initailAction);
+	reference navigate(const ddk::shift_action& i_initailAction);
 	void _navigate(value_t& i_map, std::vector<std::string>& i_preffix);
 	
 	multi_map<Key,Value,Map,Allocator>& m_iterable;
-	awaitable<reference&> m_awaitable;
+	awaitable<reference> m_awaitable;
 	difference_type m_nextMov;
 	bool m_valid = true;
 };
@@ -46,8 +47,9 @@ class iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>
 	typedef typename value_t::iterator iterator;
 
 public:
-	typedef std::pair<const std::vector<Key>,Value&> reference;
-	typedef std::pair<const std::vector<Key>,const Value&> const_reference;
+	typedef std::pair<const std::vector<Key>,Value&> value_type;
+	typedef std::pair<const std::vector<Key>,Value&>& reference;
+	typedef std::pair<const std::vector<Key>,const Value&>& const_reference;
 	typedef long long difference_type;
 
 	iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable,const ddk::shift_action& i_initialAction);
@@ -62,11 +64,11 @@ public:
 	inline bool valid() const noexcept;
 
 private:
-	const const_reference& navigate(const ddk::shift_action& i_initailAction);
+	const_reference navigate(const ddk::shift_action& i_initailAction);
 	void _navigate(const value_t& i_map, std::vector<std::string>& i_preffix);
 
 	const multi_map<Key,Value,Map,Allocator>& m_iterable;
-	awaitable<const const_reference&> m_awaitable;
+	awaitable<const_reference> m_awaitable;
 	difference_type m_nextMov;
 	bool m_valid = true;
 };

@@ -158,25 +158,6 @@ multi_map_impl<Key,Value,Map,Allocator,Balancer>& multi_map_impl<Key,Value,Map,A
     return *this;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator,template<typename,typename> class Balancer>
-size_t multi_map_impl<Key,Value,Map,Allocator,Balancer>::size(const function<bool(const_reference)>& filter) const
-{
-    size_t res = 0;
-
-    const_iterator itPoliThis = this->begin();
-
-    for(; itPoliThis != this->end(); itPoliThis++)
-    {
-        if(filter == nullptr || eval(filter,*itPoliThis))
-        {
-            res++;
-        }
-
-        res += itPoliThis->second.getTotalSize(filter);
-    }
-
-    return res;
-}
-template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator,template<typename,typename> class Balancer>
 TEMPLATE(typename ... Keys)
 REQUIRED(IS_CONVERTIBLE(Keys,Key)...)
 typename multi_map_impl<Key,Value,Map,Allocator,Balancer>::underlying_type& multi_map_impl<Key,Value,Map,Allocator,Balancer>::at(const Key& i_key, Keys&& ... i_keys)

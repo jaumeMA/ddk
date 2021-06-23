@@ -11,24 +11,31 @@ variant<Types...> reversable_action_resolver::resolve(const variant<Types...>& i
 {
 	typedef variant<Types...> action;
 
-	if (i_action.template is<go_forward_action>())
+	if constexpr (variant<Types...>::template contains<go_forward_action>())
 	{
-		return (m_reversed) ? action(go_prev_place) : action(go_next_place);
+		if (i_action.template is<go_forward_action>())
+		{
+			return (m_reversed) ? action(go_prev_place) : action(go_next_place);
+		}
 	}
-	else if (i_action.template is<go_backward_action>())
+	if constexpr (variant<Types...>::template contains<go_backward_action>())
 	{
-		return (m_reversed) ? action(go_next_place) : action(go_prev_place);
+		if (i_action.template is<go_backward_action>())
+		{
+			return (m_reversed) ? action(go_next_place) : action(go_prev_place);
+		}
 	}
-	else if (i_action.template is<shift_action>())
+	if constexpr (variant<Types...>::template contains<shift_action>())
 	{
-		const shift_action& nestedAction = i_action.template get<shift_action>();
+		if (i_action.template is<shift_action>())
+		{
+			const shift_action& nestedAction = i_action.template get<shift_action>();
 
-		return (m_reversed) ? action(go_to_place(-nestedAction.shifting())) : action(go_to_place(nestedAction.shifting()));
+			return (m_reversed) ? action(go_to_place(-nestedAction.shifting())) : action(go_to_place(nestedAction.shifting()));
+		}
 	}
-	else
-	{
-		return i_action;
-	}
+
+	return i_action;
 }
 
 }
