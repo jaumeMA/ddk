@@ -77,6 +77,7 @@ class map_impl : protected lend_from_this<map_impl<Key,Value,Node,Allocator,Bala
 {
     static_assert(std::is_const<Value>::value == false && std::is_reference<Value>::value == false,"Const/reference types are not supported");
 
+    friend class lend_from_this<map_impl<Key,Value,Node,Allocator,Balancer>>;
     typedef unique_reference_wrapper<Node> map_node_unique_ref;
     typedef unique_pointer_wrapper<Node> map_node_unique_ptr;
     typedef lent_reference_wrapper<Node> map_node_lent_ref;
@@ -162,8 +163,7 @@ public:
 
     map_impl();
     map_impl(const compare_func& i_compare);
-    map_impl(const_reference value,const_key_reference key);
-    map_impl(const_reference value,const_key_reference key,const compare_func& i_compare);
+    map_impl(const_key_reference key, const_reference value, compare_func i_compare = nullptr);
     map_impl(const map_impl& other);
     map_impl(map_impl&& other);
     virtual ~map_impl();

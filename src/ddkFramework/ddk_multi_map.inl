@@ -31,21 +31,6 @@ multi_map_value<Key,Value,Map,Allocator,Balancer>::multi_map_value(multi_map_val
 {
 }
 template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-lent_pointer_wrapper<typename multi_map_value<Key,Value,Map,Allocator,Balancer>::multi_map_value> multi_map_value<Key,Value,Map,Allocator,Balancer>::get_holder()
-{
-    return lend(m_pHolder);
-}
-template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-lent_pointer_wrapper<const typename multi_map_value<Key,Value,Map,Allocator,Balancer>::multi_map_value> multi_map_value<Key,Value,Map,Allocator,Balancer>::get_holder() const
-{
-    return lend(m_pHolder);
-}
-template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
-lent_pointer_wrapper<typename multi_map_value<Key,Value,Map,Allocator,Balancer>::map_node_t> multi_map_value<Key,Value,Map,Allocator,Balancer>::get_node_location() const
-{
-    return m_pNodeLocation;
-}
-template<typename Key, typename Value, template<typename,typename,template<typename>class> class Map,template<typename> class Allocator, template<typename,typename> class Balancer>
 multi_map_value<Key,Value,Map,Allocator,Balancer>& multi_map_value<Key,Value,Map,Allocator,Balancer>::operator=(const multi_map_value& other)
 {
     m_value = other.m_value;

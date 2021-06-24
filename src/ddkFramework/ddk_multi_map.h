@@ -35,9 +35,6 @@ public:
     multi_map_value(Value&& i_value);
     multi_map_value(const multi_map_value& other);
     multi_map_value(multi_map_value&& other);
-    lent_pointer_wrapper<multi_map_value> get_holder();
-    lent_pointer_wrapper<const multi_map_value> get_holder() const;
-    lent_pointer_wrapper<map_node_t> get_node_location() const;
     multi_map_value& operator=(const multi_map_value& other);
     multi_map_value& operator=(const Value& i_val);
     multi_map_value& operator=(multi_map_value&& other);

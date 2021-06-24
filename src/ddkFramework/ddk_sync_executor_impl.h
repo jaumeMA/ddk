@@ -17,7 +17,8 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-    using typename cancellable_executor_interface<Return()>::start_result;
+	typedef typename executor_interface<Return()>::sink_type sink_type;
+	using typename cancellable_executor_interface<Return()>::start_result;
     using typename cancellable_executor_interface<Return()>::StartErrorCode;
     using typename cancellable_executor_interface<Return()>::cancel_result;
     using typename cancellable_executor_interface<Return()>::CancelErrorCode;
@@ -41,7 +42,8 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-    using typename cancellable_executor_interface<Return()>::start_result;
+	typedef typename executor_interface<Return()>::sink_type sink_type;
+	using typename cancellable_executor_interface<Return()>::start_result;
     using typename cancellable_executor_interface<Return()>::StartErrorCode;
     using typename cancellable_executor_interface<Return()>::cancel_result;
     using typename cancellable_executor_interface<Return()>::CancelErrorCode;
@@ -63,7 +65,8 @@ public:
 
 private:
 	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
-    using typename cancellable_executor_interface<void_t()>::start_result;
+	typedef typename executor_interface<detail::void_t()>::sink_type sink_type;
+	using typename cancellable_executor_interface<void_t()>::start_result;
     using typename cancellable_executor_interface<void_t()>::StartErrorCode;
     using typename cancellable_executor_interface<void_t()>::cancel_result;
     using typename cancellable_executor_interface<void_t()>::CancelErrorCode;
@@ -89,7 +92,8 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-    using typename cancellable_executor_interface<Return()>::start_result;
+	typedef typename executor_interface<Return()>::sink_type sink_type;
+	using typename cancellable_executor_interface<Return()>::start_result;
     using typename cancellable_executor_interface<Return()>::StartErrorCode;
     using typename cancellable_executor_interface<Return()>::cancel_result;
     using typename cancellable_executor_interface<Return()>::CancelErrorCode;
@@ -111,7 +115,8 @@ public:
 
 private:
 	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
-    using typename cancellable_executor_interface<void_t()>::start_result;
+	typedef typename executor_interface<detail::void_t()>::sink_type sink_type;
+	using typename cancellable_executor_interface<void_t()>::start_result;
     using typename cancellable_executor_interface<void_t()>::StartErrorCode;
     using typename cancellable_executor_interface<void_t()>::cancel_result;
     using typename cancellable_executor_interface<void_t()>::CancelErrorCode;
@@ -134,6 +139,7 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
+	typedef typename executor_interface<Return()>::sink_type sink_type;
 	using typename cancellable_executor_interface<Return()>::start_result;
 	using typename cancellable_executor_interface<Return()>::StartErrorCode;
 	using typename cancellable_executor_interface<Return()>::cancel_result;
