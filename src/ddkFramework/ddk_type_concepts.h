@@ -32,6 +32,18 @@
 #define IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL(_NUM,...) \
     typename std::enable_if<IS_NUMBER_OF_ARGS_LESSER_OR_EQUAL_COND(_NUM,__VA_ARGS__)>::type
 
+#define IS_AMONG_TYPES_COND(_TYPE,...) \
+	ddk::mpl::is_among_types<_TYPE,__VA_ARGS__>
+
+#define IS_AMONG_TYPES(_TYPE,...) \
+	typename std::enable_if<IS_AMONG_TYPES_COND(_TYPE,__VA_ARGS__)>::type
+
+#define IS_NOT_AMONG_TYPES_COND(_TYPE,...) \
+	ddk::mpl::is_not_among_types<_TYPE,__VA_ARGS__>
+
+#define IS_NOT_AMONG_TYPES(_TYPE,...) \
+	typename std::enable_if<IS_NOT_AMONG_TYPES_COND(_TYPE,__VA_ARGS__)>::type
+
 #define IS_AMONG_CONSTRUCTIBLE_TYPES_COND(_TYPE,...) \
 	ddk::mpl::is_among_constructible_types<_TYPE,__VA_ARGS__>
 
