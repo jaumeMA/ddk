@@ -388,6 +388,7 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 			//by design, if no executor available, use deferred executor
 			execContext = lend(s_execContext);
 		}
+		m_execContext = nullptr;
 
 		auto callable = [=]()
 		{
@@ -439,11 +440,9 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 
 		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 		{
-			if(m_continuationToken = execContext->enqueue(callable,m_depth))
-			{
-				m_execContext = nullptr;
-			}
-			else
+			m_continuationToken = execContext->enqueue(callable,m_depth);
+
+			if(!m_continuationToken)
 			{
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Pending);
 			}
@@ -453,8 +452,6 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 		else if(ddk::atomic_compare_exchange(m_state,ExecutorState::Pending,ExecutorState::Executing))
 		{
 			execContext->start(callable);
-
-			m_execContext = nullptr;
 
 			return make_result<start_result>(m_state.get());
 		}

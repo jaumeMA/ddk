@@ -70,10 +70,10 @@ private:
 
 	void set_result(sink_result i_value);
 
-	ddk::function<Return()> m_function;
-	ddk::function<bool()> m_cancelFunc;
 	cancellable_executor_unique_ptr<Return> m_executor;
 	mutable executor_promise<Return> m_promise;
+	ddk::function<Return()> m_function;
+	ddk::function<bool()> m_cancelFunc;
 };
 
 template<>
