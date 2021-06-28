@@ -325,13 +325,15 @@ template<typename T>
 template<typename ... Args>
 constexpr void embedded_type<T>::inplace_assign(Args&& ... i_args)
 {
+	T obj{ std::forward<Args>(i_args)... };
+
 	if constexpr (std::is_copy_assignable<T>::value)
 	{
-		m_data = { std::forward<Args>(i_args)... };
+		m_data = obj;
 	}
 	else
 	{
-		m_data = std::move(T{ std::forward<Args>(i_args)... });
+		m_data = std::move(obj);
 	}
 }
 template<typename T>

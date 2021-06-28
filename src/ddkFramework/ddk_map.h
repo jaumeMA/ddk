@@ -152,6 +152,8 @@ public:
     typedef typename std::remove_reference<typename std::remove_const<Value>::type>::type value_type;
     typedef typename std::remove_reference<Value>::type& reference;
     typedef const typename std::remove_reference<Value>::type& const_reference;
+    typedef typename std::remove_reference<Value>::type* pointer;
+    typedef const typename std::remove_reference<Value>::type* const_pointer;
     typedef typename std::add_lvalue_reference<Key>::type key_reference;
     typedef typename std::add_lvalue_reference<typename std::add_const<Key>::type>::type const_key_reference;
     typedef Key key_type;

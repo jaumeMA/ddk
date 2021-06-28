@@ -32,7 +32,7 @@ public:
 
 private:
 	reference navigate(const ddk::shift_action& i_initailAction);
-	void _navigate(value_t& i_map, std::vector<std::string>& i_preffix);
+	void _navigate(value_t& i_map, std::vector<Key>& i_preffix);
 	
 	multi_map<Key,Value,Map,Allocator>& m_iterable;
 	awaitable<reference> m_awaitable;
@@ -65,7 +65,7 @@ public:
 
 private:
 	const_reference navigate(const ddk::shift_action& i_initailAction);
-	void _navigate(const value_t& i_map, std::vector<std::string>& i_preffix);
+	void _navigate(const value_t& i_map, std::vector<Key>& i_preffix);
 
 	const multi_map<Key,Value,Map,Allocator>& m_iterable;
 	awaitable<const_reference> m_awaitable;

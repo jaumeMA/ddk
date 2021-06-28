@@ -66,6 +66,8 @@ public:
     typedef typename map_t::map_node_t map_node_t;
     typedef typename map_t::reference reference;
     typedef typename map_t::const_reference const_reference;
+    typedef typename map_t::pointer pointer;
+    typedef typename map_t::const_pointer const_pointer;
     typedef typename map_t::iterator iterator;
     typedef typename map_t::const_iterator const_iterator;
 
@@ -88,3 +90,4 @@ using multi_map = detail::multi_map_impl<Key,detail::multi_map_value<Key,Value,M
 }
 
 #include "ddk_multi_map.inl"
+#include "ddk_multi_map_adaptor.h"

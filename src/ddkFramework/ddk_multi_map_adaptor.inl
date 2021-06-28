@@ -89,7 +89,7 @@ bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::valid() const noexcep
     return m_valid;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-void iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::_navigate(value_t& i_map, std::vector<std::string>& i_preffix)
+void iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::_navigate(value_t& i_map, std::vector<Key>& i_preffix)
 {
     typename value_t::iterator itCurr = (m_nextMov == 1) ? i_map.begin() : i_map.last();
     typename value_t::iterator itEnd = i_map.end();
@@ -144,7 +144,7 @@ typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::reference iterabl
 {
     typename value_t::iterator itCurr = (i_initialAction.target_shift() > 0) ? m_iterable.begin() : m_iterable.last();
     typename value_t::iterator itEnd = m_iterable.end();
-    std::vector<std::string> preffix;
+    std::vector<Key> preffix;
 
     m_nextMov = i_initialAction.target_shift();
 
@@ -280,15 +280,18 @@ typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::difference_
     }
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const value_t& i_map, std::vector<std::string>& i_preffix)
+void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const value_t& i_map, std::vector<Key>& i_preffix)
 {
     typename value_t::const_iterator itCurr = (m_nextMov == 1) ? i_map.begin() : i_map.last();
     typename value_t::const_iterator itEnd = i_map.end();
 
     for(; itCurr != itEnd;)
     {
-        const value_t& nestedMap = itCurr->second;
-        const_reference currValue = *itCurr;
+        value_t& nestedMap = itCurr->second;
+
+        i_preffix.push_back(itCurr->first);
+
+        value_type currValue = { i_preffix,itCurr->second };
 
         switch(m_nextMov)
         {
@@ -298,7 +301,7 @@ void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const
 
                 if(nestedMap.empty() == false)
                 {
-                    _navigate(nestedMap);
+                    _navigate(nestedMap,i_preffix);
                 }
 
                 ++itCurr;
@@ -309,7 +312,7 @@ void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const
             {
                 if(nestedMap.empty() == false)
                 {
-                    _navigate(nestedMap);
+                    _navigate(nestedMap,i_preffix);
                 }
 
                 yield(currValue);
@@ -330,11 +333,13 @@ const typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const
 {
     typename value_t::const_iterator itCurr = (i_initialAction.target_shift() > 0) ? m_iterable.begin() : m_iterable.last();
     typename value_t::const_iterator itEnd = m_iterable.end();
+    std::vector<Key> preffix;
 
     for(; itCurr != itEnd;)
     {
-        const value_t& nestedMap = itCurr->second;
-        const_reference currValue = *itCurr;
+        value_t& nestedMap = itCurr->second;
+        preffix.push_back(itCurr->first);
+        value_type currValue = { preffix,itCurr->second };
 
         switch(m_nextMov)
         {
@@ -344,7 +349,7 @@ const typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const
 
                 if(nestedMap.empty() == false)
                 {
-                    _navigate(nestedMap);
+                    _navigate(nestedMap,preffix);
                 }
 
                 ++itCurr;
@@ -355,7 +360,7 @@ const typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const
             {
                 if(nestedMap.empty() == false)
                 {
-                    _navigate(nestedMap);
+                    _navigate(nestedMap,preffix);
                 }
 
                 yield(currValue);
