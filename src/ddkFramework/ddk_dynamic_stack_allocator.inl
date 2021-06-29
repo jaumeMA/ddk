@@ -67,7 +67,7 @@ std::pair<void*,void*> dynamic_stack_allocator<NumGuardPages>::allocate(void* i_
 	//publish initially one page
 	void* endStackAddr = reinterpret_cast<char*>(i_ref) - allocSize;
 
-	mprotect(stackAddr,allocSize,PROT_READ|PROT_WRITE);
+	mprotect(endStackAddr,allocSize,PROT_READ|PROT_WRITE);
 
 	return std::make_pair(endStackAddr,endStackAddr);
 

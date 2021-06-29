@@ -187,7 +187,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::pointer map_
     return &(m_currNode->get_value());
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
-typename typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::const_pointer map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::operator->() const
+typename map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::const_pointer map_impl<Key,Value,Node,Allocator,Balancer>::map_iterator::operator->() const
 {
     return &(m_currNode->get_value());
 }
@@ -277,7 +277,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::const_
     return const_reference(m_currNode->get_value().first,m_currNode->get_value().second);
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
-typename typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::const_pointer map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::operator->() const
+typename map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::const_pointer map_impl<Key,Value,Node,Allocator,Balancer>::const_map_iterator::operator->() const
 {
     return &(m_currNode->get_value());
 }

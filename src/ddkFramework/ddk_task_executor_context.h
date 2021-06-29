@@ -38,6 +38,7 @@ public:
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
+	typedef typename executor_interface<Return()>::sink_type sink_type;
 	using typename cancellable_executor_interface<Return()>::start_result;
 	using typename cancellable_executor_interface<Return()>::StartErrorCode;
 	using typename cancellable_executor_interface<Return()>::cancel_result;

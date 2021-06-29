@@ -8,6 +8,7 @@
 #include "ddk_fiber_sheaf.h"
 #include "ddk_lend_from_this.h"
 #include <queue>
+#include <list>
 
 namespace ddk
 {

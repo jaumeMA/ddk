@@ -148,7 +148,7 @@ void single_consumer_lock_free_stack<T,Allocator>::deallocate_node(lock_free_sta
 template<typename T,typename Allocator>
 optional<T> multiple_consumer_lock_free_stack<T,Allocator>::pop()
 {
-	if(empty() == false)
+	if(this->empty() == false)
 	{
 		lock_free_stack_node<T>* firstNode = nullptr;
 		lock_free_stack_node<T>* nextNode = nullptr;
@@ -157,11 +157,11 @@ optional<T> multiple_consumer_lock_free_stack<T,Allocator>::pop()
 		{
 			m_barrier.lock_exclusive();
 
-			firstNode = m_head.get_next();
+			firstNode = this->m_head.get_next();
 
 			if(firstNode->is_divider())
 			{
-				m_barrier.unlock_exclusive();
+				this->m_barrier.unlock_exclusive();
 
 				return none;
 			}
@@ -170,7 +170,7 @@ optional<T> multiple_consumer_lock_free_stack<T,Allocator>::pop()
 
 			m_barrier.unlock_exclusive();
 
-			if(m_head.compareAndExchangeNextNode(firstNode,nextNode))
+			if(this->m_head.compareAndExchangeNextNode(firstNode,nextNode))
 			{
 				break;
 			}
@@ -186,7 +186,7 @@ optional<T> multiple_consumer_lock_free_stack<T,Allocator>::pop()
 
 		m_barrier.lock();
 
-		deallocate_node(firstNode);
+		this->deallocate_node(firstNode);
 
 		m_barrier.unlock();
 

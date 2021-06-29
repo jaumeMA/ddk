@@ -21,7 +21,7 @@ class future
 	friend class shared_future;
 	template<typename>
 	friend class executor_promise;
-	friend inline shared_future<T> share(future<T>&& i_future)
+	friend inline auto share(future<T>&& i_future)
 	{
 		return i_future.m_sharedState;
 	}
@@ -83,7 +83,7 @@ public:
 	future& operator=(future&& other)
 	{
 		m_sharedState = std::move(other.m_sharedState);
-	
+
 		return *this;
 	}
 

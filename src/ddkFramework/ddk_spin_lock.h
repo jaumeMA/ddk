@@ -21,9 +21,9 @@ private:
 
 class exclusive_spin_lock
 {
-	static const size_t s_waiting_writer_bit = ~(static_cast<size_t>(-1) >> 1);
-	static const size_t s_writer_bit = s_waiting_writer_bit >> 1;
-	static const size_t s_writer_mask = s_waiting_writer_bit | s_writer_bit;
+	static constexpr size_t s_waiting_writer_bit = ~(static_cast<size_t>(-1) >> 1);
+	static constexpr size_t s_writer_bit = s_waiting_writer_bit >> 1;
+	static constexpr size_t s_writer_mask = s_waiting_writer_bit | s_writer_bit;
 
 public:
 	exclusive_spin_lock();

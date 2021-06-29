@@ -329,7 +329,7 @@ void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const
     }
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-const typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const_reference iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::navigate(const ddk::shift_action& i_initialAction)
+typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const_reference iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::navigate(const ddk::shift_action& i_initialAction)
 {
     typename value_t::const_iterator itCurr = (i_initialAction.target_shift() > 0) ? m_iterable.begin() : m_iterable.last();
     typename value_t::const_iterator itEnd = m_iterable.end();

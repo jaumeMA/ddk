@@ -85,7 +85,7 @@ class map_impl : protected lend_from_this<map_impl<Key,Value,Node,Allocator,Bala
     typedef lent_pointer_wrapper<Node> map_node_lent_ptr;
     typedef lent_pointer_wrapper<const Node> map_node_const_lent_ptr;
     typedef Balancer<map_impl<Key,Value,Node,Allocator,Balancer>,Node> _balancer_t;
-    friend class _balancer_t;
+    friend class Balancer<map_impl<Key,Value,Node,Allocator,Balancer>,Node>;
     friend class map_node<Key,Value>;
 
 public:
