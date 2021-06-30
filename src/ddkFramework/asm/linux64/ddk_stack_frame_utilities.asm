@@ -13,35 +13,17 @@ get_curr_thread_stack:
 
 	ret
 
-frame_get_out:
-
-    pop rdi
-    pop rsi
-    pop rbx
-    pop rbp
-
-    ret
-
-__switch_frame:
-
-    push rbp
-    push rbx
-    push rsi
-    push rdi
-
-    ret
-
 consolidate_frame:
 
 	push rbp
 
 	mov rbp, rsp
 
-	sub rsp, 028h
+	sub rsp, 020h
 
 	call rdx
 
-	add rsp, 028h
+	add rsp, 020h
 
     pop rbp
 

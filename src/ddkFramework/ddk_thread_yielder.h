@@ -45,7 +45,6 @@ public:
 	inline typed_yielder_context(TT&& i_value);
 	inline typed_yielder_context(const typed_yielder_context& other);
 	inline typed_yielder_context(typed_yielder_context&& other);
-	inline ~typed_yielder_context();
 
 	inline typed_yielder_context& operator=(const typed_yielder_context&) = delete;
 	inline typed_yielder_context& operator=(typed_yielder_context&&) = delete;
@@ -56,7 +55,7 @@ public:
 	inline result_type& get_value();
 
 private:
-	mutable typed_arena<result_type> m_value;
+	mutable result_type m_value;
 };
 
 template<>

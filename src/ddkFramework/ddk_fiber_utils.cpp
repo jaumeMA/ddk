@@ -29,25 +29,23 @@ void suspend()
 }
 void yield()
 {
-	ddk::detail::execution_context& currFiberContext = get_current_execution_context();
+    ddk::detail::execution_context& currFiberContext = get_current_execution_context();
 
-	if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
-	{
-		ddk::detail::typed_yielder_context<detail::void_t> _yielder;
+    if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
+    {
+        ddk::detail::typed_yielder_context<detail::void_t> _yielder(_void);
 
-		_yielder.insert_value(_void);
+        currYielder->yield(&_yielder);
 
-		currYielder->yield(&_yielder);
-
-		if(currFiberContext.is_stopped())
-		{
-			throw suspend_exception{ currFiberContext.get_id() };
-		}
-	}
-	else
-	{
-		std::this_thread::yield();
-	}
+        if(currFiberContext.is_stopped())
+        {
+            throw suspend_exception{ currFiberContext.get_id() };
+        }
+    }
+    else
+    {
+        std::this_thread::yield();
+    }
 }
 
 }
