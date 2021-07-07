@@ -29,7 +29,7 @@ void async_executor_recipients::notify()
 		{
 			const task _task = groupedMaps.front();
 
-			groupedMaps.pop_back();
+			groupedMaps.pop_front();
 
 			m_mutex.unlock();
 
@@ -150,16 +150,7 @@ void thread_execution_context::start(const function<void()>& i_callable)
 }
 continuation_token thread_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
-
-	if(!continuationToken)
-	{
-		eval(i_callable);
-
-		return { continuation_token::ntoken };
-	}
-
-	return std::move(continuationToken);
+	return m_recipients.accept(i_callable,i_depth);
 }
 bool thread_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
 {
@@ -185,16 +176,7 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 }
 continuation_token fiber_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
-
-	if(!continuationToken)
-	{
-		eval(i_callable);
-
-		return { continuation_token::ntoken };
-	}
-
-	return std::move(continuationToken);
+	return m_recipients.accept(i_callable,i_depth);
 }
 bool fiber_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
 {
@@ -224,16 +206,7 @@ continuation_token thread_sheaf_execution_context::enqueue(const function<void()
 }
 continuation_token thread_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
-
-	if(!continuationToken)
-	{
-		eval(i_callable);
-
-		return { continuation_token::ntoken };
-	}
-
-	return std::move(continuationToken);
+	return m_recipients.accept(i_callable,i_depth);
 }
 bool thread_sheaf_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
 {
@@ -283,16 +256,7 @@ continuation_token fiber_sheaf_execution_context::enqueue(const function<void()>
 }
 continuation_token fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
-
-	if(!continuationToken)
-	{
-		eval(i_callable);
-
-		return { continuation_token::ntoken };
-	}
-
-	return std::move(continuationToken);
+	return m_recipients.accept(i_callable,i_depth);
 }
 bool fiber_sheaf_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
 {

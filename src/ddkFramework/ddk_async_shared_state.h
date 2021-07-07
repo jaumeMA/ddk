@@ -68,8 +68,10 @@ public:
 	embedded_type<T> extract_value();
 	void wait() const;
 	void wait_for(unsigned int i_period) const;
+	bool pending() const;
 	bool ready() const;
 	virtual void notify() const override;
+	void unsafe_notify() const;
 	async_base_dist_ptr get_aync_execution() const;
 
 private:

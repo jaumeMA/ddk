@@ -41,16 +41,7 @@ void delayed_task_execution_context::start(const function<void()>& i_callable)
 }
 continuation_token delayed_task_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
-	continuation_token continuationToken = m_recipients.accept(i_callable,i_depth);
-
-	if(!continuationToken)
-	{
-		eval(i_callable);
-
-		return { continuation_token::ntoken };
-	}
-
-	return std::move(continuationToken);
+	return m_recipients.accept(i_callable,i_depth);
 }
 bool delayed_task_execution_context::dismiss(unsigned char i_depth,continuation_token i_token)
 {

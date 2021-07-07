@@ -62,6 +62,7 @@ protected:
 
 private:
 	bool notify() override;
+	bool pending() const override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	start_result execute() override;

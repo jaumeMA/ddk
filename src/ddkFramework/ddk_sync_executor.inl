@@ -30,7 +30,16 @@ async_executor<Return>::~async_executor()
 {
 	if(m_executor && m_executor->pending())
 	{
-		eval(m_function);
+		if constexpr (IS_SAME_CLASS_COND(Return,void))
+		{
+			eval(m_function);
+
+			m_promise.set_value(_void);
+		}
+		else
+		{
+			m_promise.set_value(eval(m_function));
+		}
 	}
 }
 template<typename Return>
@@ -288,6 +297,11 @@ bool async_executor<Return>::notify()
 	{
 		return false;
 	}
+}
+template<typename Return>
+bool async_executor<Return>::pending() const
+{
+	return (m_executor != nullptr) ? m_executor->pending() : false;
 }
 template<typename Return>
 executor_context_lent_ptr async_executor<Return>::get_execution_context()

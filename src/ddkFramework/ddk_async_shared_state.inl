@@ -17,17 +17,21 @@ private_async_state<T>::reference_counter::reference_counter(private_async_state
 template<typename T>
 unsigned int private_async_state<T>::reference_counter::decrementSharedReference()
 {
-	unsigned int res = 0;
-
-	m_asyncSharedState.detach_if([&]() mutable
+	if(m_asyncSharedState.pending())
 	{
-		res = distributed_reference_counter::decrementSharedReference();
+		const unsigned int res = distributed_reference_counter::decrementSharedReference();
 
-		//in case we descend to 1 reference (that of the promise), please trigger its execution by means of removing our reference of async execution (check async_executor destructor).
-		return res == 1;
-	});
-		
-	return res;
+		if(res == 1)
+		{
+			m_asyncSharedState.unsafe_notify();
+		}
+
+		return res;
+	}
+	else
+	{
+		return distributed_reference_counter::decrementSharedReference();
+	}
 }
 
 template<typename T>
@@ -241,6 +245,20 @@ void private_async_state<T>::wait_for(unsigned int i_period) const
 	}
 }
 template<typename T>
+bool private_async_state<T>::pending() const
+{
+	mutex_guard lg(m_mutex);
+
+	if(m_asyncExecutor)
+	{
+		return m_asyncExecutor->pending();
+	}
+	else
+	{
+		return false;
+	}
+}
+template<typename T>
 bool private_async_state<T>::ready() const
 {
 	mutex_guard lg(m_mutex);
@@ -252,6 +270,14 @@ void private_async_state<T>::notify() const
 {
 	mutex_guard lg(m_mutex);
 
+	if(m_asyncExecutor)
+	{
+		m_asyncExecutor->notify();
+	}
+}
+template<typename T>
+void private_async_state<T>::unsafe_notify() const
+{
 	if(m_asyncExecutor)
 	{
 		m_asyncExecutor->notify();

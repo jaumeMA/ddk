@@ -16,6 +16,7 @@ class async_interface_base
 public:
 	virtual ~async_interface_base() = default;
 	virtual bool notify() = 0;
+	virtual bool pending() const = 0;
 	virtual executor_context_lent_ptr get_execution_context() = 0;
 	virtual executor_context_const_lent_ptr get_execution_context() const = 0;
 };
