@@ -99,7 +99,7 @@ void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const 
     {
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            auto currActionComposition = m_actionAdapter.resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
+            auto currActionComposition = m_actionAdapter.template resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
 
 			//update current action
 			(m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
@@ -125,7 +125,7 @@ void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const 
 
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            auto currActionComposition = m_actionAdapter.resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
+            auto currActionComposition = m_actionAdapter.template resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
 
             //update current action
             (m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
