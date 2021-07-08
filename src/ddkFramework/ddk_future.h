@@ -36,6 +36,8 @@ public:
 	future(future&&);
 	template<typename TT>
 	future(distributed_reference_wrapper<TT> i_executor, ...);
+	future(const detail::private_async_state_dist_ptr<T>& i_sharedState);
+	future(detail::private_async_state_dist_ptr<T>&& i_sharedState);
 
 	future& operator=(const future&) = delete;
 	future& operator=(future&&);
@@ -57,8 +59,6 @@ public:
 	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
 
 protected:
-	future(const detail::private_async_state_dist_ptr<T>& i_sharedState);
-	future(detail::private_async_state_dist_ptr<T>&& i_sharedState);
 	const_reference get_value() const;
 
 	detail::private_async_state_dist_ptr<T> m_sharedState;

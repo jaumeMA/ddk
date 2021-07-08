@@ -90,7 +90,7 @@ public:
 		}
 		else
 		{
-			return empty_critical_section;
+			return empty_critical_section_impl;
 		}
 	}
 	static void leave(const IAccessInterface<Traits>& i_accesInterface, critical_section i_criticalSection)
@@ -128,7 +128,7 @@ struct AccessCriticalSection<Traits,IAccessProvider::WRITING>
 		}
 		else
 		{
-			return empty_critical_section;
+			return empty_critical_section_impl;
 		}
 	}
 	static void leave(IAccessInterface<Traits>& i_accesInterface, critical_section i_criticalSection)

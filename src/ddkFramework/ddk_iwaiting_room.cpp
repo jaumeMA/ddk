@@ -109,7 +109,7 @@ void iwaiting_room::SharedState::release_lock(Access i_access)
 {
 	m_exclusiveMutex.unlock();
 }
-int iwaiting_room::SharedState::try_acquire_lock(Access i_access)
+bool iwaiting_room::SharedState::try_acquire_lock(Access i_access)
 {
 	return m_exclusiveMutex.try_lock();
 }

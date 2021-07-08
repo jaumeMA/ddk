@@ -25,7 +25,7 @@ void reader_waiting_room::_enter_area(Reentrancy i_reentrancy)
 
 	m_numParticipants++;
 
-	if(m_sharedState.try_acquire_lock(Reader) == EBUSY)
+	if(m_sharedState.try_acquire_lock(Reader) == false)
 	{
 		const bool hasWaitingWriters = i_reentrancy == Reentrancy::NON_REENTRANT && m_sharedState.hasWaitingWriters();
 		const bool hasPendingReaders = m_blockedReader || m_numWaitingReaders > 0;
@@ -83,7 +83,7 @@ bool reader_waiting_room::_try_to_enter_area(Reentrancy i_reentrancy)
 
 	bool res = false;
 
-	if(m_sharedState.try_acquire_lock(Reader) == EBUSY)
+	if(m_sharedState.try_acquire_lock(Reader) == false)
 	{
 		res = (m_blockedReader == false) && (i_reentrancy == Reentrancy::REENTRANT || m_sharedState.hasWaitingWriters() == false);
 	}

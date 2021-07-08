@@ -60,7 +60,7 @@ variant<Types...> alternate_action_resolver::resolve(const variant<Types...>& i_
 		{
 			const shift_action& nestedAction = i_action.template get<shift_action>();
 
-			m_currIndex += nestedAction.shifting();
+			m_currIndex += static_cast<int>(nestedAction.shifting());
 		}
 
 		if(m_currIndex >= 0 && m_currIndex < m_constrain)

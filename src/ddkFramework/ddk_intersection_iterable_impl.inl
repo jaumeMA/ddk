@@ -29,53 +29,67 @@ typename mpl::nth_type_of<Index, Iterables...>::type::const_reference const_inte
 	return crash_on_return<curr_const_reference>::value();
 }
 
-template<typename ... Iterables>
-intersection_iterable_impl<Iterables...>::intersection_iterable_impl(const Iterables& ... i_iterables)
+template<typename ActionAdapter,typename ... Iterables>
+intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(const ActionAdapter& i_adapter, const Iterables& ... i_iterables)
 : m_iterables(i_iterables...)
+, m_actionAdapter(i_adapter)
 {
 }
-template<typename ... Iterables>
-intersection_iterable_impl<Iterables...>::intersection_iterable_impl(const tuple<Iterables...>& i_tupleIterable)
+template<typename ActionAdapter, typename ... Iterables>
+intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(const ActionAdapter& i_adapter, const tuple<Iterables...>& i_tupleIterable)
 : m_iterables(i_tupleIterable)
+, m_actionAdapter(i_adapter)
 {
 }
-template<typename ... Iterables>
-const tuple<Iterables...>& intersection_iterable_impl<Iterables...>::get_iterables() const
+template<typename ActionAdapter,typename ... Iterables>
+intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(ActionAdapter&& i_adapter,const Iterables& ... i_iterables)
+: m_iterables(i_iterables...)
+, m_actionAdapter(std::move(i_adapter))
+{
+}
+template<typename ActionAdapter,typename ... Iterables>
+intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(ActionAdapter&& i_adapter,const tuple<Iterables...>& i_tupleIterable)
+: m_iterables(i_tupleIterable)
+, m_actionAdapter(std::move(i_adapter))
+{
+}
+template<typename ActionAdapter, typename ... Iterables>
+const tuple<Iterables...>& intersection_iterable_impl<ActionAdapter,Iterables...>::get_iterables() const
 {
     return m_iterables;
 }
-template<typename ... Iterables>
-tuple<Iterables...>& intersection_iterable_impl<Iterables...>::get_iterables()
+template<typename ActionAdapter, typename ... Iterables>
+tuple<Iterables...>& intersection_iterable_impl<ActionAdapter,Iterables...>::get_iterables()
 {
     return m_iterables;
 }
-template<typename ... Iterables>
-void intersection_iterable_impl<Iterables...>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename ActionAdapter, typename ... Iterables>
+void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
     iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
 }
-template<typename ... Iterables>
-void intersection_iterable_impl<Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename ActionAdapter, typename ... Iterables>
+void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
 {
     iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
 }
-template<typename ... Iterables>
-size_t intersection_iterable_impl<Iterables...>::size() const
+template<typename ActionAdapter, typename ... Iterables>
+size_t intersection_iterable_impl<ActionAdapter,Iterables...>::size() const
 {
 	TODO("Pending");
 
 	return 0;
 }
-template<typename ... Iterables>
-bool intersection_iterable_impl<Iterables...>::empty() const
+template<typename ActionAdapter, typename ... Iterables>
+bool intersection_iterable_impl<ActionAdapter,Iterables...>::empty() const
 {
 	TODO("Pending");
 
 	return true;
 }
-template<typename ... Iterables>
+template<typename ActionAdapter, typename ... Iterables>
 template<size_t ... Indexs>
-void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
     tuple<awaitable<typename Iterables::reference>...> awaitableTuple(await(make_function(intersection_navigate<Indexs,Iterables...>,&m_iterables,i_initialAction))...);
     tuple<awaited_result<typename Iterables::reference>...> awaitableResultTuple;
@@ -85,10 +99,10 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
     {
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            currAction = eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
+            auto currActionComposition = m_actionAdapter.resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
 
 			//update current action
-			(m_iterables.template get<Indexs>().forward_action(currAction) && ...);
+			(m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
         }
         else
         {
@@ -97,9 +111,9 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
     }
     while(true);
 }
-template<typename ... Iterables>
+template<typename ActionAdapter, typename ... Iterables>
 template<size_t ... Indexs>
-void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
 {
     tuple<awaitable<typename Iterables::const_reference>...> awaitableTuple(await(make_function(const_intersection_navigate<Indexs,Iterables...>,&m_iterables,i_initialAction))...);
     tuple<awaited_result<typename Iterables::const_reference>...> awaitableResultTuple;
@@ -111,7 +125,10 @@ void intersection_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<
 
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            currAction = eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...));
+            auto currActionComposition = m_actionAdapter.resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
+
+            //update current action
+            (m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
         }
         else
         {

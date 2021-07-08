@@ -38,7 +38,7 @@ public:
 
 		void acquire_lock(Access i_access);
 		void release_lock(Access i_access);
-		int try_acquire_lock(Access i_access);
+		bool try_acquire_lock(Access i_access);
 		Access getCurrentState() const;
 		void setCurrentState(Access i_state);
 		bool hasWaitingWriters() const;

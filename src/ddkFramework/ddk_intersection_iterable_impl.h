@@ -9,7 +9,7 @@ namespace ddk
 namespace detail
 {
 
-template<typename ... Iterables>
+template<typename ActionAdapter, typename ... Iterables>
 class intersection_iterable_impl : public iterable_impl_interface<intersection_iterable_base_traits<typename Iterables::traits ...>>
 {
     static const size_t s_num_iterables = tuple<Iterables...>::size();
@@ -23,9 +23,11 @@ public:
     using typename base_t::const_reference;
     using typename base_t::action;
 
-    intersection_iterable_impl(const Iterables& ... i_iterables);
-    intersection_iterable_impl(const tuple<Iterables...>& i_tupleIterable);
-	intersection_iterable_impl(const intersection_iterable_impl&) = default;
+    intersection_iterable_impl(const ActionAdapter& i_adapter, const Iterables& ... i_iterables);
+    intersection_iterable_impl(const ActionAdapter& i_adapter, const tuple<Iterables...>& i_tupleIterable);
+    intersection_iterable_impl(ActionAdapter&& i_adapter,const Iterables& ... i_iterables);
+    intersection_iterable_impl(ActionAdapter&& i_adapter,const tuple<Iterables...>& i_tupleIterable);
+    intersection_iterable_impl(const intersection_iterable_impl&) = default;
 	intersection_iterable_impl(intersection_iterable_impl&&) = default;
 
     const tuple<Iterables...>& get_iterables() const;
@@ -43,7 +45,12 @@ private:
     inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const;
 
     tuple<Iterables...> m_iterables;
+    ActionAdapter m_actionAdapter;
 };
+template<typename ActionAdapter,typename ... Iterables>
+intersection_iterable_impl(const ActionAdapter&, const Iterables& ...) ->intersection_iterable_impl<ActionAdapter,Iterables...>;
+template<typename ActionAdapter,typename ... Iterables>
+intersection_iterable_impl(ActionAdapter&&,const Iterables& ...)->intersection_iterable_impl<ActionAdapter,Iterables...>;
 
 }
 }

@@ -5,6 +5,7 @@
 #include "ddk_intersection_iterable_impl.h"
 #include "ddk_async.h"
 #include "ddk_forwarding_iterable_value_callable.h"
+#include "ddk_one_to_n_action_adapter.h"
 
 namespace ddk
 {
@@ -91,8 +92,9 @@ detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<I
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
 
     typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+	typedef typename ret_type::action action;
 
-	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::intersection_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>> ...>>(deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<iter::one_to_n_diagonal_action_adapter<action>,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(iter::one_to_n_diagonal_action_adapter<action>{},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
 }
 
 }
