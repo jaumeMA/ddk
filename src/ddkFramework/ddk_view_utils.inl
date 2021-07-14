@@ -18,7 +18,7 @@ detail::iterable_filter<detail::resolved_callable<Functor>> filter(Functor&& i_f
 	return detail::iterable_filter<detail::resolved_callable<Functor>>(make_function(std::forward<Functor>(i_functor)));
 }
 template<typename T>
-detail::iterable_order<T> order(T&& i_order)
+detail::iterable_order<T> order(const T& i_order)
 {
 	return detail::iterable_order<T>(i_order);
 }

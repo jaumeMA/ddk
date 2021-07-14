@@ -172,20 +172,6 @@ void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs.
 
     suspend();
 }
-template<typename ... Iterables>
-size_t union_iterable_impl<Iterables...>::size() const
-{
-	TODO("Pending");
-
-    return 0;
-}
-template<typename ... Iterables>
-bool union_iterable_impl<Iterables...>::empty() const
-{
-	TODO("Pending");
-
-	return true;
-}
 
 }
 }

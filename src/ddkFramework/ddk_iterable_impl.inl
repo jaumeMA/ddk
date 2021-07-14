@@ -21,16 +21,6 @@ void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(const_re
 {
 	visit_iterator(m_iterable,i_try,action{i_initialAction},i_actionStatePtr);
 }
-template<typename Traits, typename Iterable>
-size_t iterable_impl<Traits,Iterable>::size() const
-{
-    return m_iterable.size();
-}
-template<typename Traits, typename Iterable>
-bool iterable_impl<Traits,Iterable>::empty() const
-{
-    return m_iterable.empty();
-}
 
 }
 }

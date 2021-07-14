@@ -25,8 +25,6 @@ public:
 
     virtual void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr) = 0;
     virtual void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr = nullptr) const = 0;
-    virtual size_t size() const = 0;
-    virtual bool empty() const = 0;
 };
 
 template<typename Traits>

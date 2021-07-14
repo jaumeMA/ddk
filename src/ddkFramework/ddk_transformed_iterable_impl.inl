@@ -37,16 +37,6 @@ void transformed_iterable_impl<PublicTraits,PrivateTraits,Function>::iterate_imp
 
 	m_iterableRef->iterate_impl(make_composition(i_try,make_function([this](private_const_reference i_value) { return call_iterable_payload(range_seq{},m_transform,i_value); })),i_initialAction,i_actionStatePtr);
 }
-template<typename PublicTraits, typename PrivateTraits, typename Function>
-size_t transformed_iterable_impl<PublicTraits,PrivateTraits,Function>::size() const
-{
-    return m_iterableRef->size();
-}
-template<typename PublicTraits, typename PrivateTraits, typename Function>
-bool transformed_iterable_impl<PublicTraits,PrivateTraits,Function>::empty() const
-{
-    return m_iterableRef->empty();
-}
 
 }
 }

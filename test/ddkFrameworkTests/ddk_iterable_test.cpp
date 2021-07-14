@@ -4,6 +4,7 @@
 #include "ddk_iterable_algorithm.h"
 #include "ddk_high_order_array.h"
 #include "ddk_tuple.h"
+#include "ddk_one_to_n_action_adapter.h"
 
 using namespace testing;
 
@@ -80,6 +81,11 @@ TEST(DDKIterableTest, forwardIterableConstruction)
     foo.push_back(4);
     foo.push_back(5);
 
+	ddk::make_function([](const int& i_value1,const int& i_value2) { printf("ENUMERATION: %d, %d\n",i_value1,i_value2); }) <<= ddk::enumerate(foo,foo);
+
+	ddk::combine<ddk::iter::one_to_n_diagonal_action_adapter>(foo,foo);
+	ddk::combine(ddk::iter::one_to_n_enumerate_action_adapter{foo,foo},foo,foo);
+
 	ddk::high_order_array<int,2,2> _highOrderProva = {1,1,2,2};
 	ddk::high_order_array<size_t,2,2> highOrderProva;
 
@@ -91,6 +97,8 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	ddk::const_random_access_iterable<size_t> highOrderIterable = ddk::make_iterable<ddk::const_random_access_iterable<size_t>>(highOrderProva);
 
 	ddk::make_function([](size_t i_value){printf("cur high order value: %d\n",i_value);}) <<= highOrderIterable;
+	ddk::make_function([](size_t i_value) {printf("cur high order alternate value: %d\n",i_value); }) <<= ddk::view::order(ddk::alternate_order(4)) <<= highOrderIterable;
+	ddk::make_function([](size_t i_value) {printf("cur high transpose dimension value: %d\n",i_value); }) <<= ddk::view::order(ddk::transponse_dimension_order) <<= highOrderProva;
 
 	std::vector<size_t> highOrderProvaSuma;
 	const auto res = ddk::iter::sum <<= ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
@@ -103,6 +111,8 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	provaTuple.set<0>(10.2f);
 	provaTuple.set<1>(20);
 	provaTuple.set<2>(30.5f);
+
+	ddk::make_function([](size_t i_value){}) <<= highOrderProvaSuma;
 
 	ddk::const_random_access_iterable<ddk::const_variant_const_reference<double,int,float>> provaTuplaIterable = ddk::make_iterable<ddk::const_random_access_iterable<ddk::const_variant_const_reference<double,int,float>>>(provaTuple);
 
@@ -181,7 +191,7 @@ TEST(DDKIterableTest, iterableUnion)
 
 	for(const auto& iterable : ddk::view::group_by(ddk::concat(fooIterable1,fooIterable2,fooIterable3),[](const A& i_value){ return *i_value > 100; },[](const A& i_value){ return *i_value < 50; }))
 	{
-		ddk::make_function([](const A& i_value) { printf("current value: %d\n",*i_value); }) <<= iterable;
+		ddk::make_function([](const A& i_value) { printf("current value: %d\n",*i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= iterable;
 		printf("done\n");
 	}
 

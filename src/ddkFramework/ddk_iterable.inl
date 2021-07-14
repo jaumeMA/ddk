@@ -154,16 +154,6 @@ bool iterable<Traits>::operator!=(const std::nullptr_t&) const
     return m_iterableImpl != nullptr;
 }
 template<typename Traits>
-size_t iterable<Traits>::size() const
-{
-    return m_iterableImpl->size();
-}
-template<typename Traits>
-bool iterable<Traits>::empty() const
-{
-    return m_iterableImpl->empty();
-}
-template<typename Traits>
 iterable_state& iterable<Traits>::get_state()
 {
     return m_iterableState;

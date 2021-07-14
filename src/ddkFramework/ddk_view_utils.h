@@ -19,7 +19,7 @@ REQUIRES(IS_CALLABLE(Functor))
 inline detail::iterable_filter<detail::resolved_callable<Functor>> filter(Functor&& i_functor);
 
 template<typename T>
-inline detail::iterable_order<T> order(T&& i_order);
+inline detail::iterable_order<T> order(const T& i_order);
 
 TEMPLATE(typename Iterable, typename ... Predicates)
 REQUIRES(IS_CALLABLE(Predicates)...)

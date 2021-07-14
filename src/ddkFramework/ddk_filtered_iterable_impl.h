@@ -39,8 +39,6 @@ public:
 private:
     void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
     void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-    size_t size() const override;
-    bool empty() const override;
 
     iterable_impl_dist_ref<iterable_base_traits> m_iterableRef;
     const Function m_filter;

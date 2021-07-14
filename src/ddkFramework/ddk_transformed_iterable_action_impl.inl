@@ -20,16 +20,6 @@ void transformed_iterable_action_impl<PublicTraits,PrivateTraits>::iterate_impl(
 {
     m_iterableRef->iterate_impl(make_composition(m_transform,i_try),i_initialAction,i_actionStatePtr);
 }
-template<typename PublicTraits, typename PrivateTraits>
-size_t transformed_iterable_action_impl<PublicTraits,PrivateTraits>::size() const
-{
-    return m_iterableRef->size();
-}
-template<typename PublicTraits, typename PrivateTraits>
-bool transformed_iterable_action_impl<PublicTraits,PrivateTraits>::empty() const
-{
-    return m_iterableRef->empty();
-}
 
 }
 }

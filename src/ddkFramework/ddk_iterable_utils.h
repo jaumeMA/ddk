@@ -58,8 +58,8 @@ inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_trai
 template<typename Function,typename Container>
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container&& i_rhs);
 
-template<typename T,typename Container>
-inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs,Container&& i_rhs);
+template<typename T,typename Iterable>
+inline ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs);
 
 TEMPLATE(typename Function,typename Iterable)
 REQUIRES(IS_CALLABLE(Function))
@@ -76,6 +76,32 @@ TEMPLATE(typename ... Iterables)
 REQUIRES(IS_ITERABLE(Iterables)...)
 inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables&& ... i_iterables);
 
+TEMPLATE(typename ... Iterables)
+REQUIRES(IS_ITERABLE(Iterables)...)
+inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables);
+
+TEMPLATE(typename Adapter,typename ... Iterables)
+REQUIRES(IS_ITERABLE(Iterables)...)
+inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables);
+
+TEMPLATE(typename Adapter,typename ... Iterables)
+REQUIRES(IS_ITERABLE(Iterables)...)
+inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter, Iterables&& ... i_iterables);
+
+namespace iter
+{
+
+TEMPLATE(typename T)
+REQUIRES(IS_SIZEABLE(T))
+inline size_t size(const T& i_container);
+
+template<template<typename,size_t...> typename T, typename R, size_t ... Dims>
+inline std::vector<size_t> dimension(const T<R,Dims...>& i_container);
+TEMPLATE(typename T)
+REQUIRES(IS_DIMENSIONABLE(T))
+inline auto dimension(const T& i_container,...);
+
+}
 }
 
 #include "ddk_iterable_utils.inl"

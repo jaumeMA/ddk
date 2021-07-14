@@ -74,20 +74,6 @@ void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const 
     iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
 }
 template<typename ActionAdapter, typename ... Iterables>
-size_t intersection_iterable_impl<ActionAdapter,Iterables...>::size() const
-{
-	TODO("Pending");
-
-	return 0;
-}
-template<typename ActionAdapter, typename ... Iterables>
-bool intersection_iterable_impl<ActionAdapter,Iterables...>::empty() const
-{
-	TODO("Pending");
-
-	return true;
-}
-template<typename ActionAdapter, typename ... Iterables>
 template<size_t ... Indexs>
 void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
@@ -95,11 +81,13 @@ void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const 
     tuple<awaited_result<typename Iterables::reference>...> awaitableResultTuple;
     action currAction = traits::default_action();
 
+    m_actionAdapter.template initialize<Indexs...>(i_initialAction);
+
     do
     {
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            auto currActionComposition = m_actionAdapter.resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
+            auto currActionComposition = m_actionAdapter.template resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
 
 			//update current action
 			(m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
@@ -119,13 +107,15 @@ void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const 
     tuple<awaited_result<typename Iterables::const_reference>...> awaitableResultTuple;
     action currAction = traits::default_action();
 
+    m_actionAdapter.template initialize<Indexs...>(i_initialAction);
+
     do
     {
         (m_iterables.template get<Indexs>().forward_action(currAction) && ...);
 
         if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
         {
-            auto currActionComposition = m_actionAdapter.resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
+            auto currActionComposition = m_actionAdapter.template resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
 
             //update current action
             (m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);

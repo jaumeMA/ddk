@@ -67,8 +67,6 @@ public:
     bool inline forward_action(action i_action) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;
-    size_t inline size() const;
-    bool inline empty() const;
 
 private:
     iterable_state& get_state() override;
