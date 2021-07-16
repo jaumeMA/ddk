@@ -3,7 +3,7 @@ include(CompilerFlags.cmake)
 
 project(ddkUtils)
 
-add_library(ddkUtils SHARED ${SOURCES} ${HEADERS})
+add_library(ddkUtils STATIC ${SOURCES} ${HEADERS})
 
 #no dependencies
 set(LOCAL_MODULE_DEPENDENCIES)

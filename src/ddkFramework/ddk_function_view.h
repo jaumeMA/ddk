@@ -22,8 +22,9 @@ public:
 
     template<typename ... Args>
     Return operator()(Args&& ... i_args) const;
-	operator bool() const;
+
 	bool operator==(std::nullptr_t) const;
+	bool operator!=(std::nullptr_t) const;
 
 private:
 	function_base_const_lent_ptr m_functionImpl;

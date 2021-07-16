@@ -28,14 +28,14 @@ Return function_view<Return(Types...)>::operator()(Args&& ... i_args) const
 	}
 }
 template<typename Return, typename ... Types>
-function_view<Return(Types...)>::operator bool() const
-{
-	return m_functionImpl != nullptr;
-}
-template<typename Return, typename ... Types>
 bool function_view<Return(Types...)>::operator==(std::nullptr_t) const
 {
 	return m_functionImpl == nullptr;
+}
+template<typename Return,typename ... Types>
+bool function_view<Return(Types...)>::operator!=(std::nullptr_t) const
+{
+	return m_functionImpl != nullptr;
 }
 
 }

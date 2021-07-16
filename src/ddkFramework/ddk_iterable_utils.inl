@@ -60,6 +60,13 @@ ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const
 
 	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,traits_t>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.init(std::forward<Iterable>(i_rhs))));
 }
+template<typename Function,typename Iterable>
+ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable&& i_rhs)
+{
+	typedef ddk::resolved_iterable_traits<Iterable> traits_t;
+
+	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::constrained_iterable_impl<traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_constrain()));
+}
 TEMPLATE(typename Function, typename Iterable)
 REQUIRED(IS_CALLABLE(Function))
 auto operator<<=(Function&& i_lhs,Iterable&& i_rhs)

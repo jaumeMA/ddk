@@ -5,6 +5,7 @@
 #include "ddk_high_order_array.h"
 #include "ddk_tuple.h"
 #include "ddk_one_to_n_action_adapter.h"
+#include "ddk_builtin_iterables.h"
 
 using namespace testing;
 
@@ -95,6 +96,8 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	highOrderProva[1][1] = 4;
 
 	ddk::const_random_access_iterable<size_t> highOrderIterable = ddk::make_iterable<ddk::const_random_access_iterable<size_t>>(highOrderProva);
+
+	ddk::make_function([](size_t i_value) {printf("cur integer: %d\n",i_value); }) <<= ddk::view::take_n(ddk::odd_integers,10);
 
 	ddk::make_function([](size_t i_value){printf("cur high order value: %d\n",i_value);}) <<= highOrderIterable;
 	ddk::make_function([](size_t i_value) {printf("cur high order alternate value: %d\n",i_value); }) <<= ddk::view::order(ddk::alternate_order(4)) <<= highOrderIterable;

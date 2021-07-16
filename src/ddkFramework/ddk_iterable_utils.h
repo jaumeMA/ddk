@@ -5,6 +5,7 @@
 #include "ddk_transformed_iterable_impl.h"
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
+#include "ddk_constrained_iterable_impl.h"
 #include "ddk_concepts.h"
 #include "ddk_iterable_concepts.h"
 #include "ddk_container_concepts.h"
@@ -60,6 +61,9 @@ inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<
 
 template<typename T,typename Iterable>
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs);
+
+template<typename Function,typename Iterable>
+inline ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs, Iterable&& i_rhs);
 
 TEMPLATE(typename Function,typename Iterable)
 REQUIRES(IS_CALLABLE(Function))
