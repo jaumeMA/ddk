@@ -68,7 +68,7 @@ TEMPLATE(typename Functor)
 REQUIRED(IS_CALLABLE(Functor))
 auto constrain(Functor&& i_constrain)
 {
-	return detail::iterable_constrain{ std::forward<Functor>(i_constrain) };
+	return ddk::detail::iterable_constrain{ std::forward<Functor>(i_constrain) };
 }
 
 }

@@ -47,8 +47,8 @@ class iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>
 	typedef typename value_t::iterator iterator;
 
 public:
-	typedef std::pair<const std::vector<Key>,Value&> value_type;
-	typedef std::pair<const std::vector<Key>,Value&>& reference;
+	typedef std::pair<const std::vector<Key>,const Value&> value_type;
+	typedef std::pair<const std::vector<Key>,const Value&>& reference;
 	typedef std::pair<const std::vector<Key>,const Value&>& const_reference;
 	typedef long long difference_type;
 

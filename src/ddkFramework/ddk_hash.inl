@@ -50,13 +50,18 @@ constexpr size_t hash(const Hasher& i_hasher,const Id<UnderlyingType,T>& i_id)
 {
     return hash(i_id.getValue());
 }
-template<typename ... Args>
-constexpr size_t hash_combine(Args&& ... i_args)
+template<typename Arg,typename ... Args>
+constexpr size_t hash_combine(Arg&& i_arg,Args&& ... i_args)
 {
-    size_t index = 0;
-    const size_t accHash[] = { 0,((hash(std::forward<Args>(i_args)) + 0x9e3779b9) + (accHash[index] << 6) + (accHash[index++] >> 2)) ... };
+    const size_t argsHash[] = { hash(std::forward<Args>(i_args)) ... };
+    size_t res = hash(std::forward<Arg>(i_arg));
 
-    return accHash[mpl::num_types<Args...>-1];
+    for(size_t index = 0; index < mpl::num_types<Args...>; ++index)
+    {
+        res ^= argsHash[index] + 0x9e3779b9 + (res << 6) + (res >> 2);
+    }
+
+    return res;
 }
 
 constexpr builtin_hasher::builtin_hasher(size_t i_seed)

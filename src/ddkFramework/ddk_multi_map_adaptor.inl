@@ -287,11 +287,11 @@ void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const
 
     for(; itCurr != itEnd;)
     {
-        value_t& nestedMap = itCurr->second;
+        const value_t& nestedMap = itCurr->second;
 
         i_preffix.push_back(itCurr->first);
 
-        value_type currValue = { i_preffix,itCurr->second };
+        const value_type currValue = { i_preffix,itCurr->second };
 
         switch(m_nextMov)
         {
@@ -337,9 +337,9 @@ typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const_refer
 
     for(; itCurr != itEnd;)
     {
-        value_t& nestedMap = itCurr->second;
+        const value_t& nestedMap = itCurr->second;
         preffix.push_back(itCurr->first);
-        value_type currValue = { preffix,itCurr->second };
+        const value_type currValue = { preffix,itCurr->second };
 
         switch(m_nextMov)
         {

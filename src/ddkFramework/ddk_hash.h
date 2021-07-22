@@ -28,8 +28,8 @@ template<typename Hasher>
 constexpr size_t hash(const Hasher& i_hasher,const time_t& i_value);
 template<typename Hasher,typename UnderlyingType,typename T>
 constexpr size_t hash(const Hasher& i_hasher,const Id<UnderlyingType,T>& i_id);
-template<typename ... Args>
-constexpr size_t hash_combine(Args&& ... i_args);
+template<typename Arg, typename ... Args>
+constexpr size_t hash_combine(Arg&& i_arg, Args&& ... i_args);
 
 struct builtin_hasher
 {

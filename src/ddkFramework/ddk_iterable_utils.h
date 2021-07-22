@@ -98,6 +98,8 @@ namespace iter
 TEMPLATE(typename T)
 REQUIRES(IS_SIZEABLE(T))
 inline size_t size(const T& i_container);
+template<typename T>
+inline size_t size(const const_random_access_iterable<T>& i_iterable);
 
 template<template<typename,size_t...> typename T, typename R, size_t ... Dims>
 inline std::vector<size_t> dimension(const T<R,Dims...>& i_container);

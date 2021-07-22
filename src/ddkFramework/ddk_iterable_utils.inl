@@ -142,6 +142,10 @@ size_t size(const T& i_container)
 {
 	return i_container.size();
 }
+template<typename T>
+size_t size(const const_random_access_iterable<T>& i_iterable)
+{
+}
 
 template<template<typename,size_t...> typename T,typename R,size_t ... Dims>
 std::vector<size_t> dimension(const T<R,Dims...>& i_container)

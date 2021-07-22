@@ -93,8 +93,6 @@ public:
 	}
     detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const
 	{
-		static_assert(std::is_base_of<baseT,T>::value,"There is a mismatch in method and object types!");
-
 		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
 		return m_recipient.push(i_function,static_cast<const detail::signal_connector&>(*this));
