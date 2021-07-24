@@ -8,17 +8,111 @@ void delayed_task_execution_context::attach(thread i_thread)
 {
 	mutex_guard mg(m_mutex);
 
-	m_thread = std::move(i_thread);
-
-	m_thread.start([this, callable = std::move(m_function)]()
+	if(is_attached() == false)
 	{
-		if(callable != nullptr)
+		i_thread.start([this, callable = std::move(m_function)]()
 		{
-			eval(callable);
+			if(callable != nullptr)
+			{
+				eval(callable);
+
+				m_recipients.notify();
+			}
+		});
+
+		m_context = std::move(i_thread);
+	}
+	else
+	{
+		throw async_exception{ "Context already attached." };
+	}
+}
+void delayed_task_execution_context::attach(fiber i_fiber)
+{
+	if(is_attached() == false)
+	{
+		i_fiber.start([this,callable = std::move(m_function)]()
+		{
+			if(callable != nullptr)
+			{
+				eval(callable);
+
+				m_recipients.notify();
+			}
+		});
+
+		m_context = std::move(i_fiber);
+	}
+	else
+	{
+		throw async_exception{ "Context already attached." };
+	}
+}
+void delayed_task_execution_context::attach(thread_sheaf i_threadSheaf)
+{
+	if(is_attached() == false)
+	{
+		i_threadSheaf.start([this,callable = std::move(m_function)]()
+		{
+			if(callable != nullptr)
+			{
+				eval(callable);
+
+				m_recipients.notify();
+			}
+		});
+
+		m_context = std::move(i_threadSheaf);
+	}
+	else
+	{
+		throw async_exception{ "Context already attached." };
+	}
+}
+void delayed_task_execution_context::attach(fiber_sheaf i_fiberSheaf)
+{
+	if(is_attached() == false)
+	{
+		i_fiberSheaf.start([this,callable = std::move(m_function)]()
+		{
+			if(callable != nullptr)
+			{
+				eval(callable);
+
+				m_recipients.notify();
+			}
+		});
+
+		m_context = std::move(i_fiberSheaf);
+	}
+	else
+	{
+		throw async_exception{ "Context already attached." };
+	}
+}
+void delayed_task_execution_context::attach(const detail::this_thread_t& i_thisThread)
+{
+	if(is_attached() == false)
+	{
+		if(m_function != nullptr)
+		{
+			eval(m_function);
 
 			m_recipients.notify();
 		}
-	});
+
+		m_function = nullptr;
+
+		m_context = i_thisThread;
+	}
+	else
+	{
+		throw async_exception{ "Context already attached." };
+	}
+}
+bool delayed_task_execution_context::is_attached() const
+{
+	return m_context.is<detail::none_t>() == false;
 }
 bool delayed_task_execution_context::cancel()
 {

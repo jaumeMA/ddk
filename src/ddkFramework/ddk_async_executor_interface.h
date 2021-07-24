@@ -50,6 +50,11 @@ using async_cancellable_const_dist_ref = distributed_reference_wrapper<const asy
 using async_cancellable_dist_ptr = distributed_pointer_wrapper<async_cancellable_interface>;
 using async_cancellable_const_dist_ptr = distributed_pointer_wrapper<const async_cancellable_interface>;
 
+using async_cancellable_lent_ref = lent_reference_wrapper<async_cancellable_interface>;
+using async_cancellable_const_lent_ref = lent_reference_wrapper<const async_cancellable_interface>;
+using async_cancellable_lent_ptr = lent_pointer_wrapper<async_cancellable_interface>;
+using async_cancellable_const_lent_ptr = lent_pointer_wrapper<const async_cancellable_interface>;
+
 template<typename Return>
 class async_execute_interface
 {

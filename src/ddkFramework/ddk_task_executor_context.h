@@ -2,6 +2,7 @@
 
 #include "ddk_executor_interface.h"
 #include "ddk_sync_executor_context.h"
+#include "ddk_variant.h"
 #include <queue>
 
 namespace ddk
@@ -12,16 +13,23 @@ class delayed_task_execution_context : public executor_context_interface,public 
 public:
 	void start(const function<void()>&);
 	void attach(thread i_thread);
+	void attach(fiber i_fiber);
+	void attach(thread_sheaf i_threadSheaf);
+	void attach(fiber_sheaf i_fiberSheaf);
+	void attach(const detail::this_thread_t& i_thisThread);
+	bool is_attached() const;
 	bool cancel();
 
 private:
+	typedef variant<detail::none_t,thread,fiber,thread_sheaf,fiber_sheaf,const detail::this_thread_t&> context_t;
+
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
 	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
 	mutex m_mutex;
 	function<void()> m_function;
-	thread m_thread;
+	context_t m_context;
 	detail::async_executor_recipients m_recipients;
 };
 

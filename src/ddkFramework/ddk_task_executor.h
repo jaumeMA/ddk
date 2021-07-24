@@ -5,14 +5,10 @@
 #include "ddk_mutex.h"
 #include "ddk_thread_executor.h"
 #include "ddk_type_id.h"
-#include "ddk_async.h"
-#include "ddk_unique_reference_wrapper.h"
 #include "ddk_lock_free_stack.h"
 #include "ddk_atomics.h"
 #include "ddk_lend_from_this.h"
-#include "ddk_lent_reference_wrapper.h"
-#include "ddk_unique_pointer_wrapper.h"
-#include "ddk_task_executor_context.h"
+#include "ddk_delayed_task.h"
 
 namespace ddk
 {
@@ -30,7 +26,7 @@ class task_executor : public lend_from_this<task_executor>
 		pending_task() = default;
 		virtual ~pending_task() = default;
 		virtual void execute(thread i_thread) = 0;
-		virtual bool execute() = 0;
+		virtual void execute() = 0;
 		virtual bool cancel() = 0;
 		virtual bool empty() = 0;
 	};
@@ -43,17 +39,16 @@ class task_executor : public lend_from_this<task_executor>
 		typedef typename cancellable_executor_interface<Return()>::sink_type sink_type;
 
 		pending_task_impl(const function<Return()>& i_task);
-		~pending_task_impl();
 
 		future<Return> as_future();
 		void execute(thread i_thread) final override;
 
 	private:
-		bool execute() final override;
+		void execute() final override;
 		bool cancel() final override;
 		bool empty() final override;
 
-		distributed_pointer_wrapper<async_executor<Return>> m_executor;
+		delayed_task<Return> m_task;
 	};
 	template<typename Return>
 	using unique_pending_impl_task = unique_reference_wrapper<pending_task_impl<Return>>;

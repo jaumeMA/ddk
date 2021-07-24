@@ -8,76 +8,33 @@ namespace ddk
 
 template<typename Return>
 task_executor::pending_task_impl<Return>::pending_task_impl(const function<Return()>& i_task)
-: m_executor(make_async_executor(i_task))
-{
-}
-template<typename Return>
-task_executor::pending_task_impl<Return>::~pending_task_impl()
+: m_task(i_task)
 {
 }
 template<typename Return>
 void task_executor::pending_task_impl<Return>::execute(thread i_thread)
 {
-	if(async_cancellable_dist_ptr _executor = std::move(m_executor))
-	{
-		if(executor_context_lent_ptr _executorImpl = _executor->get_execution_context())
-		{
-			static_lent_cast<delayed_task_execution_context>(_executorImpl)->attach(std::move(i_thread));
-		}
-		else
-		{
-			throw async_exception{ "Trying to execute task with no context." };
-		}
-	}
-	else
-	{
-		throw async_exception{"Trying to execute empty task."};
-	}
+	m_task.execute(std::move(i_thread));
 }
 template<typename Return>
-bool task_executor::pending_task_impl<Return>::execute()
+void task_executor::pending_task_impl<Return>::execute()
 {
-	if(async_execute_dist_ptr<Return> _executor = std::move(m_executor))
-	{
-		return static_cast<bool>(_executor->execute());
-	}
-	else
-	{
-		return false;
-	}
+	m_task.execute();
 }
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::cancel()
 {
-	if(async_cancellable_dist_ptr _executor = std::move(m_executor))
-	{
-		if(_executor->cancel())
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return m_task.cancel();
 }
 template<typename Return>
 bool task_executor::pending_task_impl<Return>::empty()
 {
-	if(async_execute_dist_ptr<Return> _executor = m_executor)
-	{
-		return _executor->empty();
-	}
-	else
-	{
-		return true;
-	}
+	return m_task.empty();
 }
 template<typename Return>
 future<Return> task_executor::pending_task_impl<Return>::as_future()
 {
-	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<detail::delayed_task_executor<Return>>());
-
-	return m_executor->attach((s_allocator) ? make_unique_reference<detail::delayed_task_executor<Return>>(*s_allocator)
-											: make_unique_reference<detail::delayed_task_executor<Return>>());
+	return m_task.as_future();
 }
 
 template<typename Return>
