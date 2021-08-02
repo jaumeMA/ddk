@@ -160,7 +160,7 @@ struct DerivedTypeMultiVisitor
 {
 	typedef int return_type;
 
-	return_type operator()(prova::DerivedBaseType1&, prova::DerivedBaseType1&) const
+	return_type operator()(const prova::DerivedBaseType1&, prova::DerivedBaseType1&) const
 	{
 		return 1;
 	}
@@ -180,7 +180,7 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	ddk::unique_object<prova::BaseType1> kk_uniq = ddk::make_unique_value<prova::DerivedBaseType1>(10);
 	ddk::distributed_object<prova::BaseType1> kk_dist = ddk::make_distributed_value<prova::DerivedBaseType1>(10);
 
-	ddk::lent_object<prova::BaseType1> kkLentUniq = ddk::lend(kk_uniq);
+	ddk::lent_object<const prova::BaseType1> kkLentUniq = ddk::lend(kk_uniq);
 	ddk::lent_object<prova::BaseType1> kkLentDist = ddk::lend(kk_dist);
 	ddk::lent_value<prova::BaseType1> kkProm = ddk::promote_to_value(kkLentDist);
 
@@ -197,6 +197,6 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 
 	ddk::visit<DerivedTypeMultiVisitor>(kkLentUniq,kkLentDist);
 	ddk::visit(multiVisitor,foo2,foo3);
-	//ddk::visit([](auto&& i_lhs, auto&& i_rhs){ return 0; },foo0,foo1);
+	ddk::visit([](auto&& i_lhs, auto&& i_rhs){ return 0; },foo0,foo1);
 	//int b = 0;
 }

@@ -86,23 +86,5 @@ typename unique_object<T>::const_reference unique_object<T>::operator*() const
 {
 	return *m_value;
 }
-template<typename T>
-template<typename Interface,typename Visitor>
-bool unique_object<T>::may_visit() const
-{
-	return __may_visit(static_cast<const Interface&>(*m_value),reinterpret_cast<const Visitor*>(0xDEAD));
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-void unique_object<T>::visit(Visitor&& i_visitor)
-{
-	__visit(m_typeInfo,static_cast<Interface&>(*m_value),i_visitor);
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-void unique_object<T>::visit(Visitor&& i_visitor) const
-{
-	__visit(m_typeInfo,static_cast<const Interface&>(*m_value),i_visitor);
-}
 
 }

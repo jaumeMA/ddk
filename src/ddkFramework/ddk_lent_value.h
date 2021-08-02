@@ -59,7 +59,6 @@ public:
 	lent_value& operator=(lent_value<TT>&&);
 	template<typename TT>
 	inline bool is() const;
-	inline operator bool() const;
 	inline const rtti::TypeInfo& get_type_info() const;
 	inline pointer operator->();
 	inline const_pointer operator->() const;
@@ -67,8 +66,6 @@ public:
 	inline const_reference operator*() const;
 	template<typename Interface,typename Visitor>
 	inline bool may_visit() const;
-	template<typename Interface,typename Visitor>
-	void visit(Visitor&& i_visitor) const;
 	template<typename Interface,typename Visitor>
 	void visit(Visitor&& i_visitor);
 

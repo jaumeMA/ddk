@@ -128,15 +128,11 @@ bool lent_object<T>::may_visit() const
 }
 template<typename T>
 template<typename Interface,typename Visitor>
-void lent_object<T>::visit(Visitor&& i_visitor) const
-{
-	__visit(m_typeInfo,static_cast<const Interface&>(*m_value),i_visitor);
-}
-template<typename T>
-template<typename Interface,typename Visitor>
 void lent_object<T>::visit(Visitor&& i_visitor)
 {
-	__visit(m_typeInfo,static_cast<Interface&>(*m_value),i_visitor);
+	typedef mpl::static_if<std::is_const<T>::value,std::add_const<Interface>::type,Interface>::type type_interface;
+
+	__visit(m_typeInfo,static_cast<type_interface&>(*m_value),i_visitor);
 }
 
 }

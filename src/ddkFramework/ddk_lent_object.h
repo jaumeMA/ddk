@@ -78,8 +78,6 @@ public:
 	template<typename Interface,typename Visitor>
 	inline bool may_visit() const;
 	template<typename Interface,typename Visitor>
-	void visit(Visitor&& i_visitor) const;
-	template<typename Interface,typename Visitor>
 	void visit(Visitor&& i_visitor);
 
 private:

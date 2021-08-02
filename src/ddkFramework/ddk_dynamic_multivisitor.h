@@ -21,8 +21,6 @@ public:
 
 	void visit(Type& i_value) override;
 	void visit(const Type& i_value) override;
-	void visit(Type& i_value) const override;
-	void visit(const Type& i_value) const override;
 
 	static const bool __register_type_visitor;
 };
@@ -44,17 +42,12 @@ public:
 	dynamic_multi_visitor(Visitor& i_visitor,const Value& i_value,const Values& ... i_pendingValues);
 
 	function<return_type(ResolvedTypes...)> visit();
-	function<return_type(ResolvedTypes...)> visit() const;
 	template<typename T>
 	inline void typed_visit(T&& i_resolvedValue);
-	template<typename T>
-	inline void typed_visit(T&& i_resolvedValue) const;
 
 private:
 	template<size_t ... IndexsResolved,size_t ... IndexsToResolve, typename T>
 	inline void typed_visit(const mpl::sequence<IndexsResolved...>&,const mpl::sequence<IndexsToResolve...>&,T&&);
-	template<size_t ... IndexsResolved,size_t ... IndexsToResolve,typename T>
-	inline void typed_visit(const mpl::sequence<IndexsResolved...>&,const mpl::sequence<IndexsToResolve...>&,T&&) const;
 
 	Visitor& m_visitor;
 	Value m_value;
@@ -71,7 +64,6 @@ public:
 
 	dynamic_multi_visitor(Visitor& i_visitor);
 	function<return_type(ResolvedTypes...)> visit();
-	function<return_type(ResolvedTypes...)> visit() const;
 
 private:
 	Visitor& m_visitor;

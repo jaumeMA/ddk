@@ -138,23 +138,5 @@ typename distributed_object<T>::const_reference distributed_object<T>::operator*
 {
 	return *m_value;
 }
-template<typename T>
-template<typename Interface,typename Visitor>
-bool distributed_object<T>::may_visit() const
-{
-	return __may_visit(static_cast<const Interface&>(*m_value),reinterpret_cast<const Visitor*>(0xDEAD));
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-void distributed_object<T>::visit(Visitor&& i_visitor)
-{
-	__visit(m_typeInfo,static_cast<Interface&>(*m_value),i_visitor);
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-void distributed_object<T>::visit(Visitor&& i_visitor) const
-{
-	__visit(m_typeInfo,static_cast<const Interface&>(*m_value),i_visitor);
-}
 
 }

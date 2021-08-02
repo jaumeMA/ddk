@@ -59,11 +59,6 @@ bool unique_value<T>::is() const
 	return m_typeInfo == rtti::type_info<TT,T>();
 }
 template<typename T>
-unique_value<T>::operator bool() const
-{
-	return m_typeInfo.empty() == false;
-}
-template<typename T>
 const rtti::TypeInfo& unique_value<T>::get_type_info() const
 {
 	return m_typeInfo;
@@ -87,24 +82,6 @@ template<typename T>
 typename unique_value<T>::const_reference unique_value<T>::operator*() const
 {
 	return *m_value;
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-bool unique_value<T>::may_visit() const
-{
-	return __may_visit(static_cast<const Interface&>(*m_value),reinterpret_cast<const Visitor*>(0xDEAD));
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-void unique_value<T>::visit(Visitor&& i_visitor)
-{
-	__visit(m_typeInfo,static_cast<Interface&>(*m_value),i_visitor);
-}
-template<typename T>
-template<typename Interface,typename Visitor>
-void unique_value<T>::visit(Visitor&& i_visitor) const
-{
-	__visit(m_typeInfo,static_cast<const Interface&>(*m_value),i_visitor);
 }
 
 }

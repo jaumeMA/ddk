@@ -54,12 +54,6 @@ public:
 	inline const_pointer operator->() const;
 	inline reference operator*();
 	inline const_reference operator*() const;
-	template<typename Interface,typename Visitor>
-	inline bool may_visit() const;
-	template<typename Interface,typename Visitor>
-	void visit(Visitor&& i_visitor) const;
-	template<typename Interface,typename Visitor>
-	void visit(Visitor&& i_visitor);
 
 private:
 	rtti::TypeInfo m_typeInfo;
