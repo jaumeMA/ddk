@@ -9,7 +9,7 @@
 #include "ddk_visitable_type.h"
 
 #define _PUBLISH_RTTI_INHERITANCE(_Type_Name,_Type_Interface) \
-    ; typename decltype(__get_inherited_type_list(std::declval<ddk::rtti::detail::static_typed_number<decltype(ddk::mpl::resolve_holder<_Type_Interface>()),ddk::static_counter<decltype(ddk::mpl::resolve_holder<_Type_Interface>())>::get_curr_count()>>()))::add<decltype(ddk::mpl::resolve_holder<_Type_Name>())>::type __get_inherited_type_list(const ddk::rtti::detail::static_typed_number<decltype(ddk::mpl::resolve_holder<_Type_Interface>()),ddk::static_counter<decltype(ddk::mpl::resolve_holder<_Type_Interface>())>::get_next_count()>&);
+    ; typename decltype(__get_inherited_type_list(std::declval<ddk::rtti::detail::static_typed_number<decltype(ddk::mpl::resolve_holder<_Type_Interface>()),ddk::static_counter<decltype(ddk::mpl::resolve_holder<_Type_Interface>())>::get_curr_count()>>()))::add<decltype(ddk::mpl::resolve_holder<_Type_Name>())>::type __get_inherited_type_list(const ddk::rtti::detail::static_typed_number<decltype(ddk::mpl::resolve_holder<_Type_Interface>()),ddk::static_counter<decltype(ddk::mpl::resolve_holder<_Type_Interface>())>::get_next_count()>&); \
 
 #define PUBLISH_RTTI_INHERITANCE(_Type_Name,...) \
     FOREACH_ARG(_PUBLISH_RTTI_INHERITANCE,_Type_Name,__VA_ARGS__)

@@ -11,8 +11,6 @@ class error_impl;
 template<typename Error>
 class error_impl<Error>
 {
-	ASSERT_CONTAINS_SYMBOL(Error,scoped_enum_tag,"Your error type shall be a scoped enum");
-
 public:
     error_impl(const Error& i_error);
 	error_impl(const Error& i_error, const std::string& i_errorDesc);

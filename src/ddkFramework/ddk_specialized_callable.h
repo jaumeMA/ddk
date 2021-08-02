@@ -24,6 +24,8 @@ private:
     Callable& m_callable;
 	tuple<Args...> m_args;
 };
+template<typename Callable,typename ... Args>
+specialized_callable(Callable& i_callable,Args&& ... i_args) -> specialized_callable<Callable,Args...>;
 
 }
 

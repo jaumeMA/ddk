@@ -490,6 +490,15 @@ struct is_same_type<A,A>
     static const bool value = true;
 };
 
+template<typename T, typename ... Types>
+constexpr bool are_same_type()
+{
+    return (std::is_same<T,Types>::value && ...);
+}
+
+template<typename T,typename ... Types>
+using reduce_to_common_type = typename std::enable_if<are_same_type<T,Types...>(),T>::type;
+
 template<template<typename...>typename Predicate, typename ... T>
 struct not_predicate
 {

@@ -34,7 +34,17 @@ template<typename MultiVisitor,typename Visitor,typename Type>
 const bool dynamic_multi_visitor_base<MultiVisitor,Visitor,Type>::__register_type_visitor = __expand_type_visitor_layout<MultiVisitor,dynamic_multi_visitor_base<MultiVisitor,Visitor,Type>>();
 
 template<typename MultiVisitor,typename Visitor,typename Type>
+void dynamic_multi_visitor_base<MultiVisitor,Visitor,Type>::visit(Type& i_value)
+{
+	static_cast<MultiVisitor*>(this)->typed_visit(i_value);
+}
+template<typename MultiVisitor,typename Visitor,typename Type>
 void dynamic_multi_visitor_base<MultiVisitor,Visitor,Type>::visit(const Type& i_value)
+{
+	static_cast<MultiVisitor*>(this)->typed_visit(i_value);
+}
+template<typename MultiVisitor,typename Visitor,typename Type>
+void dynamic_multi_visitor_base<MultiVisitor,Visitor,Type>::visit(Type& i_value) const
 {
 	static_cast<const MultiVisitor*>(this)->typed_visit(i_value);
 }
@@ -47,7 +57,7 @@ void dynamic_multi_visitor_base<MultiVisitor,Visitor,Type>::visit(const Type& i_
 }
 
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
-dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::dynamic_multi_visitor(Visitor& i_visitor,const inherited_value<Value>& i_value,const inherited_value<Values>& ... i_pendingValues)
+dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::dynamic_multi_visitor(Visitor& i_visitor,const Value& i_value,const Values& ... i_pendingValues)
 : m_visitor(i_visitor)
 , m_value(i_value)
 , m_pendingValues(i_pendingValues...)
@@ -55,11 +65,27 @@ dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTy
 	static const bool __value = (detail::dynamic_multi_visitor_base<dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>,Visitor,Types>::__register_type_visitor && ...);
 }
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
+function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::visit()
+{
+	m_value.template visit<typename Visitor::type_interface>(*this);
+
+	return m_resolvedFunction;
+}
+template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
 function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::visit() const
 {
 	m_value.template visit<typename Visitor::type_interface>(*this);
 
 	return m_resolvedFunction;
+}
+template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
+template<typename T>
+void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::typed_visit(T&& i_resolvedValue)
+{
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<ResolvedTypes...>()>::type indexs_resolved;
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Values...>()>::type indexs_to_resolve;
+
+	typed_visit(indexs_resolved{},indexs_to_resolve{},std::forward<T>(i_resolvedValue));
 }
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
 template<typename T>
@@ -72,10 +98,21 @@ void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<Resol
 }
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
 template<size_t ... IndexsResolved,size_t ... IndexsToResolve,typename T>
-void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::typed_visit(const mpl::sequence<IndexsResolved...>&, const mpl::sequence<IndexsToResolve...>&,T&& i_resolvedValue) const
+void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::typed_visit(const mpl::sequence<IndexsResolved...>&, const mpl::sequence<IndexsToResolve...>&,T&& i_resolvedValue)
 {
 	typedef typename std::add_lvalue_reference<T>::type resolved_type;
 	dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...,embedded_type<resolved_type>>,Values...> tmpVisitor(m_visitor,m_pendingValues.template get<IndexsToResolve>() ...);
+
+	const function<return_type(ResolvedTypes...,embedded_type<resolved_type>)> partialFunction = tmpVisitor.visit();
+
+	m_resolvedFunction = partialFunction(mpl::place_holder<IndexsResolved>{}...,std::forward<T>(i_resolvedValue));
+}
+template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Value,typename ... Values>
+template<size_t ... IndexsResolved,size_t ... IndexsToResolve,typename T>
+void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Value,Values...>::typed_visit(const mpl::sequence<IndexsResolved...>&,const mpl::sequence<IndexsToResolve...>&,T&& i_resolvedValue) const
+{
+	typedef typename std::add_const<typename std::add_lvalue_reference<T>::type>::type resolved_type;
+	const dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...,embedded_type<resolved_type>>,Values...> tmpVisitor(m_visitor,m_pendingValues.template get<IndexsToResolve>() ...);
 
 	const function<return_type(ResolvedTypes...,embedded_type<resolved_type>)> partialFunction = tmpVisitor.visit();
 
@@ -88,7 +125,7 @@ dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTy
 {
 }
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes>
-function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>>::visit() const
+function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>>::visit()
 {
 	return make_function([thisVisitor = std::move(m_visitor)](ResolvedTypes ... i_values) mutable -> return_type 
 	{ 
@@ -102,17 +139,33 @@ function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<
 		}
 	});
 }
-
-TEMPLATE(typename TypeInterface, typename Callable,typename ... Values)
-REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
-auto visit(Callable&& i_callable,const Values& ... i_values)
+template<typename Visitor,typename ... Types,typename ... ResolvedTypes>
+function<typename Visitor::return_type(ResolvedTypes...)> dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>>::visit() const
 {
-	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
-	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
-	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
-	auto _visitor = dynamic_callable<return_type,TypeInterface>(i_callable);
+	return make_function([thisVisitor = std::move(m_visitor)](ResolvedTypes ... i_values) mutable->return_type
+	{
+		if constexpr(std::is_same<return_type,void>::value)
+		{
+			thisVisitor(*i_values ...);
+		}
+		else
+		{
+			return thisVisitor(*i_values ...);
+		}
+	});
+}
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+TEMPLATE(typename Callable,typename ... Values)
+REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
+auto visit(Callable&& i_callable, const Values& ... i_values)
+{
+	typedef mpl::reduce_to_common_type<typename Values::value_type...> type_interface;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
+	typedef rtti::inherited_type_list<type_interface> inherited_type_pack;
+	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
+	const auto _visitor = dynamic_callable<return_type,type_interface>(i_callable);
+
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,Values...> multiVisitor(_visitor,i_values ...);
 
 	const function<return_type()> resolvedFunc = multiVisitor.visit();
 
@@ -126,15 +179,16 @@ auto visit(Callable&& i_callable,const Values& ... i_values)
 	}
 }
 
-TEMPLATE(typename Return,typename TypeInterface,typename Callable,typename ... Values)
+TEMPLATE(typename Return,typename Callable,typename ... Values)
 REQUIRED(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
-auto visit(Callable&& i_callable,const Values& ... i_values)
+auto visit(Callable&& i_callable, const Values& ... i_values)
 {
-	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
-	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
-	auto _visitor = dynamic_callable<Return,TypeInterface>(i_callable);
+	typedef mpl::reduce_to_common_type<typename Values::value_type...> type_interface;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
+	typedef rtti::inherited_type_list<type_interface> inherited_type_pack;
+	const auto _visitor = dynamic_callable<Return,type_interface>(i_callable);
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,Values...> multiVisitor(_visitor,i_values ...);
 
 	const function<Return()> resolvedFunc = multiVisitor.visit();
 
@@ -148,17 +202,18 @@ auto visit(Callable&& i_callable,const Values& ... i_values)
 	}
 }
 
-TEMPLATE(typename Callable, typename TypeInterface, typename ... Values)
+TEMPLATE(typename Callable,typename ... Values)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 auto visit(const Values& ... i_values)
 {
-	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
-	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
+	typedef mpl::reduce_to_common_type<typename Values::value_type...> type_interface;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
+	typedef rtti::inherited_type_list<type_interface> inherited_type_pack;
 	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
 
-	const auto _visitor = dynamic_callable<return_type,TypeInterface>(Callable{});
+	const auto _visitor = dynamic_callable<return_type,type_interface>(Callable{});
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,Values...> multiVisitor(_visitor,i_values ...);
 
 	const function<return_type()> resolvedFunc = multiVisitor.visit();
 
@@ -172,16 +227,17 @@ auto visit(const Values& ... i_values)
 	}
 }
 
-TEMPLATE(typename Return,typename Callable,typename TypeInterface,typename ... Values)
+TEMPLATE(typename Return,typename Callable,typename ... Values)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 auto visit(const Values& ... i_values)
 {
-	static const bool s_typeExpanded = rtti::inherited_type_expansion<TypeInterface>;
-	typedef rtti::inherited_type_list<TypeInterface> inherited_type_pack;
+	typedef mpl::reduce_to_common_type<typename Values::value_type...> type_interface;
+	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
+	typedef rtti::inherited_type_list<type_interface> inherited_type_pack;
 
-	const auto _visitor = dynamic_callable<Return,TypeInterface>(Callable{});
+	const auto _visitor = dynamic_callable<Return,type_interface>(Callable{});
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,typename Values::value_type...> multiVisitor(_visitor,i_values ...);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,Values...> multiVisitor(_visitor,i_values ...);
 
 	const function<Return()> resolvedFunc = multiVisitor.visit();
 

@@ -10,6 +10,17 @@ class bad_memory_exception : public std::exception
 {
 };
 
+class bad_pointer : public std::exception
+{
+public:
+	bad_pointer(const std::string& i_reason);
+
+	std::string reason() const;
+
+private:
+	const std::string m_reason;
+};
+
 class bad_alignment_exception : public bad_memory_exception
 {
 public:

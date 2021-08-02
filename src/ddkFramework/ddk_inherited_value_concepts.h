@@ -29,7 +29,17 @@ struct is_inherited_value
 {
 private:
     template<typename TT>
-    static std::true_type resolve(const inherited_value<TT>&);
+    static std::true_type resolve(const distributed_object<TT>&);
+    template<typename TT>
+    static std::true_type resolve(const distributed_value<TT>&);
+    template<typename TT>
+    static std::true_type resolve(const unique_object<TT>&);
+    template<typename TT>
+    static std::true_type resolve(const unique_value<TT>&);
+    template<typename TT>
+    static std::true_type resolve(const lent_object<TT>&);
+    template<typename TT>
+    static std::true_type resolve(const lent_value<TT>&);
     template<typename ... TT>
     static std::false_type resolve(const TT& ...);
 

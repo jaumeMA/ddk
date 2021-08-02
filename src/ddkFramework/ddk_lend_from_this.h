@@ -34,14 +34,6 @@ public:
 
 		DDK_ASSERT(m_counter.hasLentReferences() == false, "Still lent references alive while destroying lend_from_this");
 	}
-	inline lent_reference_wrapper<TT> lend()
-	{
-		return ref_from_this();
-	}
-	inline lent_reference_wrapper<const TT> lend() const
-	{
-		return ref_from_this();
-	}
 
 protected:
 #ifdef DDK_DEBUG

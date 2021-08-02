@@ -27,16 +27,25 @@ struct Id
 public:
 	typedef UnderlyingType underlying_type;
 
-	explicit Id()
-	: m_key(UnderlyingType())
-	{}
+	explicit Id() = default;
+	Id(const Id&) = default;
+	Id(Id&&) = default;
 	explicit Id(const UnderlyingType& i_key)
 	: m_key(i_key)
+	{}
+	explicit Id(UnderlyingType&& i_key)
+	: m_key(std::move(i_key))
 	{}
 	explicit Id(const UnderlyingType& i_key, const std::string& i_name)
 	: m_key(i_key)
 	, m_name(i_name)
 	{}
+	explicit Id(UnderlyingType&& i_key,std::string&& i_name)
+	: m_key(std::move(i_key))
+	,m_name(std::move(i_name))
+	{}
+	Id& operator=(const Id&) = default;
+	Id& operator=(Id&&) = default;
 	inline bool operator==(const Id& other) const
 	{
 		return m_key == other.m_key;
@@ -77,11 +86,11 @@ public:
 	{
 		return m_key;
 	}
-	inline UnderlyingType getValue() const
+	inline const UnderlyingType& getValue() const
 	{
 		return m_key;
 	}
-	inline std::string name() const
+	inline const std::string& name() const
 	{
 		return m_name;
 	}

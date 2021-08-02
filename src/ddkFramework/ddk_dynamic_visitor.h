@@ -53,8 +53,10 @@ template<typename Type>
 class typed_dynamic_visitor
 {
 public:
-	virtual void visit(const Type&) const = 0;
+	virtual void visit(Type&) = 0;
 	virtual void visit(const Type&) = 0;
+	virtual void visit(Type&) const = 0;
+	virtual void visit(const Type&) const = 0;
 };
 
 }

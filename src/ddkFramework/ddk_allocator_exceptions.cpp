@@ -3,6 +3,16 @@
 namespace ddk
 {
 
+bad_pointer::bad_pointer(const std::string& i_reason)
+: m_reason(i_reason)
+{
+}
+std::string bad_pointer::reason() const
+{
+	return m_reason;
+}
+
+
 bad_alignment_exception::bad_alignment_exception(const std::string& i_reason,void* i_ptr)
 : m_reason(i_reason)
 , m_ptr(i_ptr)

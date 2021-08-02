@@ -19,7 +19,9 @@ public:
 
 	dynamic_multi_visitor_base() = default;
 
+	void visit(Type& i_value) override;
 	void visit(const Type& i_value) override;
+	void visit(Type& i_value) const override;
 	void visit(const Type& i_value) const override;
 
 	static const bool __register_type_visitor;
@@ -39,19 +41,24 @@ public:
 	typedef Visitor visitor_interface;
 	typedef typename Visitor::return_type return_type;
 
-	dynamic_multi_visitor(Visitor& i_visitor,const inherited_value<Value>& i_value,const inherited_value<Values>& ... i_pendingValues);
+	dynamic_multi_visitor(Visitor& i_visitor,const Value& i_value,const Values& ... i_pendingValues);
 
+	function<return_type(ResolvedTypes...)> visit();
 	function<return_type(ResolvedTypes...)> visit() const;
+	template<typename T>
+	inline void typed_visit(T&& i_resolvedValue);
 	template<typename T>
 	inline void typed_visit(T&& i_resolvedValue) const;
 
 private:
 	template<size_t ... IndexsResolved,size_t ... IndexsToResolve, typename T>
+	inline void typed_visit(const mpl::sequence<IndexsResolved...>&,const mpl::sequence<IndexsToResolve...>&,T&&);
+	template<size_t ... IndexsResolved,size_t ... IndexsToResolve,typename T>
 	inline void typed_visit(const mpl::sequence<IndexsResolved...>&,const mpl::sequence<IndexsToResolve...>&,T&&) const;
 
 	Visitor& m_visitor;
-	inherited_value<Value> m_value;
-	tuple<inherited_value<Values> ...> m_pendingValues;
+	Value m_value;
+	tuple<Values ...> m_pendingValues;
 	mutable function<return_type(ResolvedTypes...)> m_resolvedFunction;
 };
 
@@ -63,25 +70,26 @@ public:
 	typedef typename Visitor::return_type return_type;
 
 	dynamic_multi_visitor(Visitor& i_visitor);
+	function<return_type(ResolvedTypes...)> visit();
 	function<return_type(ResolvedTypes...)> visit() const;
 
 private:
 	Visitor& m_visitor;
 };
 
-TEMPLATE(typename TypeInterface,typename Callable,typename ... Values)
+TEMPLATE(typename Callable,typename ... Values)
 REQUIRES(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(Callable&& i_callable,const Values& ... i_values);
 
-TEMPLATE(typename Return,typename TypeInterface,typename Callable,typename ... Values)
+TEMPLATE(typename Return,typename Callable,typename ... Values)
 REQUIRES(IS_NOT_INHERITED_VALUE(Callable),IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(Callable&& i_callable,const Values& ... i_values);
 
-TEMPLATE(typename Callable,typename TypeInterface,typename ... Values)
+TEMPLATE(typename Callable,typename ... Values)
 REQUIRES(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(const Values& ... i_values);
 
-TEMPLATE(typename Return, typename Callable,typename TypeInterface,typename ... Values)
+TEMPLATE(typename Return,typename Callable,typename ... Values)
 REQUIRES(IS_NUMBER_OF_ARGS_GREATER_OR_EQUAL(1,Values...),IS_INHERITED_VALUE(Values)...)
 inline auto visit(const Values& ... i_values);
 
