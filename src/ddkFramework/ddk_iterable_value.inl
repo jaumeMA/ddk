@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<typename Traits>
-iterable_value<Traits>::iterable_value(reference i_value, const function<reference(action)>& i_resolver, detail::iterable_interface& i_iterableInterface)
+iterable_value<Traits>::iterable_value(reference i_value, const function<reference(const action&)>& i_resolver, detail::iterable_interface& i_iterableInterface)
 : m_value(Traits::get_address(i_value))
 , m_resolver(i_resolver)
 , m_iterableInterface(i_iterableInterface)
@@ -11,9 +11,9 @@ iterable_value<Traits>::iterable_value(reference i_value, const function<referen
 }
 template<typename Traits>
 template<typename Reference, typename Return, typename Action>
-iterable_value<Traits>::iterable_value(Reference&& i_value, const function<Return(Action)>& i_resolver, detail::iterable_interface& i_iterableInterface)
+iterable_value<Traits>::iterable_value(Reference&& i_value, const function<Return(const Action&)>& i_resolver, detail::iterable_interface& i_iterableInterface)
 : m_value(Traits::get_address(i_value))
-, m_resolver(make_function([i_resolver](action i_action) -> reference { return eval(i_resolver,i_action); }))
+, m_resolver(make_function([i_resolver](const action& i_action) -> reference { return eval(i_resolver,action_conversion<Action>(i_action)); }))
 , m_iterableInterface(i_iterableInterface)
 {
 }
@@ -51,19 +51,19 @@ bool iterable_value<Traits>::operator!=(const_reference i_value) const
 template<typename T>
 template<typename TT>
 const_forwarded_value<T>::const_forwarded_value(const_forwarded_value<TT>&& other)
-: iterable_value<detail::forward_iterable_traits<T>>(detail::forward_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_forward_iterable_traits<T>>(detail::const_forward_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 template<typename T>
 template<typename TT>
 const_forwarded_value<T>::const_forwarded_value(const_bidirectional_value<TT>&& other)
-: iterable_value<detail::forward_iterable_traits<T>>(detail::forward_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_forward_iterable_traits<T>>(detail::const_forward_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 template<typename T>
 template<typename TT>
 const_forwarded_value<T>::const_forwarded_value(const_random_accessed_value<TT>&& other)
-: iterable_value<detail::forward_iterable_traits<T>>(detail::forward_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_forward_iterable_traits<T>>(detail::const_forward_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 
@@ -101,13 +101,13 @@ forwarded_value<T>::forwarded_value(const_random_accessed_value<TT>&& other)
 template<typename T>
 template<typename TT>
 const_bidirectional_value<T>::const_bidirectional_value(const_bidirectional_value<TT>&& other)
-: iterable_value<detail::bidirectional_iterable_traits<T>>(detail::bidirectional_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_bidirectional_iterable_traits<T>>(detail::const_bidirectional_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 template<typename T>
 template<typename TT>
 const_bidirectional_value<T>::const_bidirectional_value(const_random_accessed_value<TT>&& other)
-: iterable_value<detail::bidirectional_iterable_traits<T>>(detail::bidirectional_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_bidirectional_iterable_traits<T>>(detail::const_bidirectional_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 
@@ -133,20 +133,20 @@ bidirectional_value<T>::bidirectional_value(const_random_accessed_value<TT>&& ot
 template<typename T>
 template<typename TT>
 const_random_accessed_value<T>::const_random_accessed_value(const_random_accessed_value<TT>&& other)
-: iterable_value<detail::random_access_iterable_traits<T>>(detail::random_access_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_random_access_iterable_traits<T>>(detail::const_random_access_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 template<typename T>
 template<typename TT>
 const_random_accessed_value<T>::const_random_accessed_value(random_accessed_value<TT>&& other)
-: iterable_value<detail::random_access_iterable_traits<T>>(detail::random_access_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_random_access_iterable_traits<T>>(detail::const_random_access_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 
 template<typename T>
 template<typename TT>
 random_accessed_value<T>::random_accessed_value(random_accessed_value<TT>&& other)
-: iterable_value<detail::random_access_iterable_traits<T>>(detail::random_access_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
+: iterable_value<detail::const_random_access_iterable_traits<T>>(detail::const_random_access_iterable_traits<T>::get_value(other.m_value),other.m_resolver,other.m_iterableInterface)
 {
 }
 

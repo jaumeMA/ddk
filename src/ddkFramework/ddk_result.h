@@ -137,19 +137,11 @@ public:
 	result(const T& i_payload);
 	result(T&& i_payload);
 	result(const Error& i_error);
-	TEMPLATE(typename TT)
-	REQUIRES(IS_SAME_CLASS(T,TT),IS_COPY_CONSTRUCTIBLE(TT))
-	result(const result<TT,Error>& other);
-	TEMPLATE(typename TT)
-	REQUIRES(IS_SAME_CLASS(T,TT),IS_MOVE_CONSTRUCTIBLE(TT))
-	result(result<TT,Error>&& other);
+	result(const result& other);
+	result(result&& other);
 	~result();
-	TEMPLATE(typename TT)
-	REQUIRES(IS_SAME_CLASS(T,TT),IS_COPY_ASSIGNABLE(TT))
-	result& operator=(const result<TT,Error>& other);
-	TEMPLATE(typename TT)
-	REQUIRES(IS_SAME_CLASS(T,TT),IS_MOVE_ASSIGNABLE(TT))
-	result& operator=(result<TT,Error>&& other);
+	result& operator=(const result& other);
+	result& operator=(result&& other);
 	Error error() const;
 	T get() const;
 	T extract() &&;

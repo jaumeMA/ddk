@@ -3,6 +3,18 @@ namespace ddk
 {
 
 template<typename T>
+lent_object<T>::lent_object(const lent_value<T>& other)
+: m_typeInfo(other.m_typeInfo)
+, m_value(other.m_value)
+{
+}
+template<typename T>
+lent_object<T>::lent_object(lent_value<T>&& other)
+: m_typeInfo(std::move(other.m_typeInfo))
+, m_value(other.m_value)
+{
+}
+template<typename T>
 TEMPLATE(typename TT)
 REQUIRED(IS_BASE_OF(T,TT))
 lent_object<T>::lent_object(const lent_object<TT>& other)

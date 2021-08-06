@@ -214,16 +214,12 @@ constexpr variant<Types...>::variant(variant<TType> && other)
 {
 }
 template<typename ... Types>
-TEMPLATE(typename ... TTypes)
-REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_COPY_CONSTRUCTIBLE(TTypes)...)
-constexpr variant<Types...>::variant(const variant<TTypes...>& other)
+constexpr variant<Types...>::variant(const variant& other)
 : detail::variant_impl<Types...>(other)
 {
 }
 template<typename ... Types>
-TEMPLATE(typename ... TTypes)
-REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_MOVE_CONSTRUCTIBLE(TTypes)...)
-constexpr variant<Types...>::variant(variant<TTypes...>&& other)
+constexpr variant<Types...>::variant(variant&& other)
 : detail::variant_impl<Types...>(std::move(other))
 {
 }
@@ -236,18 +232,14 @@ constexpr variant<Types...>::variant(T&& i_value)
 	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
 }
 template<typename ... Types>
-TEMPLATE(typename ... TTypes)
-REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_COPY_ASSIGNABLE(TTypes)...)
-variant<Types...>& variant<Types...>::operator=(const variant<TTypes...>& other)
+variant<Types...>& variant<Types...>::operator=(const variant& other)
 {
 	detail::variant_impl<Types...>::operator=(other);
 
 	return *this;
 }
 template<typename ... Types>
-TEMPLATE(typename ... TTypes)
-REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_MOVE_ASSIGNABLE(TTypes)...)
-variant<Types...>& variant<Types...>::operator=(variant<TTypes...>&& other)
+variant<Types...>& variant<Types...>::operator=(variant&& other)
 {
 	detail::variant_impl<Types...>::operator=(std::move(other));
 

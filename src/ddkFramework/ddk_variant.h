@@ -105,22 +105,14 @@ public:
 	TEMPLATE(typename TType)
 	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
 	constexpr variant(variant<TType> && other);
-	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_COPY_CONSTRUCTIBLE(TTypes)...)
-	constexpr variant(const variant<TTypes...>& other);
-	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_MOVE_CONSTRUCTIBLE(TTypes)...)
-	constexpr variant(variant<TTypes...>&& other);
+	constexpr variant(const variant& other);
+	constexpr variant(variant&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 	constexpr variant(T&& i_value);
     ~variant() = default;
-	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_COPY_ASSIGNABLE(TTypes)...)
-	variant& operator=(const variant<TTypes...>& other);
-	TEMPLATE(typename ... TTypes)
-	REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TTypes...>,Types...),IS_MOVE_ASSIGNABLE(TTypes)...)
-	variant& operator=(variant<TTypes...>&& other);
+	variant& operator=(const variant& other);
+	variant& operator=(variant&& other);
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 	variant& operator=(T&& i_value);

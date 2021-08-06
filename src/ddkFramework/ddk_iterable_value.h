@@ -43,9 +43,9 @@ public:
     typedef typename Traits::const_pointer const_pointer;
     typedef typename Traits::action action;
 
-    iterable_value(reference i_value, const function<reference(action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
+    iterable_value(reference i_value, const function<reference(const action&)>& i_resolver, detail::iterable_interface& i_iterableInterface);
     template<typename Reference, typename Return, typename Action>
-    iterable_value(Reference&& i_value, const function<Return(Action)>& i_resolver, detail::iterable_interface& i_iterableInterface);
+    iterable_value(Reference&& i_value, const function<Return(const Action&)>& i_resolver, detail::iterable_interface& i_iterableInterface);
     iterable_value(const iterable_value&) = delete;
     iterable_value(iterable_value&&) = default;
     iterable_value& operator=(const iterable_value&) = delete;
@@ -60,7 +60,7 @@ public:
 
 protected:
     pointer m_value;
-    function<reference(action)> m_resolver;
+    function<reference(const action&)> m_resolver;
     detail::iterable_interface& m_iterableInterface;
 };
 
@@ -121,7 +121,7 @@ template<typename...>
 struct const_random_accessed_value;
 
 template<typename T>
-struct const_random_accessed_value<T> : public iterable_value<detail::random_access_iterable_traits<T>>
+struct const_random_accessed_value<T> : public iterable_value<detail::const_random_access_iterable_traits<T>>
 {
     template<typename...>
     friend struct const_random_accessed_value;
@@ -145,7 +145,7 @@ struct const_random_accessed_value<T> : public iterable_value<detail::random_acc
     }
 
 public:
-    using iterable_value<detail::random_access_iterable_traits<T>>::iterable_value;
+    using iterable_value<detail::const_random_access_iterable_traits<T>>::iterable_value;
     const_random_accessed_value(const const_random_accessed_value&) = delete;
     const_random_accessed_value(const_random_accessed_value&&) = default;
     template<typename TT>
@@ -215,7 +215,7 @@ template<typename...>
 struct const_bidirectional_value;
 
 template<typename T>
-struct const_bidirectional_value<T> : public iterable_value<detail::bidirectional_iterable_traits<T>>
+struct const_bidirectional_value<T> : public iterable_value<detail::const_bidirectional_iterable_traits<T>>
 {
     template<typename...>
     friend struct const_bidirectional_value;
@@ -233,7 +233,7 @@ struct const_bidirectional_value<T> : public iterable_value<detail::bidirectiona
     }
 
 public:
-    using iterable_value<detail::bidirectional_iterable_traits<T>>::iterable_value;
+    using iterable_value<detail::const_bidirectional_iterable_traits<T>>::iterable_value;
     const_bidirectional_value(const const_bidirectional_value&) = delete;
     const_bidirectional_value(const_bidirectional_value&&) = default;
     template<typename TT>
@@ -302,7 +302,7 @@ template<typename...>
 struct const_forwarded_value;
 
 template<typename T>
-struct const_forwarded_value<T> : public iterable_value<detail::forward_iterable_traits<T>>
+struct const_forwarded_value<T> : public iterable_value<detail::const_forward_iterable_traits<T>>
 {
     template<typename...>
     friend struct const_forwarded_value;
@@ -314,7 +314,7 @@ struct const_forwarded_value<T> : public iterable_value<detail::forward_iterable
     }
 
 public:
-    using iterable_value<detail::forward_iterable_traits<T>>::iterable_value;
+    using iterable_value<detail::const_forward_iterable_traits<T>>::iterable_value;
     const_forwarded_value(const const_forwarded_value&) = delete;
     const_forwarded_value(const_forwarded_value&&) = default;
     template<typename TT>

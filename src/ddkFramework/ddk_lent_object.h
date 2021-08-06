@@ -41,6 +41,8 @@ public:
 	lent_object() = default;
 	lent_object(const lent_object&) = default;
 	lent_object(lent_object&&) = default;
+	lent_object(const lent_value<T>&);
+	lent_object(lent_value<T>&&);
 	TEMPLATE(typename TT)
 	REQUIRES(IS_BASE_OF(T,TT))
 	lent_object(const lent_object<TT>&);

@@ -41,6 +41,15 @@ bool operator!=(const base_action& i_lhs,const base_action& i_rhs);
 bool operator==(const shift_action& i_lhs,const shift_action& i_rhs);
 bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs);
 
+template<typename T,typename TT>
+inline T action_conversion(const TT& i_action)
+{
+    return ddk::visit([](auto&& i_value) -> T
+    {
+        return i_value;
+    },i_action);
+}
+
 const extern stop_action stop_iteration;
 const extern erase_action erase_place;
 const extern add_action add_place;
