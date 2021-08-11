@@ -196,7 +196,7 @@
 #define FOREACH(MACRO,  ...)    FOREACH_(MACRO,__VA_ARGS__)
 #define FOREACH_(MACRO,  ...)   FOREACH__(NUM_ARGS(__VA_ARGS__), MACRO,  __VA_ARGS__)
 #define FOREACH__(N, M,  ...)   FOREACH___(N, M,  __VA_ARGS__)
-#define FOREACH___(N, M,  ...)  FOREACH_##N(M,  __VA_ARGS__)
+#define FOREACH___(N, M,  ...)  EXPAND_ARGS(FOREACH_##N(M,  __VA_ARGS__))
 #define FOREACH_0(M, ...)
 #define FOREACH_1(M, FIRST_ARG, ...)  M(FIRST_ARG) FOREACH_0(M)
 #define FOREACH_2(M, FIRST_ARG, ...)  M(FIRST_ARG) FOREACH_1(M,__VA_ARGS__)
