@@ -7,7 +7,7 @@
 #include "ddk_allocator.h"
 #include <cstddef>
 
-#define MEM_CHECK
+//#define MEM_CHECK
 
 namespace ddk
 {
