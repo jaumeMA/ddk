@@ -150,6 +150,50 @@ public:
 
 } PUBLISH_RTTI_INHERITANCE(DerivedBaseType10,BaseType1,BaseType2);
 
+class DerivedBaseType11: public BaseType1,public BaseType2
+{
+public:
+	DerivedBaseType11(int i_value = 0)
+		: BaseType1(i_value)
+		,BaseType2(i_value)
+	{
+	}
+
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType11,BaseType1,BaseType2);
+
+class DerivedBaseType12: public BaseType1,public BaseType2
+{
+public:
+	DerivedBaseType12(int i_value = 0)
+		: BaseType1(i_value)
+		,BaseType2(i_value)
+	{
+	}
+
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType12,BaseType1,BaseType2);
+
+class DerivedBaseType13: public BaseType1,public BaseType2
+{
+public:
+	DerivedBaseType13(int i_value = 0)
+		: BaseType1(i_value)
+		,BaseType2(i_value)
+	{
+	}
+
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType13,BaseType1,BaseType2);
+
+class DerivedBaseType14: public BaseType1,public BaseType2
+{
+public:
+	DerivedBaseType14(int i_value = 0)
+		: BaseType1(i_value)
+		,BaseType2(i_value)
+	{
+	}
+
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType14,BaseType1,BaseType2);
+
 }
 
 class DDKInheritedValuetTest : public Test
@@ -168,8 +212,7 @@ struct DerivedTypeMultiVisitor
 	{
 		return 1;
 	}
-	template<typename T1, typename T2>
-	return_type operator()(T1& i_lhs, T2& i_rhs) const
+	return_type operator()(...) const
 	{
 	    return 0;
 	}
@@ -190,13 +233,7 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	const ddk::distributed_value<prova::BaseType1> foo3 = ddk::make_distributed_value<prova::DerivedBaseType2>(20);
 	const DerivedTypeMultiVisitor multiVisitor;
 
-	//ddk::dynamic_callable<bool,prova::BaseType1>([](auto&& i_value){ return true; });
-
-
-	//int a = 0;
-
 	ddk::visit<DerivedTypeMultiVisitor>(kkLentUniq,kkLentDist);
 	ddk::visit(multiVisitor,foo2,foo3);
-	ddk::visit([](auto&& i_lhs, auto&& i_rhs){ return 0; },foo0,foo1);
-	//int b = 0;
+	ddk::visit([](...){ return 0; },foo0);
 }

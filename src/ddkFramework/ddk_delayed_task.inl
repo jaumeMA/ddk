@@ -121,11 +121,12 @@ bool delayed_task<T>::cancel()
 template<typename T>
 future<T> delayed_task<T>::as_future()
 {
-	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<detail::delayed_task_executor<T>>());
+	typedef typed_allocator_proxy<detail::delayed_task_executor<T>,fixed_size_allocator> allocator_t;
+	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<detail::delayed_task_executor<T>,allocator_t>());
 
 	if(m_executor)
 	{
-		return m_executor->attach((s_allocator) ? make_unique_reference<detail::delayed_task_executor<T>>(*s_allocator)
+		return m_executor->attach((s_allocator) ? make_unique_reference<detail::delayed_task_executor<T>>(allocator_t{*s_allocator})
 												: make_unique_reference<detail::delayed_task_executor<T>>());
 	}
 	else

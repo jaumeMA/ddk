@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddk_lent_pointer_wrapper.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -60,18 +62,21 @@ public:
 	using typename lent_pointer_wrapper<T>::const_pointer;
 	typedef lent_reference_wrapper<const_value_type> const_type;
 
-	template<typename TT>
-	lent_reference_wrapper(const lent_reference_wrapper<TT>& other, typename std::enable_if<std::is_base_of<T,TT>::value>::type* = NULL)
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
+	lent_reference_wrapper(const lent_reference_wrapper<TT>& other)
 	: lent_pointer_wrapper<T>(other)
 	{
 	}
-    template<typename TT>
-	lent_reference_wrapper(lent_reference_wrapper<TT>&& other, typename std::enable_if<std::is_base_of<T,TT>::value>::type* = NULL)
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
+	lent_reference_wrapper(lent_reference_wrapper<TT>&& other)
 	: lent_pointer_wrapper<T>(std::move(other))
 	{
 	}
-    template<typename TT>
-	lent_reference_wrapper(const unique_reference_wrapper<TT>& other, typename std::enable_if<std::is_base_of<T,TT>::value>::type* = NULL)
+	TEMPLATE(typename TT)
+	REQUIRES(IS_BASE_OF(T,TT))
+	lent_reference_wrapper(const unique_reference_wrapper<TT>& other)
 	: lent_pointer_wrapper<T>(other)
 	{
 	}

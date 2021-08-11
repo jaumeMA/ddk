@@ -18,6 +18,7 @@
 
     //annotations
     #define NO_DISCARD_RETURN [[ nodiscard ]]
+    #define NO_VTABLE __declspec(novtable)
 
     #define DDK_THROW(__cond,__exception,...) \
         { \
@@ -80,6 +81,7 @@
 
     //annotations
     #define NO_DISCARD_RETURN [[ nodiscard ]]
+    #define NO_VTABLE
 
     #ifdef DDK_DEBUG
 

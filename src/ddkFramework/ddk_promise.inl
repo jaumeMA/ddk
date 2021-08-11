@@ -10,9 +10,11 @@ namespace ddk
 template<typename T>
 promise<T>::promise()
 {
+	typedef tagged_pointer<typename detail::private_async_state<T>::reference_counter> tagged_reference_counter;
+
 	detail::private_async_state<T>* sharedState = new detail::private_async_state<T>();
 
-	m_sharedState = as_shared_reference(sharedState,tagged_pointer<decltype(sharedState->m_refCounter)>(&sharedState->m_refCounter, ReferenceAllocationType::Embedded),nullptr);
+	m_sharedState = as_shared_reference(sharedState,tagged_reference_counter(&sharedState->m_refCounter, ReferenceAllocationType::Embedded));
 }
 template<typename T>
 promise<T>::promise(const promise<T>& other)

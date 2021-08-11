@@ -5,39 +5,41 @@ namespace ddk
 {
 
 template<typename T>
-void* system_allocator::aligned_allocate(void*& i_ptr,size_t& i_remainingSize)
+void typed_system_allocator<T>::deallocate(T* i_ptr) const
 {
-    static const size_t alignment = alignof(T);
-
-    if(void* res = std::align(alignment,sizeof(T),i_ptr,i_remainingSize))
+    if(i_ptr)
     {
-        i_ptr = reinterpret_cast<char*>(i_ptr) + sizeof(T);
+        if constexpr (std::is_class<T>::value)
+        {
+            i_ptr->~T();
+        }
 
-        i_remainingSize -= sizeof(T);
-
-        return res;
-    }
-    else
-    {
-        return nullptr;
+        system_allocator::deallocate(i_ptr);
     }
 }
-
 template<typename T>
-void* typed_system_allocator<T>::allocate(size_t numUnits) const
+void typed_system_allocator<T>::deallocate(const void* i_ptr,...) const
 {
-	return allocate(numUnits,sizeof(T));
-}
-template<typename T>
-void* typed_system_allocator<T>::reallocate(void *ptr,size_t numUnits) const
-{
-	return reallocate(ptr,numUnits,sizeof(T));
+    system_allocator::deallocate(i_ptr);
 }
 
 template<typename T>
-resource_deleter_const_lent_ref get_reference_wrapper_deleter(const typed_system_allocator<T>& i_allocator)
+TEMPLATE(typename TT)
+REQUIRED(IS_BASE_OF(TT,T))
+typed_system_allocator<T>::typed_system_allocator(const typed_system_allocator<TT>&)
 {
-	return get_reference_wrapper_deleter(static_cast<const system_allocator&>(i_allocator));
+}
+template<typename T>
+void* typed_system_allocator<T>::allocate() const
+{
+	return allocate(sizeof(T));
+}
+template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_BASE_OF(TT,T))
+typed_system_allocator<T>& typed_system_allocator<T>::operator=(const typed_system_allocator<TT>&)
+{
+    return *this;
 }
 
 }

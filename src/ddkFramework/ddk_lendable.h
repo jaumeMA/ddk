@@ -24,39 +24,23 @@ class lendable
 public:
 	lendable()
 	{
-#ifdef DDK_DEBUG
-		m_counter.addStrongReference();
-#endif
 	}
 	template<typename ... Args>
 	lendable(Args&& ... i_args)
 	: m_value(T(std::forward<Args>(i_args) ...))
 	{
-#ifdef DDK_DEBUG
-		m_counter.addStrongReference();
-#endif
 	}
 	lendable(const lendable& other)
 	: m_value(other.m_value)
 	{
-#ifdef DDK_DEBUG
-		m_counter.addStrongReference();
-#endif
 	}
 	lendable(lendable&& other)
 	: m_value(std::move(other.m_value))
 	{
-#ifdef DDK_DEBUG
-		m_counter.addStrongReference();
-#endif
 	}
 	~lendable()
 	{
-#ifdef DDK_DEBUG
-		m_counter.removeStrongReference();
-
 		DDK_ASSERT(m_counter.hasLentReferences() == false, "Still lent references alive while destroying unique reference");
-#endif
 	}
 	lendable& operator=(const lendable& other)
 	{
@@ -110,7 +94,7 @@ private:
 
 	T m_value;
 #ifdef DDK_DEBUG
-	mutable unique_reference_counter m_counter;
+	mutable lent_reference_counter m_counter;
 #endif
 };
 

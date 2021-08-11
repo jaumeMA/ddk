@@ -22,16 +22,12 @@ class lend_from_this
 public:
 	lend_from_this()
 	{
-		m_counter.addStrongReference();
 	}
 	lend_from_this(const lend_from_this& other)
 	{
-		m_counter.addStrongReference();
 	}
 	~lend_from_this()
 	{
-		m_counter.removeStrongReference();
-
 		DDK_ASSERT(m_counter.hasLentReferences() == false, "Still lent references alive while destroying lend_from_this");
 	}
 
@@ -57,7 +53,9 @@ protected:
 #endif
 
 private:
-	mutable ddk::unique_reference_counter m_counter;
+#ifdef DDK_DEBUG
+	mutable ddk::lent_reference_counter m_counter;
+#endif
 };
 
 }

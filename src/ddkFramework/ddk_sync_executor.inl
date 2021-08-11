@@ -6,10 +6,11 @@ namespace ddk
 template<typename Return>
 distributed_reference_wrapper<async_executor<Return>> make_async_executor(const function<Return()>& i_function)
 {
-	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_distributed_allocation<async_executor<Return>>());
+	typedef typed_allocator_proxy<async_executor<Return>,fixed_size_allocator> allocator_t;
+	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_distributed_allocation<async_executor<Return>,allocator_t>());
 
-	return (s_allocator) ? make_distributed_reference<async_executor<Return>>(*s_allocator,i_function)
-		: make_distributed_reference<async_executor<Return>>(i_function);
+	return (s_allocator) ? make_distributed_reference<async_executor<Return>>(allocator_t{*s_allocator},i_function)
+							: make_distributed_reference<async_executor<Return>>(i_function);
 }
 
 template<typename Return>

@@ -23,7 +23,7 @@ template<typename T>
 struct is_allocator
 {
 private:
-	template<typename TT, typename = decltype(std::declval<TT>().allocate(1)), typename = decltype(std::declval<TT>().deallocate(nullptr))>
+	template<typename TT, typename = decltype(std::declval<TT>().allocate(1)), typename = decltype(std::declval<TT>().deallocate(static_cast<typename TT::type*>(nullptr)))>
 	static std::true_type test(const TT&);
 	template<typename ... TT>
 	static std::false_type test(const TT& ...);

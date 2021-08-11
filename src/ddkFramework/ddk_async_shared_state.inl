@@ -10,12 +10,13 @@ namespace detail
 {
 
 template<typename T>
-private_async_state<T>::reference_counter::reference_counter(private_async_state& i_asyncSharedState)
-: m_asyncSharedState(i_asyncSharedState)
+private_async_state<T>::control_block::control_block(private_async_state& i_asyncSharedState)
+: distributed_control_block<private_async_state<T>>(&i_asyncSharedState)
+, m_asyncSharedState(i_asyncSharedState)
 {
 }
 template<typename T>
-unsigned int private_async_state<T>::reference_counter::decrementSharedReference()
+unsigned int private_async_state<T>::control_block::decrementSharedReference()
 {
 	if(m_asyncSharedState.pending())
 	{

@@ -3,7 +3,6 @@
 #include "ddk_thread_impl.h"
 #include "ddk_thread.h"
 #include "ddk_optional.h"
-#include "ddk_reference_wrapper_deleter.h"
 #include "ddk_thread_sheaf.h"
 #include "ddk_result.h"
 #include "ddk_mutex.h"
@@ -52,12 +51,14 @@ private:
 
 }
 
-class thread_pool : public resource_deleter_interface
+class thread_pool
 {
 	typedef std::vector<detail::thread_impl_interface*> thread_container;
 	typedef std::unordered_map<const void*,detail::thread_impl_interface*> thread_in_use_container;
 
 public:
+	typedef detail::thread_impl_interface type;
+
 	enum Policy
 	{
 		FixedSize,
@@ -82,9 +83,9 @@ public:
 	acquire_result<thread> aquire_thread();
 	acquire_result<thread_sheaf> acquire_sheaf(size_t i_size);
 	bool available_threads() const;
+	void deallocate(detail::thread_impl_interface* i_object) const;
 
 private:
-	void deallocate(const void* i_object) const override;
 
 	const Policy m_policy;
 	const size_t m_maxNumThreads;

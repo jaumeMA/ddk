@@ -36,16 +36,15 @@ TEST(DDKLentPtrTest,sharedPtrLentConstruction)
 }
 TEST(DDKLentPtrTest,uniquePtrLentScope)
 {
-	ddk::unique_reference_counter refCounter;
 
 	{
 		TestDynamicFactory<DefaultType> objFactory;
 		ddk::unique_pointer_wrapper<DefaultType> fooUnique;
+		DefaultType* newNestedValue = objFactory.allocate(0xFF);
+		ddk::unique_control_block<DefaultType,TestDynamicFactory<DefaultType>> refCounter(newNestedValue,objFactory);
 
 		{
-			DefaultType* newNestedValue = objFactory.Allocate(0xFF);
-
-			fooUnique = ddk::as_unique_reference(newNestedValue,ddk::tagged_pointer<ddk::unique_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded),{ ddk::lend(objFactory),ddk::AllocationMode::ConstructionProvided });
+			fooUnique = ddk::as_unique_reference(newNestedValue,ddk::tagged_pointer<ddk::unique_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded));
 			ddk::lent_pointer_wrapper<DefaultType> foo1 = ddk::lend(fooUnique);
 
 			EXPECT_EQ(refCounter.hasStrongReferences(),true);
@@ -104,8 +103,6 @@ TEST(DDKLentPtrTest,uniquePtrLentScope)
 		EXPECT_EQ(refCounter.getNumLentReferences(),0);
 #endif
 	}
-
-	EXPECT_EQ(refCounter.hasStrongReferences(),false);
 }
 TEST(DDKLentPtrTest,uniquePtrLentAssignment)
 {

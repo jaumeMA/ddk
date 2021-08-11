@@ -10,7 +10,7 @@
 namespace ddk
 {
 
-template<typename T, typename Allocator = typed_system_allocator<T>>
+template<typename T, typename Allocator = typed_system_allocator<detail::linked_list_node<T>>>
 struct linked_list
 {
 	typedef lent_pointer_wrapper<detail::linked_list_node<T>> linked_node_ptr;

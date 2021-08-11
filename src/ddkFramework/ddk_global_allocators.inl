@@ -6,40 +6,75 @@ namespace ddk
 
 bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& i_entries);
 const fixed_size_allocator* get_fixed_size_allocator(size_t i_unitSize);
+template<size_t Size>
+inline const fixed_size_allocator* get_fixed_size_allocator()
+{
+	static const fixed_size_allocator* s_fixedSizeAlloc = get_fixed_size_allocator(Size);
 
-template<typename Allocator>
-fixed_size_allocate_or<Allocator>::fixed_size_allocate_or(size_t i_unitSize, const Allocator& i_fallbackAllocator)
-: m_primaryAllocator(get_fixed_size_allocator(i_unitSize))
-, m_secondaryAllocator(i_fallbackAllocator)
+	return s_fixedSizeAlloc;
+}
+
+template<typename T,typename Allocator>
+template<typename AAllocator>
+fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_allocator)
+: m_allocator({ get_fixed_size_allocator(i_fixedSize),std::forward<AAllocator>(i_allocator)})
 {
 }
-template<typename Allocator>
-fixed_size_allocate_or<Allocator>::fixed_size_allocate_or(size_t i_unitSize, Allocator&& i_fallbackAllocator)
-: m_primaryAllocator(get_fixed_size_allocator(i_unitSize))
-, m_secondaryAllocator(std::move(i_fallbackAllocator))
+template<typename T, typename Allocator>
+void* fixed_size_or_allocator<T,Allocator>::allocate(size_t i_size) const
 {
-}
-template<typename Allocator>
-std::pair<resource_deleter_const_lent_ref,void*> fixed_size_allocate_or<Allocator>::allocate(size_t i_unitSize) const
-{
-	if(m_primaryAllocator && m_primaryAllocator->unit_size() >= i_unitSize)
+	if(const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
 	{
-		if(void* mem = m_primaryAllocator->allocate(i_unitSize))
+		if(void* mem = fixedSizeAllocator->allocate(i_size))
 		{
-			return std::make_pair(lend(*m_primaryAllocator),mem);
+			return mem;
+		}
+		else
+		{
+			m_allocator.set_first(nullptr);
 		}
 	}
-	else if(void* mem = m_secondaryAllocator.allocate(i_unitSize))
+
+	if(void* mem = m_allocator.get_second().allocate(i_size))
 	{
-		return std::make_pair(get_reference_wrapper_deleter(m_secondaryAllocator),mem);
+		return mem;
 	}
 
-	throw bad_allocation_exception{ "Could not allocate" };
+	return nullptr;
+}
+template<typename T, typename Allocator>
+template<typename TT>
+void fixed_size_or_allocator<T,Allocator>::deallocate(TT* i_ptr) const
+{
+	if(i_ptr)
+	{
+		if constexpr(std::is_class<TT>::value)
+		{
+			i_ptr->~TT();
+		}
+
+		if(const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
+		{
+			fixedSizeAllocator->deallocate(i_ptr);
+		}
+		else
+		{
+			m_allocator.get_second().deallocate(i_ptr);
+		}
+	}
+}
+
+template<typename Allocator>
+fixed_size_allocate_or<Allocator>::fixed_size_allocate_or(size_t i_fixedSize, const Allocator& i_allocator)
+: m_fixedSize(i_fixedSize)
+, m_allocator(i_allocator)
+{
 }
 template<typename Allocator>
-void fixed_size_allocate_or<Allocator>::deallocate(const std::pair<resource_deleter_const_lent_ref,const void*>& i_ptr) const
+template<typename T>
+fixed_size_or_allocator<T,Allocator> fixed_size_allocate_or<Allocator>::acquire() const
 {
-	i_ptr.first->deallocate(i_ptr.second);
+	return { m_fixedSize,m_allocator };
 }
 
 }

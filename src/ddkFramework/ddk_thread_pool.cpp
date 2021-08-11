@@ -187,7 +187,7 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 			m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
-			return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+			return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,deallocator_proxy{ *this }));
 		}
 		else
 		{
@@ -204,7 +204,7 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 		m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
-		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,deallocator_proxy{ *this }));
 	}
 }
 thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_size)
@@ -224,7 +224,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 		{
 			detail::thread_impl_interface* acquiredThread = *itThread;
 
-			threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+			threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,deallocator_proxy{ *this }));
 
 			m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 		}
@@ -236,7 +236,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 
 			m_underUseThreads[static_cast<const void*>(newThread)] = newThread;
 
-			threadSheaf.m_threadCtr.push_back(as_unique_reference(newThread,{ ref_from_this(),AllocationMode::ConstructionProvided }));
+			threadSheaf.m_threadCtr.push_back(as_unique_reference(newThread,deallocator_proxy{ *this }));
 		}
 
 		return make_result<acquire_result<thread_sheaf>>(std::move(threadSheaf));
@@ -252,7 +252,7 @@ bool thread_pool::available_threads() const
 
 	return m_availableThreads.empty() == false;
 }
-void thread_pool::deallocate(const void* i_object) const
+void thread_pool::deallocate(detail::thread_impl_interface* i_object) const
 {
 	bool awareAboutNewThreads = false;
 

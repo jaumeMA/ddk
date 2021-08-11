@@ -2,7 +2,6 @@
 
 #include "ddk_fiber_scheduler.h"
 #include "ddk_fiber.h"
-#include "ddk_reference_wrapper_deleter.h"
 #include "ddk_fiber_sheaf.h"
 #include "ddk_stack_allocator_interface.h"
 #include "ddk_mutex.h"
@@ -10,12 +9,14 @@
 namespace ddk
 {
 
-class fiber_pool : protected resource_deleter_interface
+class fiber_pool
 {
 	typedef std::vector<detail::fiber_impl*> fiber_container;
 	typedef fiber_scheduler<> fiber_secheduler_t;
 
 public:
+	typedef detail::fiber_impl type;
+
 	static const size_t k_maxNumPagesPerFiber = 10;
 	enum Policy
 	{
@@ -42,10 +43,9 @@ public:
 	acquire_result<fiber_sheaf> acquire_sheaf(size_t i_size);
 	bool empty() const;
 	size_t size() const;
+	void deallocate(detail::fiber_impl* i_object) const;
 
 private:
-	void deallocate(const void* i_object) const override;
-
 	Policy m_policy;
 	size_t m_maxNumFibers;
 	size_t m_numMaxPages;

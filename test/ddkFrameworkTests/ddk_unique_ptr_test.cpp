@@ -37,23 +37,8 @@ TEST(DDKUniquePtrTest,construction2)
 {
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
-		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,{ddk::lend(objFactory),ddk::AllocationMode::ConstructionProvided});
-
-		EXPECT_EQ(foo.empty(),false);
-		EXPECT_EQ(foo->getValue(),0xFF);
-	}
-
-	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
-}
-TEST(DDKUniquePtrTest,construction3)
-{
-	{
-		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
-		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		ddk::tagged_pointer<ddk::unique_reference_counter> taggedRefCounter(new ddk::unique_reference_counter(), ddk::ReferenceAllocationType::Dynamic);
-
-		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,taggedRefCounter,{ ddk::lend(objFactory),ddk::AllocationMode::ConstructionProvided });
+		ConstructionDeletionBalancer* newNestedValue = objFactory.allocate(0xFF);
+		ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_unique_reference(newNestedValue,objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);

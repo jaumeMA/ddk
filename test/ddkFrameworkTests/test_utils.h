@@ -6,20 +6,23 @@
 #include <stddef.h>
 
 template<typename T>
-class TestDynamicFactory : public ddk::resource_deleter_interface
+class TestDynamicDeleter
+{
+public:
+	void deallocate(T* i_object) const
+	{
+		delete i_object;
+	}
+};
+
+template<typename T>
+class TestDynamicFactory : public TestDynamicDeleter<T>
 {
 public:
 	template<typename ... Args>
-	T* Allocate(Args&& ... i_args)
+	T* allocate(Args&& ... i_args) const
 	{
 		return new T(std::forward<Args>(i_args) ...);
-	}
-	void deallocate(const void* i_object) const override
-	{
-		if(const T* pObject = reinterpret_cast<const T*>(i_object))
-		{
-			delete pObject;
-		}
 	}
 };
 

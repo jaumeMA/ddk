@@ -29,7 +29,7 @@ T* thread_local_storage<T>::construct(Args&& ... i_args)
 {
 	DDK_ASSERT(m_address==nullptr, "Constructing already constructed address");
 
-	if((m_address = m_alloc.allocate(1,sizeof(T))))
+	if((m_address = m_alloc.allocate(sizeof(T))))
 	{
 		new(m_address) T(std::forward<Args>(i_args) ...);
 
@@ -68,7 +68,7 @@ T* thread_local_storage<T>::assign(Args&& ... i_args)
 	}
 	else
 	{
-		if ((m_address = m_alloc.allocate(1, sizeof(T))))
+		if ((m_address = m_alloc.allocate(sizeof(T))))
 		{
 			new(m_address) T(std::forward<Args>(i_args) ...);
 

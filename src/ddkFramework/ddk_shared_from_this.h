@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T, typename ReferenceCounter>
-inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T*,const tagged_pointer<ReferenceCounter>&,const tagged_pointer_deleter&);
+inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T*,const tagged_pointer<ReferenceCounter>&);
 
 }
 
@@ -22,14 +22,14 @@ class share_from_this
 	template<typename TTT,typename TTTT>
 	friend inline shared_reference_wrapper<const TTTT> share(const share_from_this<TTT,TTTT>&);
 	template<typename TTT, typename ReferenceCounter>
-	friend inline detail::shared_reference_wrapper_impl<TTT,ReferenceCounter> detail::__make_shared_reference(TTT*,const tagged_pointer<ReferenceCounter>&,const tagged_pointer_deleter&);
+	friend inline detail::shared_reference_wrapper_impl<TTT,ReferenceCounter> detail::__make_shared_reference(TTT*,const tagged_pointer<ReferenceCounter>&);
 	friend inline weak_pointer_wrapper<TT> weak(share_from_this& i_sharedFromThis)
 	{
-		return as_shared_reference(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+		return as_shared_reference(static_cast<TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter);
 	}
 	friend inline weak_pointer_wrapper<const TT> weak(const share_from_this& i_sharedFromThis)
 	{
-		return as_shared_reference(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter,i_sharedFromThis.m_deleter);
+		return as_shared_reference(static_cast<const TT*>(&i_sharedFromThis),i_sharedFromThis.m_refCounter);
 	}
 
 public:
@@ -50,11 +50,10 @@ protected:
 	inline shared_reference_wrapper<const TT> ref_from_this() const;
 
 private:		
-	inline const tagged_pointer_deleter& set_deleter(const tagged_pointer_deleter& i_refDeleter) const;
+	inline tagged_reference_counter get_reference_counter() const;
 	inline void set_reference_counter(const tagged_reference_counter& i_refCounter) const;
 
 	mutable tagged_reference_counter m_refCounter;
-	mutable tagged_pointer_deleter m_deleter;
 };
 
 }

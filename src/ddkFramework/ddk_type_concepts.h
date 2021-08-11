@@ -123,19 +123,19 @@
 	typename std::enable_if<IS_CONVERTIBLE_COND(_TYPE,__VA_ARGS__)>::type
 
 #define IS_ASSIGNABLE_COND(_TYPE,_ARG) \
-	std::is_assignable<_TYPE,_ARG>::value
+	std::is_assignable_v<_TYPE,_ARG>
 
 #define IS_ASSIGNABLE(_TYPE,_ARG) \
 	typename std::enable_if<IS_ASSIGNABLE_COND(_TYPE,_ARG)>::type
 
 #define IS_COPY_ASSIGNABLE_COND(_TYPE) \
-	std::is_copy_assignable<_TYPE>::value
+	std::is_copy_assignable_v<_TYPE>
 
 #define IS_COPY_ASSIGNABLE(_TYPE) \
 	typename std::enable_if<IS_COPY_ASSIGNABLE_COND(_TYPE)>::type
 
 #define IS_MOVE_ASSIGNABLE_COND(_TYPE) \
-	std::is_move_assignable<_TYPE>::value
+	std::is_move_assignable_v<_TYPE>
 
 #define IS_MOVE_ASSIGNABLE(_TYPE) \
 	typename std::enable_if<IS_MOVE_ASSIGNABLE_COND(_TYPE)>::type

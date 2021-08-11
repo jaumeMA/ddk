@@ -27,13 +27,13 @@ namespace detail
 {
 
 template<typename T>
-inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter);
 template<typename T>
-inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter);
 template<typename T>
-inline unique_reference_wrapper<T> __make_unique_reference(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline unique_reference_wrapper<T> __make_unique_reference(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter);
 template<typename T>
-inline unique_reference_wrapper<T> __make_unique_reference(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline unique_reference_wrapper<T> __make_unique_reference(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter);
 
 #ifdef DDK_DEBUG
 
@@ -52,9 +52,9 @@ inline lent_pointer_wrapper<T> __make_lent_pointer(T* i_data);
 #endif
 
 template<typename T,typename ReferenceCounter>
-inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T* i_data,const tagged_pointer<ReferenceCounter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference(T* i_data,const tagged_pointer<ReferenceCounter>& i_refCounter);
 template<typename T>
-weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+weak_pointer_wrapper<T> __make_weak_pointer(T* i_data,const tagged_pointer<shared_reference_counter>& i_refCounter);
 template<typename T>
 inline weak_pointer_wrapper<T> __weak(shared_pointer_wrapper_impl<T,shared_reference_counter>& i_sharedPtr);
 template<typename T>
@@ -86,20 +86,20 @@ inline lent_reference_wrapper<T> __lend(const shared_reference_wrapper_impl<T,Re
 
 }
 
-template<typename T>
+template<typename T,typename Deleter>
 constexpr size_t size_of_unique_allocation();
 
 template<typename T, typename ... Args>
 inline unique_reference_wrapper<T> make_unique_reference(Args&& ... i_args);
 
+template<typename T, typename Deleter>
+inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr,const Deleter& i_refDeleter);
+
 template<typename T>
-inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr,const tagged_pointer_deleter& i_refDeleter);
+inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr,const tagged_pointer<unique_reference_counter>& i_refCounter);
 
 template<typename T>
 inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr);
-
-template<typename T>
-inline unique_reference_wrapper<T> as_unique_reference(T* i_ptr, const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
 
 template<typename T>
 constexpr size_t size_of_shared_allocation();
@@ -109,10 +109,10 @@ inline shared_reference_wrapper<T> make_shared_reference(Args&& ... i_args);
 
 template<typename T>
 inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr);
-template<typename T>
-inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const tagged_pointer_deleter& i_refDeleter);
+template<typename T, typename Deleter>
+inline shared_reference_wrapper<T> as_shared_reference(T* i_ptr, const Deleter& i_refDeleter);
 
-template<typename T>
+template<typename T,typename Deleter>
 constexpr size_t size_of_distributed_allocation();
 
 template<typename T,typename ... Args>
@@ -120,11 +120,11 @@ inline distributed_reference_wrapper<T> make_distributed_reference(Args&& ... i_
 
 template<typename T>
 inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr);
-template<typename T>
-inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr,const tagged_pointer_deleter& i_refDeleter);
+template<typename T, typename Deleter>
+inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr,const Deleter& i_refDeleter);
 
 template<typename T, typename ReferenceCounter>
-inline detail::shared_reference_wrapper_impl<T,ReferenceCounter> as_shared_reference(T* i_ptr, const tagged_pointer<ReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+inline detail::shared_reference_wrapper_impl<T,ReferenceCounter> as_shared_reference(T* i_ptr, const tagged_pointer<ReferenceCounter>& i_refCounter);
 
 template<typename T,typename ... Args>
 inline atomic_shared_reference_wrapper<T> make_atomic_shared_reference(Args&& ... i_args);
@@ -133,17 +133,17 @@ inline atomic_distributed_reference_wrapper<T> make_atomic_distributed_reference
 
 template<typename T>
 inline atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr);
+template<typename T, typename Deleter>
+inline atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const Deleter& i_refDeleter);
 template<typename T>
-inline atomic_shared_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer_deleter& i_refDeleter);
-template<typename T>
-inline atomic_distributed_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline atomic_distributed_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<shared_reference_counter>& i_refCounter);
 
 template<typename T>
 inline atomic_distributed_reference_wrapper<T> as_atomic_distributed_reference(T* i_ptr);
+template<typename T, typename Deleter>
+inline atomic_distributed_reference_wrapper<T> as_atomic_distributed_reference(T* i_ptr,const Deleter& i_refDeleter);
 template<typename T>
-inline atomic_distributed_reference_wrapper<T> as_atomic_distributed_reference(T* i_ptr,const tagged_pointer_deleter& i_refDeleter);
-template<typename T>
-inline atomic_distributed_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<distributed_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline atomic_distributed_reference_wrapper<T> as_atomic_shared_reference(T* i_ptr,const tagged_pointer<distributed_reference_counter>& i_refCounter);
 
 template<typename TT, typename T, typename ReferenceCounter>
 inline auto dynamic_shared_cast(const detail::shared_reference_wrapper_impl<T,ReferenceCounter>& i_sharedRef);

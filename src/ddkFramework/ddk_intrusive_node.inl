@@ -160,11 +160,6 @@ typename intrusive_node_impl<T>::const_pointer intrusive_node_impl<T>::get_ptr()
 	return &m_value;
 }
 template<typename T>
-unique_reference_counter* intrusive_node_impl<T>::get_reference_counter()
-{
-	return &m_refCounter;
-}
-template<typename T>
 intrusive_node_impl<T>::operator T&()
 {
 	return m_value;
@@ -186,18 +181,7 @@ template<typename T,typename Allocator>
 template<typename ... Args>
 intrusive_node<T,Allocator>::intrusive_node(Args&& ... i_args)
 {
-	if(void* mem = m_allocator.allocate(1,sizeof(detail::intrusive_node_impl<T>)))
-	{
-		typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;
-
-		detail::intrusive_node_impl<T>* impl = new(mem) detail::intrusive_node_impl<T>(std::forward<Args>(i_args) ...);
-
-		m_impl = as_unique_reference(impl,tagged_reference_counter(impl->get_reference_counter(),ReferenceAllocationType::Embedded),get_reference_wrapper_deleter(m_allocator));
-	}
-	else
-	{
-		throw bad_allocation_exception{"Could not allocate for intrusive node"};
-	}
+	m_impl = make_unique_reference<detail::intrusive_node_impl<T>>(m_allocator,std::forward<Args>(i_args) ...);
 }
 template<typename T,typename Allocator>
 intrusive_node<T,Allocator>::~intrusive_node()

@@ -46,7 +46,6 @@ public:
 	inline rreference extract() &&;
 	inline pointer get_ptr();
 	inline const_pointer get_ptr() const;
-	unique_reference_counter* get_reference_counter();
 	operator T&();
 	operator const T&() const;
 
@@ -54,12 +53,11 @@ private:
 	intrusive_node_ptr m_prevNode = nullptr;
 	intrusive_node_ptr m_nextNode = nullptr;
 	T m_value;
-	unique_reference_counter m_refCounter;
 };
 
 }
 
-template<typename T, typename Allocator = system_allocator>
+template<typename T, typename Allocator = typed_system_allocator<detail::intrusive_node_impl<T>>>
 struct intrusive_node
 {
 	friend inline lent_pointer_wrapper<detail::intrusive_node_impl<T>> make_intrusive(intrusive_node& i_node)

@@ -10,7 +10,7 @@ single_consumer_lock_free_stack<T,Allocator>::single_consumer_lock_free_stack(Ar
 , m_tail(leaf_node)
 , m_allocator(Allocator(std::forward<Args>(i_args)...))
 {
-	if(void* mem = m_allocator.allocate(1))
+	if(void* mem = m_allocator.allocate())
 	{
 		lock_free_stack_node<T>* divider = new (mem) lock_free_stack_node<T>(divider_node);
 
@@ -128,7 +128,7 @@ template<typename T,typename Allocator>
 template<typename ... Args>
 lock_free_stack_node<T>* single_consumer_lock_free_stack<T,Allocator>::allocate_node(Args&& ... i_args)
 {
-	if(void* mem = m_allocator.allocate(1))
+	if(void* mem = m_allocator.allocate())
 	{
 		return new (mem) lock_free_stack_node<T>(std::forward<Args>(i_args) ...);
 	}

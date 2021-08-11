@@ -20,9 +20,9 @@ class shared_reference_wrapper_impl : public shared_pointer_wrapper_impl<T,Refer
 	template<typename TT,typename RReferenceCounter>
 	friend lent_reference_wrapper<TT> __lend(const shared_reference_wrapper_impl<TT,RReferenceCounter>&);
 	template<typename TT, typename RReferenceCounter>
-	friend inline shared_reference_wrapper_impl<TT,RReferenceCounter> __make_shared_reference(TT* i_data, const tagged_pointer<RReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	friend inline shared_reference_wrapper_impl<TT,RReferenceCounter> __make_shared_reference(TT* i_data, const tagged_pointer<RReferenceCounter>& i_refCounter);
 
-	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	shared_reference_wrapper_impl(T* i_data, const tagged_pointer<ReferenceCounter>& i_refCounter);
 
 	using shared_pointer_wrapper_impl<T,ReferenceCounter>::operator bool;
 	using shared_pointer_wrapper_impl<T,ReferenceCounter>::empty;

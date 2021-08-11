@@ -118,16 +118,14 @@ public:
 	void clear();
 	inline T* get();
 	inline const T* get() const;
-	inline tagged_pointer_deleter get_deleter() const;
 	inline bool empty() const;
 
 private:
-	shared_pointer_wrapper_impl(T* i_data, const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_refDeleter, bool i_alreadyIncremented = false);
+	shared_pointer_wrapper_impl(T* i_data, const tagged_reference_counter& i_refCounter, bool i_alreadyIncremented = false);
 	void clearIfCounterVoid(size_t i_currNumRefs);
 
 	T* m_data;
 	tagged_reference_counter m_refCounter;
-	tagged_pointer_deleter m_deleter;
 };
 
 }

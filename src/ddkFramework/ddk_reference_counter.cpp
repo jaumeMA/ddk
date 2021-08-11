@@ -212,27 +212,6 @@ unique_reference_counter::unique_reference_counter(unique_reference_counter&& ot
 {
 	std::swap(m_hasStrongReferences,other.m_hasStrongReferences);
 }
-unique_reference_counter& unique_reference_counter::operator=(const unique_reference_counter& other)
-{
-#ifdef DDK_DEBUG
-	lent_reference_counter::operator=(other);
-#endif
-
-	m_hasStrongReferences = other.m_hasStrongReferences;
-
-	return *this;
-}
-unique_reference_counter& unique_reference_counter::operator=(unique_reference_counter&& other)
-{
-#ifdef DDK_DEBUG
-	lent_reference_counter::operator=(std::move(other));
-#endif
-
-	m_hasStrongReferences = other.m_hasStrongReferences;
-	other.m_hasStrongReferences = false;
-
-	return *this;
-}
 bool unique_reference_counter::addStrongReference()
 {
 	DDK_ASSERT(m_hasStrongReferences == false,"Unique reference already incremented");

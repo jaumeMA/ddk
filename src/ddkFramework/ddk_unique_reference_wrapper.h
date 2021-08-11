@@ -12,9 +12,9 @@ namespace detail
 {
 
 template<typename TT>
-unique_reference_wrapper<TT> __make_unique_reference(TT* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+unique_reference_wrapper<TT> __make_unique_reference(TT* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter);
 template<typename TT>
-unique_reference_wrapper<TT> __make_unique_reference(TT* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+unique_reference_wrapper<TT> __make_unique_reference(TT* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter);
 
 }
 
@@ -23,15 +23,15 @@ template<typename T>
 class unique_reference_wrapper : public unique_pointer_wrapper<T>
 {
 	template<typename TT>
-	friend unique_reference_wrapper<TT> detail::__make_unique_reference(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	friend unique_reference_wrapper<TT> detail::__make_unique_reference(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter);
 	template<typename TT>
-	friend unique_reference_wrapper<TT> detail::__make_unique_reference(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	friend unique_reference_wrapper<TT> detail::__make_unique_reference(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter);
 
     using unique_pointer_wrapper<T>::operator bool;
     using unique_pointer_wrapper<T>::clear;
 
-	unique_reference_wrapper(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
-	unique_reference_wrapper(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	unique_reference_wrapper(T* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter);
+	unique_reference_wrapper(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter);
 
 public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;

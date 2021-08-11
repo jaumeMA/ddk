@@ -5,7 +5,7 @@
 
 #ifdef DDK_DEBUG
 
-//#define MEM_CHECK
+#define MEM_CHECK
 
 #endif
 
@@ -27,9 +27,9 @@ class system_allocator_impl : public resource_deleter_interface
 
 public:
 	system_allocator_impl() = default;
-	void* allocate(size_t numUnits,size_t unitSize) const
+	void* allocate(size_t i_size) const
 	{
-		if(void* res = malloc(numUnits * unitSize))
+		if(void* res = malloc(i_size))
 		{
 #if defined(MEM_CHECK)
 			m_memTracker.register_allocation(reinterpret_cast<size_t>(res));
@@ -41,9 +41,6 @@ public:
 			return nullptr;
 		}
 	}
-	void* aligned_allocate(void* i_ptr,size_t i_size,size_t& i_remainingSize)
-	{
-	}
 	void deallocate(const void* i_ptr) const
 	{
 		if(i_ptr)
@@ -54,9 +51,9 @@ public:
 			free(const_cast<void*>(i_ptr));
 		}
 	}
-	void* reallocate(void *ptr,size_t numUnits,size_t unitSize) const
+	void* reallocate(void *ptr,size_t i_newSize) const
 	{
-		return (numUnits >= 1) ? realloc(ptr,numUnits * unitSize) : nullptr;
+		return (i_newSize > 0) ? realloc(ptr,i_newSize) : nullptr;
 	}
 
 
@@ -70,26 +67,18 @@ private:
 
 system_allocator_impl sysAlloc;
 
-void* system_allocator::allocate(size_t numUnits, size_t unitSize) const
+void system_deleter::deallocate(const void* i_ptr) const
 {
-    return sysAlloc.allocate(numUnits,unitSize);
-}
-void* system_allocator::allocate(size_t unitSize) const
-{
-	return sysAlloc.allocate(1,unitSize);
-}
-void system_allocator::deallocate(const void *ptr) const
-{
-	sysAlloc.deallocate(ptr);
-}
-void* system_allocator::reallocate(void *ptr, size_t numUnits, size_t unitSize) const
-{
-	return sysAlloc.reallocate(ptr,numUnits,unitSize);
+	sysAlloc.deallocate(i_ptr);
 }
 
-resource_deleter_const_lent_ref get_reference_wrapper_deleter(const system_allocator&)
+void* system_allocator::allocate(size_t i_size) const
 {
-	return lend(sysAlloc);
+    return sysAlloc.allocate(i_size);
+}
+void* system_allocator::reallocate(void *ptr, size_t i_newSize) const
+{
+	return sysAlloc.reallocate(ptr,i_newSize);
 }
 
 }

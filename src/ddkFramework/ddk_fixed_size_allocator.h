@@ -2,22 +2,29 @@
 
 #include "ddk_atomics.h"
 #include "ddk_lend_from_this.h"
-#include "ddk_reference_wrapper_deleter.h"
+#include "ddk_lend_from_this.h"
 #include "ddk_mutex.h"
+#include "ddk_allocator.h"
 #include <cstddef>
 
-//#define MEM_CHECK
+#define MEM_CHECK
 
 namespace ddk
 {
 
-class fixed_size_allocator : public resource_deleter_interface
+class fixed_size_allocator : public lend_from_this<fixed_size_allocator>
 {
 	static const size_t s_numReservedEntries = 2048;
 	static const std::ptrdiff_t s_invalidAddress = -1;
 	static const size_t s_invalidChunk = -1;
 
 public:
+	typedef fixed_size_allocator allocator;
+	typedef void type;
+	typedef void* pointer;
+	typedef const void* const_pointer;
+	typedef std::ptrdiff_t difference_type;
+
 	fixed_size_allocator(size_t i_unitSize,size_t i_poolSize = s_numReservedEntries);
 	fixed_size_allocator(const fixed_size_allocator&) = delete;
 	fixed_size_allocator(fixed_size_allocator&& other);
@@ -26,7 +33,7 @@ public:
 	fixed_size_allocator& operator=(const fixed_size_allocator&) = delete;
 	fixed_size_allocator& operator=(fixed_size_allocator&&) = delete;
 	void* allocate(size_t i_size) const;
-	void deallocate(const void* i_address) const override;
+	void deallocate(const void* i_address) const;
 	size_t unit_size() const;
 	template<typename T>
 	inline void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const;

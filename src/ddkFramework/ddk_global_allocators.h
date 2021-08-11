@@ -12,19 +12,34 @@ namespace ddk \
 namespace ddk
 {
 
+template<typename T, typename Allocator>
+class fixed_size_or_allocator
+{
+public:
+	typedef T type;
+
+	template<typename AAllocator>
+	fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_allocator);
+	void* allocate(size_t i_size) const;
+	template<typename TT>
+	void deallocate(TT* i_ptr) const;
+
+private:
+	mutable detail::compressed_pair<const fixed_size_allocator*,Allocator> m_allocator;
+};
+
 template<typename Allocator>
 class fixed_size_allocate_or
 {
 public:
-	fixed_size_allocate_or(size_t i_unitSize, const Allocator& i_fallbackAllocator);
-	fixed_size_allocate_or(size_t i_unitSize, Allocator&& i_fallbackAllocator);
+	fixed_size_allocate_or(size_t i_fixedSize, const Allocator& = Allocator{});
 
-	std::pair<resource_deleter_const_lent_ref,void*> allocate(size_t unitSize) const;
-	void deallocate(const std::pair<resource_deleter_const_lent_ref,const void*>& ptr) const;
+	template<typename T>
+	fixed_size_or_allocator<T,Allocator> acquire() const;
 
 private:
-	const fixed_size_allocator* m_primaryAllocator = nullptr;
-	Allocator m_secondaryAllocator;
+	size_t m_fixedSize;
+	Allocator m_allocator;
 };
 
 //null deleter

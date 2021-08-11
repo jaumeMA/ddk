@@ -496,9 +496,6 @@ constexpr bool are_same_type()
     return (std::is_same<T,Types>::value && ...);
 }
 
-template<typename T,typename ... Types>
-using reduce_to_common_type = typename std::enable_if<are_same_type<T,Types...>(),T>::type;
-
 template<template<typename...>typename Predicate, typename ... T>
 struct not_predicate
 {
@@ -551,6 +548,18 @@ struct nth_type_of<0,Type,Types...>
 
 template<size_t Pos, typename ... Types>
 using nth_type_of_t = typename nth_type_of<Pos,Types...>::type;
+
+template<typename...>
+struct _reduce_to_common_type;
+
+template<typename T, typename ... TT>
+struct _reduce_to_common_type<T,TT...>
+{
+    typedef typename std::enable_if<are_same_type<T,TT...>(),T>::type type;
+};
+
+template<typename ... Types>
+using reduce_to_common_type = typename _reduce_to_common_type<Types...>::type;
 
 template<template<typename,typename...> typename Predicate, typename Type, typename ... Types>
 inline constexpr size_t nth_pos_of_predicate()

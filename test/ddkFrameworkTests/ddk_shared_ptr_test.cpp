@@ -36,8 +36,8 @@ TEST(DDKSharedPtrtTest,construction2)
 {
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
-		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_shared_reference(newNestedValue,{ddk::lend(objFactory),ddk::AllocationMode::ConstructionProvided });
+		ConstructionDeletionBalancer* newNestedValue = objFactory.allocate(0xFF);
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_shared_reference(newNestedValue,objFactory);
 
 		EXPECT_EQ(foo.empty(),false);
 		EXPECT_EQ(foo->getValue(),0xFF);
@@ -48,11 +48,12 @@ TEST(DDKSharedPtrtTest,construction2)
 TEST(DDKSharedPtrtTest,construction3)
 {
 	{
+		typedef ddk::shared_control_block<ConstructionDeletionBalancer,TestDynamicDeleter<ConstructionDeletionBalancer>> control_block;
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
-		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
-		ddk::tagged_pointer<ddk::shared_reference_counter> taggedRefCounter(new ddk::shared_reference_counter(), ddk::ReferenceAllocationType::Dynamic);
+		ConstructionDeletionBalancer* newNestedValue = objFactory.allocate(0xFF);
+		ddk::tagged_pointer<ddk::shared_reference_counter> taggedRefCounter(new control_block(newNestedValue,objFactory), ddk::ReferenceAllocationType::Dynamic);
 
-		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_shared_reference(newNestedValue,taggedRefCounter,{ddk::lend(objFactory),ddk::AllocationMode::ConstructionProvided });
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::as_shared_reference(newNestedValue,taggedRefCounter);
 
 
 		EXPECT_EQ(foo.empty(),false);
@@ -124,14 +125,13 @@ TEST(DDKSharedPtrtTest,assignment)
 }
 TEST(DDKSharedPtrtTest,assignmentBetweenShareds)
 {
-	ddk::distributed_reference_counter refCounter;
-
 	{
 		TestDynamicFactory<ConstructionDeletionBalancer> objFactory; 
 		ddk::distributed_pointer_wrapper<ConstructionDeletionBalancer> fooShared;
-		ConstructionDeletionBalancer* newNestedValue = objFactory.Allocate(0xFF);
+		ConstructionDeletionBalancer* newNestedValue = objFactory.allocate(0xFF);
+		ddk::distributed_control_block<ConstructionDeletionBalancer,TestDynamicDeleter<ConstructionDeletionBalancer>> refCounter(newNestedValue,objFactory);
 
-		fooShared = ddk::as_shared_reference(newNestedValue, ddk::tagged_pointer<ddk::distributed_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded),{ ddk::lend(objFactory),ddk::AllocationMode::ConstructionProvided });
+		fooShared = ddk::as_shared_reference(newNestedValue, ddk::tagged_pointer<ddk::distributed_reference_counter>(&refCounter,ddk::ReferenceAllocationType::Embedded));
 
 		EXPECT_EQ(refCounter.getNumSharedReferences(),1);
 
@@ -175,8 +175,6 @@ TEST(DDKSharedPtrtTest,assignmentBetweenShareds)
 
 		EXPECT_EQ(refCounter.getNumSharedReferences(),1);
 	}
-
-	EXPECT_EQ(refCounter.getNumSharedReferences(),0);
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }

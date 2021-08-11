@@ -4,6 +4,7 @@
 #include "ddk_macros.h"
 #include "ddk_scoped_enum.h"
 #include "ddk_mutex.h"
+#include "ddk_compressed_pair.h"
 #include <map>
 #include <vector>
 
@@ -68,34 +69,39 @@ private:
 class weak_reference_counter
 {
 public:
-	weak_reference_counter();
-	weak_reference_counter(const weak_reference_counter& other);
-	weak_reference_counter(weak_reference_counter&& other);
 
 	unsigned int incrementWeakReference();
 	unsigned int decrementWeakReference();
 	unsigned int getNumWeakReferences() const;
 	bool hasWeakReferences() const;
 
+protected:
+	weak_reference_counter();
+	weak_reference_counter(const weak_reference_counter& other);
+	weak_reference_counter(weak_reference_counter&& other);
+
 private:
 	atomic_uint m_numWeakReferences;
 };
 
-class distributed_reference_counter
+class NO_VTABLE distributed_reference_counter
 #ifdef DDK_DEBUG
 : public lent_reference_counter
 #endif
 {
 public:
-	distributed_reference_counter();
-	distributed_reference_counter(const distributed_reference_counter& other);
-	distributed_reference_counter(distributed_reference_counter&& other);
 	unsigned int incrementSharedReference();
 	bool incrementSharedReferenceIfNonEmpty();
 	unsigned int decrementSharedReference();
 	unsigned int getNumSharedReferences() const;
 	bool hasSharedReferences() const;
 	bool hasWeakReferences() const;
+	virtual void destroy_shared_resource(short i_tagCategory) = 0;
+
+protected:
+	distributed_reference_counter();
+	distributed_reference_counter(const distributed_reference_counter& other);
+	distributed_reference_counter(distributed_reference_counter&& other);
 
 private:
 	atomic_uint m_numSharedReferences;
@@ -104,35 +110,72 @@ private:
 class shared_reference_counter: public distributed_reference_counter, public weak_reference_counter
 {
 public:
-	shared_reference_counter() = default;
-	shared_reference_counter(const shared_reference_counter& other) = default;
-	shared_reference_counter(shared_reference_counter&& other) = default;
 	unsigned int incrementSharedReference();
 	bool incrementSharedReferenceIfNonEmpty();
 	unsigned int decrementSharedReference();
 	bool hasWeakReferences() const;
+
+protected:
+	shared_reference_counter() = default;
+	shared_reference_counter(const shared_reference_counter& other) = default;
+	shared_reference_counter(shared_reference_counter&& other) = default;
 };
+
+template<typename T,typename Deleter,typename ReferenceCounter>
+class share_control_block : public ReferenceCounter
+{
+public:
+	typedef ReferenceCounter reference_counter;
+
+	share_control_block(T* i_ptr, const Deleter& i_deleter = Deleter{});
+
+protected:
+	void destroy_shared_resource(short i_tagCategory) override;
+
+private:
+	detail::compressed_pair<T*,Deleter> m_data;
+};
+template<typename T,typename Deleter = typed_system_allocator<T>>
+using distributed_control_block = share_control_block<T,Deleter,distributed_reference_counter>;
+template<typename T,typename Deleter = typed_system_allocator<T>>
+using shared_control_block = share_control_block<T,Deleter,shared_reference_counter>;
 
 //reference counting for unique references
 
-class unique_reference_counter
+class NO_VTABLE unique_reference_counter
 #ifdef DDK_DEBUG
 : public lent_reference_counter
 #endif
 {
 public:
-	unique_reference_counter();
-	unique_reference_counter(const unique_reference_counter& other);
-	unique_reference_counter(unique_reference_counter&& other);
-
-	unique_reference_counter& operator=(const unique_reference_counter& other);
-	unique_reference_counter& operator=(unique_reference_counter&& other);
 	bool addStrongReference();
 	bool removeStrongReference();
 	bool hasStrongReferences() const;
+	virtual void destroy_unique_resource(short i_tagCategory) = 0;
+
+protected:
+	unique_reference_counter();
+	unique_reference_counter(const unique_reference_counter& other);
+	unique_reference_counter(unique_reference_counter&& other);
 
 private:
 	bool m_hasStrongReferences;
 };
 
+template<typename T, typename Deleter = typed_system_allocator<T>>
+class unique_control_block : public unique_reference_counter
+{
+public:
+	typedef unique_reference_counter reference_counter;
+
+	unique_control_block(T* i_ptr, const Deleter& i_deleter = Deleter{});
+
+private:
+	void destroy_unique_resource(short i_tagCategory) override;
+
+	detail::compressed_pair<T*,Deleter> m_data;
+};
+
 }
+
+#include "ddk_reference_counter.inl"

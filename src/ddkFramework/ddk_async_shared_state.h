@@ -37,15 +37,18 @@ struct private_async_state : async_state_base
 	friend class ddk::executor_promise;
 
 public:
-	struct reference_counter : public distributed_reference_counter
+	struct control_block : public distributed_control_block<private_async_state<T>>
 	{
 	public:
-		reference_counter(private_async_state& i_asyncSharedState);
+		using distributed_control_block<private_async_state<T>>::destroy_shared_resource;
+
+		control_block(private_async_state& i_asyncSharedState);
 		unsigned int decrementSharedReference();
 
 	private:
 		private_async_state& m_asyncSharedState;
 	};
+	typedef typename control_block reference_counter;
 
 	typedef typename mpl::static_if<std::is_reference<T>::value,typename embedded_type<T>::ref_type,typename mpl::static_if<std::is_copy_constructible<T>::value,embedded_type<T>,embedded_type<T&&>>::type::cref_type>::type sink_type;
 	typedef typename embedded_type<T>::ref_type reference;
@@ -79,7 +82,7 @@ private:
 	mutable cond_var m_condVar;
 	variant<detail::none_t,async_exception,T> m_arena;
 	mutable async_cancellable_dist_ptr m_asyncExecutor;
-	reference_counter m_refCounter;
+	control_block m_refCounter;
 };
 
 template<typename T>

@@ -478,14 +478,7 @@ template<typename Key, typename Value, typename Node, template<typename> class A
 template<typename ... Args>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_unique_ref map_impl<Key,Value,Node,Allocator,Balancer>::allocate(const_key_reference key, Args&& ... i_args) const
 {
-    if(void* mem = (void*)m_alloc.allocate(1))
-    {
-        return as_unique_reference(new(mem) map_node_t(key,std::forward<Args>(i_args)...),{ ddk::lend(m_alloc),ddk::AllocationMode::AllocationOnly });
-    }
-    else
-    {
-        throw bad_allocation_exception{ "Allocation could not be done." };
-    }
+    return make_unique_reference<map_node_t>(m_alloc,key,std::forward<Args>(i_args)...);
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::map_node_lent_ref map_impl<Key,Value,Node,Allocator,Balancer>::findMin(map_node_lent_ref node) const

@@ -20,9 +20,9 @@ namespace detail
 {
 
 template<typename T>
-inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,const tagged_pointer<unique_reference_counter>& i_refCounter);
 template<typename T>
-inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<unique_reference_counter>&& i_refCounter);
 
 }
 
@@ -77,9 +77,9 @@ class unique_pointer_wrapper
 	template<typename TT>
 	friend unique_reference_wrapper<TT> promote_to_ref(unique_pointer_wrapper<TT>);
     template<typename TT>
-	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, const tagged_pointer<unique_reference_counter>& i_refCounter);
     template<typename TT>
-	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter, const tagged_pointer_deleter& i_refDeleter);
+	friend inline unique_pointer_wrapper<TT> detail::__make_unique_pointer(TT* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter);
 
 public:
 	typedef tagged_pointer<unique_reference_counter> tagged_reference_counter;
@@ -115,17 +115,15 @@ public:
 	inline T* get();
 	inline const T* get() const;
 	inline bool empty() const;
-	inline const tagged_pointer_deleter& get_deleter() const;
 
 private:
-	unique_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
-	unique_pointer_wrapper(T* i_data, tagged_pointer<unique_reference_counter>&& i_refCounter,const tagged_pointer_deleter& i_refDeleter);
+	unique_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter);
+	unique_pointer_wrapper(T* i_data,tagged_reference_counter&& i_refCounter);
 	void clearIfCounterVoid(bool i_hasRefs);
 	inline unique_reference_counter* extract_reference_counter();
 
 	T* m_data;
 	tagged_reference_counter m_refCounter;
-	tagged_pointer_deleter m_deleter;
 };
 
 }

@@ -14,7 +14,7 @@ namespace detail
 {
 
 template<typename TT>
-weak_pointer_wrapper<TT> __make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const tagged_pointer_deleter&);
+weak_pointer_wrapper<TT> __make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&);
 
 }
 
@@ -24,7 +24,7 @@ class weak_pointer_wrapper
 	template<typename>
 	friend class weak_pointer_wrapper;
 	template<typename TT>
-	friend weak_pointer_wrapper<TT> detail::__make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&,const tagged_pointer_deleter&);
+	friend weak_pointer_wrapper<TT> detail::__make_weak_pointer(TT*,const tagged_pointer<shared_reference_counter>&);
 	template<typename TT>
 	friend shared_pointer_wrapper<const TT> share(const weak_pointer_wrapper<TT>&);
 	template<typename TT>
@@ -63,12 +63,11 @@ public:
 	shared_pointer_wrapper<T> share() const;
 
 private:
-	weak_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter,const tagged_pointer_deleter& i_deleter);
+	weak_pointer_wrapper(T* i_data, const tagged_reference_counter& i_refCounter);
 	void clearIfCounterVoid(size_t i_numWeakRefs);
 
 	T* m_data = nullptr;
 	mutable tagged_reference_counter m_refCounter;
-	tagged_pointer_deleter m_deleter = nullptr;
 };
 
 template<typename T>
