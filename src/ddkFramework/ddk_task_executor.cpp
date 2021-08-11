@@ -22,7 +22,7 @@ task_executor::~task_executor()
 {
 	stop();
 }
-void task_executor::start()
+bool task_executor::start()
 {
 	if(m_state != Running)
 	{
@@ -30,6 +30,8 @@ void task_executor::start()
 
 		m_state = Running;
 	}
+
+    return m_state == Running;
 }
 void task_executor::stop()
 {

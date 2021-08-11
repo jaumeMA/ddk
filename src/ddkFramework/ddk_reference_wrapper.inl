@@ -265,7 +265,7 @@ unique_reference_wrapper<T> as_unique_reference(T* i_ptr)
 
 	DDK_ASSERT(i_ptr != nullptr,"Trying to contruct unique reference from null pointer");
 
-	unique_reference_counter* refCounter = new(allocatedMemory) unique_control_block<T,typed_system_allocator<T>>(i_ptr,s_typedAlloc);
+	unique_reference_counter* refCounter = new unique_control_block<T,typed_system_allocator<T>>(i_ptr,s_typedAlloc);
 
 	tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
 

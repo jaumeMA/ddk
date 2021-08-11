@@ -12,7 +12,7 @@ void* fixed_size_allocator::aligned_allocate(void*& i_ptr,size_t& i_remainingSiz
 		i_remainingSize = m_unitSize;
 	}
 
-	return system_allocator::aligned_allocate<T>(i_ptr,i_remainingSize);
+	return aligned_allocate<T>(i_ptr,i_remainingSize);
 }
 
 }

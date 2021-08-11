@@ -57,7 +57,7 @@ public:
 	task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks = k_maxNumPendingTasks);
 	~task_executor();
 
-	void start();
+	bool start();
 	void stop();
 	void set_max_num_pending_tasks(size_t i_maxNumPendingTasks);
 	size_t get_max_num_pending_tasks();

@@ -17,7 +17,7 @@ distributed_value<T>::distributed_value(const distributed_reference_wrapper<T>& 
 {
 }
 template<typename T>
-distributed_value<T>::distributed_value(const distributed_reference_wrapper<T>& other,const rtti::TypeInfo& i_typeInfo)
+distributed_value<T>::distributed_value(const distributed_reference_wrapper<T>& i_value,const rtti::TypeInfo& i_typeInfo)
 : m_typeInfo(i_typeInfo)
 , m_value(i_value)
 {

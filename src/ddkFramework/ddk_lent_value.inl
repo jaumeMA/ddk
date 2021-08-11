@@ -39,7 +39,7 @@ lent_value<T>& lent_value<T>::operator=(const lent_value<TT>& other)
 template<typename T>
 TEMPLATE(typename TT)
 REQUIRED(IS_BASE_OF(T,TT))
-lent_value<T>& lent_value<T>::operator=(lent_value<TT>&&)
+lent_value<T>& lent_value<T>::operator=(lent_value<TT>&& other)
 {
 	m_typeInfo = rtti::type_info<TT,T>();
 	m_value = std::move(other.m_value);
@@ -89,7 +89,7 @@ template<typename T>
 template<typename Interface,typename Visitor>
 void lent_value<T>::visit(Visitor&& i_visitor)
 {
-	typedef mpl::static_if<std::is_const<T>::value,std::add_const<Interface>::type,Interface>::type type_interface;
+	typedef typename mpl::static_if<std::is_const<T>::value,typename std::add_const<Interface>::type,Interface>::type type_interface;
 
 	__visit(m_typeInfo,static_cast<type_interface&>(*m_value),i_visitor);
 }

@@ -135,9 +135,9 @@ protected:
 private:
 	detail::compressed_pair<T*,Deleter> m_data;
 };
-template<typename T,typename Deleter = typed_system_allocator<T>>
+template<typename T,typename Deleter>
 using distributed_control_block = share_control_block<T,Deleter,distributed_reference_counter>;
-template<typename T,typename Deleter = typed_system_allocator<T>>
+template<typename T,typename Deleter>
 using shared_control_block = share_control_block<T,Deleter,shared_reference_counter>;
 
 //reference counting for unique references
@@ -162,7 +162,7 @@ private:
 	bool m_hasStrongReferences;
 };
 
-template<typename T, typename Deleter = typed_system_allocator<T>>
+template<typename T, typename Deleter>
 class unique_control_block : public unique_reference_counter
 {
 public:

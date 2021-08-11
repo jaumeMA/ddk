@@ -58,7 +58,7 @@ template<typename T,typename Allocator>
 TEMPLATE(typename AAllocator)
 REQUIRED(IS_CONSTRUCTIBLE(AAllocator,Allocator))
 typed_allocator_proxy<T,Allocator>::typed_allocator_proxy(const AAllocator& i_deallocator)
-: allocator_proxy(i_deallocator)
+: allocator_proxy<Allocator>(i_deallocator)
 {
 }
 template<typename T, typename Allocator>
@@ -76,7 +76,7 @@ template<typename T,typename Deallocator>
 TEMPLATE(typename DDeallocator)
 REQUIRED(IS_CONSTRUCTIBLE(Deallocator,DDeallocator))
 typed_deallocator_proxy<T,Deallocator>::typed_deallocator_proxy(const DDeallocator& i_deallocator)
-: deallocator_proxy(i_deallocator)
+: deallocator_proxy<Deallocator>(i_deallocator)
 {
 }
 template<typename T,typename Deallocator>

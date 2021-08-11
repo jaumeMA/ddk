@@ -11,7 +11,7 @@ namespace detail
 
 template<typename T>
 private_async_state<T>::control_block::control_block(private_async_state& i_asyncSharedState)
-: distributed_control_block<private_async_state<T>>(&i_asyncSharedState)
+: distributed_control_block<private_async_state<T>,typed_system_allocator<private_async_state<T>>>(&i_asyncSharedState)
 , m_asyncSharedState(i_asyncSharedState)
 {
 }

@@ -6,9 +6,9 @@
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
 #include "ddk_constrained_iterable_impl.h"
-#include "ddk_concepts.h"
 #include "ddk_iterable_concepts.h"
 #include "ddk_container_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {

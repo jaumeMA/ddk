@@ -37,7 +37,7 @@ struct resolve_callable_return_type;
 template<typename Callable, size_t ... Indexs, typename ... Types>
 struct resolve_callable_return_type<Callable,mpl::sequence<Indexs...>,mpl::type_pack<Types...>>
 {
-	typedef decltype(std::declval<typename std::remove_reference<Callable>::type>()(std::declval<mpl::type_pack<Types...>::template nth_type<mpl::index_to_index<Indexs,0>>>()...)) type;
+	typedef decltype(std::declval<typename std::remove_reference<Callable>::type>()(std::declval<typename mpl::type_pack<Types...>::template nth_type<mpl::index_to_index<Indexs,0>>>()...)) type;
 };
 
 template<typename FinalVisitorType, typename VisitorType>
@@ -146,7 +146,11 @@ template<size_t ... IndexsToResolve,typename T>
 void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Interface,Dim>::typed_visit(const mpl::sequence<IndexsToResolve...>&,T&& i_resolvedValue)
 {
 	typedef typename std::remove_reference<T>::type resolved_type;
-	dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<resolved_type,ResolvedTypes...>,Interface,Dim-1> tmpVisitor(detail::specialized_visitor{i_resolvedValue,m_visitor});
+    typedef dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<resolved_type,ResolvedTypes...>,Interface,Dim-1> sub_visitor_t;
+
+    auto specVisitor = detail::specialized_visitor{i_resolvedValue,m_visitor};
+
+	sub_visitor_t tmpVisitor(std::move(specVisitor));
 
 	tmpVisitor.visit(m_pendingValues[IndexsToResolve]...);
 }
@@ -197,6 +201,8 @@ auto visit(Callable&& i_callable, const Values& ... i_values)
 	typedef mpl::reduce_to_common_type<mpl::remove_qualifiers<typename Values::value_type>...> type_interface;
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
 	typedef rtti::inherited_type_list<type_interface> inherited_type_pack;
+	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
+
 	auto _visitor = dynamic_callable<Return,type_interface>(i_callable);
 
 	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
@@ -237,6 +243,7 @@ auto visit(const Values& ... i_values)
 	typedef mpl::reduce_to_common_type<mpl::remove_qualifiers<typename Values::value_type>...> type_interface;
 	static const bool s_typeExpanded = rtti::inherited_type_expansion<type_interface>;
 	typedef rtti::inherited_type_list<type_interface> inherited_type_pack;
+	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
 
 	auto _visitor = dynamic_callable<Return,type_interface>(Callable{});
 

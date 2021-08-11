@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_lent_object.h"
 #include "ddk_dynamic_visitor.h"
 #include "ddk_system_allocator.h"
 #include "ddk_rtti_defs.h"
