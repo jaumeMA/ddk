@@ -8,6 +8,9 @@
 namespace ddk
 {
 
+template<typename>
+class lent_value;
+
 template<typename T>
 class unique_value
 {
