@@ -105,7 +105,7 @@ void variadic_union<Type,Types...>::destroy()
 }
 template<typename Type,typename ... Types>
 template<typename T>
-constexpr const T& variadic_union<Type,Types...>::get() const
+constexpr typename embedded_type<T>::cref_type variadic_union<Type,Types...>::get() const
 {
 	if constexpr(std::is_same<Type,T>::value)
 	{
@@ -118,7 +118,7 @@ constexpr const T& variadic_union<Type,Types...>::get() const
 }
 template<typename Type,typename ... Types>
 template<typename T>
-constexpr T& variadic_union<Type,Types...>::get()
+constexpr typename embedded_type<T>::ref_type variadic_union<Type,Types...>::get()
 {
 	if constexpr(std::is_same<Type,T>::value)
 	{
@@ -131,7 +131,7 @@ constexpr T& variadic_union<Type,Types...>::get()
 }
 template<typename Type,typename ... Types>
 template<typename T>
-T&& variadic_union<Type,Types...>::extract()
+typename embedded_type<T>::rref_type variadic_union<Type,Types...>::extract()
 {
 	if constexpr(std::is_same<Type,T>::value)
 	{

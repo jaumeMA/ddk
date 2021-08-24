@@ -129,8 +129,9 @@ void future<T>::wait_for(unsigned int i_period) const
 	}
 }
 template<typename T>
-template<typename TT>
-future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) &&
+TEMPLATE(typename Return,typename Type)
+REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
+future<Return> future<T>::then(const function<Return(Type)>& i_continuation) &&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
@@ -138,7 +139,7 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
-			if constexpr(std::is_same<TT,void>::value)
+			if constexpr(std::is_same<Return,void>::value)
 			{
 				eval(i_continuation,acquiredFuture.extract_value());
 			}
@@ -150,7 +151,7 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			future<TT> res = executor -> attach(asyncExecutor->get_execution_context(),currDepth);
+			future<Return> res = executor -> attach(asyncExecutor->get_execution_context(),currDepth);
 
 			res.m_depth = currDepth + 1;
 
@@ -165,24 +166,25 @@ future<TT> future<T>::then(const function<TT(const_reference)>& i_continuation) 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-template<typename TT, typename TTT>
-future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&
+TEMPLATE(typename Return,typename Type, typename Context)
+REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
+future<Return> future<T>::then_on(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
 		const unsigned char currDepth = m_depth;
 
-		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<TTT>(i_execContext)]() mutable
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<Context>(i_execContext)]() mutable
 		{
-			if constexpr(std::is_same<TT,void>::value)
+			if constexpr(std::is_same<Return,void>::value)
 			{
-				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<Return> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
 
 				nestedFuture.wait();
 			}
 			else
 			{
-				future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<TTT>(acquiredExecContext));
+				future<Return> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
 
 				return nestedFuture.extract_value();
 			}
@@ -190,7 +192,7 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			future<TT> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+			future<Return> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
 
 			res.m_depth = currDepth + 1;
 
@@ -205,14 +207,15 @@ future<TT> future<T>::then_on(const function<TT(const_reference)>& i_continuatio
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-template<typename TT, typename TTT>
-future<TT> future<T>::async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) &&
+TEMPLATE(typename Return,typename Type, typename Context)
+REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
+future<Return> future<T>::async(const function<Return(Type)>& i_continuation,Context&& i_execContext) &&
 {
 	if(m_sharedState)
 	{
 		return make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
-			if constexpr(std::is_same<TT,void>::value)
+			if constexpr(std::is_same<Return,void>::value)
 			{
 				eval(i_continuation,acquiredFuture.extract_value());
 			}
@@ -220,7 +223,7 @@ future<TT> future<T>::async(const function<TT(const_reference)>& i_continuation,
 			{
 				return eval(i_continuation,acquiredFuture.extract_value());
 			}
-		})) -> attach(std::forward<TTT>(i_execContext));
+		})) -> attach(std::forward<Context>(i_execContext));
 	}
 
 	throw future_exception("Accessing empty future");

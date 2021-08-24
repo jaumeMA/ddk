@@ -167,12 +167,12 @@ constexpr typename embedded_type<T&&>::cpointer_type embedded_type<T&&>::operato
 template<typename T>
 constexpr embedded_type<T&&>::operator ref_type()
 {
-	return m_data;
+	return std::move(m_data);
 }
 template<typename T>
 constexpr embedded_type<T&&>::operator cref_type() const
 {
-	return m_data;
+	return std::move(m_data);
 }
 template<typename T>
 void embedded_type<T&&>::inplace_construct(T&& val)

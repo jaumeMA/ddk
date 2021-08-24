@@ -242,7 +242,7 @@ void async_executor<Return>::set_result(sink_result i_value)
 {
 	if(i_value.template is<sink_reference>())
 	{
-		m_promise.set_value(std::forward<sink_reference>(i_value.template get<sink_reference>()));
+		m_promise.set_value(std::forward<sink_reference>(std::move(i_value).template extract<sink_reference>()));
 	}
 	else
 	{

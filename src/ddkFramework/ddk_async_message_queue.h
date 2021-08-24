@@ -41,7 +41,7 @@ public:
 	async_attachable_message_queue(thread_executor_unique_ref i_executor);
 	void start(sender_id i_id, const ddk::function<void(const MessageType&)>& i_processor);
 	void stop(sender_id i_id);
-	virtual void push_message(const MessageType& i_msg);
+	void push_message(const MessageType& i_msg) override;
 
 private:
 	void dispatch_messages();

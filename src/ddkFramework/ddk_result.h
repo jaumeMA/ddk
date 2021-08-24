@@ -4,19 +4,27 @@
 #include "ddk_optional.h"
 #include "ddk_class_rules.h"
 
-#if defined(DDK_DEBUG)
-
-#define SET_CHECKED(_RESULT) \
-	set_checked(_RESULT);
-
-#else
-
-#define SET_CHECKED(_RESULT)
-
-#endif
-
 namespace ddk
 {
+
+#if defined(DDK_DEBUG)
+
+struct result_checker
+{
+	result_checker(bool i_check);
+	result_checker(const result_checker& other) = default;
+	result_checker(result_checker&& other);
+	~result_checker();
+
+	result_checker& operator=(bool i_checked);
+	result_checker& operator=(const result_checker& other);
+	result_checker& operator=(result_checker&& other);
+	operator bool() const;
+
+	bool _checked = false;
+};
+
+#endif
 
 struct result_success_t{};
 const result_success_t success = result_success_t();
@@ -71,7 +79,6 @@ public:
 	result(const Error& i_error);
 	result(const result& other);
 	result(result&& other);
-	~result();
 	result& operator=(const result& other);
 	result& operator=(result&& other);
 	Error error() const;
@@ -87,7 +94,7 @@ private:
 	optional<Error> m_nestedRes;
 
 #if defined(DDK_DEBUG)
-	mutable bool m_checked = false;
+	mutable result_checker m_checked = false;
 #endif
 };
 
@@ -137,11 +144,10 @@ public:
 	result(const T& i_payload);
 	result(T&& i_payload);
 	result(const Error& i_error);
-	result(const result& other);
-	result(result&& other);
-	~result();
-	result& operator=(const result& other);
-	result& operator=(result&& other);
+	result(const result& other) = default;
+	result(result&& other) = default;
+	result& operator=(const result& other) = default;
+	result& operator=(result&& other) = default;
 	Error error() const;
 	T get() const;
 	T extract() &&;
@@ -157,7 +163,7 @@ private:
 	variant<T,Error> m_nestedRes;
 
 #if defined(DDK_DEBUG)
-	mutable bool m_checked = false;
+	mutable result_checker m_checked = false;
 #endif
 };
 

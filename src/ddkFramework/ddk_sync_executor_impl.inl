@@ -44,7 +44,7 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 
 						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 						{
-							eval_unsafe(i_sink,res);
+							eval_unsafe(i_sink,std::forward<sink_reference>(res));
 						}
 					}
 
@@ -161,7 +161,7 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 
 						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 						{
-							eval_unsafe(i_sink,res);
+							eval_unsafe(i_sink,std::forward<sink_reference>(res));
 						}
 					}
 
@@ -288,7 +288,7 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 
 						if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 						{
-							eval_unsafe(i_sink,res);
+							eval_unsafe(i_sink,std::forward<sink_reference>(res));
 						}
 					}
 
@@ -413,7 +413,7 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 
 					if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 					{
-						eval_unsafe(i_sink,res);
+						eval_unsafe(i_sink,std::forward<sink_reference>(res));
 					}
 				}
 

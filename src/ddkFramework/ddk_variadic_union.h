@@ -59,11 +59,11 @@ public:
 	template<typename T>
 	inline void destroy();
 	template<typename T>
-	constexpr const T& get() const;
+	constexpr typename embedded_type<T>::cref_type get() const;
 	template<typename T>
-	constexpr T& get();
+	constexpr typename embedded_type<T>::ref_type get();
 	template<typename T>
-	inline T&& extract();
+	inline typename embedded_type<T>::rref_type extract();
 
 private:
 	constexpr variadic_union(const std::true_type&);

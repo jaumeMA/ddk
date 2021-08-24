@@ -6,6 +6,8 @@
 #include "ddk_variant.h"
 #include "ddk_function.h"
 #include "ddk_attachable.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -30,6 +32,7 @@ public:
 	typedef typename async_cancellable_interface::cancel_result cancel_result;
 	typedef typename detail::private_async_state<T>::reference reference;
 	typedef typename detail::private_async_state<T>::const_reference const_reference;
+	typedef typename detail::private_async_state<T>::rreference rreference;
 
 	future() = default;
 	future(const future&) = delete;
@@ -50,12 +53,15 @@ public:
 	void wait_for(unsigned int i_period) const;
 	cancel_result cancel();
 	void detach();
-	template<typename TT>
-	future<TT> then(const function<TT(const_reference)>& i_continuation) &&;
-	template<typename TT, typename TTT>
-	future<TT> then_on(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
-	template<typename TT,typename TTT>
-	future<TT> async(const function<TT(const_reference)>& i_continuation, TTT&& i_execContext) &&;
+	TEMPLATE(typename Return, typename Type)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> then(const function<Return(Type)>& i_continuation) &&;
+	TEMPLATE(typename Return,typename Type, typename Context)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> then_on(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&;
+	TEMPLATE(typename Return,typename Type,typename Context)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> async(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&;
 	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
 
 protected:

@@ -16,6 +16,8 @@ struct async_builtin_message
 	friend struct async_builtin_message;
 	typedef std::tuple<Args...> tuple_t;
 
+	async_builtin_message(const async_builtin_message&) = default;
+	async_builtin_message(async_builtin_message&&) = default;
 	template<typename ... AArgs>
 	async_builtin_message(sender_id i_id, AArgs&& ... i_args)
 	: m_args(std::forward<AArgs>(i_args) ...)
@@ -29,6 +31,8 @@ struct async_builtin_message
 	{
 	}
 	virtual ~async_builtin_message() = default;
+	async_builtin_message& operator=(const async_builtin_message&) = default;
+	async_builtin_message& operator=(async_builtin_message&&) = default;
 	sender_id get_id() const
 	{
 		return m_id;
