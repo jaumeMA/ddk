@@ -504,7 +504,7 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 template<typename ... Types>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Types)...)
-constexpr auto variant_impl<Types...>::visit(Visitor&& visitor)
+constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) &
 {
 	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
@@ -525,7 +525,7 @@ constexpr auto variant_impl<Types...>::visit(Visitor&& visitor)
 template<typename ... Types>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Types)...)
-constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) const
+constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) const &
 {
 	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
 	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
@@ -541,6 +541,27 @@ constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) const
 	else
 	{
 		return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},visitor,*this);
+	}
+}
+template<typename ... Types>
+TEMPLATE(typename Visitor)
+REQUIRED(IS_CALLABLE(Visitor,Types)...)
+constexpr auto variant_impl<Types...>::visit(Visitor&& visitor) &&
+{
+	typedef typename mpl::nth_type_of<0,Types...>::type first_type;
+	typedef decltype(std::declval<Visitor>()(std::declval<first_type>())) return_type;
+
+	static_assert((std::is_same<decltype(std::declval<Visitor>()(std::declval<Types>())),return_type>::value && ...),"You shall provide a uniform return type callable.");
+
+	typedef typename mpl::make_sequence<0,mpl::get_num_types<Types...>()>::type range_seq;
+
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),std::move(*this));
+	}
+	else
+	{
+		return variant_visitor_invoker<return_type,Types...>::template outer_invoker(range_seq{},const_cast<Visitor&>(visitor),std::move(*this));
 	}
 }
 template<typename ... Types>

@@ -1,5 +1,6 @@
 
 #include "ddk_composed_function.h"
+#include "ddk_function_template_helper.h"
 
 namespace ddk
 {
@@ -127,7 +128,8 @@ detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_functi
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
-template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
+REQUIRED(IS_ALLOCATOR(Allocator))
 detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
@@ -136,7 +138,8 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
-template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
+REQUIRED(IS_ALLOCATOR(Allocator))
 detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
@@ -145,7 +148,8 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 
 	return res(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...);
 }
-template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+TEMPLATE(typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
+REQUIRED(IS_ALLOCATOR(Allocator))
 detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
@@ -208,7 +212,7 @@ TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE(Function,Args...))
 auto eval(Function&& i_function,Args&& ... i_args)
 {
-	if constexpr (std::is_same<void,decltype(std::declval<Function>().operator()(std::declval<Args>() ...))>::value)
+	if constexpr (std::is_same<void,typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>::value)
 	{
 		i_function(std::forward<Args>(i_args) ...);
 	}

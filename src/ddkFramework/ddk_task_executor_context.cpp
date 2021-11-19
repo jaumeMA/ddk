@@ -29,6 +29,8 @@ void delayed_task_execution_context::attach(thread i_thread)
 }
 void delayed_task_execution_context::attach(fiber i_fiber)
 {
+	mutex_guard mg(m_mutex);
+
 	if(is_attached() == false)
 	{
 		i_fiber.start([this,callable = std::move(m_function)]()
@@ -50,6 +52,8 @@ void delayed_task_execution_context::attach(fiber i_fiber)
 }
 void delayed_task_execution_context::attach(thread_sheaf i_threadSheaf)
 {
+	mutex_guard mg(m_mutex);
+
 	if(is_attached() == false)
 	{
 		i_threadSheaf.start([this,callable = std::move(m_function)]()
@@ -71,6 +75,8 @@ void delayed_task_execution_context::attach(thread_sheaf i_threadSheaf)
 }
 void delayed_task_execution_context::attach(fiber_sheaf i_fiberSheaf)
 {
+	mutex_guard mg(m_mutex);
+
 	if(is_attached() == false)
 	{
 		i_fiberSheaf.start([this,callable = std::move(m_function)]()
@@ -92,6 +98,8 @@ void delayed_task_execution_context::attach(fiber_sheaf i_fiberSheaf)
 }
 void delayed_task_execution_context::attach(const detail::this_thread_t& i_thisThread)
 {
+	mutex_guard mg(m_mutex);
+
 	if(is_attached() == false)
 	{
 		if(m_function != nullptr)
@@ -126,6 +134,12 @@ bool delayed_task_execution_context::cancel()
 	}
 
 	return false;
+}
+void delayed_task_execution_context::notify()
+{
+	mutex_guard mg(m_mutex);
+
+	m_recipients.notify();
 }
 void delayed_task_execution_context::start(const function<void()>& i_callable)
 {

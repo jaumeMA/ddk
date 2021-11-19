@@ -106,13 +106,10 @@ bool result<void,Error>::operator!=(const Error& i_error) const
 }
 
 template<typename T, typename Error>
-result<T,Error>::result(const T& i_payload)
-: m_nestedRes(i_payload)
-{
-}
-template<typename T, typename Error>
-result<T,Error>::result(T&& i_payload)
-: m_nestedRes(std::move(i_payload))
+TEMPLATE(typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
+result<T,Error>::result(TT&& i_payload)
+: m_nestedRes(std::forward<TT>(i_payload))
 {
 }
 template<typename T, typename Error>

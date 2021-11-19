@@ -24,7 +24,7 @@ private:
     using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;
@@ -49,7 +49,7 @@ private:
     using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;
@@ -72,7 +72,7 @@ private:
     using typename cancellable_executor_interface<void_t()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;
@@ -99,7 +99,7 @@ private:
     using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;
@@ -122,7 +122,7 @@ private:
     using typename cancellable_executor_interface<void_t()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;
@@ -136,6 +136,7 @@ class execution_context_executor : public cancellable_executor_interface<Return(
 {
 public:
 	execution_context_executor(executor_context_lent_ptr i_execContext,unsigned char i_depth);
+	~execution_context_executor();
 
 private:
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
@@ -146,7 +147,7 @@ private:
 	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;

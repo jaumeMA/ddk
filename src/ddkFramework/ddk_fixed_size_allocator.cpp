@@ -44,7 +44,7 @@ fixed_size_allocator::~fixed_size_allocator()
 	DDK_ASSERT(m_numCurrentAllocations.get()==0,"Still pending allocations while destroying allocator.");
 #endif
 }
-void* fixed_size_allocator::allocate(size_t i_size) const
+void* fixed_size_allocator::allocate_chunk(size_t i_size) const
 {
 	if(i_size > m_unitSize)
 	{
@@ -53,30 +53,17 @@ void* fixed_size_allocator::allocate(size_t i_size) const
 	else
 	{
 		void* res = nullptr;
-		size_t currChunk = 0;
-		bool firstAttempt = true;
 
-		do
+		m_barrier.lock();
+
+		if(m_currChunk != s_invalidChunk)
 		{
-			if(!firstAttempt)
-			{
-				std::this_thread::yield();
-			}
-			else
-			{
-				firstAttempt = false;
-			}
+			res = &m_pool[m_unitSize * m_currChunk];
 
-			currChunk = m_currChunk.get();
-
-			if(currChunk == s_invalidChunk)
-			{
-				return nullptr;
-			}
+			m_currChunk = m_nextChunkArr[m_currChunk];
 		}
-		while(atomic_compare_exchange(m_currChunk,currChunk,m_nextChunkArr[currChunk]) == false);
 
-		res = &m_pool[m_unitSize * currChunk];
+		m_barrier.unlock();
 
 		#ifdef MEM_CHECK
 		{
@@ -87,7 +74,7 @@ void* fixed_size_allocator::allocate(size_t i_size) const
 		return res;
 	}
 }
-void fixed_size_allocator::deallocate(const void* i_address) const
+bool fixed_size_allocator::deallocate_chunk(const void* i_address) const
 {
 
 	//check that address is inside our space address
@@ -99,28 +86,25 @@ void fixed_size_allocator::deallocate(const void* i_address) const
 		size_t currChunk = 0;
 		bool firstAttempt = true;
 
-		do
-		{
-			if(!firstAttempt)
-			{
-				std::this_thread::yield();
-			}
-			else
-			{
-				firstAttempt = false;
-			}
+		m_barrier.lock();
 
-			currChunk = m_currChunk.get();
+		m_nextChunkArr[nextChunk] = m_currChunk;
 
-			m_nextChunkArr[nextChunk] = currChunk;
-		}
-		while(atomic_compare_exchange(m_currChunk,currChunk,nextChunk) == false);
+		m_currChunk = nextChunk;
+
+		m_barrier.unlock();
 
 		#ifdef MEM_CHECK
 		{
 			atomic_post_decrement(m_numCurrentAllocations);
 		}
 		#endif
+
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 std::ptrdiff_t fixed_size_allocator::get_local_address(const char* i_address) const

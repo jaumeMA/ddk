@@ -15,6 +15,13 @@ class flag_set
 	ASSERT_CONTAINS_SYMBOL(Enum,underlying_type,"Your enum shall declare an underlying type");
 	static_assert(std::is_integral<UnderlyingType>::value, "You shall provide a numeric underlying type");
 
+	friend inline flag_set& set_from_value(flag_set& i_flag, underlying_type i_value)
+	{
+		i_flag.m_flags = i_value;
+
+		return i_flag;
+	}
+
 public:
     constexpr flag_set()
 	{

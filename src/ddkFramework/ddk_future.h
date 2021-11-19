@@ -8,6 +8,7 @@
 #include "ddk_attachable.h"
 #include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
+#include <chrono>
 
 namespace ddk
 {
@@ -41,6 +42,7 @@ public:
 	future(distributed_reference_wrapper<TT> i_executor, ...);
 	future(const detail::private_async_state_dist_ptr<T>& i_sharedState);
 	future(detail::private_async_state_dist_ptr<T>&& i_sharedState);
+	~future();
 
 	future& operator=(const future&) = delete;
 	future& operator=(future&&);
@@ -50,9 +52,8 @@ public:
 	bool empty() const;
 	T extract_value();
 	void wait() const;
-	void wait_for(unsigned int i_period) const;
+	void wait_for(const std::chrono::milliseconds& i_period) const;
 	cancel_result cancel();
-	void detach();
 	TEMPLATE(typename Return, typename Type)
 	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
 	future<Return> then(const function<Return(Type)>& i_continuation) &&;
@@ -62,12 +63,76 @@ public:
 	TEMPLATE(typename Return,typename Type,typename Context)
 	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
 	future<Return> async(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&;
+	TEMPLATE(typename Return,typename Type)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> async(const function<Return(Type)>& i_continuation, executor_context_lent_ptr i_execContext)&&;
 	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
+	future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
 protected:
 	const_reference get_value() const;
 
 	detail::private_async_state_dist_ptr<T> m_sharedState;
+	unsigned char m_depth = 0;
+};
+
+template<typename T>
+class future<future<T>>
+{
+	template<typename>
+	friend class future;
+	template<typename>
+	friend class promise;
+	template<typename>
+	friend class shared_future;
+	template<typename>
+	friend class executor_promise;
+	friend inline auto share(future<future<T>>&& i_future)
+	{
+		return i_future.m_sharedState;
+	}
+
+public:
+	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	typedef typename detail::private_async_state<T>::reference reference;
+	typedef typename detail::private_async_state<T>::const_reference const_reference;
+	typedef typename detail::private_async_state<T>::rreference rreference;
+
+	future() = default;
+	future(const future&) = delete;
+	future(future&&);
+	template<typename TT>
+	future(distributed_reference_wrapper<future<TT>> i_executor,...);
+	future(const detail::private_async_state_dist_ptr<future<T>>& i_sharedState);
+	future(detail::private_async_state_dist_ptr<future<T>>&& i_sharedState);
+	~future();
+
+	future& operator=(const future&) = delete;
+	future& operator=(future&&);
+	operator bool() const;
+	bool valid() const;
+	bool ready() const;
+	bool empty() const;
+	future<T> extract_value();
+	void wait() const;
+	void wait_for(const std::chrono::milliseconds& i_period) const;
+	cancel_result cancel();
+	TEMPLATE(typename Return,typename Type)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> then(const function<Return(Type)>& i_continuation) &&;
+	TEMPLATE(typename Return,typename Type,typename Context)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> then_on(const function<Return(Type)>& i_continuation,Context&& i_execContext) &&;
+	TEMPLATE(typename Return,typename Type,typename Context)
+	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
+	future<Return> async(const function<Return(Type)>& i_continuation,Context&& i_execContext) &&;
+	future<future<T>> on_error(const function<void(const async_error&)>& i_onError) &&;
+	future<future<T>> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
+
+protected:
+	const_reference get_value() const;
+
+	detail::private_async_state_dist_ptr<future<T>> m_sharedState;
 	unsigned char m_depth = 0;
 };
 
@@ -115,6 +180,10 @@ public:
 	{
         return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError);
 	}
+	future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext) &&
+	{
+		return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError,i_execContext);
+	}
 };
 
 template<typename T>
@@ -139,7 +208,10 @@ public:
 	shared_future<TT> then_on(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const;
 	template<typename TT,typename TTT>
 	shared_future<TT> async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const;
+	template<typename TT>
+	shared_future<TT> async(const function<TT(const_reference)>& i_continuation, executor_context_lent_ptr i_execContext) const;
 	shared_future<T> on_error(const function<void(const async_error&)>& i_onError) const;
+	shared_future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) const;
 };
 
 template<>
@@ -174,6 +246,10 @@ public:
 	shared_future<void> on_error(const function<void(const async_error&)>& i_onError) const
 	{
         return shared_future<detail::void_t>::on_error(i_onError);
+	}
+	shared_future<void> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) const
+	{
+		return shared_future<detail::void_t>::on_error(i_onError,i_execContext);
 	}
 };
 

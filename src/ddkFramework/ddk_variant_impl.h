@@ -91,10 +91,13 @@ public:
     inline void swap(variant_impl<Types...>& other);
     TEMPLATE(typename Visitor)
     REQUIRES(IS_CALLABLE(Visitor,Types)...)
-    constexpr auto visit(Visitor&& visitor);
+    constexpr auto visit(Visitor&& visitor) &;
     TEMPLATE(typename Visitor)
     REQUIRES(IS_CALLABLE(Visitor,Types)...)
-    constexpr auto visit(Visitor&& visitor) const;
+    constexpr auto visit(Visitor&& visitor) const &;
+    TEMPLATE(typename Visitor)
+    REQUIRES(IS_CALLABLE(Visitor,Types)...)
+    constexpr auto visit(Visitor&& visitor) &&;
     template<typename Visitor, typename ... Args>
     constexpr auto visit(Args&& ... i_args) const;
 

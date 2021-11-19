@@ -38,13 +38,14 @@ resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 }
 
 template<typename Function, typename Container>
-ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,typename ddk::mpl::aqcuire_callable_return_type<Function>::type>>> operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container&& i_rhs)
+auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container&& i_rhs)
 {
-	typedef ddk::resolved_iterable_traits<Container> traits_t;
+	typedef typename ddk::resolved_iterable_traits<Container> traits_t;
 	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_t;
-	typedef ddk::resolved_iterable_traits_as<Container,return_t> return_traits_t;
+	typedef typename ddk::resolved_iterable_traits_as<Container,return_t> return_traits_t;
+	typedef ddk::detail::iterable<ddk::transformed_traits<typename return_traits_t::iterable_const_traits>> ret_type;
 
-	return ddk::detail::iterable<ddk::transformed_traits<return_traits_t>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<return_traits_t>,traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_transform()));
+	return ret_type{ ddk::detail::iterable<ddk::transformed_traits<return_traits_t>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<return_traits_t>,traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_transform())) };
 }
 template<typename Function,typename Container>
 ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container&& i_rhs)
@@ -71,7 +72,7 @@ TEMPLATE(typename Function, typename Iterable)
 REQUIRED(IS_CALLABLE(Function))
 auto operator<<=(Function&& i_lhs,Iterable&& i_rhs)
 {
-	typedef typename std::remove_reference<Iterable>::type iterable_t;
+	typedef typename ddk::mpl::static_if<IS_BASE_OF_ITERABLE_COND(Iterable),typename std::remove_reference<Iterable>::type,Iterable>::type iterable_t;
 
 	typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<iterable_t,Function>,ddk::co_iteration<iterable_t,Function>,ddk::iteration<iterable_t,Function>>::type ret_type;
 

@@ -13,6 +13,10 @@ this_thread_t::this_thread_t()
 {
 	set_current_execution_context(m_execContext);
 }
+void this_thread_t::attach_context() const
+{
+	set_current_execution_context(m_execContext);
+}
 
 }
 }

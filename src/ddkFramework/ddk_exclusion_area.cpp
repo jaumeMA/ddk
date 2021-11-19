@@ -1,23 +1,16 @@
 #include "ddk_exclusion_area.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
 
 exclusion_area::exclusion_area()
+: m_waitingRoom({ddk::make_unique_reference<reader_waiting_room>(m_sharedState),ddk::make_unique_reference<writer_waiting_room>(m_sharedState) })
 {
-	//create waiting rooms
-	m_waitingRoom[iwaiting_room::Reader] = new reader_waiting_room(m_sharedState);
-	m_waitingRoom[iwaiting_room::Writer] = new writer_waiting_room(m_sharedState);
 }
 exclusion_area::exclusion_area(exclusion_area&& other)
-: m_waitingRoom{nullptr,nullptr}
+: m_waitingRoom(std::move(other.m_waitingRoom))
 {
-    std::swap(m_waitingRoom,other.m_waitingRoom);
-}
-exclusion_area::~exclusion_area()
-{
-	delete m_waitingRoom[iwaiting_room::Reader];
-	delete m_waitingRoom[iwaiting_room::Writer];
 }
 void exclusion_area::enterReader(Reentrancy i_reentrancy)
 {

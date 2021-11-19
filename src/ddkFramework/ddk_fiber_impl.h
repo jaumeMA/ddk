@@ -17,11 +17,10 @@ namespace detail
 struct this_fiber_t
 {
 public:
-	this_fiber_t() = default;
+	this_fiber_t();
 
 	fiber_id get_id() const;
 	void attach_context();
-	void detach_context();
 	execution_context& get_execution_context();
 	const execution_context& get_execution_context() const;
 	yielder_context* get_context() const;
@@ -30,7 +29,7 @@ public:
     void set_typed_context(yielder_context* i_context);
 
 private:
-	execution_context* m_execContext = nullptr;
+	mutable execution_context m_execContext;
 };
 
 struct fiber_impl

@@ -66,4 +66,9 @@ constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants);
 
 }
 
+template<typename Callable,typename ... Types>
+inline auto operator<<=(Callable&& i_callable,const ddk::variant<Types...>& i_rhs);
+template<typename Callable,typename ... Types>
+inline auto operator<<=(Callable&& i_callable,ddk::variant<Types...>& i_rhs);
+
 #include "ddk_variant_multi_visitor.inl"

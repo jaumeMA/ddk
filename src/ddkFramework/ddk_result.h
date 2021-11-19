@@ -141,8 +141,9 @@ public:
 	typedef T payload_t;
 	typedef Error error_t;
 
-	result(const T& i_payload);
-	result(T&& i_payload);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+	result(TT&& i_payload);
 	result(const Error& i_error);
 	result(const result& other) = default;
 	result(result&& other) = default;

@@ -67,6 +67,7 @@ struct execution_context
 	}
 
 public:
+	execution_context() = default;
 	execution_context(fiber_id i_id);
 	execution_context(fiber_id i_id,yielder_interface& i_yielder);
 	execution_context(fiber_id i_id,stack_alloc_const_lent_ref i_allocator);
@@ -112,7 +113,7 @@ public:
 	}
 
 //private:
-	const fiber_id m_id;
+	fiber_id m_id;
 	yielder_interface* m_yielder;
 	execution_stack m_stack;
 	mutable ucontext_t m_context;

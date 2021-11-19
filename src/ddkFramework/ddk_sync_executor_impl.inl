@@ -78,10 +78,12 @@ typename deferred_executor<Return>::start_result deferred_executor<Return>::exec
 	}
 }
 template<typename Return>
-typename deferred_executor<Return>::cancel_result deferred_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
+typename deferred_executor<Return>::cancel_result deferred_executor<Return>::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
 		return ddk::success;
 	}
 	else if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
@@ -89,6 +91,8 @@ typename deferred_executor<Return>::cancel_result deferred_executor<Return>::can
 		if(i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
 
 			return ddk::success;
 		}
@@ -204,10 +208,14 @@ typename fiber_executor<Return>::start_result fiber_executor<Return>::execute(co
 	}
 }
 template<typename Return>
-typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
+typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+		m_execContext.cancel();
+
 		return ddk::success;
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
@@ -215,6 +223,10 @@ typename fiber_executor<Return>::cancel_result fiber_executor<Return>::cancel(co
 		if (i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+			m_execContext.cancel();
 
 			return ddk::success;
 		}
@@ -322,10 +334,14 @@ typename thread_executor<Return>::start_result thread_executor<Return>::execute(
 	}
 }
 template<typename Return>
-typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
+typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+		m_execContext.cancel();
+
 		return ddk::success;
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
@@ -333,6 +349,10 @@ typename thread_executor<Return>::cancel_result thread_executor<Return>::cancel(
 		if (i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+			m_execContext.cancel();
 
 			return ddk::success;
 		}
@@ -374,6 +394,11 @@ execution_context_executor<Return>::execution_context_executor(executor_context_
 {
 }
 template<typename Return>
+execution_context_executor<Return>::~execution_context_executor()
+{
+	int a = 0;
+}
+template<typename Return>
 typename execution_context_executor<Return>::start_result execution_context_executor<Return>::execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable)
 {
 	if(i_callable == nullptr)
@@ -388,12 +413,13 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 			//by design, if no executor available, use deferred executor
 			execContext = lend(s_execContext);
 		}
-		m_execContext = nullptr;
 
-		auto callable = [=]()
+		auto callable = [this,i_callable,i_sink]()
 		{
 			try
 			{
+				m_execContext = nullptr;
+
 				if constexpr(std::is_same<void,Return>::value)
 				{
 					eval_unsafe(i_callable);
@@ -444,6 +470,8 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 
 			if(!m_continuationToken)
 			{
+				m_execContext = nullptr;
+
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Pending);
 			}
 
@@ -462,32 +490,35 @@ typename execution_context_executor<Return>::start_result execution_context_exec
 	}
 }
 template<typename Return>
-typename execution_context_executor<Return>::cancel_result execution_context_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
+typename execution_context_executor<Return>::cancel_result execution_context_executor<Return>::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled) ||
 	   ddk::atomic_compare_exchange(m_state,ExecutorState::Pending,ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+		m_execContext = nullptr;
+
 		return ddk::success;
 	}
 	else 
 	{
 		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
 		{
-			executor_context_lent_ptr execContext = m_execContext;
-			if(execContext == nullptr)
-			{
-				//by design, if no executor available, use deferred executor
-				execContext = lend(s_execContext);
-			}
-
-			if(execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
+			if(m_execContext && m_execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
 			{
 				if(i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 				{
 					m_state = ExecutorState::Cancelled;
 
+					ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+					m_execContext = nullptr;
+
 					return ddk::success;
 				}
+
+				m_execContext = nullptr;
 			}
 
 			m_state = ExecutorState::Executing;

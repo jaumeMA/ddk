@@ -3,8 +3,9 @@
 #include "ddk_macros.h"
 #include "ddk_atomics.h"
 #include "ddk_critical_section.h"
-#include <vector>
 #include "ddk_mutex.h"
+#include "ddk_unique_reference_wrapper.h"
+#include <vector>
 
 #undef THREAD_ACQUIRE_STACK_TRACE
 
@@ -78,5 +79,8 @@ private:
 	virtual bool _try_to_enter_area(Reentrancy i_reentrancy) = 0;
 	virtual void _leave_area() = 0;
 };
+
+typedef ddk::unique_reference_wrapper<iwaiting_room> iwaiting_room_unique_ref;
+typedef ddk::unique_reference_wrapper<const iwaiting_room> iwaiting_room_const_unique_ref;
 
 }

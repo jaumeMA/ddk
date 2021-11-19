@@ -64,7 +64,18 @@ const T& lock_free_stack_node<T>::get_value() const
 template<typename T>
 T lock_free_stack_node<T>::extract_value()
 {
-	return std::move(m_arena.template extract<T>());
+	if constexpr (std::is_move_constructible<T>::value)
+	{
+		return std::move(m_arena.template extract<T>());
+	}
+	else
+	{
+		T res = std::move(m_arena.template get<T>());
+
+		m_arena.template destroy<T>();
+
+		return res;
+	}
 }
 template<typename T>
 void lock_free_stack_node<T>::set_divider(bool i_divider)

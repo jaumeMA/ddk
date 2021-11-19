@@ -16,8 +16,14 @@ inline const fixed_size_allocator* get_fixed_size_allocator()
 
 template<typename T,typename Allocator>
 template<typename AAllocator>
-fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_allocator)
-: m_allocator({ get_fixed_size_allocator(i_fixedSize),std::forward<AAllocator>(i_allocator)})
+fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_secondaryAllocator)
+: m_allocator({ get_fixed_size_allocator(i_fixedSize),std::forward<AAllocator>(i_secondaryAllocator) })
+{
+}
+template<typename T,typename Allocator>
+template<typename AAllocator>
+fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(const fixed_size_allocator* i_primaryAllocator, AAllocator&& i_secondaryAllocator)
+: m_allocator({ i_primaryAllocator,std::forward<AAllocator>(i_secondaryAllocator) })
 {
 }
 template<typename T, typename Allocator>
@@ -25,7 +31,7 @@ void* fixed_size_or_allocator<T,Allocator>::allocate(size_t i_size) const
 {
 	if(const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
 	{
-		if(void* mem = fixedSizeAllocator->allocate(i_size))
+		if(void* mem = fixedSizeAllocator->allocate_chunk(i_size))
 		{
 			return mem;
 		}
@@ -55,7 +61,7 @@ void fixed_size_or_allocator<T,Allocator>::deallocate(TT* i_ptr) const
 
 		if(const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
 		{
-			fixedSizeAllocator->deallocate(i_ptr);
+			fixedSizeAllocator->deallocate_chunk(i_ptr);
 		}
 		else
 		{

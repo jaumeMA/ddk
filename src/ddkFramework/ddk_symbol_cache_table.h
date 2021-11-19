@@ -20,7 +20,9 @@ public:
 	{
 		std::string m_name;
 		std::string m_filename;
-		size_t m_lineNumber;
+		size_t m_lineNumber = 0;
+
+		operator bool() const;
 	};
 	typedef symbol_info& reference;
 	typedef const symbol_info& const_reference;

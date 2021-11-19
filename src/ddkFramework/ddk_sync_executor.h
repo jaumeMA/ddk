@@ -2,9 +2,11 @@
 
 #include "ddk_async_executor_interface.h"
 #include "ddk_executor_promise.h"
+#include "ddk_context_promise.h"
 #include "ddk_sync_executor_impl.h"
 #include "ddk_attachable.h"
 #include "ddk_distribute_from_this.h"
+#include "ddk_async_defs.h"
 
 namespace ddk
 {
@@ -15,6 +17,7 @@ class async_executor : public async_cancellable_interface, public async_execute_
 	template<typename RReturn>
 	friend distributed_reference_wrapper<async_executor<RReturn>> make_async_executor(const ddk::function<RReturn()>& i_function);
 	friend class future<Return>;
+	friend class shared_future<Return>;
 	using typename async_execute_interface<Return>::StartErrorCode;
 	typedef typename executor_interface<Return()>::start_result nested_start_result;
 	typedef typename executor_interface<Return()>::sink_reference sink_reference;
@@ -36,6 +39,7 @@ public:
 	async_executor& operator=(const async_executor&) = delete;
 
 	// immediat attach
+	future<Return> attach(const detail::this_thread_t&);
 	future<Return> attach(thread i_thread);
 	future<Return> attach(fiber i_fiber);
 	future<Return> attach(thread_sheaf i_threadSheaf);
@@ -45,6 +49,7 @@ public:
 	future<Return> attach(attachable<Return> i_attachable);
 
 	// delayed attach
+	future<Return> deferred_attach(const detail::this_thread_t&);
 	future<Return> deferred_attach(thread i_thread);
 	future<Return> deferred_attach(fiber i_fiber);
 	future<Return> deferred_attach(thread_sheaf i_threadSheaf);

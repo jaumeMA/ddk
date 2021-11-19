@@ -11,9 +11,10 @@ struct this_thread_t
 {
 public:
 	this_thread_t();
+	void attach_context() const;
 
 private:
-	execution_context m_execContext;
+	mutable execution_context m_execContext;
 };
 
 }

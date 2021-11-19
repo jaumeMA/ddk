@@ -22,6 +22,10 @@ struct add_action: base_action
 {
 public:
     add_action() = default;
+    add_action(add_action&&) = default;
+    add_action(const add_action&) = default;
+    add_action& operator=(add_action&&) = default;
+    add_action& operator=(const add_action&) = default;
     template<typename T,typename ... Args>
     add_action operator()(Args&& ... i_args)
     {
@@ -34,11 +38,16 @@ public:
     {
         return m_value.getValue<T>();
     }
+    template<typename T>
+    T extract() &&
+    {
+        return m_value.extractValue<T>();
+    }
 
 private:
     template<typename T,typename ... Args>
     add_action(Args&& ... i_args)
-        : m_value(T{ std::forward<Args>(i_args) ... })
+       : m_value(T{ std::forward<Args>(i_args) ... })
     {
     }
 

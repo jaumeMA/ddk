@@ -26,7 +26,7 @@ bool task_executor::start()
 {
 	if(m_state != Running)
 	{
-		m_updateThread.start_thread(make_function(this,&task_executor::update),make_function([this](){ return (m_pendingTasks.empty() == false) && m_availableThreads.available_threads(); }));
+		m_updateThread.start(make_function(this,&task_executor::update),make_function([this](){ return (m_pendingTasks.empty() == false) && m_availableThreads.available_threads(); }));
 
 		m_state = Running;
 	}
@@ -39,7 +39,7 @@ void task_executor::stop()
 	{
 		m_state = Idle;
 
-		m_updateThread.stop_thread();
+		m_updateThread.stop();
 
 		while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
 		{

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_template_helper.h"
+#include "ddk_scoped_enum.h"
 
 #define IS_NUMBER_OF_ARGS_COND(_NUM,...) \
     (ddk::mpl::num_types<__VA_ARGS__> == _NUM)
@@ -67,6 +68,12 @@
 
 #define IS_NOT_BASE_OF(_BASE,_TYPE) \
 	typename std::enable_if<IS_NOT_BASE_OF_COND(_BASE,_TYPE)>::type
+
+#define IS_BINDABLE_BY_COND(_TYPE,_TTYPE) \
+	ddk::concepts::is_bindable_by<_TYPE,_TTYPE>
+
+#define IS_BINDABLE_BY(_TYPE,_TTYPE) \
+	typename std::enable_if<IS_BINDABLE_BY_COND(_TYPE,_TTYPE)>::type
 
 #define IS_SAME_CLASS_COND(_TYPE,__TYPE) \
 	std::is_same<_TYPE,__TYPE>::value
@@ -158,11 +165,28 @@
 #define TYPE_CONTAINS_SYMBOL(_TYPE,_SYMBOL) \
 	typename std::enable_if<TYPE_CONTAINS_SYMBOL_COND(_TYPE,_SYMBOL)>::type
 
+#define IS_SCOPED_ENUM(_TYPE) \
+	TYPE_CONTAINS_SYMBOL_COND(_TYPE,scoped_enum_tag)
+
 
 namespace ddk
 {
 namespace concepts
 {
+
+template<typename T, typename TT>
+struct is_bindable_by_impl
+{
+private:
+	static std::true_type checker(TT*);
+	static std::false_type checker(...);
+
+public:
+	static const bool value = decltype(checker(reinterpret_cast<T*>(nullptr)))::value;
+};
+
+template<typename T, typename TT>
+inline constexpr bool is_bindable_by = is_bindable_by_impl<T,TT>::value;
 
 }
 }

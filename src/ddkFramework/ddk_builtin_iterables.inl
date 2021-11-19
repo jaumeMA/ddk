@@ -18,9 +18,8 @@ __numbers_iterable<T> __numbers_iterable<T>::operator()(const function<T(const T
 }
 
 template<typename T>
-iterable_adaptor<const detail::__numbers_iterable<T>>::iterable_adaptor(const detail::__numbers_iterable<T>& i_iterable,const ddk::shift_action& i_initialAction)
-: m_currValue(static_cast<T>(i_initialAction.shifting()))
-, m_generator(lend(i_iterable))
+iterable_adaptor<const detail::__numbers_iterable<T>>::iterable_adaptor(const detail::__numbers_iterable<T>& i_iterable)
+: m_generator(lend(i_iterable))
 {
 }
 template<typename T>
@@ -30,7 +29,17 @@ bool iterable_adaptor<const detail::__numbers_iterable<T>>::valid() const
 }
 template<typename T>
 template<typename Sink>
-typename iterable_adaptor<const detail::__numbers_iterable<T>>::difference_type iterable_adaptor<const detail::__numbers_iterable<T>>::forward_next_value_in(Sink&& i_sink) const
+bool iterable_adaptor<const detail::__numbers_iterable<T>>::init(Sink&& i_sink, const ddk::shift_action& i_initialAction)
+{
+    m_currValue = static_cast<T>(i_initialAction.shifting());
+
+    i_sink.apply((m_generator != nullptr) ? eval(m_generator,m_currValue) : m_currValue);
+
+    return true;
+}
+template<typename T>
+template<typename Sink>
+typename iterable_adaptor<const detail::__numbers_iterable<T>>::difference_type iterable_adaptor<const detail::__numbers_iterable<T>>::forward_next_value_in(Sink&& i_sink)
 {
     i_sink.apply((m_generator != nullptr) ? eval(m_generator,++m_currValue) : ++m_currValue);
 

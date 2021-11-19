@@ -114,7 +114,7 @@ public:
 	inline const T* operator->() const;
 	inline T& operator*();
 	inline const T& operator*() const;
-	inline operator bool() const;
+	inline explicit operator bool() const;
 	void clear();
 	inline T* get();
 	inline const T* get() const;

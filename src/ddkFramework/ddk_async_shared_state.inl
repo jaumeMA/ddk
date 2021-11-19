@@ -10,43 +10,10 @@ namespace detail
 {
 
 template<typename T>
-private_async_state<T>::control_block::control_block(private_async_state& i_asyncSharedState)
-: distributed_control_block<private_async_state<T>,typed_system_allocator<private_async_state<T>>>(&i_asyncSharedState)
-, m_asyncSharedState(i_asyncSharedState)
-{
-}
-template<typename T>
-unsigned int private_async_state<T>::control_block::decrementSharedReference()
-{
-	if(m_asyncSharedState.pending())
-	{
-		const unsigned int res = distributed_reference_counter::decrementSharedReference();
-
-		if(res == 1)
-		{
-			m_asyncSharedState.unsafe_notify();
-		}
-
-		return res;
-	}
-	else
-	{
-		return distributed_reference_counter::decrementSharedReference();
-	}
-}
-
-template<typename T>
 private_async_state<T>::private_async_state()
 : m_arena(none)
 , m_mutex(MutexType::Recursive)
-, m_refCounter(*this)
 {
-}
-template<typename T>
-private_async_state<T>::~private_async_state()
-{
-	//just to avoid races on destruction
-	mutex_guard lg(m_mutex);
 }
 template<typename T>
 typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
@@ -107,8 +74,6 @@ void private_async_state<T>::set_value(sink_type i_value)
 
 	m_arena = std::forward<sink_type>(i_value);
 
-	m_asyncExecutor = nullptr;
-
 	m_condVar.notify_all();
 }
 template<typename T>
@@ -117,8 +82,6 @@ void private_async_state<T>::set_exception(const async_exception& i_exception)
 	mutex_guard lg(m_mutex);
 
 	m_arena = i_exception;
-
-	m_asyncExecutor = nullptr;
 
 	m_condVar.notify_all();
 }
@@ -134,7 +97,7 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 
 	if(m_arena.template is<detail::none_t>())
 	{
-		notify();
+		unsafe_notify();
 	}
 
 	if(m_arena.template is<detail::none_t>())
@@ -162,7 +125,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 
 	if(m_arena.template is<detail::none_t>())
 	{
-		notify();
+		unsafe_notify();
 	}
 
 	if(m_arena.template is<detail::none_t>())
@@ -190,7 +153,7 @@ embedded_type<T> private_async_state<T>::extract_value()
 
 	if(m_arena.template is<detail::none_t>())
 	{
-		notify();
+		unsafe_notify();
 	}
 
 	if(m_arena.template is<detail::none_t>())
@@ -222,7 +185,7 @@ void private_async_state<T>::wait() const
 
 	if(m_arena.template is<detail::none_t>())
 	{
-		notify();
+		unsafe_notify();
 	}
 
 	if(m_arena.template is<detail::none_t>())
@@ -237,7 +200,7 @@ void private_async_state<T>::wait_for(unsigned int i_period) const
 
 	if(m_arena.template is<detail::none_t>())
 	{
-		notify();
+		unsafe_notify();
 	}
 
 	if(m_arena.template is<detail::none_t>())
@@ -271,10 +234,7 @@ void private_async_state<T>::notify() const
 {
 	mutex_guard lg(m_mutex);
 
-	if(m_asyncExecutor)
-	{
-		m_asyncExecutor->notify();
-	}
+	unsafe_notify();
 }
 template<typename T>
 void private_async_state<T>::unsafe_notify() const

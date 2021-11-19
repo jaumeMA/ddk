@@ -48,13 +48,13 @@ ddk::detail::iterable_order<T> order(const T& i_order)
 	return ddk::detail::iterable_order<T>(i_order);
 }
 TEMPLATE(typename Iterable,typename ... Predicates)
-REQUIRED(IS_CALLABLE(Predicates)...)
+REQUIRED(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Predicates)...)
 std::array<decltype(deduce_iterable(std::declval<Iterable>())),mpl::num_types<Predicates...>+1> group_by(Iterable&& i_lhs, Predicates&& ... i_predicates)
 {
 	return { filter(deduce_function(i_predicates)) <<= deduce_iterable(i_lhs) ..., filter((!deduce_function(i_predicates) && ...)) <<= deduce_iterable(i_lhs)};
 }
 TEMPLATE(typename Iterable,typename Functor)
-REQUIRED(IS_CALLABLE(Functor))
+REQUIRED(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Functor))
 auto constrain(Iterable&& i_iterable, Functor&& i_constrain)
 {
 	return ddk::detail::iterable_constrain(std::forward<Functor>(i_constrain)) <<= std::forward<Iterable>(i_iterable);
@@ -65,7 +65,7 @@ auto take_n(Iterable&& i_iterable,size_t i_numItems)
 	return constrain(std::forward<Iterable>(i_iterable),detail::num_items_constrain(i_numItems));
 }
 TEMPLATE(typename Functor)
-REQUIRED(IS_CALLABLE(Functor))
+REQUIRED(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Functor))
 auto constrain(Functor&& i_constrain)
 {
 	return ddk::detail::iterable_constrain{ std::forward<Functor>(i_constrain) };

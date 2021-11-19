@@ -4,9 +4,9 @@
 #include "ddk_system_allocator.h"
 
 #define DDK_APPEND_GLOBAL_ALLOCATOR(...) \
-namespace ddk \
+namespace \
 { \
-	bool g__appended_global_allocs = __append_global_allocator_map_entries({__VA_ARGS__}); \
+	const bool _ = ::ddk::__append_global_allocator_map_entries({__VA_ARGS__}); \
 }
 
 namespace ddk
@@ -19,7 +19,9 @@ public:
 	typedef T type;
 
 	template<typename AAllocator>
-	fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_allocator);
+	fixed_size_or_allocator(size_t i_fixedSize,AAllocator&& i_secondaryAllocator);
+	template<typename AAllocator>
+	fixed_size_or_allocator(const fixed_size_allocator* i_primaryAllocator,AAllocator&& i_secondaryAllocator);
 	void* allocate(size_t i_size) const;
 	template<typename TT>
 	void deallocate(TT* i_ptr) const;

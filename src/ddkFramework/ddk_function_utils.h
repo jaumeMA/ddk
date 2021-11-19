@@ -55,18 +55,21 @@ TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typen
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
 inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Arg, typename ... Args)
-REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>),IS_NOT_ALLOCATOR(Arg))
+REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_NOT_FUNCTION(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>),IS_NOT_ALLOCATOR(Arg))
 inline detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&&, Arg&& i_arg, Args&& ... i_args);
 
 //allocator specified, args specified
-template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
+REQUIRES(IS_ALLOCATOR(Allocator))
 inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
-template<typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
+REQUIRES(IS_ALLOCATOR(Allocator))
 inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
-template<typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args>
+TEMPLATE(typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
+REQUIRES(IS_ALLOCATOR(Allocator))
 inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
-REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>))
+REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_NOT_FUNCTION(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>))
 inline detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
 //safe version

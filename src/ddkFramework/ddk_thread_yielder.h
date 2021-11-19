@@ -15,20 +15,39 @@ namespace detail
 
 struct yielder_context
 {
-	yielder_context();
+	enum State
+	{
+		Running,
+		Paused,
+		Stopped
+	};
+
+	yielder_context(fiber_id i_id, State i_state = Running);
 	virtual ~yielder_context() = default;
 
 	inline void stop(fiber_id i_id)
 	{
-		m_stop = std::make_pair(i_id,true);
+		m_state = std::make_pair(i_id,Stopped);
 	}
 	inline bool is_stopped(fiber_id i_id) const
 	{
-		return m_stop.first == i_id && m_stop.second;
+		return m_state.first == i_id && m_state.second == Stopped;
+	}
+	inline void pause(fiber_id i_id)
+	{
+		m_state = std::make_pair(i_id,Paused);
+	}
+	inline bool is_paused(fiber_id i_id) const
+	{
+		return m_state.first == i_id && m_state.second == Paused;
+	}
+	inline bool is_running(fiber_id i_id) const
+	{
+		return m_state.first == i_id && m_state.second == Running;
 	}
 
 private:
-	std::pair<fiber_id,bool> m_stop;
+	std::pair<fiber_id,State> m_state;
 };
 
 template<typename T>
@@ -37,10 +56,11 @@ struct typed_yielder_context : yielder_context
 public:
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
+	typedef typename embedded_type<T>::rref_type rreference;
 	typedef typename embedded_type<T>::raw_type value_type;
 	typedef variant<T,async_exception> result_type;
 
-	typed_yielder_context() = default;
+	typed_yielder_context();
     template<typename TT>
 	inline typed_yielder_context(TT&& i_value);
 	inline typed_yielder_context(const typed_yielder_context& other);
@@ -51,8 +71,12 @@ public:
 	TEMPLATE(typename Arg)
 	REQUIRES(IS_CONSTRUCTIBLE(result_type,Arg))
 	inline void insert_value(Arg&& i_value);
-	inline const result_type& get_value() const;
-	inline result_type& get_value();
+	template<typename Sink>
+	inline void get_value(Sink&& i_sink) const;
+	template<typename Sink>
+	inline void get_value(Sink&& i_sink);
+	template<typename Sink>
+	inline void extract_value(Sink&& i_sink) &&;
 
 private:
 	mutable result_type m_value;

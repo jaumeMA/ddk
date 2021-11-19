@@ -63,10 +63,12 @@ thread_sheaf_executor::start_result thread_sheaf_executor::execute(const sink_ty
 		}
 	}
 }
-thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const ddk::function<bool()>& i_cancelFunc)
+thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
 		return ddk::success;
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
@@ -74,6 +76,8 @@ thread_sheaf_executor::cancel_result thread_sheaf_executor::cancel(const ddk::fu
 		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
 
 			return ddk::success;
 		}
@@ -101,7 +105,7 @@ executor_context_const_lent_ptr thread_sheaf_executor::get_execution_context() c
 }
 bool thread_sheaf_executor::pending() const
 {
-	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
+	return m_state.get() == ExecutorState::Idle;
 }
 
 fiber_sheaf_executor::fiber_sheaf_executor(fiber_sheaf i_fiberSheaf)
@@ -161,10 +165,12 @@ fiber_sheaf_executor::start_result fiber_sheaf_executor::execute(const sink_type
 		}
 	}
 }
-fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const ddk::function<bool()>& i_cancelFunc)
+fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
 		return ddk::success;
 	}
 	else if (ddk::atomic_compare_exchange(m_state, ExecutorState::Executing, ExecutorState::Cancelling))
@@ -172,6 +178,8 @@ fiber_sheaf_executor::cancel_result fiber_sheaf_executor::cancel(const ddk::func
 		if (i_cancelFunc != nullptr && eval(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
 
 			return ddk::success;
 		}
@@ -199,7 +207,7 @@ executor_context_const_lent_ptr fiber_sheaf_executor::get_execution_context() co
 }
 bool fiber_sheaf_executor::pending() const
 {
-	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
+	return m_state.get() == ExecutorState::Idle;
 }
 
 }

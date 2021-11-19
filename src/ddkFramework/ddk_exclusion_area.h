@@ -14,7 +14,6 @@ public:
 	exclusion_area();
 	exclusion_area(const exclusion_area&) = delete;
 	exclusion_area(exclusion_area&& other);
-	~exclusion_area();
 	exclusion_area& operator=(const exclusion_area&) = delete;
 	exclusion_area& operator=(exclusion_area&&) = delete;
 
@@ -29,7 +28,7 @@ public:
 
 private:
 	iwaiting_room::SharedState m_sharedState;
-	std::array<iwaiting_room*,2> m_waitingRoom;
+	std::array<iwaiting_room_unique_ref,2> m_waitingRoom;
 };
 
 }

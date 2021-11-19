@@ -6,11 +6,7 @@ namespace ddk
 template<typename T>
 executor_promise<T>::executor_promise()
 {
-	typedef tagged_pointer<typename detail::private_async_state<T>::reference_counter> tagged_reference_counter;
-
-	detail::private_async_state<T>* sharedState = new detail::private_async_state<T>();
-
-	m_sharedState = as_shared_reference(sharedState,tagged_reference_counter(&sharedState->m_refCounter,ReferenceAllocationType::Embedded));
+	m_sharedState = make_distributed_reference<detail::private_async_state<T>>();
 }
 template<typename T>
 executor_promise<T>::executor_promise(const executor_promise<T>& other)
@@ -28,41 +24,20 @@ template<typename T>
 void executor_promise<T>::set_value(sink_type i_value)
 {
 	m_sharedState->set_value(std::forward<sink_type>(i_value));
+
+	m_sharedState = nullptr;
 }
 template<typename T>
 void executor_promise<T>::set_exception(const async_exception& i_exception)
 {
 	m_sharedState->set_exception(i_exception);
-}
-template<typename T>
-void executor_promise<T>::wait() const
-{
-	return m_sharedState->wait();
-}
-template<typename T>
-void executor_promise<T>::wait_for(unsigned int i_period) const
-{
-	return m_sharedState->wait_for(i_period);
-}
-template<typename T>
-bool executor_promise<T>::ready() const
-{
-	return m_sharedState->ready();
-}
-template<typename T>
-void executor_promise<T>::signal() const
-{
-	return m_sharedState->signal();
+
+	m_sharedState = nullptr;
 }
 template<typename T>
 void executor_promise<T>::attach(async_cancellable_dist_ref i_executor)
 {
 	m_sharedState->attach(i_executor);
-}
-template<typename T>
-bool executor_promise<T>::is_attached() const
-{
-	return m_sharedState->is_attached();
 }
 template<typename T>
 void executor_promise<T>::detach()

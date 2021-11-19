@@ -7,8 +7,7 @@
 #include "ddk_optional.h"
 #include "ddk_thread_executor_interface.h"
 #include "ddk_async_defs.h"
-#include "ddk_mutex.h"
-#include "ddk_lock_guard.h"
+#include "ddk_exclusion_area.h"
 
 namespace ddk
 {
@@ -27,7 +26,8 @@ public:
 	receiver_id get_id() const;
 
 private:
-	single_consumer_lock_free_stack<MessageType> m_list;
+	mutex m_mutex; //pending to check problems in multiple consumer pop method.
+	multiple_consumer_lock_free_stack<MessageType> m_list;
 };
 
 template<typename MessageType>
@@ -46,7 +46,7 @@ public:
 private:
 	void dispatch_messages();
 
-	mutex	m_mutex;
+	exclusion_area m_exclArea;
 	linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>	m_receivers;
 	thread_executor_unique_ref m_executor;
 };

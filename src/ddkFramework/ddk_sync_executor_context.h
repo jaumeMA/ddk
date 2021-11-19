@@ -39,6 +39,8 @@ private:
 
 public:
 	async_executor_recipients() = default;
+	async_executor_recipients(async_executor_recipients&&) = default;
+	~async_executor_recipients();
 
 	void notify();
 	continuation_token accept(const function<void()>&, unsigned char i_depth);
@@ -57,6 +59,7 @@ class deferred_execution_context : public executor_context_interface, public len
 {
 public:
 	void start(const function<void()>&) override;
+	bool cancel();
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -69,6 +72,7 @@ class thread_execution_context : public executor_context_interface, public lend_
 public:
 	thread_execution_context(thread i_thread);
 	void start(const function<void()>&) override;
+	bool cancel();
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -85,6 +89,7 @@ public:
 	fiber_execution_context(fiber i_fiber);
 
 	void start(const function<void()>&) override;
+	bool cancel();
 
 private:
 	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
@@ -99,6 +104,7 @@ class thread_sheaf_execution_context : public executor_context_interface, public
 {
 public:
 	thread_sheaf_execution_context(thread_sheaf i_threadSheaf);
+	bool cancel();
 	void notify_recipients();
 	size_t add_failure();
 	size_t remove_pending_fiber();
@@ -124,6 +130,7 @@ class fiber_sheaf_execution_context : public executor_context_interface, public 
 public:
 	fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf);
 
+	bool cancel();
 	void clear_fibers();
 	size_t add_failure();
 	size_t remove_pending_thread();

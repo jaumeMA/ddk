@@ -3,10 +3,26 @@ namespace ddk
 {
 
 template<typename T,size_t ... ranks>
-iterable_adaptor<high_order_array<T,ranks...>>::iterable_adaptor(high_order_array<T,ranks...>& i_iterable,const ddk::shift_action& i_initialAction)
+iterable_adaptor<high_order_array<T,ranks...>>::iterable_adaptor(high_order_array<T,ranks...>& i_iterable)
 : m_iterable(i_iterable)
 {
+}
+template<typename T,size_t ... ranks>
+template<typename Sink>
+bool iterable_adaptor<high_order_array<T,ranks...>>::init(Sink&& i_sink, const ddk::shift_action& i_initialAction)
+{
 	m_currIndex = i_initialAction.shifting();
+
+	if(valid())
+	{
+		i_sink.apply(m_iterable.at(m_currIndex));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
@@ -108,13 +124,27 @@ bool iterable_adaptor<high_order_array<T,ranks...>>::valid() const noexcept
 	return 0 <= m_currIndex && m_currIndex < high_order_array<T,ranks ...>::s_totalSize;
 }
 
-
-
 template<typename T,size_t ... ranks>
-iterable_adaptor<const high_order_array<T,ranks...>>::iterable_adaptor(const high_order_array<T,ranks...>& i_iterable,const ddk::shift_action& i_initialAction)
+iterable_adaptor<const high_order_array<T,ranks...>>::iterable_adaptor(const high_order_array<T,ranks...>& i_iterable)
 : m_iterable(i_iterable)
 {
+}
+template<typename T,size_t ... ranks>
+template<typename Sink>
+bool iterable_adaptor<const high_order_array<T,ranks...>>::init(Sink&& i_sink,const ddk::shift_action& i_initialAction)
+{
 	m_currIndex = i_initialAction.shifting();
+
+	if(valid())
+	{
+		i_sink.apply(m_iterable.at(m_currIndex));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>

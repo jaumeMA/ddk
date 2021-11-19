@@ -54,7 +54,7 @@ using transformed_traits = typename transformed_traits_resolver<Traits>::type;
 }
 
 template<typename Function, typename Container>
-inline ddk::detail::iterable<ddk::transformed_traits<ddk::resolved_iterable_traits_as<Container,typename ddk::mpl::aqcuire_callable_return_type<Function>::type>>> operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container&& i_rhs);
+inline auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container&& i_rhs);
 
 template<typename Function,typename Container>
 inline ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container&& i_rhs);

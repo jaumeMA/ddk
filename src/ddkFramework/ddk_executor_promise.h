@@ -3,6 +3,7 @@
 #include "ddk_promise.h"
 #include "ddk_async_executor_interface.h"
 #include "ddk_async_shared_state.h"
+#include "ddk_async_defs.h"
 
 namespace ddk
 {
@@ -26,15 +27,9 @@ public:
 	void set_exception(const async_exception& i_exception);
 	void attach(async_cancellable_dist_ref i_executor);
 	void detach();
-	bool is_attached() const;
 	future<T> get_future() const;
 
 protected:
-	void signal() const;
-	void wait() const;
-	void wait_for(unsigned int i_period) const;
-	bool ready() const;
-
 	detail::private_async_state_dist_ptr<T> m_sharedState;
 };
 

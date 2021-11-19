@@ -42,10 +42,10 @@ future<Return> task_executor::enqueue(const function<Return()>& i_task)
 {
 	if(m_state == Running)
 	{
-		typedef typed_allocator_proxy<pending_task_impl<Return>,fixed_size_allocator> allocator_t;
-		static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<pending_task_impl<Return>,allocator_t>());
+		typedef fixed_size_or_allocator<async_executor<Return>,system_allocator> allocator_t;
+		static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_distributed_allocation<pending_task_impl<Return>,allocator_t>());
 
-		unique_pending_impl_task<Return> newTask = (s_allocator) ? make_unique_reference<pending_task_impl<Return>>(allocator_t{*s_allocator},i_task)
+		unique_pending_impl_task<Return> newTask = (s_allocator) ? make_unique_reference<pending_task_impl<Return>>(allocator_t{s_allocator,system_allocator {}},i_task)
 																: make_unique_reference<pending_task_impl<Return>>(i_task);
 
 		future<Return> taskFuture = newTask->as_future();

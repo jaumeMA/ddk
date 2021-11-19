@@ -110,7 +110,7 @@ public:
 	inline const T* operator->() const;
 	inline T& operator*();
 	inline const T& operator*() const;
-	inline operator bool() const;
+	inline explicit operator bool() const;
 	inline void clear();
 	inline T* get();
 	inline const T* get() const;

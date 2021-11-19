@@ -152,7 +152,7 @@ constexpr char variant<Type>::which() const
 template<typename Type>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Type))
-constexpr auto variant<Type>::visit(Visitor&& visitor)
+constexpr auto variant<Type>::visit(Visitor&& visitor) &
 {
 	typedef decltype(std::declval<Visitor>()(std::declval<Type>())) return_type;
 
@@ -168,7 +168,7 @@ constexpr auto variant<Type>::visit(Visitor&& visitor)
 template<typename Type>
 TEMPLATE(typename Visitor)
 REQUIRED(IS_CALLABLE(Visitor,Type))
-constexpr auto variant<Type>::visit(Visitor&& visitor) const
+constexpr auto variant<Type>::visit(Visitor&& visitor) const &
 {
 	typedef decltype(std::declval<Visitor>()(std::declval<Type>())) return_type;
 
@@ -179,6 +179,22 @@ constexpr auto variant<Type>::visit(Visitor&& visitor) const
 	else
 	{
 		return visitor(m_value);
+	}
+}
+template<typename Type>
+TEMPLATE(typename Visitor)
+REQUIRED(IS_CALLABLE(Visitor,Type))
+constexpr auto variant<Type>::visit(Visitor&& visitor) &&
+{
+	typedef decltype(std::declval<Visitor>()(std::declval<Type>())) return_type;
+
+	if constexpr(std::is_same<void,return_type>::value)
+	{
+		visitor(std::move(m_value));
+	}
+	else
+	{
+		return visitor(std::move(m_value));
 	}
 }
 template<typename Type>
@@ -310,15 +326,15 @@ TEMPLATE(typename Visitor,typename Variant)
 REQUIRED(IS_VARIANT(Variant))
 constexpr auto visit(Visitor&& i_visitor,Variant&& i_variant)
 {
-	typedef decltype(i_variant.visit(std::declval<Visitor>())) return_type;
+	typedef decltype(std::forward<Variant>(i_variant).visit(std::declval<Visitor>())) return_type;
 
 	if constexpr(std::is_same<void,return_type>::value)
 	{
-		i_variant.visit(i_visitor);
+		std::forward<Variant>(i_variant).visit(i_visitor);
 	}
 	else
 	{
-		return i_variant.visit(i_visitor);
+		return std::forward<Variant>(i_variant).visit(i_visitor);
 	}
 }
 
@@ -330,28 +346,28 @@ constexpr Return visit(Variant&& i_variant)
 
 	if constexpr (std::is_same<void,Return>::value)
 	{
-		i_variant.visit(_visitor);
+		std::forward<Variant>(i_variant).visit(_visitor);
 	}
 	else
 	{
-		return i_variant.visit(_visitor);
+		return std::forward<Variant>(i_variant).visit(_visitor);
 	}
 }
 TEMPLATE(typename Visitor,typename Variant)
 REQUIRED(IS_VARIANT(Variant))
 constexpr auto visit(Variant&& i_variant)
 {
-	typedef decltype(i_variant.visit(std::declval<Visitor>())) return_type;
+	typedef decltype(std::forward<Variant>(i_variant).visit(std::declval<Visitor>())) return_type;
 
 	const Visitor _visitor;
 
 	if constexpr(std::is_same<void,return_type>::value)
 	{
-		i_variant.visit(_visitor);
+		std::forward<Variant>(i_variant).visit(_visitor);
 	}
 	else
 	{
-		return i_variant.visit(_visitor);
+		return std::forward<Variant>(i_variant).visit(_visitor);
 	}
 }
 

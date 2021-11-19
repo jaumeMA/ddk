@@ -2,6 +2,7 @@
 
 #include "ddk_stack_allocator_interface.h"
 #include "ddk_execution_stack.h"
+#include "ddk_mutex.h"
 #include <set>
 
 namespace ddk
@@ -81,6 +82,7 @@ private:
 	mutable std::set<Buddy> m_buddyAllocator;
 	void* m_allocAddr = nullptr;
 	size_t m_maxPages = 0;
+	mutable mutex m_mutex;
 };
 
 }

@@ -47,6 +47,19 @@ void thread_sheaf::stop()
 		itThread->stop();
 	}
 }
+bool thread_sheaf::joinable() const
+{
+	thread_container::const_iterator itThread = m_threadCtr.begin();
+	for(; itThread != m_threadCtr.end(); ++itThread)
+	{
+		if(itThread->joinable())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 thread_sheaf::iterator thread_sheaf::begin()
 {
 	return m_threadCtr.begin();
@@ -62,27 +75,6 @@ thread_sheaf::iterator thread_sheaf::end()
 thread_sheaf::const_iterator thread_sheaf::end() const
 {
 	return m_threadCtr.end();
-}
-void thread_sheaf::insert(thread i_thread)
-{
-	m_threadCtr.push_back(std::move(i_thread));
-}
-optional<thread> thread_sheaf::extract()
-{
-	thread_container::iterator itThread = m_threadCtr.begin();
-	for (; itThread != m_threadCtr.end(); ++itThread)
-	{
-		if (itThread->joinable() == false)
-		{
-			thread extractedThread = std::move(*itThread);
-
-			m_threadCtr.erase(itThread);
-
-			return std::move(extractedThread);
-		}
-	}
-
-	return none;
 }
 void thread_sheaf::clear()
 {

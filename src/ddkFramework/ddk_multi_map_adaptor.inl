@@ -3,11 +3,27 @@ namespace ddk
 {
 
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable,const ddk::shift_action& i_initialAction)
+iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable)
 : m_iterable(i_iterable)
-, m_nextMov(i_initialAction.target_shift())
-, m_awaitable(await(make_function(this,&iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::navigate,i_initialAction)))
+, m_awaitable(await(make_function(this,&iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::navigate,go_no_place)))
 {
+}
+template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
+template<typename Sink>
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::init(Sink&& i_sink, const ddk::shift_action& i_initialAction)
+{
+    m_nextMov = i_initialAction.target_shift();
+
+    if(awaited_result<reference> res = resume(m_awaitable))
+    {
+        i_sink.apply(res.get());
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 template<typename Sink>
@@ -132,6 +148,8 @@ void iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::_navigate(value_t& i_
             }
             default:
             {
+                yield(currValue);
+
                 break;
             }
         }
@@ -184,6 +202,8 @@ typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::reference iterabl
             }
             default:
             {
+                yield(currValue);
+
                 break;
             }
         }
@@ -197,11 +217,27 @@ typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::reference iterabl
 }
 
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable,const ddk::shift_action& i_initialAction)
+iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable)
 : m_iterable(i_iterable)
-, m_nextMov(i_initialAction.target_shift())
-, m_awaitable(await(make_function(this,&iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::navigate,i_initialAction)))
+, m_awaitable(await(make_function(this,&iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::navigate,go_no_place)))
 {
+}
+template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
+template<typename Sink>
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::init(Sink&& i_sink,const ddk::shift_action& i_initialAction)
+{
+    m_nextMov = i_initialAction.target_shift();
+
+    if(awaited_result<reference> res = resume(m_awaitable))
+    {
+        i_sink.apply(res.get());
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 template<typename Sink>
@@ -323,6 +359,8 @@ void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const
             }
             default:
             {
+                yield(currValue);
+
                 break;
             }
         }
@@ -371,6 +409,8 @@ typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const_refer
             }
             default:
             {
+                yield(currValue);
+
                 break;
             }
         }

@@ -24,11 +24,11 @@ SCOPED_ENUM_DECL(ActionError,
 
 typedef result<void,ShiftActionError> shift_result;
 
-typedef variant<erase_action,add_action,go_forward_action> input_action;
-typedef variant<erase_action,add_action,go_forward_action> output_action;
-typedef variant<erase_action,add_action,go_forward_action> forward_action;
-typedef variant<erase_action,add_action,go_forward_action,go_backward_action> bidirectional_action;
-typedef variant<erase_action,add_action,go_forward_action,go_backward_action,shift_action> random_access_action;
+typedef variant<go_forward_action,erase_action,add_action> input_action;
+typedef variant<go_forward_action,erase_action,add_action> output_action;
+typedef variant<go_forward_action,erase_action,add_action> forward_action;
+typedef variant<go_forward_action,go_backward_action,erase_action,add_action> bidirectional_action;
+typedef variant<go_forward_action,go_backward_action,shift_action,erase_action,add_action> random_access_action;
 
 typedef variant<go_forward_action> const_input_action;
 typedef variant<go_forward_action> const_output_action;

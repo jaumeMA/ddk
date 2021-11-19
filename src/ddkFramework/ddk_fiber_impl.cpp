@@ -10,38 +10,33 @@ namespace ddk
 namespace detail
 {
 
+this_fiber_t::this_fiber_t()
+: m_execContext(fiber_id(static_cast<size_t>(get_current_thread_id())))
+{
+}
 void this_fiber_t::attach_context()
 {
-	execution_context& currExecutionContext = get_current_execution_context();
-
-	m_execContext = &currExecutionContext;
-}
-void this_fiber_t::detach_context()
-{
-	m_execContext = nullptr;
+	m_execContext = fiber_id(static_cast<size_t>(get_current_thread_id()));
 }
 fiber_id this_fiber_t::get_id() const
 {
-	return m_execContext->get_id();
+	return m_execContext.get_id();
 }
 execution_context& this_fiber_t::get_execution_context()
 {
-	return *m_execContext;
+	return m_execContext;
 }
 const execution_context& this_fiber_t::get_execution_context() const
 {
-	return *m_execContext;
+	return m_execContext;
 }
 yielder_context* this_fiber_t::get_context() const
 {
-	return (m_execContext) ? m_execContext->get_typed_context<yielder_context>() : nullptr;
+	return m_execContext.get_typed_context<yielder_context>();
 }
 void this_fiber_t::set_typed_context(yielder_context* i_context)
 {
-    if(m_execContext)
-    {
-        m_execContext->set_typed_context(i_context);
-    }
+	m_execContext.set_typed_context(i_context);
 }
 
 fiber_impl::fiber_impl(yielder_interface& i_yielder)
@@ -113,6 +108,8 @@ FiberExecutionState fiber_impl::resume_from(this_fiber_t& other)
 	if(m_state == FiberExecutionState::Done)
 	{
 		switch_execution(otherContext);
+
+		this_thread().attach_context();
 
 		m_alloc.deallocate(m_fiberContext.get_stack());
 	}

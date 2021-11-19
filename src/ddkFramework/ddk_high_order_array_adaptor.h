@@ -17,7 +17,9 @@ public:
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 	typedef long long difference_type;
 
-	iterable_adaptor(high_order_array<T,ranks...>& i_iterable,const ddk::shift_action& i_initialAction);
+	iterable_adaptor(high_order_array<T,ranks...>& i_iterable);
+	template<typename Sink>
+	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
@@ -49,7 +51,9 @@ public:
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 	typedef long long difference_type;
 
-	iterable_adaptor(const high_order_array<T,ranks...>& i_iterable,const ddk::shift_action& i_initialAction);
+	iterable_adaptor(const high_order_array<T,ranks...>& i_iterable);
+	template<typename Sink>
+	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>

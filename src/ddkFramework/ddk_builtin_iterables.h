@@ -39,17 +39,19 @@ public:
     typedef const T& const_reference;
     typedef long long difference_type;
 
-    iterable_adaptor(const detail::__numbers_iterable<T>& i_iterable,const ddk::shift_action& i_initialAction);
+    iterable_adaptor(const detail::__numbers_iterable<T>& i_iterable);
     inline bool valid() const;
     template<typename Sink>
-    inline difference_type forward_next_value_in(Sink&& i_sink) const;
+    inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
+    template<typename Sink>
+    inline difference_type forward_next_value_in(Sink&& i_sink);
     template<typename Sink>
     inline difference_type forward_prev_value_in(Sink&& i_sink) const;
     template<typename Sink>
     inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
 
 private:
-    T m_currValue;
+    T m_currValue = 0;
     function_view<T(const T&)> m_generator;
 };
 

@@ -135,20 +135,20 @@ public:
 	lent_pointer_wrapper(const lent_pointer_wrapper& other);
 	lent_pointer_wrapper(lent_pointer_wrapper&& other);
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	REQUIRES(IS_BINDABLE_BY(TT,T))
 	lent_pointer_wrapper(const lent_pointer_wrapper<TT>& other);
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	REQUIRES(IS_BINDABLE_BY(TT,T))
 	lent_pointer_wrapper(lent_pointer_wrapper<TT>&& other);
 	~lent_pointer_wrapper();
 	lent_pointer_wrapper& operator=(const std::nullptr_t&);
 	lent_pointer_wrapper& operator=(const lent_pointer_wrapper& other);
 	lent_pointer_wrapper& operator=(lent_pointer_wrapper&& other);
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	REQUIRES(IS_BINDABLE_BY(TT,T))
 	lent_pointer_wrapper& operator=(const lent_pointer_wrapper<TT>& other);
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	REQUIRES(IS_BINDABLE_BY(TT,T))
 	lent_pointer_wrapper& operator=(lent_pointer_wrapper<TT>&& other);
 	inline bool operator==(std::nullptr_t) const;
 	inline bool operator!=(std::nullptr_t) const;
@@ -156,7 +156,7 @@ public:
 	inline const T* operator->() const;
 	inline T& operator*();
 	inline const T& operator*() const;
-	inline operator bool() const;
+	inline explicit operator bool() const;
 	void clear();
 	inline T* get();
 	inline const T* get() const;

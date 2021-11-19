@@ -144,3 +144,28 @@ constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants)
 }
 
 }
+
+template<typename Callable,typename ... Types>
+auto operator<<=(Callable&& i_callable,const ddk::variant<Types...>& i_rhs)
+{
+	if constexpr(std::is_same<void,typename ddk::mpl::aqcuire_callable_return_type<ddk::mpl::remove_qualifiers<Callable>>::type>::value)
+	{
+		ddk::visit(std::forward<Callable>(i_callable),i_rhs);
+	}
+	else
+	{
+		return ddk::visit(std::forward<Callable>(i_callable),i_rhs);
+	}
+}
+template<typename Callable,typename ... Types>
+auto operator<<=(Callable&& i_callable, ddk::variant<Types...>& i_rhs)
+{
+	if constexpr(std::is_same<void,typename ddk::mpl::aqcuire_callable_return_type<ddk::mpl::remove_qualifiers<Callable>>::type>::value)
+	{
+		ddk::visit(std::forward<Callable>(i_callable),i_rhs);
+	}
+	else
+	{
+		return ddk::visit(std::forward<Callable>(i_callable),i_rhs);
+	}
+}

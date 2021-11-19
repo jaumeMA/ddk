@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_iterable_concepts.h"
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_transformed_iterable_impl.h"
 #include "ddk_filtered_iterable_impl.h"
@@ -23,11 +24,11 @@ template<typename T>
 inline detail::iterable_order<T> order(const T& i_order);
 
 TEMPLATE(typename Iterable, typename ... Predicates)
-REQUIRES(IS_CALLABLE(Predicates)...)
+REQUIRES(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Predicates)...)
 inline std::array<decltype(deduce_iterable(std::declval<Iterable>())),mpl::num_types<Predicates...>+1> group_by(Iterable&& i_lhs, Predicates&& ... i_predicates);
 
 TEMPLATE(typename Iterable, typename Functor)
-REQUIRES(IS_CALLABLE(Functor))
+REQUIRES(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Functor))
 inline auto constrain(Iterable&& i_rhs, Functor&& i_constrain);
 TEMPLATE(typename Functor)
 REQUIRES(IS_CALLABLE(Functor))

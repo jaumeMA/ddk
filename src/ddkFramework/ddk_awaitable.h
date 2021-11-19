@@ -25,11 +25,11 @@ struct awaited_result
 
 public:
 	typedef typename std::add_lvalue_reference<T>::type reference;
-	typedef typename std::add_const<reference>::type const_reference;
+	typedef typename std::add_lvalue_reference<typename std::add_const<T>::type>::type const_reference;
 	typedef typename std::add_pointer<T>::type pointer;
 	typedef typename std::add_const<pointer>::type const_pointer;
 	typedef variant<T,async_exception> result_type;
-	typedef variant<reference,async_exception> result_reference;
+	typedef variant<const_reference,async_exception> result_reference;
 
 	awaited_result() = default;
 	awaited_result(const detail::none_t&);
@@ -72,7 +72,8 @@ public:
 	typedef typename Result::reference reference;
 	typedef typename Result::const_reference const_reference;
 
-	awaitable(const ddk::function<T()>& i_function, const detail::this_thread_t& i_thread);
+	awaitable(const ddk::function<T()>& i_function);
+	awaitable(const ddk::function<T()>& i_function, stack_alloc_const_dist_ref i_stackAllocator);
 	awaitable(const awaitable& other);
 	awaitable(awaitable&& other);
 	Result resume();
@@ -89,7 +90,7 @@ class awaitable<void,Result> : public awaitable<detail::void_t,Result>
 {
 public:
     awaitable() = default;
-	awaitable(const ddk::function<void()>& i_function, const detail::this_thread_t& i_thread);
+	awaitable(const ddk::function<void()>& i_function);
 	awaitable(const awaitable& other) = default;
 	awaitable(awaitable&& other) = default;
 

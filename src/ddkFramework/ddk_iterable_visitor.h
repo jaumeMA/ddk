@@ -13,11 +13,11 @@ template<typename Iterable,typename FinalAction, typename Function, typename Ada
 struct action_visitor_base : public static_visitor<bool>
 {
 public:
-	template<typename Action, typename FFunction>
-	action_visitor_base(Iterable& i_iterable, Action&& i_initialAction, FFunction&& i_sink, action_state_lent_ptr i_actionStatePtr);
+	template<typename FFunction>
+	action_visitor_base(Iterable& i_iterable, FFunction&& i_sink, action_state_lent_ptr i_actionStatePtr);
 
-	template<typename Visitor>
-	inline void loop();
+	template<typename Visitor, typename Action>
+	inline void loop(Action&& i_action);
 	template<typename T>
 	inline void apply(T&& i_values) const;
 	inline bool valid() const noexcept;
@@ -56,7 +56,7 @@ public:
 
 	inline bool operator()(const stop_action&);
 	inline bool operator()(const erase_action&);
-	inline bool operator()(const add_action&);
+	inline bool operator()(add_action);
 };
 
 template<typename Iterable, typename FinalAction, typename Function,typename Adaptor>

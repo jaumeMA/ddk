@@ -42,10 +42,14 @@ typename delayed_task_executor<Return>::start_result delayed_task_executor<Retur
 	}
 }
 template<typename Return>
-typename delayed_task_executor<Return>::cancel_result delayed_task_executor<Return>::cancel(const ddk::function<bool()>& i_cancelFunc)
+typename delayed_task_executor<Return>::cancel_result delayed_task_executor<Return>::cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+		m_execContext.cancel();
+
 		return ddk::success;
 	}
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
@@ -54,11 +58,19 @@ typename delayed_task_executor<Return>::cancel_result delayed_task_executor<Retu
 		{
 			m_state = ExecutorState::Cancelled;
 
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+			m_execContext.notify();
+
 			return ddk::success;
 		}
 		else if(i_cancelFunc != nullptr && eval_unsafe(i_cancelFunc))
 		{
 			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+
+			m_execContext.notify();
 
 			return ddk::success;
 		}
@@ -89,7 +101,7 @@ executor_context_const_lent_ptr delayed_task_executor<Return>::get_execution_con
 template<typename Return>
 bool delayed_task_executor<Return>::pending() const
 {
-	return m_state.get() == ExecutorState::Idle || m_state.get() == ExecutorState::Pending;
+	return m_state.get() == ExecutorState::Idle;
 }
 
 }

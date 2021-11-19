@@ -13,6 +13,11 @@ namespace ddk
 namespace detail
 {
 
+symbol_cache_table::symbol_info::operator bool() const
+{
+	return (m_filename.empty() == false) && (m_name.empty() == false);
+}
+
 symbol_cache_table::const_reference symbol_cache_table::symbolicate(void* i_address)
 {
 	const size_t symbolKey = reinterpret_cast<size_t>(i_address);

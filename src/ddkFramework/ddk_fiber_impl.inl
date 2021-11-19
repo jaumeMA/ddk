@@ -22,7 +22,6 @@ typed_yielder_context<T>* this_fiber_t::get_typed_context() const
 	return (m_execContext) ? m_execContext->get_typed_context<typed_yielder_context<T>>() : nullptr;
 }
 
-
 template<typename Return>
 inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
@@ -32,7 +31,14 @@ inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* 
 
 		try
 		{
-			eval(localCallable);
+			if constexpr(std::is_same<Return,void>::value)
+			{
+				eval(localCallable);
+			}
+			else
+			{
+				yield(eval(localCallable));
+			}
 		}
 		catch(const suspend_exception&)
 		{

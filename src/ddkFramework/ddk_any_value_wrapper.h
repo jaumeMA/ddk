@@ -43,7 +43,7 @@ public:
 	{}
 	virtual value_wrapper_interface* clone(value_wrapper_interface* i_arena = NULL) const override
 	{
-		return value_wrapper_cloner<mpl::is_copy_constructible<T>::value>::clone(m_value,i_arena);
+		return value_wrapper_cloner<std::is_copy_constructible<T>::value>::clone(m_value,i_arena);
 	}
 	virtual void destroy() override
 	{

@@ -19,7 +19,9 @@ public:
 	typedef std::pair<const std::vector<Key>,const Value&>& const_reference;
 	typedef long long difference_type;
 
-	iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable,const ddk::shift_action& i_initialAction);
+	iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable);
+	template<typename Sink>
+	inline bool init(Sink&& i_sink,const ddk::shift_action& i_initialAction);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
@@ -36,7 +38,7 @@ private:
 	
 	multi_map<Key,Value,Map,Allocator>& m_iterable;
 	awaitable<reference> m_awaitable;
-	difference_type m_nextMov;
+	difference_type m_nextMov = 0;
 	bool m_valid = true;
 };
 
@@ -52,7 +54,9 @@ public:
 	typedef std::pair<const std::vector<Key>,const Value&>& const_reference;
 	typedef long long difference_type;
 
-	iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable,const ddk::shift_action& i_initialAction);
+	iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable);
+	template<typename Sink>
+	inline bool init(Sink&& i_sink,const ddk::shift_action& i_initialAction);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
@@ -69,7 +73,7 @@ private:
 
 	const multi_map<Key,Value,Map,Allocator>& m_iterable;
 	awaitable<const_reference> m_awaitable;
-	difference_type m_nextMov;
+	difference_type m_nextMov = 0;
 	bool m_valid = true;
 };
 

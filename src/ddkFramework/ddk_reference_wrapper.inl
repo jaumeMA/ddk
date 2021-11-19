@@ -131,7 +131,7 @@ shared_pointer_wrapper_impl<T,ReferenceCounter> __const_shared_cast(const shared
 template<typename T,typename ReferenceCounter>
 shared_reference_wrapper_impl<T,ReferenceCounter> __promote_to_ref(const shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr)
 {
-	return shared_reference_wrapper_impl<T,ReferenceCounter>(i_sharedPtr.m_data,i_sharedPtr.m_refCounter);
+	return detail::__make_shared_reference(i_sharedPtr.m_data,i_sharedPtr.m_refCounter);
 }
 template<typename T,typename ReferenceCounter>
 lent_pointer_wrapper<T> __lend(shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr)
@@ -935,6 +935,11 @@ detail::shared_reference_wrapper_impl<T,ReferenceCounter> promote_to_ref(const d
 {
 	return detail::__promote_to_ref(i_sharedPtr);
 }
+template<typename T,typename ReferenceCounter>
+detail::atomic_shared_reference_wrapper_impl<T,ReferenceCounter> promote_to_ref(const detail::atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr)
+{
+	return detail::__promote_to_ref(static_cast<const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>&>(i_sharedPtr));
+}
 template<typename T>
 lent_reference_wrapper<T> promote_to_ref(const lent_pointer_wrapper<T>& i_lentPtr)
 {
@@ -1007,13 +1012,13 @@ bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::lent_pointe
 }
 #endif
 
-template<typename T>
-bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs,const ddk::shared_pointer_wrapper<T>& i_rhs)
+template<typename T,typename ReferenceCounter,typename RReferenceCounter>
+bool operator==(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs,const ddk::detail::shared_pointer_wrapper_impl<T,RReferenceCounter>& i_rhs)
 {
 	return i_lhs.get() == i_rhs.get();
 }
-template<typename T>
-bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs,const ddk::lent_pointer_wrapper<T>& i_rhs)
+template<typename T,typename ReferenceCounter>
+bool operator==(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs,const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
 	#ifdef DDK_DEBUG
 	return i_lhs.get() == i_rhs.get();
@@ -1021,8 +1026,8 @@ bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs,const ddk::lent_poin
 	return i_lhs.get() == i_rhs;
 	#endif
 }
-template<typename T>
-bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::shared_pointer_wrapper<T>& i_rhs)
+template<typename T,typename ReferenceCounter>
+bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs)
 {
 	#ifdef DDK_DEBUG
 	return i_lhs.get() == i_rhs.get();
@@ -1030,14 +1035,13 @@ bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::shared_poin
 	return i_lhs == i_rhs.get();
 	#endif
 }
-
-template<typename T>
-bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs,const ddk::shared_pointer_wrapper<T>& i_rhs)
+template<typename T,typename ReferenceCounter,typename RReferenceCounter>
+bool operator!=(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs,const ddk::detail::shared_pointer_wrapper_impl<T,RReferenceCounter>& i_rhs)
 {
 	return i_lhs.get() != i_rhs.get();
 }
-template<typename T>
-bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs,const ddk::lent_pointer_wrapper<T>& i_rhs)
+template<typename T,typename ReferenceCounter>
+bool operator!=(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs,const ddk::lent_pointer_wrapper<T>& i_rhs)
 {
 	#ifdef DDK_DEBUG
 	return i_lhs.get() != i_rhs.get();
@@ -1045,8 +1049,8 @@ bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs,const ddk::lent_poin
 	return i_lhs.get() == i_rhs;
 	#endif
 }
-template<typename T>
-bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::shared_pointer_wrapper<T>& i_rhs)
+template<typename T,typename ReferenceCounter>
+bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs)
 {
 	#ifdef DDK_DEBUG
 	return i_lhs.get() != i_rhs.get();

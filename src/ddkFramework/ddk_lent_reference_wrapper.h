@@ -62,20 +62,19 @@ public:
 	using typename lent_pointer_wrapper<T>::const_pointer;
 	typedef lent_reference_wrapper<const_value_type> const_type;
 
-	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	template<typename TT>
 	lent_reference_wrapper(const lent_reference_wrapper<TT>& other)
 	: lent_pointer_wrapper<T>(other)
 	{
 	}
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	REQUIRES(IS_BINDABLE_BY_COND(T,TT))
 	lent_reference_wrapper(lent_reference_wrapper<TT>&& other)
 	: lent_pointer_wrapper<T>(std::move(other))
 	{
 	}
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BASE_OF(T,TT))
+	REQUIRES(IS_BINDABLE_BY_COND(T,TT))
 	lent_reference_wrapper(const unique_reference_wrapper<TT>& other)
 	: lent_pointer_wrapper<T>(other)
 	{

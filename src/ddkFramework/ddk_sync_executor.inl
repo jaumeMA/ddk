@@ -1,4 +1,5 @@
 #include "ddk_executor_promise.inl"
+#include "ddk_context_promise.inl"
 
 namespace ddk
 {
@@ -6,10 +7,10 @@ namespace ddk
 template<typename Return>
 distributed_reference_wrapper<async_executor<Return>> make_async_executor(const function<Return()>& i_function)
 {
-	typedef typed_allocator_proxy<async_executor<Return>,fixed_size_allocator> allocator_t;
+	typedef fixed_size_or_allocator<async_executor<Return>,system_allocator> allocator_t;
 	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_distributed_allocation<async_executor<Return>,allocator_t>());
 
-	return (s_allocator) ? make_distributed_reference<async_executor<Return>>(allocator_t{*s_allocator},i_function)
+	return (s_allocator) ? make_distributed_reference<async_executor<Return>>(allocator_t{s_allocator,system_allocator{}},i_function)
 							: make_distributed_reference<async_executor<Return>>(i_function);
 }
 
@@ -44,32 +45,43 @@ async_executor<Return>::~async_executor()
 	}
 }
 template<typename Return>
+future<Return> async_executor<Return>::attach(const detail::this_thread_t&)
+{
+	return as_future();
+}
+template<typename Return>
 future<Return> async_executor<Return>::attach(thread i_thread)
 {
 	m_executor = make_executor<detail::thread_executor<Return>>(std::move(i_thread));
+
+	future<Return> res = as_future();
 
 	start_result execRes = execute();
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
-	return as_future();
+	return std::move(res);
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(fiber i_fiber)
 {
 	m_executor = make_executor<detail::fiber_executor<Return>>(std::move(i_fiber));
 
+	future<Return> res = as_future();
+
 	start_result execRes = execute();
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
-	return as_future();
+	return std::move(res);
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 {
 	//at some point put a composed callable here
 	async_dist_ref newAsyncExecutor = make_distributed_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+
+	future<Return> res = newAsyncExecutor->as_future();
 
 	newAsyncExecutor->m_executor = make_executor<detail::thread_sheaf_executor>(std::move(i_threadSheaf));
 
@@ -80,12 +92,14 @@ future<Return> async_executor<Return>::attach(thread_sheaf i_threadSheaf)
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
-	return newAsyncExecutor->as_future();
+	return std::move(res);
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 {
 	async_dist_ref newAsyncExecutor = make_distributed_reference<async_executor<detail::void_t>>(make_function([capturedFunction = m_function]() { eval(capturedFunction); return _void; }));
+
+	future<Return> res = newAsyncExecutor->as_future();
 
 	newAsyncExecutor->m_executor = make_executor<detail::fiber_sheaf_executor>(std::move(i_fiberSheaf));
 
@@ -96,39 +110,50 @@ future<Return> async_executor<Return>::attach(fiber_sheaf i_fiberSheaf)
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
-	return newAsyncExecutor->as_future();
+	return std::move(res);
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth)
 {
 	m_executor = make_executor<detail::execution_context_executor<Return>>(i_asyncExecutorContext,i_depth);
 
+	future<Return> res = as_future();
+
 	start_result execRes = execute();
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
-	return as_future();
+	return std::move(res);
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(cancellable_executor_unique_ref<Return> i_execImpl)
 {
 	m_executor = std::move(i_execImpl);
 
+	future<Return> res = as_future();
+
 	start_result execRes = execute();
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
-	return as_future();
+	return std::move(res);
 }
 template<typename Return>
 future<Return> async_executor<Return>::attach(attachable<Return> i_attachable)
 {
 	m_executor = std::move(i_attachable.m_executorImpl);
 
+	future<Return> res = as_future();
+
 	start_result execRes = execute();
 
 	DDK_ASSERT(execRes != StartErrorCode::AlreadyDone,"Trying to execute an alerady executed async executor");
 
+	return std::move(res);
+}
+template<typename Return>
+future<Return> async_executor<Return>::deferred_attach(const detail::this_thread_t&)
+{
 	return as_future();
 }
 template<typename Return>
@@ -238,6 +263,13 @@ typename async_executor<Return>::start_result async_executor<Return>::execute()
 	}
 }
 template<typename Return>
+future<Return> async_executor<Return>::as_future()
+{
+	m_promise.attach(this->ref_from_this());
+
+	return m_promise.get_future();
+}
+template<typename Return>
 void async_executor<Return>::set_result(sink_result i_value)
 {
 	if(i_value.template is<sink_reference>())
@@ -250,13 +282,6 @@ void async_executor<Return>::set_result(sink_result i_value)
 	}
 }
 template<typename Return>
-future<Return> async_executor<Return>::as_future()
-{
-	m_promise.attach(this->ref_from_this());
-
-	return m_promise.get_future();
-}
-template<typename Return>
 typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
 {
     if(m_executor == nullptr)
@@ -265,13 +290,12 @@ typename async_executor<Return>::cancel_result async_executor<Return>::cancel()
     }
 	else
 	{
-		const cancel_result cancelRes = m_executor->cancel(m_cancelFunc);
+		const cancel_result cancelRes = m_executor->cancel(make_function(this,&async_executor<Return>::set_result),m_cancelFunc);
 
 		if (cancelRes == success)
 		{
-			m_promise.set_exception(async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
 
-			m_executor = nullptr;
+			//m_executor = nullptr;
 		}
 
 		return cancelRes;

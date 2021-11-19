@@ -28,6 +28,8 @@ void yield();
 template<typename T>
 inline void yield(T&& i_value);
 
+void pause();
+
 }
 
 #include "ddk_fiber_utils.inl"

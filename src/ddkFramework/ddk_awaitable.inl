@@ -32,15 +32,13 @@ awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
 {
 	if(other.m_content.empty() == false)
 	{
-		if constexpr (std::is_copy_assignable<result_type>::value)
+		if (m_content.empty())
 		{
-			m_content.template assign<result_type>(other.m_content.template extract<result_type>());
+			m_content.template construct<result_type>(other.m_content.template extract<result_type>());
 		}
 		else
 		{
-			m_content.template destroy<result_type>();
-
-			m_content.template construct<result_type>(other.m_content.template extract<result_type>());
+			m_content.template assign<result_type>(other.m_content.template extract<result_type>());
 		}
 	}
 	else if(m_content.empty() == false)
@@ -109,9 +107,9 @@ awaited_result<T>::operator bool() const
 template<typename T>
 void awaited_result<T>::set(result_reference i_content)
 {
-	if(i_content.template is<reference>())
+	if(i_content.template is<const_reference>())
 	{
-		m_content.template construct<result_type>(std::forward<reference>(i_content.template get<reference>()));
+		m_content.template construct<result_type>(std::forward<const_reference>(i_content.template get<const_reference>()));
 	}
 	else
 	{
@@ -120,8 +118,13 @@ void awaited_result<T>::set(result_reference i_content)
 }
 
 template<typename T, typename Result>
-awaitable<T,Result>::awaitable(const function<T()>& i_function, const detail::this_thread_t& i_thread)
+awaitable<T,Result>::awaitable(const function<T()>& i_function)
 : m_executor(i_function)
+{
+}
+template<typename T,typename Result>
+awaitable<T,Result>::awaitable(const ddk::function<T()>& i_function,stack_alloc_const_dist_ref i_stackAllocator)
+: m_executor(i_function,i_stackAllocator)
 {
 }
 template<typename T, typename Result>
@@ -145,7 +148,7 @@ Result awaitable<T,Result>::resume()
 }
 
 template<typename Result>
-awaitable<void,Result>::awaitable(const ddk::function<void()>& i_function, const detail::this_thread_t& i_thread)
+awaitable<void,Result>::awaitable(const ddk::function<void()>& i_function)
 : awaitable<detail::void_t,Result>(make_function([i_function]() { eval(i_function); return _void; }))
 {
 }

@@ -7,16 +7,22 @@ namespace ddk
 template<typename MessageType>
 void async_message_queue<MessageType>::push_message(const MessageType& i_msg)
 {
+	mutex_guard mg(m_mutex);
+
 	m_list.push(i_msg);
 }
 template<typename MessageType>
 optional<MessageType> async_message_queue<MessageType>::pop_message()
 {
+	mutex_guard mg(m_mutex);
+
 	return m_list.pop();
 }
 template<typename MessageType>
 bool async_message_queue<MessageType>::empty() const
 {
+	mutex_guard mg(m_mutex);
+
 	return m_list.empty();
 }
 template<typename MessageType>
@@ -33,7 +39,7 @@ async_attachable_message_queue<MessageType>::async_attachable_message_queue(thre
 template<typename MessageType>
 void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk::function<void(const MessageType&)>& i_processor)
 {
-	mutex_guard lg(m_mutex);
+	m_exclArea.enterWriter(Reentrancy::NON_REENTRANT);
 
 	typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair) { return i_pair.first == i_id; });
 
@@ -50,13 +56,15 @@ void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk
 
 		m_receivers.push(std::make_pair(i_id,i_processor));
 	}
+
+	m_exclArea.leaveWriter();
 }
 template<typename MessageType>
 void async_attachable_message_queue<MessageType>::stop(sender_id i_id)
 {
 	bool toBeStopped = false;
 
-	m_mutex.lock();
+	m_exclArea.enterWriter(Reentrancy::NON_REENTRANT);
 
 	typename linked_list<std::pair<sender_id,function<void(const message_type&)>>>::iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,function<void(const message_type&)>>& i_pair) { return i_pair.first == i_id; });
 
@@ -69,7 +77,7 @@ void async_attachable_message_queue<MessageType>::stop(sender_id i_id)
 		toBeStopped = m_receivers.empty();
 	}
 
-	m_mutex.unlock();
+	m_exclArea.leaveWriter();
 
 	if(toBeStopped)
 	{
@@ -88,7 +96,7 @@ void async_attachable_message_queue<MessageType>::push_message(const MessageType
 template<typename MessageType>
 void async_attachable_message_queue<MessageType>::dispatch_messages()
 {
-	mutex_guard lg(m_mutex);
+	m_exclArea.enterReader(Reentrancy::NON_REENTRANT);
 
 	while(const optional<message_type> currMsgOpt = pop_message())
 	{
@@ -105,6 +113,8 @@ void async_attachable_message_queue<MessageType>::dispatch_messages()
 			}
 		}
 	}
+
+	m_exclArea.leaverReader();
 }
 
 }

@@ -104,9 +104,12 @@ bool await_executor<Return>::resume(const sink_type& i_sink)
 		}
 		else
 		{
-			if(typed_yielder_context<Return>* newContext = m_caller.get_typed_context<Return>())
+			if(yielder_context* newContext = m_caller.get_context())
 			{
-				eval(i_sink,newContext->get_value());
+				if(newContext->is_running(m_callee.get_id()))
+				{
+					std::move(*static_cast<typed_yielder_context<Return>*>(newContext)).extract_value(i_sink);
+				}
 			}
 			else
 			{

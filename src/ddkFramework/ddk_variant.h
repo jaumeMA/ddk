@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ddk_variant_impl.h"
-#include "ddk_concepts.h"
 #include "ddk_type_concepts.h"
 #include "ddk_function_concepts.h"
+#include "ddk_concepts.h"
 #include "ddk_none.h"
 #include "ddk_class_rules.h"
 
@@ -76,10 +76,13 @@ public:
 	static constexpr bool contains();
 	TEMPLATE(typename Visitor)
 	REQUIRES(IS_CALLABLE(Visitor,Type))
-	constexpr auto visit(Visitor&& visitor);
+	constexpr auto visit(Visitor&& visitor) &;
 	TEMPLATE(typename Visitor)
 	REQUIRES(IS_CALLABLE(Visitor,Type))
-	constexpr auto visit(Visitor&& visitor) const;
+	constexpr auto visit(Visitor&& visitor) const &;
+	TEMPLATE(typename Visitor)
+	REQUIRES(IS_CALLABLE(Visitor,Type))
+	constexpr auto visit(Visitor&& visitor) &&;
 	template<typename Visitor, typename ... Args>
 	constexpr auto visit(Args&& ... i_args) const;
 
@@ -93,7 +96,6 @@ class variant : public detail::variant_impl<Types...>, contravariant_rules<Types
 {
     static_assert(mpl::get_num_types<Types...>() > 1, "You have to provide at least one type to variant");
     static_assert(mpl::get_num_types<Types...>() < 255, "You cannot provide more than 255 types to a variant!");
-
 
 public:
 	using detail::variant_impl<Types...>::npos;

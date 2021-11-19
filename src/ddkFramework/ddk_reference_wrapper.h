@@ -313,6 +313,8 @@ template<typename T>
 inline unique_reference_wrapper<T> promote_to_ref(unique_pointer_wrapper<T> i_uniquePtr);
 template<typename T, typename ReferenceCounter>
 inline detail::shared_reference_wrapper_impl<T,ReferenceCounter> promote_to_ref(const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr);
+template<typename T,typename ReferenceCounter>
+inline detail::atomic_shared_reference_wrapper_impl<T,ReferenceCounter> promote_to_ref(const detail::atomic_shared_pointer_wrapper_impl<T,ReferenceCounter>& i_sharedPtr);
 template<typename T>
 inline lent_reference_wrapper<T> promote_to_ref(const lent_pointer_wrapper<T>& i_lentPtr);
 
@@ -336,19 +338,19 @@ inline bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::uni
 template<typename T>
 inline bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs);
 #endif
-template<typename T>
-inline bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs);
-template<typename T>
-inline bool operator==(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs);
-template<typename T>
-inline bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs);
+template<typename T, typename ReferenceCounter, typename RReferenceCounter>
+inline bool operator==(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs, const ddk::detail::shared_pointer_wrapper_impl<T,RReferenceCounter>& i_rhs);
+template<typename T, typename ReferenceCounter>
+inline bool operator==(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs);
+template<typename T,typename ReferenceCounter>
+inline bool operator==(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs);
 
-template<typename T>
-inline bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs);
-template<typename T>
-inline bool operator!=(const ddk::shared_pointer_wrapper<T>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs);
-template<typename T>
-inline bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::shared_pointer_wrapper<T>& i_rhs);
+template<typename T,typename ReferenceCounter,typename RReferenceCounter>
+inline bool operator!=(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs, const ddk::detail::shared_pointer_wrapper_impl<T,RReferenceCounter>& i_rhs);
+template<typename T,typename ReferenceCounter>
+inline bool operator!=(const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs, const ddk::lent_pointer_wrapper<T>& i_rhs);
+template<typename T,typename ReferenceCounter>
+inline bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs);
 
 template<typename T>
 struct smart_pointer_compare

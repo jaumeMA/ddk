@@ -162,11 +162,11 @@ public:
 	{
 		if constexpr(std::is_same<void,Return>::value)
 		{
-			_visitor.operator()(var.template extract<TypePos>());
+			_visitor.operator()(std::move(var).template extract<TypePos>());
 		}
 		else
 		{
-			return _visitor.operator()(var.template extract<TypePos>());
+			return _visitor.operator()(std::move(var).template extract<TypePos>());
 		}
 	}
     template<typename visitor, size_t TypePos>
@@ -174,11 +174,11 @@ public:
 	{
 		if constexpr(std::is_same<void,Return>::value)
 		{
-			_visitor.operator()(var.template extract<TypePos>());
+			_visitor.operator()(std::move(var).template extract<TypePos>());
 		}
 		else
 		{
-			return _visitor.operator()(var.template extract<TypePos>());
+			return _visitor.operator()(std::move(var).template extract<TypePos>());
 		}
 	}
 

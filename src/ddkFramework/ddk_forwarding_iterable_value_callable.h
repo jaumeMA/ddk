@@ -7,6 +7,8 @@ template<typename Function,typename Action>
 class forwarding_iterable_value_callable
 {
 public:
+	struct callable_tag;
+
 	template<typename FFunction>
 	forwarding_iterable_value_callable(FFunction&& i_function);
 	template<typename T>
@@ -15,6 +17,17 @@ public:
 private:
 	Function m_function;
 };
+
+namespace mpl
+{
+
+template<typename Function, typename Action>
+struct aqcuire_callable_args_type<forwarding_iterable_value_callable<Function,Action>>
+{
+	typedef typename aqcuire_callable_args_type<Function>::type type;
+};
+
+}
 
 }
 

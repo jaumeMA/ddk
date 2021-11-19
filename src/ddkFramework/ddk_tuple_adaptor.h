@@ -16,7 +16,9 @@ public:
     typedef variant<T...> value_type;
 	typedef long long difference_type;
 
-	iterable_adaptor(tuple<T...>& i_iterable, const shift_action&);
+	iterable_adaptor(tuple<T...>& i_iterable);
+	template<typename Sink>
+	inline bool init(Sink&& i_sink, const shift_action&);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>
@@ -57,7 +59,9 @@ public:
     typedef variant<T...> value_type;
 	typedef long long difference_type;
 
-	iterable_adaptor(const tuple<T...>& i_iterable, const shift_action& i_initialAction);
+	iterable_adaptor(const tuple<T...>& i_iterable);
+	template<typename Sink>
+	inline bool init(Sink&& i_sink, const shift_action& i_initialAction);
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink);
 	template<typename Sink>

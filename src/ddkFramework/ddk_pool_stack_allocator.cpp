@@ -218,6 +218,8 @@ void* pool_stack_allocator::reserve(size_t i_size) const
 {
 	void* res = nullptr;
 
+	mutex_guard mg(m_mutex);
+
 	if(m_buddyAllocator.empty())
 	{
 		std::pair<std::set<Buddy>::iterator,bool> insertRes = m_buddyAllocator.emplace(m_allocAddr,0,m_maxPages);
@@ -248,6 +250,8 @@ void* pool_stack_allocator::reserve(size_t i_size) const
 }
 std::pair<void*,void*> pool_stack_allocator::allocate(void* i_ref, size_t i_size) const
 {
+	mutex_guard mg(m_mutex);
+
 	std::set<Buddy>::iterator itBuddy = m_buddyAllocator.find(i_ref);
 	if(itBuddy != m_buddyAllocator.end())
 	{
@@ -262,6 +266,8 @@ std::pair<void*,void*> pool_stack_allocator::allocate(void* i_ref, size_t i_size
 }
 bool pool_stack_allocator::reallocate(execution_stack& i_stackAddr, void* i_reason) const
 {
+	mutex_guard mg(m_mutex);
+
 	std::set<Buddy>::const_iterator itBuddy = m_buddyAllocator.find(i_stackAddr.get_init());
 
 	if(itBuddy != m_buddyAllocator.end())
@@ -285,6 +291,8 @@ void pool_stack_allocator::deallocate(void* i_address, size_t i_size) const
 }
 void pool_stack_allocator::release(void* i_ref, size_t i_size) const
 {
+	mutex_guard mg(m_mutex);
+
 	std::set<Buddy>::const_iterator itBuddy = m_buddyAllocator.find(i_ref);
 
 	if(itBuddy != m_buddyAllocator.end())

@@ -29,26 +29,18 @@ void fiber_sheaf::stop()
 		itFiber->stop();
 	}
 }
-void fiber_sheaf::insert(fiber i_fiber)
+bool fiber_sheaf::joinable() const
 {
-	m_fiberCtr.push_back(std::move(i_fiber));
-}
-optional<fiber> fiber_sheaf::extract()
-{
-	fiber_container::iterator itFiber = m_fiberCtr.begin();
-	for (; itFiber != m_fiberCtr.end(); ++itFiber)
+	fiber_container::const_iterator itFiber = m_fiberCtr.begin();
+	for(; itFiber != m_fiberCtr.end(); ++itFiber)
 	{
-		if (itFiber->joinable() == false)
+		if(itFiber->joinable())
 		{
-			fiber extractedFiber = std::move(*itFiber);
-
-			m_fiberCtr.erase(itFiber);
-
-			return std::move(extractedFiber);
+			return true;
 		}
 	}
 
-	return none;
+	return false;
 }
 void fiber_sheaf::clear()
 {

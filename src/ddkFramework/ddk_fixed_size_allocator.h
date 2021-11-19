@@ -5,6 +5,7 @@
 #include "ddk_lend_from_this.h"
 #include "ddk_mutex.h"
 #include "ddk_allocator.h"
+#include "ddk_spin_lock.h"
 #include <cstddef>
 
 //#define MEM_CHECK
@@ -32,8 +33,8 @@ public:
 
 	fixed_size_allocator& operator=(const fixed_size_allocator&) = delete;
 	fixed_size_allocator& operator=(fixed_size_allocator&&) = delete;
-	void* allocate(size_t i_size) const;
-	void deallocate(const void* i_address) const;
+	void* allocate_chunk(size_t i_size) const;
+	bool deallocate_chunk(const void* i_address) const;
 	size_t unit_size() const;
 	template<typename T>
 	inline void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize) const;
@@ -42,11 +43,12 @@ private:
 	const void* is_address_referenced(const void* i_address) const;
 	std::ptrdiff_t get_local_address(const char* i_address) const;
 
-	mutable atomic_size_t m_currChunk;
+	mutable size_t m_currChunk;
 	const size_t m_unitSize;
 	const size_t m_poolSize;
 	mutable std::vector<char> m_pool;
 	mutable std::vector<size_t> m_nextChunkArr;
+	mutable spin_lock m_barrier;
 	#ifdef MEM_CHECK
 	mutable atomic_size_t m_numCurrentAllocations = 0;
 	#endif

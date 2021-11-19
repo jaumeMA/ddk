@@ -153,6 +153,23 @@ struct size_of_qualified_type<T*>
 template<typename T>
 using remove_qualifiers = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 
+template<typename>
+struct add_contravariant_constness_impl;
+    
+template<typename T>
+struct add_contravariant_constness_impl
+{
+    typedef typename std::add_const<T>::type type;
+};
+template<template<typename> typename T, typename TT>
+struct add_contravariant_constness_impl<T<TT>>
+{
+    typedef T<typename std::add_const<TT>::type> type;
+};
+
+template<typename T>
+using add_contravariant_constness = typename add_contravariant_constness_impl<T>::type;
+
 template<typename T>
 struct get_pointer
 {
@@ -847,6 +864,42 @@ struct acc_sizeof
 constexpr bool is_power_of_two(size_t i_value)
 {
     return (i_value & (i_value - 1)) == 0;
+}
+constexpr unsigned short next_power_of_two(unsigned short i_value)
+{
+    i_value--;
+    i_value |= i_value >> 1;
+    i_value |= i_value >> 2;
+    i_value |= i_value >> 4;
+    i_value |= i_value >> 8;
+    i_value++;
+
+    return i_value;
+}
+constexpr unsigned int next_power_of_two(unsigned int i_value)
+{
+    i_value--;
+    i_value |= i_value >> 1;
+    i_value |= i_value >> 2;
+    i_value |= i_value >> 4;
+    i_value |= i_value >> 8;
+    i_value |= i_value >> 16;
+    i_value++;
+
+    return i_value;
+}
+constexpr unsigned long long int next_power_of_two(unsigned long long int i_value)
+{
+    i_value--;
+    i_value |= i_value >> 1;
+    i_value |= i_value >> 2;
+    i_value |= i_value >> 4;
+    i_value |= i_value >> 8;
+    i_value |= i_value >> 16;
+    i_value |= i_value >> 32;
+    i_value++;
+
+    return i_value;
 }
 
 }

@@ -1,4 +1,5 @@
 #include "ddk_thread_pool.h"
+#include "ddk_thread_pool.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_lock_guard.h"

@@ -25,6 +25,7 @@ struct cancel_exception : public std::exception
 
 SCOPED_ENUM_DECL(AsyncExceptionCode,
 				 None,
+				 Pause,
 				 Cancel);
 
 struct async_error

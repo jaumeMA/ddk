@@ -48,4 +48,25 @@ void yield()
     }
 }
 
+void pause()
+{
+    ddk::detail::execution_context& currFiberContext = get_current_execution_context();
+
+    if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
+    {
+        ddk::detail::yielder_context _yielder(get_current_fiber_id(),ddk::detail::yielder_context::Paused);
+
+        currYielder->yield(&_yielder);
+
+        if(currFiberContext.is_stopped())
+        {
+            throw suspend_exception{ currFiberContext.get_id() };
+        }
+    }
+    else
+    {
+        std::this_thread::yield();
+    }
+}
+
 }

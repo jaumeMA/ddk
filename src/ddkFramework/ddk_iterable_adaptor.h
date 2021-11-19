@@ -24,12 +24,13 @@ public:
 	typedef typename Iterable::const_pointer const_pointer;
 	typedef long long difference_type;
 
-	template<typename Action>
-	iterable_adaptor_base(Iterable& i_iterable, Action&& i_initialAction);
+	iterable_adaptor_base(Iterable& i_iterable);
 
+	template<typename Sink, typename Action>
+	inline bool init(Sink&& i_sink, Action&& i_initialAction);
 	inline bool valid() const noexcept;
-	template<typename Sink>
-	inline bool forward_add_value_in(const_reference i_value, Sink&& i_sink);
+	template<typename Sink, typename Value>
+	inline bool forward_add_value_in(Value&& i_value, Sink&& i_sink);
 	template<typename Sink>
 	inline bool forward_erase_value_in(Sink&& i_sink);
 
@@ -52,10 +53,11 @@ public:
 	typedef typename Iterable::const_pointer const_pointer;
 	typedef long long difference_type;
 
-	template<typename Action>
-	iterable_adaptor_base(const Iterable& i_iterable,Action&& i_initialAction);
+	iterable_adaptor_base(const Iterable& i_iterable);
 
 	inline bool valid() const noexcept;
+	template<typename Sink,typename Action>
+	inline bool init(Sink&& i_sink, Action&& i_initialAction);
 
 protected:
 	const Iterable& m_iterable;
@@ -94,8 +96,7 @@ public:
 	using typename forward_iterable_adaptor<Iterable>::const_pointer;
 	using typename forward_iterable_adaptor<Iterable>::difference_type;
 
-	template<typename Action>
-	bidirectional_iterable_adaptor(Iterable& i_iterable,Action&& i_initialAction);
+	bidirectional_iterable_adaptor(Iterable& i_iterable);
 	template<typename Sink>
 	inline difference_type forward_prev_value_in(Sink&& i_sink);
 	template<typename Sink>

@@ -19,6 +19,7 @@ public:
 	void attach(const detail::this_thread_t& i_thisThread);
 	bool is_attached() const;
 	bool cancel();
+	void notify();
 
 private:
 	typedef variant<detail::none_t,thread,fiber,thread_sheaf,fiber_sheaf,const detail::this_thread_t&> context_t;
@@ -27,7 +28,7 @@ private:
 	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
 	void clear() override;
 
-	mutex m_mutex;
+	mutable mutex m_mutex;
 	function<void()> m_function;
 	context_t m_context;
 	detail::async_executor_recipients m_recipients;
@@ -53,7 +54,7 @@ private:
 	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
 
 	start_result execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const ddk::function<bool()>& i_cancelFunc) override;
+	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	bool pending() const override;

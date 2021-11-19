@@ -5,10 +5,19 @@ namespace detail
 {
 
 template<typename Iterable>
-template<typename Action>
-iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable, Action&& i_initialAction)
+iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable)
 : m_iterable(i_iterable)
 , m_endIterator(std::end(i_iterable))
+{
+}
+template<typename Iterable>
+bool iterable_adaptor_base<Iterable>::valid() const noexcept
+{
+	return m_currIterator != m_endIterator;
+}
+template<typename Iterable>
+template<typename Sink, typename Action>
+bool iterable_adaptor_base<Iterable>::init(Sink&& i_sink, Action&& i_initialAction)
 {
 	const size_t iterableSize = m_iterable.size();
 
@@ -23,19 +32,25 @@ iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable, Act
 	{
 		m_currIterator = m_endIterator;
 	}
+
+	if(m_currIterator != m_endIterator)
+	{
+		i_sink.apply(*(this->m_currIterator));
+	
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<typename Iterable>
-bool iterable_adaptor_base<Iterable>::valid() const noexcept
-{
-	return m_currIterator != m_endIterator;
-}
-template<typename Iterable>
-template<typename Sink>
-bool iterable_adaptor_base<Iterable>::forward_add_value_in(const_reference i_value, Sink&& i_sink)
+template<typename Sink,typename Value>
+bool iterable_adaptor_base<Iterable>::forward_add_value_in(Value&& i_value, Sink&& i_sink)
 {
 	typedef typename Iterable::value_type value_type;
 
-	iterator itNew = m_iterable.insert(m_currIterator,i_value);
+	iterator itNew = m_iterable.insert(m_currIterator,std::forward<Value>(i_value));
 
 	if (itNew != this->m_endIterator)
 	{
@@ -65,11 +80,21 @@ bool iterable_adaptor_base<Iterable>::forward_erase_value_in(Sink&& i_sink)
 		return false;
 	}
 }
+
 template<typename Iterable>
-template<typename Action>
-iterable_adaptor_base<const Iterable>::iterable_adaptor_base(const Iterable& i_iterable,Action&& i_initialAction)
+iterable_adaptor_base<const Iterable>::iterable_adaptor_base(const Iterable& i_iterable)
 : m_iterable(i_iterable)
 , m_endIterator(std::end(i_iterable))
+{
+}
+template<typename Iterable>
+bool iterable_adaptor_base<const Iterable>::valid() const noexcept
+{
+	return m_currIterator != m_endIterator;
+}
+template<typename Iterable>
+template<typename Sink,typename Action>
+bool iterable_adaptor_base<const Iterable>::init(Sink&& i_sink,Action&& i_initialAction)
 {
 	const size_t iterableSize = m_iterable.size();
 
@@ -84,11 +109,17 @@ iterable_adaptor_base<const Iterable>::iterable_adaptor_base(const Iterable& i_i
 	{
 		m_currIterator = m_endIterator;
 	}
-}
-template<typename Iterable>
-bool iterable_adaptor_base<const Iterable>::valid() const noexcept
-{
-	return m_currIterator != m_endIterator;
+
+	if(m_currIterator != m_endIterator)
+	{
+		i_sink.apply(*(this->m_currIterator));
+	
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 template<typename Iterable>
@@ -123,9 +154,8 @@ typename forward_iterable_adaptor<Iterable>::difference_type forward_iterable_ad
 }
 
 template<typename Iterable>
-template<typename Action>
-bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterable& i_iterable,Action&& i_initialAction)
-: forward_iterable_adaptor<Iterable>(i_iterable,i_initialAction)
+bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterable& i_iterable)
+: forward_iterable_adaptor<Iterable>(i_iterable)
 , m_endReverseIterator(std::rend(i_iterable))
 {
 }
@@ -212,7 +242,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 		{
 			i_sink.apply(*(this->m_currIterator));
 
-			return true;
+			return 0;
 		}
 		else
 		{
@@ -223,7 +253,7 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 		{
 			i_sink.apply(*(this->m_currIterator));
 
-			return true;
+			return 0;
 		}
 		else
 		{
@@ -234,15 +264,13 @@ typename random_access_iterable_adaptor<Iterable>::difference_type random_access
 		{
 			i_sink.apply(*(this->m_currIterator));
 
-			return true;
+			return 0;
 		}
 		else
 		{
 			return i_shift - (std::distance(this->m_endIterator,this->m_currIterator) - 1);
 		}
 	}
-
-	return false;
 }
 
 }

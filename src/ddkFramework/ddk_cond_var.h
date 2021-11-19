@@ -15,7 +15,7 @@ public:
 	~cond_var();
 
 	void wait(mutex& i_mutex);
-	void wait(mutex& i_mutex,const std::chrono::nanoseconds& i_time);
+	bool wait_for(mutex& i_mutex,const std::chrono::nanoseconds& i_time);
 	void wait_until(mutex& i_mutex, const function<bool()>& i_predicate);
 	void wait_until(mutex& i_mutex, const function<bool()>& i_predicate, const std::chrono::nanoseconds& i_time);
 	void notify_all();

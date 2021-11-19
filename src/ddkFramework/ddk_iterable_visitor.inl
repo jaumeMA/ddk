@@ -11,9 +11,9 @@ namespace detail
 {
 
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-template<typename Action, typename FFunction>
-action_visitor_base<Iterable,FinalAction,Function,Adaptor>::action_visitor_base(Iterable& i_iterable, Action&& i_initialAction, FFunction&& i_sink, action_state_lent_ptr i_actionStatePtr)
-: m_adaptor(i_iterable,i_initialAction)
+template<typename FFunction>
+action_visitor_base<Iterable,FinalAction,Function,Adaptor>::action_visitor_base(Iterable& i_iterable, FFunction&& i_sink, action_state_lent_ptr i_actionStatePtr)
+: m_adaptor(i_iterable)
 , m_actionStatePtr(i_actionStatePtr)
 , m_currAction(go_no_place)
 , m_sink(std::forward<FFunction>(i_sink))
@@ -25,12 +25,17 @@ bool action_visitor_base<Iterable,FinalAction,Function,Adaptor>::valid() const n
 	return m_adaptor.valid();
 }
 template<typename Iterable,typename FinalAction,typename Function,typename Adaptor>
-template<typename Visitor>
-void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::loop()
+template<typename Visitor, typename Action>
+void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::loop(Action&& i_initialAction)
 {
 	Visitor& thisVisitor = static_cast<Visitor&>(*this);
 
-	while(m_currAction.visit(thisVisitor));
+	//first entry
+	if(this->m_adaptor.init(thisVisitor,std::forward<Action>(i_initialAction)))
+	{
+		//iterate
+		while(std::move(m_currAction).visit(thisVisitor));
+	}
 }
 template<typename Iterable,typename FinalAction,typename Function,typename Adaptor>
 template<typename T>
@@ -104,13 +109,13 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operato
 	return true;
 }
 template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(const add_action& i_action)
+bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(add_action i_action)
 {
     if constexpr (std::is_const<Iterable>::value == false)
     {
 		typedef typename Iterable::value_type value_type;
 
-		if(this->m_adaptor.forward_add_value_in(i_action.template get<value_type>(),*this))
+		if(this->m_adaptor.forward_add_value_in(std::move(i_action).template extract<value_type>(),*this))
 		{
 			if(this->m_actionStatePtr)
 			{
@@ -240,11 +245,11 @@ template<typename Iterable, typename Function, typename Action>
 void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
 {
 	typedef detail::action_visitor<Iterable,Action,Function,Action,iterable_adaptor<Iterable>> action_visitor_t;
-	action_visitor_t actionVisitor(i_iterable,i_initialAction.template get_as<shift_action>(),std::forward<Function>(i_sink),i_actionStatePtr);
+	action_visitor_t actionVisitor(i_iterable,std::forward<Function>(i_sink),i_actionStatePtr);
 
 	if(actionVisitor.valid())
 	{
-		actionVisitor.template loop<action_visitor_t>();
+		actionVisitor.template loop<action_visitor_t>(i_initialAction.template get_as<shift_action>());
 	}
 
 	suspend();

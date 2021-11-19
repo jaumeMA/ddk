@@ -3,10 +3,26 @@ namespace ddk
 {
 
 template<size_t ... Indexs, typename ... T>
-iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(tuple<T...>& i_iterable, const shift_action& i_initialAction)
+iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(tuple<T...>& i_iterable)
 : m_iterable(i_iterable)
 {
+}
+template<size_t ... Indexs,typename ... T>
+template<typename Sink>
+bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::init(Sink&& i_sink, const shift_action& i_initialAction)
+{
 	m_currIndex = i_initialAction.shifting();
+
+	if(valid())
+	{
+		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>
@@ -156,10 +172,26 @@ void iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::_get(S
 
 
 template<size_t ... Indexs, typename ... T>
-iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(const tuple<T...>& i_iterable, const shift_action& i_initialAction)
+iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(const tuple<T...>& i_iterable)
 : m_iterable(i_iterable)
 {
+}
+template<size_t ... Indexs,typename ... T>
+template<typename Sink>
+bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::init(Sink&& i_sink, const shift_action& i_initialAction)
+{
 	m_currIndex = i_initialAction.shifting();
+
+	if(m_currIndex < s_numTypes)
+	{
+		get(typename mpl::make_sequence<0,s_numTypes>::type{},std::forward<Sink>(i_sink));
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink>

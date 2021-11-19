@@ -140,8 +140,6 @@ lock_free_stack_node<T>* single_consumer_lock_free_stack<T,Allocator>::allocate_
 template<typename T,typename Allocator>
 void single_consumer_lock_free_stack<T,Allocator>::deallocate_node(lock_free_stack_node<T>* i_ptr)
 {
-	i_ptr->~lock_free_stack_node<T>();
-
 	m_allocator.deallocate(i_ptr);
 }
 

@@ -16,13 +16,18 @@ bool async_executor_recipients::task::operator==(const continuation_token& i_tok
 	return i_token == m_token;
 }
 
+async_executor_recipients::~async_executor_recipients()
+{
+	mutex_guard mg(m_mutex);
+}
 void async_executor_recipients::notify()
 {
 	m_mutex.lock();
 
-	while(m_pendingCallables.empty() == false)
+	callable_container::iterator itGroupedMaps = m_pendingCallables.begin();
+
+	while(itGroupedMaps != m_pendingCallables.end())
 	{
-		callable_container::iterator itGroupedMaps = m_pendingCallables.begin();
 		std::list<task>& groupedMaps = itGroupedMaps->second;
 
 		while(groupedMaps.empty() == false)
@@ -38,7 +43,7 @@ void async_executor_recipients::notify()
 			m_mutex.lock();
 		}
 
-		m_pendingCallables.erase(itGroupedMaps);
+		itGroupedMaps = m_pendingCallables.erase(itGroupedMaps);
 	}
 
 	m_admissible = false;
@@ -123,6 +128,10 @@ void deferred_execution_context::start(const function<void()>& i_callable)
 {
 	eval(i_callable);
 }
+bool deferred_execution_context::cancel()
+{
+	return true;
+}
 continuation_token deferred_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	return { continuation_token::ntoken };
@@ -138,6 +147,19 @@ void deferred_execution_context::clear()
 thread_execution_context::thread_execution_context(thread i_thread)
 : m_thread(std::move(i_thread))
 {
+}
+bool thread_execution_context::cancel()
+{
+	if(m_thread.joinable() == false)
+	{
+		m_recipients.notify();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 void thread_execution_context::start(const function<void()>& i_callable)
 {
@@ -174,6 +196,19 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 		m_recipients.notify();
 	});
 }
+bool fiber_execution_context::cancel()
+{
+	if(m_fiber.joinable() == false)
+	{
+		m_recipients.notify();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 continuation_token fiber_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
 	return m_recipients.accept(i_callable,i_depth);
@@ -192,6 +227,19 @@ thread_sheaf_execution_context::thread_sheaf_execution_context(thread_sheaf i_th
 , m_failedThreads(0)
 , m_pendingThreads(m_threadSheaf.size())
 {
+}
+bool thread_sheaf_execution_context::cancel()
+{
+	if(m_threadSheaf.joinable() == false)
+	{
+		m_recipients.notify();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 {
@@ -249,6 +297,19 @@ void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 	{
 		eval(i_callable);
 	});
+}
+bool fiber_sheaf_execution_context::cancel()
+{
+	if(m_fiberSheaf.joinable() == false)
+	{
+		m_recipients.notify();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 continuation_token fiber_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
