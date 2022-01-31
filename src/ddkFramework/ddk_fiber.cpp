@@ -23,13 +23,13 @@ fiber& fiber::operator=(fiber&& other)
 
 	return *this;
 }
-void fiber::start(const ddk::function<void()>& i_function)
+fiber::start_result fiber::start(const ddk::function<void()>& i_function)
 {
-	m_impl->start(i_function);
+	return m_impl->start(i_function);
 }
-void fiber::stop()
+fiber::stop_result fiber::stop()
 {
-	m_impl->stop();
+	return m_impl->stop();
 }
 bool fiber::ready() const
 {

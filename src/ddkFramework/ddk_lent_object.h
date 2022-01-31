@@ -25,6 +25,12 @@ class lent_object
 
 	template<typename>
 	friend class lent_object;
+	TEMPLATE(typename T,typename TT)
+	REQUIRED(IS_LENDABLE_POINTER(TT))
+	friend lent_object<T> make_lent_object(TT&& i_value);
+	TEMPLATE(typename T,typename TT)
+	REQUIRED(IS_LENDABLE_POINTER(TT))
+	friend lent_object<T> make_lent_object(TT&& i_value, const rtti::TypeInfo& i_typeInfo);
 	template<typename TT>
 	friend lent_object<TT> lend(const distributed_object<TT>&);
 	template<typename TT>

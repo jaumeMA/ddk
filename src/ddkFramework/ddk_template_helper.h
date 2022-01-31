@@ -453,6 +453,9 @@ typedef typename _partial<0>::type type;
 template<size_t Index, typename T>
 using index_to_type = T;
 
+template<typename T, size_t Index>
+inline constexpr size_t type_to_index = Index;
+
 template<size_t Index,size_t IIndex>
 inline constexpr size_t index_to_index = IIndex;
 

@@ -6,6 +6,8 @@
 #include "ddk_distributed_object.h"
 #include "ddk_unique_value.h"
 #include "ddk_unique_object.h"
+#include "ddk_smart_pointer_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -15,6 +17,20 @@ inline distributed_value<T> make_distributed_value(Args&& ... i_args);
 
 template<typename T,typename ... Args>
 inline unique_value<T> make_unique_value(Args&& ... i_args);
+
+TEMPLATE(typename T,typename TT)
+REQUIRES(IS_LENDABLE_REF(TT))
+inline lent_value<T> make_lent_value(TT&& i_value);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_LENDABLE_REF(TT))
+inline lent_value<T> make_lent_value(TT&& i_value, const rtti::TypeInfo& i_typeInfo);
+
+TEMPLATE(typename T,typename TT)
+REQUIRES(IS_LENDABLE_POINTER(TT))
+inline lent_object<T> make_lent_object(TT&& i_value);
+TEMPLATE(typename T,typename TT)
+REQUIRES(IS_LENDABLE_POINTER(TT))
+inline lent_object<T> make_lent_object(TT&& i_value, const rtti::TypeInfo& i_typeInfo);
 
 template<typename T>
 inline distributed_value<T> promote_to_value(const distributed_object<T>& i_obj);

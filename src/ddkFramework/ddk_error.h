@@ -11,6 +11,13 @@ class error_impl;
 template<typename Error>
 class error_impl<Error>
 {
+	friend inline std::ostringstream& operator<<(std::ostringstream& i_lhs, const error_impl& i_rhs)
+	{
+		i_lhs << i_rhs.m_errorDesc;
+
+		return i_lhs;
+	}
+
 public:
     error_impl(const Error& i_error);
 	error_impl(const Error& i_error, const std::string& i_errorDesc);
@@ -31,6 +38,16 @@ private:
 template<typename Error, typename ... NestedErrors>
 class error_impl : public error_impl<Error>
 {
+	friend inline std::ostringstream& operator<<(std::ostringstream& i_lhs,const error_impl& i_rhs)
+	{
+		visit([&i_lhs](auto&& i_error)
+		{
+			i_lhs << i_error;
+		},i_rhs.m_nestedErrors)
+
+		return i_lhs;
+	}
+
 public:
 	using error_impl<Error>::error_impl;
 	using error_impl<Error>::operator==;

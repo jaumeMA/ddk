@@ -9,6 +9,9 @@ template<typename Return>
 class context_future: public future<Return>
 {
 public:
+	TEMPLATE(typename T)
+	REQUIRES(IS_CONSTRUCTIBLE(future<Return>,T))
+	context_future(T&& i_future);
 	context_future(future<Return>&& i_future);
 	context_future(future<Return> i_future, promised_context_dist_ref i_context);
 

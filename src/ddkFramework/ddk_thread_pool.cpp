@@ -41,7 +41,7 @@ worker_thread_impl::~worker_thread_impl()
 	void *res = NULL;
 	pthread_join(m_thread,&res);
 }
-void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder* i_yielder)
+worker_thread_impl::start_result worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder* i_yielder)
 {
 	if (m_state != Running)
 	{
@@ -55,11 +55,25 @@ void worker_thread_impl::start(const ddk::function<void()>& i_callable, yielder*
 		}
 
 		m_condVar.notify_one();
+
+		return success;
+	}
+	else
+	{
+		return ddk::make_error<start_result>(StartErrorCode::StartNotAvailable,"Thread is alreday started.");
 	}
 }
-void worker_thread_impl::stop()
+worker_thread_impl::stop_result worker_thread_impl::stop()
 {
 	//worker threads are effectively stopped during detsruction
+	mutex_guard lg(m_mutex);
+
+	if(m_state == Running)
+	{
+		m_condVar.wait(m_mutex);
+	}
+
+	return success;
 }
 bool worker_thread_impl::joinable() const
 {
@@ -88,6 +102,8 @@ void worker_thread_impl::execute()
 			m_funcToExecute = nullptr;
 
 			thread_impl_interface::clear_yielder();
+
+			m_condVar.notify_one();
 		}
 
 		if(m_state != Stopped)
@@ -138,7 +154,7 @@ thread_pool::~thread_pool()
 		{
 			m_mutex.unlock();
 
-			inUseThread->stop();
+			inUseThread->stop().dismiss();
 
 			m_mutex.lock();
 		}

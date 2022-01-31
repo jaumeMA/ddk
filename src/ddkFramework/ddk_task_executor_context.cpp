@@ -18,7 +18,7 @@ void delayed_task_execution_context::attach(thread i_thread)
 
 				m_recipients.notify();
 			}
-		});
+		}).dismiss();
 
 		m_context = std::move(i_thread);
 	}
@@ -33,7 +33,7 @@ void delayed_task_execution_context::attach(fiber i_fiber)
 
 	if(is_attached() == false)
 	{
-		i_fiber.start([this,callable = std::move(m_function)]()
+		if(i_fiber.start([this,callable = std::move(m_function)]()
 		{
 			if(callable != nullptr)
 			{
@@ -41,9 +41,10 @@ void delayed_task_execution_context::attach(fiber i_fiber)
 
 				m_recipients.notify();
 			}
-		});
-
-		m_context = std::move(i_fiber);
+		}))
+		{
+			m_context = std::move(i_fiber);
+		}
 	}
 	else
 	{
@@ -56,7 +57,7 @@ void delayed_task_execution_context::attach(thread_sheaf i_threadSheaf)
 
 	if(is_attached() == false)
 	{
-		i_threadSheaf.start([this,callable = std::move(m_function)]()
+		if(i_threadSheaf.start([this,callable = std::move(m_function)]()
 		{
 			if(callable != nullptr)
 			{
@@ -64,9 +65,10 @@ void delayed_task_execution_context::attach(thread_sheaf i_threadSheaf)
 
 				m_recipients.notify();
 			}
-		});
-
-		m_context = std::move(i_threadSheaf);
+		}))
+		{
+			m_context = std::move(i_threadSheaf);
+		}
 	}
 	else
 	{
@@ -79,7 +81,7 @@ void delayed_task_execution_context::attach(fiber_sheaf i_fiberSheaf)
 
 	if(is_attached() == false)
 	{
-		i_fiberSheaf.start([this,callable = std::move(m_function)]()
+		if(i_fiberSheaf.start([this,callable = std::move(m_function)]()
 		{
 			if(callable != nullptr)
 			{
@@ -87,9 +89,10 @@ void delayed_task_execution_context::attach(fiber_sheaf i_fiberSheaf)
 
 				m_recipients.notify();
 			}
-		});
-
-		m_context = std::move(i_fiberSheaf);
+		}))
+		{
+			m_context = std::move(i_fiberSheaf);
+		}
 	}
 	else
 	{

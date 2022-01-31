@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <list>
+#include <map>
 #include <utility>
 #include <sstream>
 #include "ddk_macros.h"
@@ -14,7 +15,7 @@ namespace ddk
 template<typename T>
 struct formatter
 {
-	static_assert(sizeof(T) == 0,"Go and add an overload for this type");
+	inline static T format(const std::string& i_str);
 };
 
 template<>
@@ -87,170 +88,55 @@ struct formatter<std::string>
 {
 	static std::string format(const std::string& i_str);
 	template<typename T>
-	static std::string format(const T& i_val)
-	{
-		std::ostringstream convert;
-
-		convert << i_val;
-
-		return convert.str();
-	}
+	inline static std::string format(const T& i_val);
 	template<typename T>
-	static std::string format(const std::set<T>& i_val)
-	{
-		std::ostringstream convert;
-		bool firstItem = true;
-
-		typename std::set<T>::const_iterator itVal = i_val.begin();
-		for(; itVal != i_val.end(); ++itVal)
-		{
-			if(firstItem == false)
-			{
-				convert << ",";
-			}
-
-			convert << format(*itVal);
-			firstItem = false;
-		}
-
-		return convert.str();
-	}
+	inline static std::string format(const std::set<T>& i_val);
 	template<typename T>
-	static std::string format(const std::vector<T>& i_val)
-	{
-		std::ostringstream convert;
-		bool firstItem = true;
-
-		typename std::vector<T>::const_iterator itVal = i_val.begin();
-		for(; itVal != i_val.end(); ++itVal)
-		{
-			if(firstItem == false)
-			{
-				convert << ",";
-			}
-
-			convert << format(*itVal);
-			firstItem = false;
-		}
-
-		return convert.str();
-	}
+	inline static std::string format(const std::vector<T>& i_val);
 	template<typename T>
-	static std::string format(const std::list<T>& i_val)
-	{
-		std::ostringstream convert;
-		bool firstItem = true;
-
-		typename std::list<T>::const_iterator itVal = i_val.begin();
-		for(; itVal != i_val.end(); ++itVal)
-		{
-			if(firstItem == false)
-			{
-				convert << ",";
-			}
-
-			convert << format(*itVal);
-			firstItem = false;
-		}
-
-		return convert.str();
-	}
+	inline static std::string format(const std::list<T>& i_val);
+	template<typename First,typename Second>
+	inline static std::string format(const std::pair<First,Second>& i_val);
+	template<typename Key, typename Value>
+	inline static std::string format(const std::map<Key,Value>& i_val);
 };
+
 template<typename First,typename Second>
 struct formatter<std::pair<First,Second>>
 {
-	static std::pair<First,Second> format(const std::string& i_str)
-	{
-		std::pair<First,Second> res;
-
-		if(i_str.empty() == false)
-		{
-			size_t separatorPos = i_str.find(",");
-			if(separatorPos != std::string::npos && separatorPos < i_str.size() - 1)
-			{
-				res.first = formatter<First>::format(i_str.substr(0,separatorPos));
-				res.second = formatter<Second>::format(i_str.substr(separatorPos + 1));
-			}
-			else
-			{
-				DDK_FAIL("Expected separator not present");
-			}
-		}
-
-		return res;
-	}
+	inline static std::pair<First,Second> format(const std::string& i_str);
 };
 
 template<typename T>
 struct formatter<std::vector<T>>
 {
-	static std::vector<T> format(std::string i_str)
-	{
-		std::vector<T> res;
-
-		if(i_str.empty() == false)
-		{
-			do
-			{
-				const size_t separatorPos = i_str.find(",");
-				const std::string leftStr = i_str.substr(0,separatorPos);
-
-				i_str = (separatorPos != std::string::npos) ? i_str.substr(separatorPos + 1) : "";
-
-				res.push_back(formatter<T>::format(leftStr));
-			} while(i_str.empty() == false);
-		}
-
-		return res;
-	}
+	inline static std::vector<T> format(std::string i_str);
 };
 
 template<typename T>
 struct formatter<std::list<T>>
 {
-	static std::list<T> format(std::string i_str)
-	{
-		std::list<T> res;
-
-		if(i_str.empty() == false)
-		{
-			do
-			{
-				const size_t separatorPos = i_str.find(",");
-				const std::string leftStr = i_str.substr(0,separatorPos);
-
-				i_str = (separatorPos != std::string::npos) ? i_str.substr(separatorPos + 1) : "";
-
-				res.push_back(formatter<T>::format(leftStr));
-			} while(i_str.empty() == false);
-		}
-
-		return res;
-	}
+	inline static std::list<T> format(std::string i_str);
 };
 
 template<typename T>
 struct formatter<std::set<T>>
 {
-	static std::set<T> format(std::string i_str)
-	{
-		std::set<T> res;
-
-		if(i_str.empty() == false)
-		{
-			do
-			{
-				const size_t separatorPos = i_str.find(",");
-				const std::string leftStr = i_str.substr(0,separatorPos);
-
-				i_str = (separatorPos != std::string::npos) ? i_str.substr(separatorPos + 1) : "";
-
-				res.insert(formatter<T>::format(leftStr));
-			} while(i_str.empty() == false);
-		}
-
-		return res;
-	}
+	inline static std::set<T> format(std::string i_str);
 };
 
+template<typename Key, typename Value>
+struct formatter<std::map<Key,Value>>
+{
+	inline static std::map<Key,Value> format(std::string i_str);
+};
+
+template<typename T>
+inline T format_to(const std::string& i_value);
+
+template<typename T>
+inline std::string to_string(T&& i_value);
+
 }
+
+#include "ddk_formatter.inl"

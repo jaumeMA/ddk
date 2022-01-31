@@ -26,11 +26,15 @@ template<typename T>
 atomic8<T>& atomic8<T>::operator=(const atomic8& other)
 {
 	m_value = other.m_value;
+
+	return *this;
 }
 template<typename T>
 atomic8<T>& atomic8<T>::operator=(atomic8&& other)
 {
 	m_value = std::move(other.m_value);
+
+	return *this;
 }
 template<typename T>
 const T& atomic8<T>::get() const

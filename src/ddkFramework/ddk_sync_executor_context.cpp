@@ -168,7 +168,7 @@ void thread_execution_context::start(const function<void()>& i_callable)
 		eval(i_callable);
 
 		m_recipients.notify();
-	});
+	}).dismiss();
 }
 continuation_token thread_execution_context::enqueue(const function<void()>& i_callable, unsigned char i_depth)
 {
@@ -194,7 +194,7 @@ void fiber_execution_context::start(const function<void()>& i_callable)
 		eval(i_callable);
 
 		m_recipients.notify();
-	});
+	}).dismiss();
 }
 bool fiber_execution_context::cancel()
 {
@@ -246,7 +246,7 @@ void thread_sheaf_execution_context::start(const function<void()>& i_callable)
 	m_threadSheaf.start([i_callable]()
 	{
 		eval(i_callable);
-	});
+	}).dismiss();
 }
 continuation_token thread_sheaf_execution_context::enqueue(const function<void()>& i_callable)
 {
@@ -296,7 +296,7 @@ void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
 	m_fiberSheaf.start([i_callable]()
 	{
 		eval(i_callable);
-	});
+	}).dismiss();
 }
 bool fiber_sheaf_execution_context::cancel()
 {

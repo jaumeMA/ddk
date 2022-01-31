@@ -352,15 +352,24 @@ inline bool operator!=(const ddk::detail::shared_pointer_wrapper_impl<T,Referenc
 template<typename T,typename ReferenceCounter>
 inline bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs, const ddk::detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs);
 
-template<typename T>
 struct smart_pointer_compare
 {
 public:
 	smart_pointer_compare() = default;
-	inline bool operator()(const T& i_lhs, const T& i_rhs) const
-	{
-		return get_raw_ptr(i_lhs) < get_raw_ptr(i_rhs);
-	}
+
+	template<typename T>
+	inline bool operator()(const unique_pointer_wrapper<T>& i_lhs, const unique_pointer_wrapper<T>& i_rhs) const;
+	template<typename T, typename ReferenceCounter>
+	inline bool operator()(const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs, const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs) const;
+	template<typename T>
+	inline bool operator()(const weak_pointer_wrapper<T>& i_lhs,const weak_pointer_wrapper<T>& i_rhs) const;
+#ifdef DDK_DEBUG
+	template<typename T>
+	inline bool operator()(const lent_pointer_wrapper<T>& i_lhs, const lent_pointer_wrapper<T>& i_rhs) const;
+#else
+	template<typename T>
+	inline bool operator()(const T* i_lhs,const T* i_rhs) const;
+#endif
 };
 
 }

@@ -113,3 +113,5 @@ using random_access_iterable = detail::iterable<detail::random_access_iterable_v
 #include "ddk_iterable_resolver.h"
 #include "ddk_iterable_utils.h"
 #include "ddk_view_utils.h"
+#include "ddk_algorithm.h"
+#include "ddk_builtin_iterables.h"

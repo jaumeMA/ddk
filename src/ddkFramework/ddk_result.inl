@@ -25,30 +25,6 @@ result<void,Error>::result(const Error& i_error)
 {
 }
 template<typename Error>
-result<void,Error>::result(const result& other)
-: m_nestedRes(other.m_nestedRes)
-{
-}
-template<typename Error>
-result<void,Error>::result(result&& other)
-: m_nestedRes(std::move(other.m_nestedRes))
-{
-}
-template<typename Error>
-result<void,Error>& result<void,Error>::operator=(const result& other)
-{
-    m_nestedRes = other.m_nestedRes;
-
-    return *this;
-}
-template<typename Error>
-result<void,Error>& result<void,Error>::operator=(result&& other)
-{
-    m_nestedRes = std::move(other.m_nestedRes);
-
-    return *this;
-}
-template<typename Error>
 Error result<void,Error>::error() const
 {
     CHECK_RESULT

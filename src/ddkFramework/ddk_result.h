@@ -77,10 +77,10 @@ public:
 
 	result(const result_success_t&);
 	result(const Error& i_error);
-	result(const result& other);
-	result(result&& other);
-	result& operator=(const result& other);
-	result& operator=(result&& other);
+	result(const result& other) = default;
+	result(result&& other) = default;
+	result& operator=(const result& other) = default;
+	result& operator=(result&& other) = default;
 	Error error() const;
 	explicit operator bool() const;
 	result& dismiss();

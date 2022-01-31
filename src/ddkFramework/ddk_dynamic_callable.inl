@@ -15,11 +15,11 @@ Return dynamic_callable_impl<Callable,Return,TypeInterface>::operator()(Args&& .
 {
 	if constexpr (std::is_same<Return,void>::value)
 	{
-		eval(m_callable,std::forward<Args>(i_args)...);
+		ddk::eval(m_callable,std::forward<Args>(i_args)...);
 	}
 	else
 	{
-		return eval(m_callable,std::forward<Args>(i_args)...);
+		return ddk::eval(m_callable,std::forward<Args>(i_args)...);
 	}
 }
 template<typename Callable,typename Return,typename TypeInterface>
@@ -28,11 +28,11 @@ Return dynamic_callable_impl<Callable,Return,TypeInterface>::operator()(Args&& .
 {
 	if constexpr(std::is_same<Return,void>::value)
 	{
-		eval(m_callable,std::forward<Args>(i_args)...);
+		ddk::eval(m_callable,std::forward<Args>(i_args)...);
 	}
 	else
 	{
-		return eval(m_callable,std::forward<Args>(i_args)...);
+		return ddk::eval(m_callable,std::forward<Args>(i_args)...);
 	}
 }
 

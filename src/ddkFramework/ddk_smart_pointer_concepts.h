@@ -27,6 +27,11 @@
 #define IS_NOT_UNIQUE_POINTER(_TYPE) \
 	typename std::enable_if<ddk::concepts::is_unique_pointer_v<_TYPE> == false>::type*
 
+#define IS_LENDABLE_POINTER(_TYPE) \
+	typename std::enable_if<ddk::concepts::is_lendable_pointer_v<_TYPE>>::type*
+
+#define IS_LENDABLE_REF(_TYPE) \
+	typename std::enable_if<ddk::concepts::is_lendable_reference_v<_TYPE>>::type*
 
 namespace ddk
 {
@@ -100,6 +105,93 @@ struct is_unique_pointer
 
 template<typename T>
 constexpr bool is_unique_pointer_v = is_unique_pointer<T>::value;
+
+
+template<typename T>
+struct is_lendable
+{
+private:
+	template<typename TT>
+	static constexpr std::true_type test(TT&&, decltype(lend(std::declval<TT>()))* = nullptr);
+	static constexpr std::false_type test(...);
+
+public:
+	static const bool value = decltype(test(std::declval<T>()))::value;
+};
+
+template<typename T>
+constexpr bool is_lendable_v = is_lendable<T>::value;
+
+template<typename T>
+struct _is_lendable_pointer;
+
+template<typename T>
+struct _is_lendable_pointer<lent_pointer_wrapper<T>>
+{
+	static const bool value = true;
+};
+
+#ifdef DDK_DEBUG
+
+template<typename T>
+struct _is_lendable_pointer<lent_reference_wrapper<T>>
+{
+	static const bool value = true;
+};
+
+#endif
+
+template<typename T>
+struct _is_lendable_pointer
+{
+	static const bool value = false;
+};
+
+	
+template<typename T>
+struct is_lendable_pointer
+{
+private:
+	template<typename TT>
+	static constexpr decltype(lend(std::declval<TT>())) test(TT&&);
+	static constexpr std::false_type test(...);
+
+public:
+	static const bool value = is_lendable_v<T> && _is_lendable_pointer<decltype(lend(std::declval<T>()))>::value;
+};
+
+template<typename T>
+constexpr bool is_lendable_pointer_v = is_lendable_pointer<T>::value;
+
+template<typename T>
+struct _is_lendable_reference;
+
+template<typename T>
+struct _is_lendable_reference<lent_reference_wrapper<T>>
+{
+	static const bool value = true;
+};
+template<typename T>
+struct _is_lendable_reference
+{
+	static const bool value = false;
+};
+
+
+template<typename T>
+struct is_lendable_reference
+{
+private:
+	template<typename TT>
+	static constexpr decltype(lend(TT)) test(TT&&);
+	static constexpr std::false_type test(...);
+
+public:
+	static const bool value = is_lendable_v<T> && _is_lendable_reference<decltype(lend(std::declval<T>()))>::value;
+};
+
+template<typename T>
+constexpr bool is_lendable_reference_v = is_lendable_reference<T>::value;
 
 }
 }

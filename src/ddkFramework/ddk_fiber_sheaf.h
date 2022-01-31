@@ -16,14 +16,16 @@ class fiber_sheaf
 public:
 	typedef fiber_container::iterator iterator;
 	typedef fiber_container::const_iterator const_iterator;
+	typedef ddk::result<size_t,fiber::start_error> start_result;
+	typedef ddk::result<size_t,fiber::stop_error> stop_result;
 
 	fiber_sheaf() = default;
 	fiber_sheaf(const fiber_sheaf&) = delete;
 	fiber_sheaf(fiber_sheaf&& other);
 	fiber_sheaf& operator=(const fiber_sheaf&) = delete;
 	fiber_sheaf& operator=(fiber_sheaf&& other);
-	void start(const ddk::function<void()>& i_function);
-	void stop();
+	start_result start(const ddk::function<void()>& i_function);
+	stop_result stop();
 	bool joinable() const;
 	void clear();
 	bool empty() const;

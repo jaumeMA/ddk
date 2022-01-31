@@ -13,52 +13,76 @@ thread_sheaf& thread_sheaf::operator=(thread_sheaf&& other)
 
 	return *this;
 }
-void thread_sheaf::start(const ddk::function<void()>& i_function)
+thread_sheaf::start_result thread_sheaf::start(const ddk::function<void()>& i_function)
 {
-	thread_container::iterator itThread = m_threadCtr.begin();
-	for (; itThread != m_threadCtr.end(); ++itThread)
+	size_t threadIndex = 0;
+
+	for(auto& thread : m_threadCtr)
 	{
-		if (itThread->joinable() == false)
+		if(auto startRes = thread.start(i_function))
 		{
-			itThread->start(i_function);
-		}
-	}
-}
-size_t thread_sheaf::start(const ddk::function<void()>& i_function, size_t i_numThreads)
-{
-	size_t threadIndex=0;
-	thread_container::iterator itThread = m_threadCtr.begin();
-	for (; threadIndex < i_numThreads && itThread != m_threadCtr.end(); ++itThread)
-	{
-		if (itThread->joinable() == false)
-		{
-			itThread->start(i_function);
 			++threadIndex;
 		}
 	}
 
-	return threadIndex;
+	return ddk::make_result<start_result>(threadIndex);
 }
-void thread_sheaf::stop()
+thread_sheaf::start_result thread_sheaf::start(const ddk::function<void()>& i_function, size_t i_numThreads)
 {
-	thread_container::iterator itThread = m_threadCtr.begin();
-	for (; itThread != m_threadCtr.end(); ++itThread)
+	size_t threadIndex=0;
+
+	for(auto& thread : m_threadCtr)
 	{
-		itThread->stop();
+		if(threadIndex >= i_numThreads)
+			break;
+
+		if(auto startRes = thread.start(i_function))
+		{
+			++threadIndex;
+		}
 	}
+
+	return ddk::make_result<start_result>(threadIndex);
+}
+thread_sheaf::stop_result thread_sheaf::stop()
+{
+	size_t threadIndex = 0;
+
+	for(auto& thread : m_threadCtr)
+	{
+		if(auto stopRes = thread.stop())
+		{
+			++threadIndex;
+		}
+	}
+
+	return ddk::make_result<stop_result>(threadIndex);
 }
 bool thread_sheaf::joinable() const
 {
-	thread_container::const_iterator itThread = m_threadCtr.begin();
-	for(; itThread != m_threadCtr.end(); ++itThread)
+	for(auto& thread : m_threadCtr)
 	{
-		if(itThread->joinable())
+		if(thread.joinable())
 		{
 			return true;
 		}
 	}
 
 	return false;
+}
+size_t thread_sheaf::set_affinity(const cpu_set_t& i_set)
+{
+	size_t res = 0;
+
+	for(auto& thread : m_threadCtr)
+	{
+		if(thread.set_affinity(i_set))
+		{
+			++res;
+		}
+	}
+
+	return res;
 }
 thread_sheaf::iterator thread_sheaf::begin()
 {

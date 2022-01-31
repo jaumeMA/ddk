@@ -46,7 +46,7 @@ await_executor<Return>::~await_executor()
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
 	{
-		m_callee.stop();
+		m_callee.stop().dismiss();
 
 		m_state = ExecutorState::Cancelled;
 	}
@@ -54,7 +54,7 @@ await_executor<Return>::~await_executor()
 template<typename Return>
 await_executor<Return>& await_executor<Return>::operator=(const await_executor& other)
 {
-	m_callee.stop();
+	m_callee.stop().dismiss();
 
 	if(other.m_callable != nullptr)
 	{

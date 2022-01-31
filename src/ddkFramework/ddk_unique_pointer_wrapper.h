@@ -29,7 +29,7 @@ inline unique_pointer_wrapper<T> __make_unique_pointer(T* i_data,tagged_pointer<
 template<typename T>
 class unique_pointer_wrapper
 {
-	friend inline T* get_raw_ptr(unique_pointer_wrapper i_ref)
+	friend inline T* get_raw_ptr(const unique_pointer_wrapper& i_ref)
 	{
 		return i_ref.m_data;
 	}

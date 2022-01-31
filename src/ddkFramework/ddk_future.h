@@ -52,7 +52,7 @@ public:
 	bool empty() const;
 	T extract_value();
 	void wait() const;
-	void wait_for(const std::chrono::milliseconds& i_period) const;
+	bool wait_for(const std::chrono::milliseconds& i_period) const;
 	cancel_result cancel();
 	TEMPLATE(typename Return, typename Type)
 	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
@@ -115,7 +115,7 @@ public:
 	bool empty() const;
 	future<T> extract_value();
 	void wait() const;
-	void wait_for(const std::chrono::milliseconds& i_period) const;
+	bool wait_for(const std::chrono::milliseconds& i_period) const;
 	cancel_result cancel();
 	TEMPLATE(typename Return,typename Type)
 	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))

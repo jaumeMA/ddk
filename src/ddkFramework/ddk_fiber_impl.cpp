@@ -68,20 +68,36 @@ fiber_impl::~fiber_impl()
 		m_executor->unregister(m_id);
 	}
 }
-void fiber_impl::start(const ddk::function<void()>& i_function)
+fiber_impl::start_result fiber_impl::start(const ddk::function<void()>& i_function)
 {
 	if(m_executor)
 	{
-		m_fiberContext.start();
+		if(m_state == FiberExecutionState::Idle)
+		{
+			if(i_function != nullptr)
+			{
+				m_fiberContext.start();
 
-		m_executor->activate(m_id,i_function);
+				m_executor->activate(m_id,i_function);
+
+				return success;
+			}
+			else
+			{
+				return ddk::make_error<start_result>(StartErrorCode::StartNotCallable,"Provided callable is empty");
+			}
+		}
+		else
+		{
+			return ddk::make_error<start_result>(StartErrorCode::StartNotAvailable,"Trying to start running fiber");
+		}
 	}
 	else
 	{
-		DDK_FAIL("Trying to start unbound fiber");
+		return ddk::make_error<start_result>(StartErrorCode::StartNotAvailable, "Trying to start empty fiber");
 	}
 }
-void fiber_impl::stop()
+fiber_impl::stop_result fiber_impl::stop()
 {
 	if(m_executor)
 	{
@@ -92,11 +108,17 @@ void fiber_impl::stop()
 			m_fiberContext.stop();
 
 			m_executor->deactivate(m_id);
+
+			return success;
+		}
+		else
+		{
+			return ddk::make_error<stop_result>(StopErrorCode::StopNotAvailable,"Trying to stop not running fiber");
 		}
 	}
 	else
 	{
-		DDK_FAIL("Trying to stop unbound fiber");
+		return ddk::make_error<stop_result>(StopErrorCode::StopNotAvailable, "Trying to stop empty fiber");
 	}
 }
 FiberExecutionState fiber_impl::resume_from(this_fiber_t& other)

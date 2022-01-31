@@ -2,6 +2,7 @@
 
 #include "ddk_iaccess_critical_call_context.h"
 #include "ddk_critical_section.h"
+#include "ddk_critical_section_lock.h"
 
 namespace ddk
 {
@@ -14,8 +15,17 @@ class IAccessInterface : public IAccessProvider, protected IAccessCriticalCallCo
 {
 	template<typename,IAccessProvider::Access>
 	friend struct AccessCriticalSection;
+	friend inline auto lock(const IAccessInterface& i_area, Reentrancy i_reentrancy = Reentrancy::NON_REENTRANT)
+	{
+		return const_critical_section_lock(i_area,i_reentrancy);
+	}
+	friend inline auto lock(IAccessInterface& i_area,Reentrancy i_reentrancy = Reentrancy::NON_REENTRANT)
+	{
+		return critical_section_lock(i_area,i_reentrancy);
+	}
 
 public:
+	typedef Traits traits_t;
 	typedef typename Traits::provider_interface provider_interface;
 	typedef typename Traits::critical_context critical_context;
 	typedef IAccessCriticalCallContext<Traits> access_call_context;

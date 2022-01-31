@@ -19,7 +19,7 @@ thread::thread(thread&& other)
 }
 thread::~thread()
 {
-	stop();
+	stop().dismiss();
 }
 thread& thread::operator=(thread&& other)
 {
@@ -32,23 +32,31 @@ thread& thread::operator=(thread&& other)
 
 	return *this;
 }
-void thread::start(const ddk::function<void()>& i_threadFunc, detail::yielder* i_yielder)
+thread::start_result thread::start(const ddk::function<void()>& i_threadFunc, detail::yielder* i_yielder)
 {
 	if(m_threadImpl.get() != nullptr)
 	{
-		m_threadImpl->start(i_threadFunc,i_yielder);
+		return m_threadImpl->start(i_threadFunc,i_yielder);
+	}
+	else
+	{
+		return make_error<start_result>(detail::thread_impl_interface::StartErrorCode::StartNotAvailable);
+	}
+}
+thread::stop_result thread::stop()
+{
+	if(m_threadImpl.get() != nullptr)
+	{
+		return m_threadImpl->stop();
+	}
+	else
+	{
+		return make_error<stop_result>(detail::thread_impl_interface::StopErrorCode::NotStoppable);
 	}
 }
 thread::id thread::get_id() const
 {
 	return m_threadImpl->get_id();
-}
-void thread::stop()
-{
-	if(m_threadImpl.get() != nullptr)
-	{
-		m_threadImpl->stop();
-	}
 }
 bool thread::set_affinity(const cpu_set_t& i_set)
 {

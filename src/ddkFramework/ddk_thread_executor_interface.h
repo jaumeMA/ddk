@@ -15,7 +15,8 @@ public:
 		NotRunning,
 		NotResumable
 	};
-	typedef ddk::result<void,ResumErrorCode> resume_result;
+	typedef error<ResumErrorCode> resume_error;
+	typedef ddk::result<void,resume_error> resume_result;
 
 	virtual resume_result resume() = 0;
 	virtual void signal() = 0;
@@ -30,6 +31,5 @@ typedef lent_reference_wrapper<thread_executor_interface> thread_executor_lent_r
 typedef lent_reference_wrapper<const thread_executor_interface> thread_executor_const_lent_ref;
 typedef lent_pointer_wrapper<thread_executor_interface> thread_executor_lent_ptr;
 typedef lent_pointer_wrapper<const thread_executor_interface> thread_executor_const_lent_ptr;
-
 
 }

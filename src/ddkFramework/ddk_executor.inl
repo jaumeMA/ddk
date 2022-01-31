@@ -32,11 +32,7 @@ polling_executor<Context>::polling_executor(polling_executor&& other)
 template<typename Context>
 polling_executor<Context>::~polling_executor()
 {
-	if(m_stopped == false)
-	{
-		m_stopped = true;
-		m_context.stop();
-	}
+	resume().dismiss();
 }
 template<typename Context>
 void polling_executor<Context>::set_update_time(const std::chrono::milliseconds& i_sleepInMs)
@@ -54,18 +50,14 @@ bool polling_executor<Context>::set_affinity(const cpu_set_t& i_set)
 	return m_context.set_affinity(i_set);
 }
 template<typename Context>
-void polling_executor<Context>::start(const ddk::function<void()>& i_executor)
+typename polling_executor<Context>::start_result polling_executor<Context>::start(const ddk::function<void()>& i_executor)
 {
-	const start_result startRes = execute(nullptr,i_executor);
-
-	DDK_ASSERT(startRes == success,"Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.error()));
+	return execute(nullptr,i_executor);
 }
 template<typename Context>
-void polling_executor<Context>::stop()
+typename polling_executor<Context>::resume_result polling_executor<Context>::stop()
 {
-	const resume_result stopRes = resume();
-
-	DDK_ASSERT(stopRes == success,"Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
+	return resume();
 }
 template<typename Context>
 typename polling_executor<Context>::start_result polling_executor<Context>::execute(const sink_type& i_sink,const ddk::function<void()>& i_executor)
@@ -74,9 +66,17 @@ typename polling_executor<Context>::start_result polling_executor<Context>::exec
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		m_context.start(ddk::make_function(this,&polling_executor<Context>::update));
+		
+		const auto startRes = m_context.start(ddk::make_function(this,&polling_executor<Context>::update));
 
-		return make_result<start_result>(ExecutorState::Executed);
+		if(startRes)
+		{
+			return ExecutorState::Executed;
+		}
+		else
+		{
+			return make_error<start_result>(StartNotAvailable,startRes.error().get_description());
+		}
 	}
 	else
 	{
@@ -94,13 +94,21 @@ typename polling_executor<Context>::resume_result polling_executor<Context>::res
 	if(m_stopped == false)
 	{
 		m_stopped = true;
-		m_context.stop();
 
-		return success;
+		const auto stopRes = m_context.stop();
+
+		if(stopRes)
+		{
+			return success;
+		}
+		else
+		{
+			return make_error<resume_result>(ResumErrorCode::NotResumable,stopRes.error().get_description());
+		}
 	}
 	else
 	{
-		return NotRunning;
+		return make_error<resume_result>(ResumErrorCode::NotRunning);
 	}
 }
 template<typename Context>
@@ -183,11 +191,7 @@ event_driven_executor<Context>::event_driven_executor(event_driven_executor&& ot
 template<typename Context>
 event_driven_executor<Context>::~event_driven_executor()
 {
-	if(m_stopped == false)
-	{
-		m_stopped = true;
-		m_context.stop();
-	}
+	resume().dismiss();
 }
 template<typename Context>
 void event_driven_executor<Context>::set_update_time(const std::chrono::milliseconds& i_sleepInMS)
@@ -205,23 +209,19 @@ bool event_driven_executor<Context>::set_affinity(const cpu_set_t& i_set)
 	return m_context.set_affinity(i_set);
 }
 template<typename Context>
-void event_driven_executor<Context>::start(const ddk::function<void()>& i_executor,const ddk::function<bool()>& i_testFunc)
+typename event_driven_executor<Context>::start_result event_driven_executor<Context>::start(const ddk::function<void()>& i_executor,const ddk::function<bool()>& i_testFunc)
 {
 	if(i_testFunc != nullptr)
 	{
 		m_testFunc = i_testFunc || make_function([=]() { return m_stopped; });
 	}
 
-	const start_result startRes = execute(nullptr,i_executor);
-
-	DDK_ASSERT(startRes == success,"Error while starting thread executor : " + ddk::formatter<std::string>::format(startRes.error()));
+	return execute(nullptr,i_executor);
 }
 template<typename Context>
-void event_driven_executor<Context>::stop()
+typename event_driven_executor<Context>::resume_result event_driven_executor<Context>::stop()
 {
-	const resume_result stopRes = resume();
-
-	DDK_ASSERT(stopRes == success,"Error while starting thread executor : " + ddk::formatter<std::string>::format(stopRes.error()));
+	return resume();
 }
 template<typename Context>
 void event_driven_executor<Context>::signal_thread()
@@ -235,9 +235,17 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		m_context.start(ddk::make_function(this,&event_driven_executor<Context>::update));
+		
+		const auto startRes = m_context.start(ddk::make_function(this,&event_driven_executor<Context>::update));
 
-		return make_result<start_result>(ExecutorState::Executed);
+		if(startRes)
+		{
+			return ExecutorState::Executed;
+		}
+		else
+		{
+			return make_error<start_result>(StartNotAvailable,startRes.error().get_description());
+		}
 	}
 	else
 	{
@@ -262,9 +270,16 @@ typename event_driven_executor<Context>::resume_result event_driven_executor<Con
 
 		m_condVarMutex.unlock();
 
-		m_context.stop();
+		const auto stopRes = m_context.stop();
 
-		return success;
+		if(stopRes)
+		{
+			return success;
+		}
+		else
+		{
+			return make_error<resume_result>(NotResumable,stopRes.error().get_description());
+		}
 	}
 	else
 	{
@@ -328,11 +343,25 @@ bool fire_and_forget_executor<Context>::set_affinity(const cpu_set_t& i_set)
 	return m_context.set_affinity(i_set);
 }
 template<typename Context>
+typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::start(const ddk::function<void()>& i_executor)
+{
+	return execute(nullptr,i_executor);
+}
+template<typename Context>
 typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::execute(const sink_type& i_sink,const ddk::function<void()>& i_executor)
 {
 	m_executor = i_executor;
 
-	return make_result<start_result>(ExecutorState::Executed);
+	const auto startRes = m_context.start(ddk::make_function(this,&fire_and_forget_executor<Context>::update));
+
+	if(startRes)
+	{
+		return ExecutorState::Executed;
+	}
+	else
+	{
+		return make_error<start_result>(StartNotAvailable,startRes.error().get_description());
+	}
 }
 template<typename Context>
 bool fire_and_forget_executor<Context>::pending() const
@@ -342,14 +371,21 @@ bool fire_and_forget_executor<Context>::pending() const
 template<typename Context>
 typename fire_and_forget_executor<Context>::resume_result fire_and_forget_executor<Context>::resume()
 {
-	return make_error<resume_result>(NotResumable);
+	const auto stopRes = m_context.stop();
+
+	if(stopRes)
+	{
+		return success;
+	}
+	else
+	{
+		return make_error<resume_result>(NotResumable,stopRes.error().get_description());
+	}
 }
 template<typename Context>
 void fire_and_forget_executor<Context>::signal()
 {
-	m_context.stop();
-
-	m_context.start(ddk::make_function(this,&fire_and_forget_executor<Context>::update));
+	//nothing to do
 }
 template<typename Context>
 void fire_and_forget_executor<Context>::update()

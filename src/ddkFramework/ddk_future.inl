@@ -124,11 +124,17 @@ void future<T>::wait() const
 	}
 }
 template<typename T>
-void future<T>::wait_for(const std::chrono::milliseconds& i_period) const
+bool future<T>::wait_for(const std::chrono::milliseconds& i_period) const
 {
 	if(m_sharedState)
 	{
-		return m_sharedState->wait_for(i_period);
+		m_sharedState->wait_for(i_period);
+
+		return m_sharedState->ready();
+	}
+	else
+	{
+		return false;
 	}
 }
 template<typename T>
@@ -462,11 +468,17 @@ void future<future<T>>::wait() const
 	}
 }
 template<typename T>
-void future<future<T>>::wait_for(const std::chrono::milliseconds& i_period) const
+bool future<future<T>>::wait_for(const std::chrono::milliseconds& i_period) const
 {
 	if(m_sharedState)
 	{
-		return m_sharedState->wait_for(i_period);
+		m_sharedState->wait_for(i_period);
+
+		return m_sharedState->ready();
+	}
+	else
+	{
+		return false;
 	}
 }
 template<typename T>

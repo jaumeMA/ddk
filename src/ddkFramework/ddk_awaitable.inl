@@ -91,6 +91,27 @@ typename awaited_result<T>::reference awaited_result<T>::get()
 	}
 }
 template<typename T>
+T awaited_result<T>::extract() &&
+{
+	if(m_content.empty())
+	{
+		throw async_exception{ "Trying to access empty result." };
+	}
+	else
+	{
+		result_type& res = m_content.template get<result_type>();
+
+		if(res.template is<T>())
+		{
+			return std::move(res).template extract<T>();
+		}
+		else
+		{
+			throw std::move(res).template extract<async_exception>();
+		}
+	}
+}
+template<typename T>
 awaited_result<T>::operator bool() const
 {
 	if(m_content.empty() == false)
@@ -107,9 +128,9 @@ awaited_result<T>::operator bool() const
 template<typename T>
 void awaited_result<T>::set(result_reference i_content)
 {
-	if(i_content.template is<const_reference>())
+	if(i_content.template is<result_value_reference>())
 	{
-		m_content.template construct<result_type>(std::forward<const_reference>(i_content.template get<const_reference>()));
+		m_content.template construct<result_type>(std::forward<result_value_reference>(i_content.template get<result_value_reference>()));
 	}
 	else
 	{

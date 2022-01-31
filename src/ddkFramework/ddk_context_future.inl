@@ -3,6 +3,13 @@ namespace ddk
 {
 
 template<typename Return>
+TEMPLATE(typename T)
+REQUIRED(IS_CONSTRUCTIBLE(future<Return>,T))
+context_future<Return>::context_future(T&& i_future)
+: future<Return>(std::forward<T>(i_future))
+{
+}
+template<typename Return>
 context_future<Return>::context_future(future<Return> i_future, promised_context_dist_ref i_context)
 : future<Return>(std::move(i_future))
 , m_context(i_context)

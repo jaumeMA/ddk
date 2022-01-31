@@ -13,21 +13,35 @@ fiber_sheaf& fiber_sheaf::operator=(fiber_sheaf&& other)
 
 	return *this;
 }
-void fiber_sheaf::start(const ddk::function<void()>& i_function)
+fiber_sheaf::start_result fiber_sheaf::start(const ddk::function<void()>& i_function)
 {
+	size_t fiberIndex = 0;
+
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 	for (; itFiber != m_fiberCtr.end(); ++itFiber)
 	{
-		itFiber->start(i_function);
+		if(itFiber->start(i_function))
+		{
+			++fiberIndex;
+		}
 	}
+
+	return ddk::make_result<start_result>(fiberIndex);
 }
-void fiber_sheaf::stop()
+fiber_sheaf::stop_result fiber_sheaf::stop()
 {
+	size_t fiberIndex = 0;
+
 	fiber_container::iterator itFiber = m_fiberCtr.begin();
 	for (; itFiber != m_fiberCtr.end(); ++itFiber)
 	{
-		itFiber->stop();
+		if(itFiber->stop())
+		{
+			++fiberIndex;
+		}
 	}
+
+	return ddk::make_result<stop_result>(fiberIndex);
 }
 bool fiber_sheaf::joinable() const
 {

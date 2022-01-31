@@ -194,7 +194,7 @@ void private_async_state<T>::wait() const
 	}
 }
 template<typename T>
-void private_async_state<T>::wait_for(unsigned int i_period) const
+void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period) const
 {
 	mutex_guard lg(m_mutex);
 
@@ -205,7 +205,7 @@ void private_async_state<T>::wait_for(unsigned int i_period) const
 
 	if(m_arena.template is<detail::none_t>())
 	{
-		m_condVar.wait(m_mutex,std::chrono::seconds(i_period));
+		m_condVar.wait_for(m_mutex,i_period);
 	}
 }
 template<typename T>

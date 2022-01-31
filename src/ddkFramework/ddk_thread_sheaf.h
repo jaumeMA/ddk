@@ -15,16 +15,19 @@ class thread_sheaf
 public:
 	typedef thread_container::iterator iterator;
 	typedef thread_container::const_iterator const_iterator;
+	typedef ddk::result<size_t,thread::start_error> start_result;
+	typedef ddk::result<size_t,thread::stop_error> stop_result;
 
 	thread_sheaf() = default;
 	thread_sheaf(const thread_sheaf&) = delete;
 	thread_sheaf(thread_sheaf&& other);
 	thread_sheaf& operator=(const thread_sheaf&) = delete;
 	thread_sheaf& operator=(thread_sheaf&& other);
-	void start(const ddk::function<void()>& i_function);
-	size_t start(const ddk::function<void()>& i_function, size_t i_numThreads);
-	void stop();
+	start_result start(const ddk::function<void()>& i_function);
+	stop_result stop();
+	start_result start(const ddk::function<void()>& i_function, size_t i_numThreads);
 	bool joinable() const;
+	size_t set_affinity(const cpu_set_t& i_set);
 	iterator begin();
 	const_iterator begin() const;
 	iterator end();

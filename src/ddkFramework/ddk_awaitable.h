@@ -26,10 +26,12 @@ struct awaited_result
 public:
 	typedef typename std::add_lvalue_reference<T>::type reference;
 	typedef typename std::add_lvalue_reference<typename std::add_const<T>::type>::type const_reference;
+	typedef typename std::add_rvalue_reference<T>::type rreference;
 	typedef typename std::add_pointer<T>::type pointer;
 	typedef typename std::add_const<pointer>::type const_pointer;
 	typedef variant<T,async_exception> result_type;
-	typedef variant<const_reference,async_exception> result_reference;
+	typedef typename mpl::static_if<std::is_copy_constructible<T>::value,const_reference,rreference>::type result_value_reference;
+	typedef variant<result_value_reference,async_exception> result_reference;
 
 	awaited_result() = default;
 	awaited_result(const detail::none_t&);
@@ -42,6 +44,7 @@ public:
 	awaited_result<T>& operator=(awaited_result<T>&&);
 	const_reference get() const;
 	reference get();
+	T extract() &&;
 	explicit operator bool() const;
 	void set(result_reference i_content);
 

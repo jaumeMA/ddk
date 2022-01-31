@@ -1059,4 +1059,33 @@ bool operator!=(const ddk::lent_pointer_wrapper<T>& i_lhs,const ddk::detail::sha
 	#endif
 }
 
+template<typename T>
+inline bool smart_pointer_compare::operator()(const unique_pointer_wrapper<T>& i_lhs,const unique_pointer_wrapper<T>& i_rhs) const
+{
+	return i_lhs.get() < i_rhs.get();
+}
+template<typename T,typename ReferenceCounter>
+bool smart_pointer_compare::operator()(const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_lhs,const detail::shared_pointer_wrapper_impl<T,ReferenceCounter>& i_rhs) const
+{
+	return i_lhs.get() < i_rhs.get();
+}
+template<typename T>
+bool smart_pointer_compare::operator()(const weak_pointer_wrapper<T>& i_lhs,const weak_pointer_wrapper<T>& i_rhs) const
+{
+	return smart_pointer_compare::operator()(i_lhs.share(),i_rhs.share());
+}
+#ifdef DDK_DEBUG
+template<typename T>
+bool smart_pointer_compare::operator()(const lent_pointer_wrapper<T>& i_lhs,const lent_pointer_wrapper<T>& i_rhs) const
+{
+	return i_lhs.get() < i_rhs.get();
+}
+#else
+template<typename T>
+bool smart_pointer_compare::operator()(const T* i_lhs,const T* i_rhs) const
+{
+	return i_lhs < i_rhs;
+}
+#endif
+
 }

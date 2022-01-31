@@ -35,6 +35,21 @@ private:
 struct fiber_impl
 {
 public:
+	enum StartErrorCode
+	{
+		StartNotCallable,
+		StartNotAvailable
+	};
+	typedef ddk::error<StartErrorCode> start_error;
+	typedef ddk::result<void,start_error> start_result;
+
+	enum StopErrorCode
+	{
+		StopNotAvailable,
+	};
+	typedef ddk::error<StopErrorCode> stop_error;
+	typedef ddk::result<void,stop_error> stop_result;
+
 	fiber_impl(yielder_interface& i_yielder);
 	fiber_impl(stack_allocator i_stackAlloc, yielder_interface& i_yielder);
 	fiber_impl(const fiber_impl&) = delete;
@@ -43,8 +58,8 @@ public:
 	fiber_impl& operator=(const fiber_impl&) = delete;
 	template<typename Return>
 	void start_from(this_fiber_t& other, const ddk::function<Return()>& i_function);
-	void start(const ddk::function<void()>& i_function);
-	void stop();
+	start_result start(const ddk::function<void()>& i_function);
+	stop_result stop();
 	FiberExecutionState resume_from(this_fiber_t& other);
 	void resume_to(this_fiber_t& other, yielder_context* i_context = nullptr);
 	fiber_id get_id() const;

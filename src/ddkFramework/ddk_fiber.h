@@ -13,6 +13,11 @@ class fiber
 	friend class fiber_scheduler;
 
 public:
+	typedef detail::fiber_impl::start_result start_result;
+	typedef detail::fiber_impl::start_error start_error;
+	typedef detail::fiber_impl::stop_result stop_result;
+	typedef detail::fiber_impl::stop_error stop_error;
+
 	fiber(detail::fiber_impl_unique_ref i_fiber);
 	fiber(const fiber&) = delete;
 	fiber(fiber&& other);
@@ -21,9 +26,9 @@ public:
 	fiber& operator=(fiber&& other);
 
 	fiber_id get_id() const;
-	void start(const ddk::function<void()>& i_function);
+	start_result start(const ddk::function<void()>& i_function);
+	stop_result stop();
 	bool ready() const;
-	void stop();
 	bool joinable() const;
 
 private:

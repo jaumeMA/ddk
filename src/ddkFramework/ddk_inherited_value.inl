@@ -14,6 +14,38 @@ unique_value<T> make_unique_value(Args&& ... i_args)
 {
 	return { make_unique_reference<T>(std::forward<Args>(i_args)...) };
 }
+TEMPLATE(typename T,typename TT)
+REQUIRED(IS_LENDABLE_REF(TT))
+lent_value<T> make_lent_value(TT&& i_value)
+{
+#ifdef DDK_DEBUG
+	return { lend(i_value),rtti::type_info<typename decltype(lend(std::declval<TT>()))::value_type,T>() };
+#else
+	return { lend(i_value),rtti::type_info<typename std::remove_pointer<TT>::type,T>() };
+#endif
+}
+TEMPLATE(typename T,typename TT)
+REQUIRED(IS_LENDABLE_REF(TT))
+lent_value<T> make_lent_value(TT&& i_value, const rtti::TypeInfo& i_typeInfo)
+{
+	return { lend(i_value),i_typeInfo };
+}
+TEMPLATE(typename T,typename TT)
+REQUIRED(IS_LENDABLE_POINTER(TT))
+lent_object<T> make_lent_object(TT&& i_value)
+{
+#ifdef DDK_DEBUG
+	return { lend(i_value),rtti::type_info<typename decltype(lend(std::declval<TT>()))::value_type,T>() };
+#else
+	return { lend(i_value),rtti::type_info<typename std::remove_pointer<TT>::type,T>() };
+#endif
+}
+TEMPLATE(typename T,typename TT)
+REQUIRED(IS_LENDABLE_POINTER(TT))
+lent_object<T> make_lent_object(TT&& i_value, const rtti::TypeInfo& i_typeInfo)
+{
+	return { lend(i_value),i_typeInfo };
+}
 template<typename T>
 distributed_value<T> promote_to_value(const distributed_object<T>& i_obj)
 {

@@ -65,28 +65,39 @@ one_shot_thread_impl::one_shot_thread_impl()
 }
 one_shot_thread_impl::~one_shot_thread_impl()
 {
-	stop();
+	stop().dismiss();
 }
-void one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder* i_yielder)
+typename one_shot_thread_impl::start_result one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder* i_yielder)
 {
 	if(m_started == false)
 	{
-		m_started = true;
+		if(i_function != nullptr)
+		{
+			m_started = true;
+			m_threadFunc = i_function;
+			pthread_attr_t	attr;
+			pthread_attr_init(&attr);
+			pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-		m_threadFunc = i_function;
+			m_yielder = i_yielder;
 
-		pthread_attr_t	attr;
-		pthread_attr_init(&attr);
-		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+			pthread_create(&m_thread, &attr, threadFunc, this);
 
-		m_yielder = i_yielder;
+			pthread_attr_destroy(&attr);
 
-		pthread_create(&m_thread, &attr, threadFunc, this);
-
-		pthread_attr_destroy(&attr);
+			return success;
+		}
+		else
+		{
+			return ddk::make_error<start_result>(StartErrorCode::StartNoCallable,"Provided callable is empty.");
+		}
+	}
+	else
+	{
+		return ddk::make_error<start_result>(StartErrorCode::StartNotAvailable, "Thread is alreday started.");
 	}
 }
-void one_shot_thread_impl::stop()
+typename one_shot_thread_impl::stop_result one_shot_thread_impl::stop()
 {
 	if(m_started)
 	{
@@ -95,6 +106,12 @@ void one_shot_thread_impl::stop()
 		pthread_join(m_thread,&res);
 
 		m_started = false;
+
+		return success;
+	}
+	else
+	{
+		return ddk::make_error<stop_result>(StopErrorCode::NotRunning,"Trying to stop not running thread.");
 	}
 }
 bool one_shot_thread_impl::joinable() const

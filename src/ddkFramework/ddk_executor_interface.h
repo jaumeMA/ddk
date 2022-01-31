@@ -53,7 +53,8 @@ public:
 		StartNotExecutable,
 		StartNotAvailable
 	};
-	typedef result<ExecutorState,StartErrorCode> start_result;
+	typedef error<StartErrorCode> start_error;
+	typedef result<ExecutorState,start_error> start_result;
 	typedef typename detail::sink_type_resolver<Return>::result_t sink_result;
 	typedef typename detail::sink_type_resolver<Return>::type sink_type;
 	typedef typename detail::sink_type_resolver<Return>::reference sink_reference;

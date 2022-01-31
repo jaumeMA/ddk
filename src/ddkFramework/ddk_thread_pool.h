@@ -33,8 +33,8 @@ private:
 		Stopped
 	};
 
-	void start(const ddk::function<void()>&, yielder* i_yielder) override;
-	void stop() override;
+	start_result start(const ddk::function<void()>&, yielder* i_yielder) override;
+	stop_result stop() override;
 	bool joinable() const override;
 	void setExiting(bool i_exiting) override;
 	void execute() override;

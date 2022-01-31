@@ -30,74 +30,30 @@ public:
 	explicit Id() = default;
 	Id(const Id&) = default;
 	Id(Id&&) = default;
-	explicit Id(const UnderlyingType& i_key)
-	: m_key(i_key)
-	{}
-	explicit Id(UnderlyingType&& i_key)
-	: m_key(std::move(i_key))
-	{}
-	explicit Id(const UnderlyingType& i_key, const std::string& i_name)
-	: m_key(i_key)
-	, m_name(i_name)
-	{}
-	explicit Id(UnderlyingType&& i_key,std::string&& i_name)
-	: m_key(std::move(i_key))
-	,m_name(std::move(i_name))
-	{}
+	explicit Id(const UnderlyingType& i_key);
+	explicit Id(UnderlyingType&& i_key);
 	Id& operator=(const Id&) = default;
 	Id& operator=(Id&&) = default;
-	inline bool operator==(const Id& other) const
-	{
-		return m_key == other.m_key;
-	}
-	inline bool operator!=(const Id& other) const
-	{
-		return m_key != other.m_key;
-	}
-	inline bool operator==(const UnderlyingType& other) const
-	{
-		return m_key == other;
-	}
-	inline bool operator!=(const UnderlyingType& other) const
-	{
-		return m_key != other;
-	}
-	inline bool operator<(const Id& other) const
-	{
-		return m_key < other.m_key;
-	}
-	inline bool operator<=(const Id& other) const
-	{
-		return m_key <= other.m_key;
-	}
-	inline bool operator>(const Id& other) const
-	{
-		return m_key > other.m_key;
-	}
-	inline bool operator>=(const Id& other) const
-	{
-		return m_key >= other.m_key;
-	}
-	inline UnderlyingType* operator->()
-	{
-		return &m_key;
-	}
-	inline const UnderlyingType* operator->() const
-	{
-		return m_key;
-	}
-	inline const UnderlyingType& getValue() const
-	{
-		return m_key;
-	}
-	inline const std::string& name() const
-	{
-		return m_name;
-	}
+	inline bool operator==(const Id& other) const;
+	inline bool operator!=(const Id& other) const;
+	inline bool operator==(const UnderlyingType& other) const;
+	inline bool operator!=(const UnderlyingType& other) const;
+	inline bool operator<(const Id& other) const;
+	inline bool operator<=(const Id& other) const;
+	inline bool operator>(const Id& other) const;
+	inline bool operator>=(const Id& other) const;
+	inline UnderlyingType* operator->();
+	inline const UnderlyingType* operator->() const;
+	inline const UnderlyingType& getValue() const;
 
 private:
 	UnderlyingType m_key;
-	std::string m_name;
+};
+
+template<typename UnderlyingType,typename T>
+struct formatter<Id<UnderlyingType,T>>
+{
+	inline static Id<UnderlyingType,T> format(const std::string& i_str);
 };
 
 }
@@ -108,24 +64,9 @@ namespace std
 template<typename UnderlyingType, typename T>
 struct hash<ddk::Id<UnderlyingType,T>>
 {
-    std::size_t operator()(const ddk::Id<UnderlyingType,T> s) const noexcept
-    {
-        return std::hash<UnderlyingType>{}(s.getValue());
-    }
+    inline std::size_t operator()(const ddk::Id<UnderlyingType,T> s) const noexcept;
 };
 
 }
 
-namespace ddk
-{
-
-template<typename UnderlyingType, typename T>
-struct formatter<Id<UnderlyingType,T>>
-{
-static Id<UnderlyingType,T> format(const std::string& i_str)
-{
-	return Id<UnderlyingType,T>(formatter<UnderlyingType>::format(i_str));
-}
-};
-
-}
+#include "ddk_type_id.inl"

@@ -118,7 +118,7 @@ size_t fiber_scheduler<Comparator>::size() const
 template<typename Comparator>
 void fiber_scheduler<Comparator>::start()
 {
-	m_fiberThread.start(ddk::make_function(this,&fiber_scheduler<Comparator>::run));
+	m_fiberThread.start(ddk::make_function(this,&fiber_scheduler<Comparator>::run)).dismiss();
 }
 template<typename Comparator>
 void fiber_scheduler<Comparator>::stop()
@@ -136,7 +136,7 @@ void fiber_scheduler<Comparator>::stop()
 
 			m_fiberMutex.unlock();
 
-			topFiber->stop();
+			topFiber->stop().dismiss();
 
 			m_fiberMutex.lock();
 		}
@@ -147,7 +147,7 @@ void fiber_scheduler<Comparator>::stop()
 
 		m_fiberMutex.unlock();
 
-		m_fiberThread.stop();
+		m_fiberThread.stop().dismiss();
 	}
 }
 template<typename Comparator>

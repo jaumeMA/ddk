@@ -25,8 +25,8 @@ public:
 	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
 	std::chrono::milliseconds get_update_time() const;
 	bool set_affinity(const cpu_set_t& i_set);
-	void start(const ddk::function<void()>& i_executor);
-	void stop();
+	start_result start(const ddk::function<void()>& i_executor);
+	resume_result stop();
 	bool is_stopped() const;
 
 private:
@@ -57,8 +57,8 @@ public:
 	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
 	std::chrono::milliseconds get_update_time() const;
 	bool set_affinity(const cpu_set_t& i_set);
-	void start(const ddk::function<void()>& i_executor,const ddk::function<bool()>& i_testFunc = nullptr);
-	void stop();
+	start_result start(const ddk::function<void()>& i_executor,const ddk::function<bool()>& i_testFunc = nullptr);
+	resume_result stop();
 	void signal_thread();
 	bool is_stopped() const;
 
@@ -92,6 +92,7 @@ public:
 	fire_and_forget_executor(fire_and_forget_executor&& other);
 
 	bool set_affinity(const cpu_set_t& i_set);
+	start_result start(const ddk::function<void()>& i_executor);
 
 private:
 	virtual start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;

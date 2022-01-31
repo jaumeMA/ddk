@@ -56,7 +56,7 @@ public:
 	reference get_value();
 	embedded_type<T> extract_value();
 	void wait() const;
-	void wait_for(unsigned int i_period) const;
+	void wait_for(const std::chrono::milliseconds& i_period) const;
 	bool pending() const;
 	bool ready() const;
 	virtual void notify() const override;
