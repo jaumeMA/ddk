@@ -82,8 +82,11 @@ public:
 	size_t set_affinity(const cpu_set_t& i_set);
 	acquire_result<thread> aquire_thread();
 	acquire_result<thread_sheaf> acquire_sheaf(size_t i_size);
+	acquire_result<thread_sheaf> acquire_sheaf();
 	bool available_threads() const;
 	void deallocate(detail::thread_impl_interface* i_object) const;
+	size_t size() const;
+	bool empty() const;
 
 private:
 

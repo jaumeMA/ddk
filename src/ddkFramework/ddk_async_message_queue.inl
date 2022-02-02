@@ -94,27 +94,35 @@ void async_attachable_message_queue<MessageType>::push_message(const MessageType
 	m_executor->signal();
 }
 template<typename MessageType>
+bool async_attachable_message_queue<MessageType>::set_affinity(const cpu_set_t& i_set)
+{
+	return m_executor->set_affinity(i_set);
+}
+template<typename MessageType>
 void async_attachable_message_queue<MessageType>::dispatch_messages()
 {
 	m_exclArea.enterReader(Reentrancy::NON_REENTRANT);
 
 	while(const optional<message_type> currMsgOpt = pop_message())
 	{
-		const message_type& currMsg = *currMsgOpt;
-
-		typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = m_receivers.begin();
-		for(; itReceiver != m_receivers.end(); ++itReceiver)
-		{
-			const std::pair<const sender_id,ddk::function<void(const message_type&)>>& currReceiver = *itReceiver;
-
-			if(currReceiver.first == currMsg.get_id())
-			{
-				eval(currReceiver.second,currMsg);
-			}
-		}
+		dispatch_message(*currMsgOpt);
 	}
 
 	m_exclArea.leaverReader();
+}
+template<typename MessageType>
+void async_attachable_message_queue<MessageType>::dispatch_message(const message_type& i_msg)
+{
+	typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = m_receivers.begin();
+	for(; itReceiver != m_receivers.end(); ++itReceiver)
+	{
+		const std::pair<const sender_id,ddk::function<void(const message_type&)>>& currReceiver = *itReceiver;
+
+		if(currReceiver.first == i_msg.get_id())
+		{
+			eval(currReceiver.second,i_msg);
+		}
+	}
 }
 
 }

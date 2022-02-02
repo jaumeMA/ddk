@@ -6,25 +6,26 @@ namespace ddk
 
 template<typename Context>
 polling_executor<Context>::polling_executor(const std::chrono::milliseconds& i_sleepInMs)
-: m_sleepTimeInMS(i_sleepInMs)
+: detail::executor_capabilities<Context>()
+, m_sleepTimeInMS(i_sleepInMs)
 , m_executor(nullptr)
 , m_stopped(true)
 {
 }
 template<typename Context>
 polling_executor<Context>::polling_executor(Context i_context,const std::chrono::milliseconds& i_sleepInMs)
-: m_sleepTimeInMS(i_sleepInMs)
+: detail::executor_capabilities<Context>(std::move(i_context))
+, m_sleepTimeInMS(i_sleepInMs)
 , m_executor(nullptr)
 , m_stopped(true)
-, m_context(std::move(i_context))
 {
 }
 template<typename Context>
 polling_executor<Context>::polling_executor(polling_executor&& other)
-: m_sleepTimeInMS(other.m_sleepTimeInMS)
+: detail::executor_capabilities<Context>(std::move(other))
+, m_sleepTimeInMS(other.m_sleepTimeInMS)
 , m_executor(nullptr)
 , m_stopped(true)
-, m_context(std::move(other.m_context))
 {
 	std::swap(m_executor,other.m_executor);
 	std::swap(m_stopped,other.m_stopped);
@@ -43,11 +44,6 @@ template<typename Context>
 std::chrono::milliseconds polling_executor<Context>::get_update_time() const
 {
 	return m_sleepTimeInMS;
-}
-template<typename Context>
-bool polling_executor<Context>::set_affinity(const cpu_set_t& i_set)
-{
-	return m_context.set_affinity(i_set);
 }
 template<typename Context>
 typename polling_executor<Context>::start_result polling_executor<Context>::start(const ddk::function<void()>& i_executor)
@@ -155,7 +151,8 @@ void polling_executor<Context>::update() const
 
 template<typename Context>
 event_driven_executor<Context>::event_driven_executor(const std::chrono::milliseconds& i_sleepInMs)
-: m_sleepTimeInMS(i_sleepInMs)
+: detail::executor_capabilities<Context>()
+, m_sleepTimeInMS(i_sleepInMs)
 , m_executor(nullptr)
 , m_stopped(true)
 , m_pendingWork(false)
@@ -165,10 +162,10 @@ event_driven_executor<Context>::event_driven_executor(const std::chrono::millise
 }
 template<typename Context>
 event_driven_executor<Context>::event_driven_executor(Context i_context,const std::chrono::milliseconds& i_sleepInMS)
-: m_sleepTimeInMS(i_sleepInMS)
+: detail::executor_capabilities<Context>(std::move(i_context))
+, m_sleepTimeInMS(i_sleepInMS)
 , m_executor(nullptr)
 , m_stopped(true)
-, m_context(std::move(i_context))
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
 , m_testFunc([this]() { mutex_guard mg(m_condVarMutex); return m_pendingWork || m_stopped; })
@@ -176,10 +173,10 @@ event_driven_executor<Context>::event_driven_executor(Context i_context,const st
 }
 template<typename Context>
 event_driven_executor<Context>::event_driven_executor(event_driven_executor&& other)
-: m_sleepTimeInMS(other.m_sleepTimeInMS)
+: detail::executor_capabilities<Context>(std::move(other))
+, m_sleepTimeInMS(other.m_sleepTimeInMS)
 , m_executor(nullptr)
 , m_stopped(true)
-, m_context(std::move(other.m_context))
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
 , m_testFunc([this]() { mutex_guard mg(m_condVarMutex); return m_pendingWork || m_stopped; })
@@ -202,11 +199,6 @@ template<typename Context>
 std::chrono::milliseconds event_driven_executor<Context>::get_update_time() const
 {
 	return m_sleepTimeInMS;
-}
-template<typename Context>
-bool event_driven_executor<Context>::set_affinity(const cpu_set_t& i_set)
-{
-	return m_context.set_affinity(i_set);
 }
 template<typename Context>
 typename event_driven_executor<Context>::start_result event_driven_executor<Context>::start(const ddk::function<void()>& i_executor,const ddk::function<bool()>& i_testFunc)
@@ -328,19 +320,14 @@ void event_driven_executor<Context>::update()
 
 template<typename Context>
 fire_and_forget_executor<Context>::fire_and_forget_executor(Context i_context)
-: m_context(std::move(i_context))
+: detail::executor_capabilities<Context>(std::move(i_context))
 {
 }
 template<typename Context>
 fire_and_forget_executor<Context>::fire_and_forget_executor(fire_and_forget_executor&& other)
-: m_executor(std::move(other.m_executor))
-, m_context(std::move(other.m_context))
+: detail::executor_capabilities<Context>(std::move(other))
+, m_executor(std::move(other.m_executor))
 {
-}
-template<typename Context>
-bool fire_and_forget_executor<Context>::set_affinity(const cpu_set_t& i_set)
-{
-	return m_context.set_affinity(i_set);
 }
 template<typename Context>
 typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::start(const ddk::function<void()>& i_executor)

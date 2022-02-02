@@ -263,6 +263,10 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 		return make_error<acquire_result<thread_sheaf>>(NoThreadAvailable);
 	}
 }
+thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf()
+{
+	return acquire_sheaf(size());
+}
 bool thread_pool::available_threads() const
 {
 	mutex_guard lg(m_mutex);
@@ -298,6 +302,18 @@ void thread_pool::deallocate(detail::thread_impl_interface* i_object) const
 	{
 		on_availableThreads.execute();
 	}
+}
+size_t thread_pool::size() const
+{
+	mutex_guard lg(m_mutex);
+
+	return m_availableThreads.size();
+}
+bool thread_pool::empty() const
+{
+	mutex_guard lg(m_mutex);
+
+	return m_availableThreads.empty();
 }
 
 }

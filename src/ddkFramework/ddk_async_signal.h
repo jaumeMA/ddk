@@ -37,9 +37,11 @@ public:
     detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const;
 	template<typename MessageType>
     detail::connection_base& connect(const ddk::function<void(Types...)>& i_function, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue) const;
+	detail::connection_base& connect(async_signal<void(Types...)>& other) const;
 	void disconnect();
 	template<typename ... Args>
 	void execute(Args&& ... i_args) const;
+	bool set_affinity(const cpu_set_t& i_set);
 
 private:
 	void disconnect(const detail::connection_base& i_base) const override final;

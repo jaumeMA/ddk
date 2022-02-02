@@ -42,10 +42,11 @@ public:
 	void start(sender_id i_id, const ddk::function<void(const MessageType&)>& i_processor);
 	void stop(sender_id i_id);
 	void push_message(const MessageType& i_msg) override;
+	bool set_affinity(const cpu_set_t& i_set);
+	void dispatch_messages();
+	void dispatch_message(const message_type& i_msg);
 
 private:
-	void dispatch_messages();
-
 	exclusion_area m_exclArea;
 	linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>	m_receivers;
 	thread_executor_unique_ref m_executor;

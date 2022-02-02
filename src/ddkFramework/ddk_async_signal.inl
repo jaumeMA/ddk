@@ -28,6 +28,11 @@ detail::connection_base& async_signal<void(Types...)>::connect(const ddk::functi
 	return m_msgLoop.connect(make_intrusive(m_callers.push(i_function,static_cast<const detail::signal_connector&>(*this))),i_messageQueue);
 }
 template<typename ... Types>
+detail::connection_base& async_signal<void(Types...)>::connect(async_signal<void(Types...)>& other) const
+{
+	return m_msgLoop.connect(make_intrusive(m_callers.push([&other,this](Types ... i_args){ other.m_msgQueue.dispatch_message(builtn_message_type(other.m_id,std::forward<Types>(i_args) ...)); },static_cast<const detail::signal_connector&>(*this))),ddk::lend(other.m_msgQueue));
+}
+template<typename ... Types>
 void async_signal<void(Types...)>::disconnect()
 {
 	m_msgLoop.clear();
@@ -38,6 +43,11 @@ template<typename ... Args>
 void async_signal<void(Types...)>::execute(Args&& ... i_args) const
 {
 	m_msgLoop.push_message(builtn_message_type(m_id,std::forward<Args>(i_args) ...));
+}
+template<typename ... Types>
+bool async_signal<void(Types...)>::set_affinity(const cpu_set_t& i_set)
+{
+	return m_msgQueue.set_affinity(i_set);
 }
 template<typename ... Types>
 void async_signal<void(Types...)>::disconnect(const detail::connection_base& i_base) const

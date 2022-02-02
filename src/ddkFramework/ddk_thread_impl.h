@@ -2,16 +2,15 @@
 
 #include "ddk_execution_context.h"
 #include "ddk_function.h"
-#include <thread>
 #include "ddk_unique_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
-#include <pthread.h>
 #include "ddk_thread_utils.h"
 #include "ddk_thread_yielder.h"
 #include "ddk_fiber_yielder.h"
 #include "ddk_thread_local.h"
 #include "ddk_this_thread.h"
 #include "ddk_result.h"
+#include <pthread.h>
 
 namespace ddk
 {

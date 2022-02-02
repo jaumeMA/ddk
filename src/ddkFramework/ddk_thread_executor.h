@@ -1,12 +1,7 @@
 #pragma once
 
-#include "ddk_macros.h"
 #include "ddk_executor.h"
-#include "ddk_thread.h"
-#include "ddk_thread_sheaf.h"
-#include <pthread.h>
-#include <functional>
-
+#include "ddk_thread_executor_capabilities.h"
 
 namespace ddk
 {
