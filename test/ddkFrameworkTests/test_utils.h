@@ -19,10 +19,20 @@ template<typename T>
 class TestDynamicFactory : public TestDynamicDeleter<T>
 {
 public:
+	typedef TestDynamicFactory allocator;
+	typedef T type;
+	typedef T* pointer;
+	typedef const T* const_pointer;
+	typedef std::ptrdiff_t difference_type;
+
 	template<typename ... Args>
 	T* allocate(Args&& ... i_args) const
 	{
 		return new T(std::forward<Args>(i_args) ...);
+	}
+	void* allocate(size_t i_size) const
+	{
+		return malloc(i_size);
 	}
 };
 

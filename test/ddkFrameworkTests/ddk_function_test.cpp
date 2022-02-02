@@ -96,13 +96,19 @@ TEST(DDKFunctionTest,funcMakeSpecialization)
 	ddk::function<size_t(const std::string&)> res11 = ddk::make_function(&thisFoo,&Foo::member_func,ddk::system_allocator{},'a',ddk::arg_0);
 	ddk::function<bool()> res12 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },ddk::system_allocator{},"hola");
 }
+
+int myFunc(float,const std::string&,double)
+{
+    return 0;
+}
+
 TEST(DDKFunctionTest,funcSpecialization)
 {
     ddk::function<int(int,const std::string&,float,double,char)> foo = ddk::make_function(&prod_func);;
 
     ddk::function<int(float,const std::string&,double)> foo1 = foo(1,ddk::arg_1,ddk::arg_0,ddk::arg_2,'a');
 
-    ddk::function<int(double,float)> foo2 = foo1(ddk::arg_1,"hola",ddk::arg_0);
+    ddk::function<int(float,const std::string&)> foo2 = ddk::make_function(myFunc,ddk::arg_0,ddk::arg_1,0);
 
     ddk::function<int(double,float,const std::string&,char,int)> foo3 = foo(ddk::arg_3,ddk::arg_2,ddk::arg_1,ddk::arg_4,ddk::arg_0);
 }

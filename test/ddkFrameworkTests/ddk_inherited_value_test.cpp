@@ -192,7 +192,7 @@ public:
 	{
 	}
 
-} PUBLISH_RTTI_INHERITANCE(DerivedBaseType14,BaseType1,BaseType2);
+} PUBLISH_RTTI_INHERITANCE(DerivedBaseType14,BaseType1);
 
 }
 
@@ -212,6 +212,10 @@ struct DerivedTypeMultiVisitor
 	{
 		return 1;
 	}
+	return_type operator()(const prova::DerivedBaseType14&) const
+	{
+		return 2;
+	}
 	return_type operator()(...) const
 	{
 	    return 0;
@@ -227,6 +231,10 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	ddk::lent_object<prova::BaseType1> kkLentDist = ddk::lend(kk_dist);
 	ddk::lent_value<prova::BaseType1> kkProm = ddk::promote_to_value(kkLentDist);
 
+	ddk::lendable<prova::DerivedBaseType14> kkk;
+
+	ddk::lent_object<prova::BaseType1> kkkLent = ddk::make_lent_object<prova::BaseType1>(kkk);
+
 	ddk::distributed_value<prova::BaseType1> foo0 = ddk::make_distributed_value<prova::DerivedBaseType1>(10);
 	ddk::distributed_value<prova::BaseType1> foo1 = ddk::make_distributed_value<prova::DerivedBaseType2>(20);
 	const ddk::distributed_value<prova::BaseType1> foo2 = ddk::make_distributed_value<prova::DerivedBaseType1>(10);
@@ -234,6 +242,6 @@ TEST(DDKInheritedValuetTest,defaultConstruction)
 	const DerivedTypeMultiVisitor multiVisitor;
 
 	ddk::visit<DerivedTypeMultiVisitor>(kkLentUniq,kkLentDist);
-	ddk::visit(multiVisitor,foo2,foo3);
+	ddk::visit(multiVisitor,kkkLent);
 	ddk::visit([](...){ return 0; },foo0);
 }

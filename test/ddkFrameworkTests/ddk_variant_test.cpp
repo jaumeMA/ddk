@@ -85,9 +85,15 @@ TEST(DDKVariantTest,assignment1)
 	EXPECT_EQ(foo.is<DefaultType>(),true);
 	EXPECT_EQ(foo.get<DefaultType>(),0xFF);
 }
+
 TEST(DDKVariantTest,assignment2)
 {
 	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> foo;
+	ddk::variant<DefaultType,nonCopyAssignableType,nonMoveAssignableType> _foo = foo;
+
+	ddk::variant<std::array<float,3>,float,std::string> kk;
+	ddk::variant<std::array<float,3>,float,std::string> kkk = std::move(kk);
+	kkk = std::move(kk);
 
 	EXPECT_EQ(foo.is<0>(),true);
 
@@ -217,7 +223,7 @@ TEST(DDKVariantTest,visitation)
 	DefaultType nestedValue1(0xFF);
 	foo = nestedValue1;
 
-	EXPECT_EQ(foo.visit<TestVisitor>(),0xFF);
+	EXPECT_EQ(foo.visit(visitor),0xFF);
 
 	nonCopyConstructibleType nestedValue2(0xEE);
 	foo = std::move(nestedValue2);
@@ -257,6 +263,10 @@ TEST(DDKVariantTest,multi_visitation)
 	ddk::variant<DefaultType,std::vector<int>> foo2 = { 10 };
 	ddk::variant<char,double,float,std::string> foo3 = 0.15f;
 
+	const bool res0 = [](auto&& i_value) -> bool 
+	{
+		return std::is_same<decltype(i_value),std::string>::value; 
+	} <<= foo1;
 	const bool res1 = ddk::visit([](auto&& ... i_value) -> bool { return true; },foo1,foo2,foo3);
 	const size_t res2 = ddk::visit<myMultiVisitor>(foo1,foo2,foo3);
 }

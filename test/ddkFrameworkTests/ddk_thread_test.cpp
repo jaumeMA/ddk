@@ -58,7 +58,7 @@ TEST(DDKThreadTest,threadRun)
 	ThreadCallee callee;
 	ddk::thread tmp;
 
-	tmp.start(ddk::make_function(&callee,&ThreadCallee::run));
+	EXPECT_EQ(static_cast<bool>(tmp.start(ddk::make_function(&callee,&ThreadCallee::run))),true);
 
 	ddk::sleep(1000);
 
@@ -66,14 +66,14 @@ TEST(DDKThreadTest,threadRun)
 
 	callee.stop();
 
-	tmp.stop();
+	EXPECT_EQ(static_cast<bool>(tmp.stop()),true);
 }
 TEST(DDKThreadTest,threadReRun)
 {
 	ThreadCallee callee;
 	ddk::thread tmp;
 
-	tmp.start(ddk::make_function(&callee,&ThreadCallee::run));
+	EXPECT_EQ(static_cast<bool>(tmp.start(ddk::make_function(&callee,&ThreadCallee::run))),true);
 
 	ddk::sleep(1000);
 
@@ -81,13 +81,13 @@ TEST(DDKThreadTest,threadReRun)
 
 	callee.stop();
 
-	tmp.stop();
+	EXPECT_EQ(static_cast<bool>(tmp.stop()),true);
 
 	EXPECT_EQ(callee.is_running(),false);
 
 	callee.stop(false);
 
-	tmp.start(ddk::make_function(&callee,&ThreadCallee::run));
+	EXPECT_EQ(static_cast<bool>(tmp.start(ddk::make_function(&callee,&ThreadCallee::run))),true);
 
 	ddk::sleep(1000);
 
@@ -95,5 +95,5 @@ TEST(DDKThreadTest,threadReRun)
 
 	callee.stop();
 
-	tmp.stop();	
+	EXPECT_EQ(static_cast<bool>(tmp.stop()),true);
 }

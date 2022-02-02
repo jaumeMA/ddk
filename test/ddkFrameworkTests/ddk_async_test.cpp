@@ -132,6 +132,46 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstHeavyFunc)
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
 }
+TEST(DDKAsyncTest,asyncNonCopiablePayload)
+{
+	enum class ErrorCode
+	{
+		Error
+	};
+	typedef ddk::result<ddk::unique_reference_wrapper<int>,ErrorCode> my_result;
+
+	ddk::thread myThread;
+
+	ddk::async(ddk::make_function([]() -> my_result { return ddk::make_unique_reference<int>(10); })) -> attach(std::move(myThread))
+	.then(ddk::make_function([](my_result i_value)
+	{
+		if(i_value)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}));
+
+	ddk::thread _myThread;
+
+	ddk::async(ddk::make_function([]() -> ddk::future<my_result> { return ddk::async(ddk::make_function([]() -> my_result { return ddk::make_unique_reference<int>(10); })); }))->attach(std::move(_myThread))
+	.then(ddk::make_function([](my_result i_value)
+	{
+		if(i_value)
+		{
+			ddk::unique_reference_wrapper<int> nestedRes = std::move(i_value).extract();
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}));
+}
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 {
 	ddk::future<int> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 0; }));

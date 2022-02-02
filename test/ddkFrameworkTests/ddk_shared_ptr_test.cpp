@@ -4,6 +4,7 @@
 #include <string>
 #include "test_utils.h"
 #include "ddk_reference_wrapper.h"
+#include "ddk_fixed_size_allocator.h"
 
 using namespace testing;
 using testing::Types;
@@ -15,9 +16,14 @@ class DDKSharedPtrtTest : public Test
 TEST(DDKSharedPtrtTest,defaultConstruction)
 {
 	{
-		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo;
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1;
 
-		EXPECT_EQ(foo.empty(),true);
+		EXPECT_EQ(foo1.empty(),true);
+
+		ddk::shared_reference_wrapper<ConstructionDeletionBalancer> _foo1 = ddk::promote_to_ref(foo1);
+
+		ddk::atomic_shared_pointer_wrapper<ConstructionDeletionBalancer> foo2;
+		ddk::atomic_shared_reference_wrapper<ConstructionDeletionBalancer> _foo2 = ddk::promote_to_ref(foo2);
 	}
 
 	EXPECT_EQ(ConstructionDeletionBalancer::isBalanced(),true);
@@ -65,7 +71,8 @@ TEST(DDKSharedPtrtTest,construction3)
 TEST(DDKSharedPtrtTest,moveConstruction)
 {
 	{
-		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_shared_reference<ConstructionDeletionBalancer>(0xFF);
+		TestDynamicFactory<ConstructionDeletionBalancer> objFactory;
+		ddk::shared_pointer_wrapper<ConstructionDeletionBalancer> foo1 = ddk::make_shared_reference<ConstructionDeletionBalancer>(objFactory,0xFF);
 
 		EXPECT_EQ(foo1.empty(),false);
 		EXPECT_EQ(foo1->getValue(),0xFF);

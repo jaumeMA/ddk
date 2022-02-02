@@ -46,10 +46,25 @@ public:
 	typedef long long difference_type;
 
     template<typename T>
-	MyIterableAdaptor(const MyIterable<T>& i_iterable,const ddk::shift_action& i_initialAction)
+	MyIterableAdaptor(const MyIterable<T>& i_iterable)
     : m_max(i_iterable.get_max())
-    , m_currValue(i_initialAction.shifted())
 	{
+	}
+	template<typename Sink>
+	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction) const
+	{
+		m_currValue = i_initialAction.shifted();
+
+		if(m_currValue < m_max)
+		{
+			i_sink.apply(m_currValue);
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	template<typename Sink>
 	inline difference_type forward_next_value_in(Sink&& i_sink) const

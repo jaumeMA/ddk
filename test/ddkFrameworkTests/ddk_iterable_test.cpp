@@ -1,11 +1,10 @@
 #include "ddk_iterable.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include "ddk_iterable_algorithm.h"
+#include "ddk_iterable.h"
 #include "ddk_high_order_array.h"
 #include "ddk_tuple.h"
 #include "ddk_one_to_n_action_adapter.h"
-#include "ddk_builtin_iterables.h"
 
 using namespace testing;
 
@@ -75,6 +74,13 @@ struct tuple_visitor
 
 TEST(DDKIterableTest, forwardIterableConstruction)
 {
+	std::map<int,ddk::unique_reference_wrapper<int>> kk;
+	std::map<int,int> _foo;
+	_foo.insert(std::make_pair(1,2));
+	_foo.insert(std::make_pair(2,2));
+	_foo.insert(std::make_pair(3,2));
+	_foo.insert(std::make_pair(4,2));
+	_foo.insert(std::make_pair(5,2));
 	std::vector<int> foo;
     foo.push_back(1);
     foo.push_back(2);
@@ -82,10 +88,24 @@ TEST(DDKIterableTest, forwardIterableConstruction)
     foo.push_back(4);
     foo.push_back(5);
 
-	ddk::make_function([](const int& i_value1,const int& i_value2) { printf("ENUMERATION: %d, %d\n",i_value1,i_value2); }) <<= ddk::enumerate(foo,foo);
+	ddk::unique_reference_wrapper cucu = ddk::make_unique_reference<int>(10);
+	ddk::lent_reference_wrapper<int> kkk = ddk::lend(cucu);
+	ddk::lent_reference_wrapper<const int> kkkk(kkk);
 
-	ddk::combine<ddk::iter::one_to_n_diagonal_action_adapter>(foo,foo);
-	ddk::combine(ddk::iter::one_to_n_enumerate_action_adapter{foo,foo},foo,foo);
+	ddk::const_bidirectional_iterable<const ddk::lent_reference_wrapper<const int>> myIterable = ddk::iter::transform([](const std::pair<const int,const ddk::unique_reference_wrapper<int>&>& i_pair) -> ddk::lent_reference_wrapper<const int> { return ddk::lend(i_pair.second); }) <<= ddk::view::filter([](const std::pair<const int,const ddk::unique_reference_wrapper<int>&>& i_pair){ return i_pair.first > 0; }) <<= kk;
+
+	ddk::make_function([](const std::pair<const int,int>& i_value1) 
+	{ 
+		printf("value: %d\n",i_value1.second); 
+	}) <<= _foo;
+
+	ddk::make_function([](int i_value1)
+	{
+		printf("value: %d\n",i_value1);
+	}) <<= foo;
+
+	//ddk::combine<ddk::iter::one_to_n_diagonal_action_adapter>(foo,foo);
+	//ddk::combine(ddk::iter::one_to_n_enumerate_action_adapter{foo,foo},foo,foo);
 
 	ddk::high_order_array<int,2,2> _highOrderProva = {1,1,2,2};
 	ddk::high_order_array<size_t,2,2> highOrderProva;
@@ -104,7 +124,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	ddk::make_function([](size_t i_value) {printf("cur high transpose dimension value: %d\n",i_value); }) <<= ddk::view::order(ddk::transponse_dimension_order) <<= highOrderProva;
 
 	std::vector<size_t> highOrderProvaSuma;
-	const auto res = ddk::iter::sum <<= ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
+	//const auto res = ddk::iter::sum <<= ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
 	highOrderProva <<= ddk::iter::pow <<= ddk::fusion(foo,foo);
 	highOrderProvaSuma <<= ddk::iter::inv(foo);
 	int provaSuma = ddk::iter::sum(foo);
@@ -145,6 +165,11 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	tupleVisitor <<= provaTuple;
 
 	ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
+
+	[](int i_value)
+	{
+		printf("valor trobat: %d\n",i_value);
+	} <<= ddk::iter::find_if(foo,[](const int& i_value){ return i_value > 1; });
 
 	auto deducedIterable = ddk::deduce_iterable(foo);
 	auto deducedFooIterable = ddk::deduce_iterable(fooIterable);
