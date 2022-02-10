@@ -13,6 +13,7 @@ public:
 	promised_context(promised_context&&) = default;
 
 	void notify_recipients();
+	void clear_recipients();
 
 private:
 	void start(const function<void()>&) override;

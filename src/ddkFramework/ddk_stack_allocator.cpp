@@ -22,22 +22,28 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 	if(pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION ||
 	   pExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_STACK_OVERFLOW)
 	{
-		detail::execution_context& currFiberContext = get_current_execution_context();
-		detail::execution_stack& currStack = currFiberContext.get_stack();
-
-		//check that stack pointer is inside our scope
-		if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
+		if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
 		{
-			if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ExceptionRecord->ExceptionInformation[1])))
-			{
-				//every time we receive an exception under a current fiber arena, reset stack limits
-				set_curr_thread_stack(&currStack);
+			detail::execution_stack& currStack = currFiberContext->get_stack();
 
-				return EXCEPTION_CONTINUE_EXECUTION;
+			//check that stack pointer is inside our scope
+			if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
+			{
+				if(currAllocImpl->reallocate(currStack,reinterpret_cast<void*>(pExceptionInfo->ExceptionRecord->ExceptionInformation[1])))
+				{
+					//every time we receive an exception under a current fiber arena, reset stack limits
+					set_curr_thread_stack(&currStack);
+
+					return EXCEPTION_CONTINUE_EXECUTION;
+				}
+				else
+				{
+					return EXCEPTION_EXECUTE_HANDLER;
+				}
 			}
 			else
 			{
-				return EXCEPTION_EXECUTE_HANDLER;
+				return EXCEPTION_CONTINUE_SEARCH;
 			}
 		}
 		else

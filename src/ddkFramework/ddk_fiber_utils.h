@@ -6,7 +6,7 @@
 	ddk::detail::__s_current_execution_context = &(_CONTEXT);
 
 #define get_current_execution_context() \
-	*ddk::detail::__s_current_execution_context
+	ddk::detail::__s_current_execution_context
 
 namespace ddk
 {

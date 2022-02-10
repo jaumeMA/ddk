@@ -11,6 +11,10 @@ void promised_context::notify_recipients()
 {
 	m_recipients.notify();
 }
+void promised_context::clear_recipients()
+{
+	m_recipients.clear();
+}
 ddk::continuation_token promised_context::enqueue(const ddk::function<void()>& i_callable,unsigned char i_depth)
 {
 	return m_recipients.accept(i_callable,i_depth);

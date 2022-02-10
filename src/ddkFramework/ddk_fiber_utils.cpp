@@ -23,23 +23,33 @@ fiber_id get_current_fiber_id()
 
 void suspend()
 {
-	ddk::detail::execution_context& currFiberContext = get_current_execution_context();
-
-	throw suspend_exception{ currFiberContext.get_id() };
+	if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
+    {
+	    throw suspend_exception{ currFiberContext->get_id() };
+    }
+    else
+    {
+        throw suspend_exception{ k_invalidFiberId };
+    }
 }
 void yield()
 {
-    ddk::detail::execution_context& currFiberContext = get_current_execution_context();
-
-    if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
+    if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
     {
-        ddk::detail::typed_yielder_context<detail::void_t> _yielder(_void);
-
-        currYielder->yield(&_yielder);
-
-        if(currFiberContext.is_stopped())
+        if(ddk::detail::yielder_interface* currYielder = currFiberContext->get_yielder())
         {
-            throw suspend_exception{ currFiberContext.get_id() };
+            ddk::detail::typed_yielder_context<detail::void_t> _yielder(_void);
+
+            currYielder->yield(&_yielder);
+
+            if(currFiberContext->is_stopped())
+            {
+                throw suspend_exception{ currFiberContext->get_id() };
+            }
+        }
+        else
+        {
+            std::this_thread::yield();
         }
     }
     else
@@ -50,17 +60,22 @@ void yield()
 
 void pause()
 {
-    ddk::detail::execution_context& currFiberContext = get_current_execution_context();
-
-    if(ddk::detail::yielder_interface* currYielder = currFiberContext.get_yielder())
+    if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
     {
-        ddk::detail::yielder_context _yielder(get_current_fiber_id(),ddk::detail::yielder_context::Paused);
-
-        currYielder->yield(&_yielder);
-
-        if(currFiberContext.is_stopped())
+        if(ddk::detail::yielder_interface* currYielder = currFiberContext->get_yielder())
         {
-            throw suspend_exception{ currFiberContext.get_id() };
+            ddk::detail::yielder_context _yielder(get_current_fiber_id(),ddk::detail::yielder_context::Paused);
+
+            currYielder->yield(&_yielder);
+
+            if(currFiberContext->is_stopped())
+            {
+                throw suspend_exception{ currFiberContext->get_id() };
+            }
+        }
+        else
+        {
+            std::this_thread::yield();
         }
     }
     else
