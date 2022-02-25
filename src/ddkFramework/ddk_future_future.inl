@@ -148,7 +148,7 @@ future<Return> future<future<T>>::then(const function<Return(Type)>& i_continuat
 {
 	if(detail::private_async_state_dist_ptr<future<T>> sharedState = m_sharedState)
 	{
-		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this)]() mutable
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
@@ -162,7 +162,7 @@ future<Return> future<future<T>>::then(const function<Return(Type)>& i_continuat
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			const unsigned int currDepth = m_currDepth;
+			const unsigned int currDepth = m_depth;
 
 			future<Return> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
 
