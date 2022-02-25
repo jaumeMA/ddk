@@ -1,35 +1,30 @@
-#pragma once
-
-#include "ddk_async_exceptions.h"
-#include "ddk_reference_wrapper.h"
-#include "ddk_sync_executor.h"
 
 namespace ddk
 {
 
 template<typename T>
-future<T>::future(future&& other)
+future<future<T>>::future(future&& other)
 : m_sharedState(std::move(other.m_sharedState))
 {
 }
 template<typename T>
-future<T>::future(const detail::private_async_state_dist_ptr<T>& i_sharedState)
+future<future<T>>::future(const detail::private_async_state_dist_ptr<future<T>>& i_sharedState)
 : m_sharedState(i_sharedState)
 {
 }
 template<typename T>
-future<T>::future(detail::private_async_state_dist_ptr<T>&& i_sharedState)
+future<future<T>>::future(detail::private_async_state_dist_ptr<future<T>>&& i_sharedState)
 : m_sharedState(std::move(i_sharedState))
 {
 }
 template<typename T>
 template<typename TT>
-future<T>::future(distributed_reference_wrapper<TT> i_executor,...)
+future<future<T>>::future(distributed_reference_wrapper<future<TT>> i_executor,...)
 : future(i_executor->as_future())
 {
 }
 template<typename T>
-future<T>::~future()
+future<future<T>>::~future()
 {
 	if(m_sharedState)
 	{
@@ -37,19 +32,19 @@ future<T>::~future()
 	}
 }
 template<typename T>
-future<T>& future<T>::operator=(future<T>&& other)
+future<future<T>>& future<future<T>>::operator=(future<future<T>>&& other)
 {
 	m_sharedState = std::move(other.m_sharedState);
 
 	return *this;
 }
 template<typename T>
-bool future<T>::valid() const
+bool future<future<T>>::valid() const
 {
 	return m_sharedState != nullptr;
 }
 template<typename T>
-bool future<T>::ready() const
+bool future<future<T>>::ready() const
 {
 	if(m_sharedState)
 	{
@@ -61,12 +56,12 @@ bool future<T>::ready() const
 	}
 }
 template<typename T>
-bool future<T>::empty() const
+bool future<future<T>>::empty() const
 {
 	return m_sharedState == nullptr;
 }
 template<typename T>
-typename future<T>::const_reference future<T>::get_value() const
+typename future<future<T>>::const_reference future<future<T>>::get_value() const
 {
 	if(m_sharedState)
 	{
@@ -78,11 +73,11 @@ typename future<T>::const_reference future<T>::get_value() const
 	}
 }
 template<typename T>
-T future<T>::extract_value()
+future<T> future<future<T>>::extract_future()
 {
 	if(m_sharedState)
 	{
-		embedded_type<T> res = m_sharedState->extract_value();
+		embedded_type<future<T>> res = m_sharedState->extract_value();
 
 		return res.extract();
 	}
@@ -92,9 +87,23 @@ T future<T>::extract_value()
 	}
 }
 template<typename T>
-typename future<T>::cancel_result future<T>::cancel()
+auto future<future<T>>::extract_value()
 {
-	if (m_sharedState)
+	if(m_sharedState)
+	{
+		auto res = m_sharedState->extract_value()->extract_value();
+
+		return std::move(res);
+	}
+	else
+	{
+		throw future_exception("Accessing empty future");
+	}
+}
+template<typename T>
+typename future<future<T>>::cancel_result future<future<T>>::cancel()
+{
+	if(m_sharedState)
 	{
 		const auto cancelRes = m_sharedState->cancel();
 
@@ -111,7 +120,7 @@ typename future<T>::cancel_result future<T>::cancel()
 	}
 }
 template<typename T>
-void future<T>::wait() const
+void future<future<T>>::wait() const
 {
 	if(m_sharedState)
 	{
@@ -119,7 +128,7 @@ void future<T>::wait() const
 	}
 }
 template<typename T>
-bool future<T>::wait_for(const std::chrono::milliseconds& i_period) const
+bool future<future<T>>::wait_for(const std::chrono::milliseconds& i_period) const
 {
 	if(m_sharedState)
 	{
@@ -135,12 +144,11 @@ bool future<T>::wait_for(const std::chrono::milliseconds& i_period) const
 template<typename T>
 TEMPLATE(typename Return,typename Type)
 REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
-future<Return> future<T>::then(const function<Return(Type)>& i_continuation) &&
+future<Return> future<future<T>>::then(const function<Return(Type)>& i_continuation)&&
 {
-	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_dist_ptr<future<T>> sharedState = m_sharedState)
 	{
-
-		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this)]() mutable
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
@@ -154,49 +162,8 @@ future<Return> future<T>::then(const function<Return(Type)>& i_continuation) &&
 
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
-			const unsigned char currDepth = m_depth;
+			const unsigned int currDepth = m_currDepth;
 
-			future<Return> res = executor -> attach(asyncExecutor->get_execution_context(),currDepth);
-
-			res.m_depth = currDepth + 1;
-
-			return std::move(res);
-		}
-		else
-		{
-			return executor->as_future();
-		}
-	}
-
-	throw future_exception("Accessing empty future");
-}
-template<typename T>
-TEMPLATE(typename Return,typename Type, typename Context)
-REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
-future<Return> future<T>::then_on(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&
-{
-	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
-	{
-		const unsigned char currDepth = m_depth;
-
-		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<Context>(i_execContext)]() mutable
-		{
-			if constexpr(std::is_same<Return,void>::value)
-			{
-				future<Return> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
-
-				nestedFuture.wait();
-			}
-			else
-			{
-				future<Return> nestedFuture = ddk::async(i_continuation(acquiredFuture.extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
-
-				return nestedFuture.extract_value();
-			}
-		}));
-
-		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
-		{
 			future<Return> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
 
 			res.m_depth = currDepth + 1;
@@ -207,18 +174,19 @@ future<Return> future<T>::then_on(const function<Return(Type)>& i_continuation, 
 		{
 			return executor->as_future();
 		}
+
 	}
 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-TEMPLATE(typename Return,typename Type, typename Context)
+TEMPLATE(typename Return,typename Type,typename Context)
 REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
-future<Return> future<T>::async(const function<Return(Type)>& i_continuation,Context&& i_execContext) &&
+future<Return> future<future<T>>::then_on(const function<Return(Type)>& i_continuation,Context&& i_execContext)&&
 {
-	if(m_sharedState)
+	if(detail::private_async_state_dist_ptr<future<T>> sharedState = m_sharedState)
 	{
-		return make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this)]() mutable
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
@@ -228,15 +196,23 @@ future<Return> future<T>::async(const function<Return(Type)>& i_continuation,Con
 			{
 				return eval(i_continuation,acquiredFuture.extract_value());
 			}
-		})) -> attach(std::forward<Context>(i_execContext));
+		}));
+
+		const unsigned int currDepth = m_currDepth;
+
+		future<Return> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+
+		res.m_depth = currDepth + 1;
+
+		return std::move(res);
 	}
 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-TEMPLATE(typename Return,typename Type)
+TEMPLATE(typename Return,typename Type,typename Context)
 REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
-future<Return> future<T>::async(const function<Return(Type)>& i_continuation, executor_context_lent_ptr i_execContext)&&
+future<Return> future<future<T>>::async(const function<Return(Type)>& i_continuation,Context&& i_execContext)&&
 {
 	if(m_sharedState)
 	{
@@ -252,7 +228,7 @@ future<Return> future<T>::async(const function<Return(Type)>& i_continuation, ex
 			{
 				return eval(i_continuation,acquiredFuture.extract_value());
 			}
-		})) -> attach(i_execContext,currDepth);
+		}))->attach(i_execContext,currDepth);
 
 		res.m_depth = currDepth + 1;
 
@@ -262,7 +238,7 @@ future<Return> future<T>::async(const function<Return(Type)>& i_continuation, ex
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
+future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError)&&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
@@ -291,7 +267,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
 			}
 		}));
-		
+
 		if(async_base_dist_ptr asyncExecutor = sharedState->get_aync_execution())
 		{
 			future<T> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
@@ -309,7 +285,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&
+future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
@@ -337,7 +313,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
 			}
-		})) -> attach(i_execContext,currDepth);
+		}))->attach(i_execContext,currDepth);
 
 		res.m_depth = currDepth + 1;
 
@@ -348,7 +324,3 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 }
 
 }
-
-#include "ddk_future_future.inl"
-#include "ddk_shared_future.inl"
-#include "ddk_future_utils.inl"

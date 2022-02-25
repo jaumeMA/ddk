@@ -182,6 +182,18 @@ typename tuple_base_by_index<IIndex,Types...>::reference tuple_impl<mpl::sequenc
     return static_cast<tuple_base<IIndex,type_by_index<IIndex>>&>(*this).get();
 }
 template<size_t ... Indexs,typename ... Types>
+template<typename ... Args>
+auto tuple_impl<mpl::sequence<Indexs...>,Types...>::prepend(Args&& ... i_args) const
+{
+    return ddk::make_tuple(std::forward<Args>(i_args)...,get<Indexs>()...);
+}
+template<size_t ... Indexs,typename ... Types>
+template<typename ... Args>
+auto tuple_impl<mpl::sequence<Indexs...>,Types...>::append(Args&& ... i_args) const
+{
+    return ddk::make_tuple(get<Indexs>()...,std::forward<Args>(i_args)...);
+}
+template<size_t ... Indexs,typename ... Types>
 tuple_impl<mpl::sequence<Indexs...>,Types...>* tuple_impl<mpl::sequence<Indexs...>,Types...>::operator->()
 {
     return this;
@@ -221,7 +233,7 @@ constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>& i_seq, Types&&
 }
 
 template<typename ... FinalTypes,size_t ... FromIndexs,size_t ... ToIndexs,size_t ... IndexsA,typename ... TypesA,size_t ... IndexsB,typename ... TypesB>
-constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq,const mpl::sequence<ToIndexs...>&,const mpl::sequence<IndexsA...>&,tuple<TypesA...>& i_lhs,const mpl::sequence<IndexsB...>&,tuple<TypesB...>& i_rhs)
+constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq,const mpl::sequence<ToIndexs...>&,const mpl::sequence<IndexsA...>&, const tuple<TypesA...>& i_lhs,const mpl::sequence<IndexsB...>&, const tuple<TypesB...>& i_rhs)
 {
     return tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...>(i_srcSeq,i_lhs.template get<IndexsA>() ...,i_rhs.template get<IndexsB>() ...);
 }

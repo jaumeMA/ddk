@@ -41,3 +41,5 @@ while(${N} GREATER 0)
 	list(LENGTH DEPENDENCIES N)
 
 endwhile()
+
+install(FILES ${PUBLIC_THIRD_PARTY_BINARIES} DESTINATION bin)

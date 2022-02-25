@@ -108,10 +108,10 @@ template<typename Traits>
 critical_section_impl<Traits,true>::critical_section_impl(critical_section_impl&& other)
 : m_id(other.m_id)
 , m_context(std::move(other.m_context))
-, m_provider(nullptr)
+,m_provider(other.m_provider)
 {
 	other.m_id = k_invalidCriticalAccessIdentifier;
-	std::swap(m_provider,other.m_provider);
+	other.m_provider = nullptr;
 }
 template<typename Traits>
 critical_section_impl<Traits,true>::~critical_section_impl()
@@ -268,19 +268,19 @@ template<typename Traits>
 const_critical_section_impl<Traits,true>::const_critical_section_impl(const_critical_section_impl&& other)
 : m_id(other.m_id)
 , m_context(std::move(other.m_context))
-, m_provider(nullptr)
+, m_provider(other.m_provider)
 {
 	other.m_id = k_invalidCriticalAccessIdentifier;
-	std::swap(m_provider,other.m_provider);
+	other.m_provider = nullptr;
 }
 template<typename Traits>
 const_critical_section_impl<Traits,true>::const_critical_section_impl(critical_section_impl<Traits,true>&& other)
 : m_id(other.m_id)
 , m_context(std::move(other.m_context))
-, m_provider(nullptr)
+, m_provider(other.m_provider)
 {
 	other.m_id = k_invalidCriticalAccessIdentifier;
-	std::swap(m_provider,other.m_provider);
+	other.m_provider = nullptr;
 }
 template<typename Traits>
 const_critical_section_impl<Traits,true>::~const_critical_section_impl()

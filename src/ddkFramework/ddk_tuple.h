@@ -117,6 +117,10 @@ public:
     typename tuple_base_by_index<IIndex,Types...>::rreference extract()&&;
     template<size_t ... IIndexs,typename ... Args>
     void set(const mpl::sequence<IIndexs...>&,Args&& ... i_args);
+    template<typename ... Args>
+    auto prepend(Args&& ... i_args) const;
+    template<typename ... Args>
+    auto append(Args&& ... i_args) const;
     template<size_t IIndex,typename Arg>
     typename tuple_base_by_index<IIndex,Types...>::reference set(Arg&& i_val);
     tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->();
