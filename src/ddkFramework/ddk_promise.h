@@ -23,6 +23,7 @@ public:
 	promise& operator=(const promise<T>& other);
 	void set_value(sink_type i_value);
 	void set_exception(const async_exception& i_exception);
+	void clear();
 	future<T> get_future() const;
 
 protected:

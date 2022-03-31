@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<typename ... Types>
-detail::connection_base& signal<void(Types...)>::connect(const ddk::function<void(Types...)>& i_function) const
+NO_DISCARD_RETURN connection signal<void(Types...)>::connect(const ddk::function<void(Types...)>& i_function) const
 {
 	return m_callers.push(i_function,static_cast<const detail::signal_connector&>(*this));
 }
@@ -26,13 +26,19 @@ void signal<void(Types...)>::execute(Args&& ... i_args) const
 	}
 }
 template<typename ... Types>
-void signal<void(Types...)>::disconnect(const detail::connection_base& i_base) const
+bool signal<void(Types...)>::disconnect(const detail::connection_base& i_base) const
 {
 	typedef typename linked_list<signal_functor_t>::iterator iterator;
 	iterator itCaller = std::find_if(m_callers.begin(),m_callers.end(),[&i_base](const signal_functor_t& i_functor) { return i_functor.get_id() == i_base.get_id(); });
 	if(itCaller != m_callers.end())
 	{
 		m_callers.erase(std::move(itCaller));
+
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 

@@ -71,7 +71,7 @@ typename polling_executor<Context>::start_result polling_executor<Context>::exec
 		}
 		else
 		{
-			return make_error<start_result>(StartNotAvailable,startRes.error().get_description());
+			return make_error<start_result>(StartNotAvailable,startRes.error().what());
 		}
 	}
 	else
@@ -99,7 +99,7 @@ typename polling_executor<Context>::resume_result polling_executor<Context>::res
 		}
 		else
 		{
-			return make_error<resume_result>(ResumErrorCode::NotResumable,stopRes.error().get_description());
+			return make_error<resume_result>(ResumErrorCode::NotResumable,stopRes.error().what());
 		}
 	}
 	else
@@ -144,6 +144,8 @@ void polling_executor<Context>::update() const
 		}
 		else
 		{
+			systemDelta = std::chrono::milliseconds(0);
+
 			std::this_thread::yield();
 		}
 	}
@@ -236,7 +238,7 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 		}
 		else
 		{
-			return make_error<start_result>(StartNotAvailable,startRes.error().get_description());
+			return make_error<start_result>(StartNotAvailable,startRes.error().what());
 		}
 	}
 	else
@@ -270,7 +272,7 @@ typename event_driven_executor<Context>::resume_result event_driven_executor<Con
 		}
 		else
 		{
-			return make_error<resume_result>(NotResumable,stopRes.error().get_description());
+			return make_error<resume_result>(NotResumable,stopRes.error().what());
 		}
 	}
 	else
@@ -347,7 +349,7 @@ typename fire_and_forget_executor<Context>::start_result fire_and_forget_executo
 	}
 	else
 	{
-		return make_error<start_result>(StartNotAvailable,startRes.error().get_description());
+		return make_error<start_result>(StartNotAvailable,startRes.error().what());
 	}
 }
 template<typename Context>
@@ -366,7 +368,7 @@ typename fire_and_forget_executor<Context>::resume_result fire_and_forget_execut
 	}
 	else
 	{
-		return make_error<resume_result>(NotResumable,stopRes.error().get_description());
+		return make_error<resume_result>(NotResumable,stopRes.error().what());
 	}
 }
 template<typename Context>

@@ -47,11 +47,15 @@ void async_message_exchange_typed_room<Callable,MessageType,BuiltInMessageType>:
 template<typename Callable,typename MessageType,typename BuiltInMessageType>
 void async_message_exchange_typed_room<Callable,MessageType,BuiltInMessageType>::addCaller(const intrusive_ptr<signal_functor_t>& i_caller)
 {
+	ddk::lock_guard<async_attachable_message_queue<MessageType>> lg(*m_msgQueue);
+
 	m_callers.push(i_caller);
 }
 template<typename Callable,typename MessageType,typename BuiltInMessageType>
 bool async_message_exchange_typed_room<Callable,MessageType,BuiltInMessageType>::tryRemoveCaller(const detail::connection_base& i_caller)
 {
+	ddk::lock_guard<async_attachable_message_queue<MessageType>> lg(*m_msgQueue);
+
 	typename intrusive_list<signal_functor_t>::iterator itCaller = std::find_if(m_callers.begin(),m_callers.end(),[&i_caller](const signal_functor_t& i_functor) { return i_functor.get_id() == i_caller.get_id(); });
 
 	if(itCaller != m_callers.end())

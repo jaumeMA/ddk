@@ -379,12 +379,18 @@ constexpr bool variant_impl<Types...>::is() const
 {
 	if constexpr (mpl::is_among_types<TType, Types...>)
 	{
-		return m_currentType == mpl::nth_pos_of_type<TType, Types...>;
+		return m_currentType == pos_of_type<TType>();
 	}
 	else
 	{
 		return false;
 	}
+}
+template<typename ... Types>
+template<typename TType>
+constexpr unsigned char variant_impl<Types...>::pos_of_type()
+{
+	return static_cast<unsigned char>(mpl::pos_of_type<TType,Types...>);
 }
 template<typename ... Types>
 template<typename TType>
@@ -451,7 +457,7 @@ constexpr bool variant_impl<Types...>::is() const
 	return m_currentType == Pos;
 }
 template<typename ... Types>
-constexpr char variant_impl<Types...>::which() const
+constexpr unsigned char variant_impl<Types...>::which() const
 {
 	return m_currentType;
 }

@@ -10,7 +10,7 @@ namespace detail
 class signal_connector
 {
 public:
-	virtual void disconnect(const connection_base&) const = 0;
+	virtual bool disconnect(const connection_base&) const = 0;
 };
 
 }

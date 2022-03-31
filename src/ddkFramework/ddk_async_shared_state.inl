@@ -179,6 +179,13 @@ embedded_type<T> private_async_state<T>::extract_value()
 	}
 }
 template<typename T>
+void private_async_state<T>::clear()
+{
+	mutex_guard lg(m_mutex);
+
+	m_arena = none;
+}
+template<typename T>
 void private_async_state<T>::wait() const
 {
 	mutex_guard lg(m_mutex);

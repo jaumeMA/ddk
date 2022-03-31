@@ -2,6 +2,7 @@
 
 #include "ddk_signal_functor.h"
 #include "ddk_connection_base.h"
+#include <list>
 #include <cassert>
 
 namespace ddk
@@ -30,5 +31,6 @@ public:
 private:
     detail::connection_base* m_referredConnection;
 };
+typedef std::list<connection> connection_list;
 
 }

@@ -35,6 +35,11 @@ void promise<T>::set_exception(const async_exception& i_exception)
 	m_sharedState->set_exception(i_exception);
 }
 template<typename T>
+void promise<T>::clear()
+{
+	m_sharedState->clear();
+}
+template<typename T>
 future<T> promise<T>::get_future() const
 {
 	return m_sharedState;

@@ -11,7 +11,7 @@ task_executor::task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks)
 , m_state(Idle)
 ,m_numPendingTasks(0)
 {
-	m_availableThreads.on_availableThreads.connect(make_function([this]()
+	m_connection = m_availableThreads.on_availableThreads.connect(make_function([this]()
 	{
         if(m_state == Running)
         {            m_updateThread.signal_thread();

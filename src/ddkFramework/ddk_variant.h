@@ -71,7 +71,9 @@ public:
 	inline Type extract() &&;
 	template<size_t Pos>
 	constexpr bool is() const;
-	constexpr char which() const;
+	template<typename TType>
+	static constexpr unsigned char pos_of_type();
+	constexpr unsigned char which() const;
 	template<typename TType>
 	static constexpr bool contains();
 	TEMPLATE(typename Visitor)

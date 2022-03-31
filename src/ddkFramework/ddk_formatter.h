@@ -104,7 +104,7 @@ struct formatter<std::string>
 template<typename First,typename Second>
 struct formatter<std::pair<First,Second>>
 {
-	inline static std::pair<First,Second> format(const std::string& i_str);
+	inline static std::pair<First,Second> format(std::string i_str);
 };
 
 template<typename T>
@@ -136,6 +136,9 @@ inline T format_to(const std::string& i_value);
 
 template<typename T>
 inline std::string to_string(T&& i_value);
+
+template<typename T, typename ... TT>
+inline std::string to_string(T&& i_value, TT&& ... i_values);
 
 }
 

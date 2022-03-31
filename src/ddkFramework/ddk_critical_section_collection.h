@@ -236,12 +236,12 @@ public:
 	template<typename Provider>
 	typename detail::resolve_critical_access_type<ACCESS,Provider>::type& get()
 	{
-		return std::get<mpl::nth_pos_of_type<Provider,Types...>>(m_criticalSections);
+		return std::get<mpl::pos_of_type<Provider,Types...>>(m_criticalSections);
 	}
 	template<typename Provider>
 	const typename detail::resolve_critical_access_type<ACCESS,Provider>::type& get() const
 	{
-		return std::get<mpl::nth_pos_of_type<Provider,Types...>>(m_criticalSections);
+		return std::get<mpl::pos_of_type<Provider,Types...>>(m_criticalSections);
 	}
 	template<size_t Index>
 	typename std::add_lvalue_reference<typename detail::resolve_critical_access_type<ACCESS,typename mpl::nth_type_of<Index,Types...>::type>::type>::type get()

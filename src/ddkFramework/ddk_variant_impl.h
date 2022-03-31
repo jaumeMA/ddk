@@ -73,7 +73,9 @@ public:
 	inline TType extract() &&;
     template<typename TType>
     constexpr bool is() const;
-	template<typename TType>
+    template<typename TType>
+    static constexpr unsigned char pos_of_type();
+    template<typename TType>
     constexpr typename embedded_type<TType>::cref_type get_as() const;
 	template<typename TType>
     constexpr typename embedded_type<TType>::ref_type get_as();
@@ -87,7 +89,7 @@ public:
 	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract() &&;
     template<size_t Pos>
     constexpr bool is() const;
-    constexpr char which() const;
+    constexpr unsigned char which() const;
     inline void swap(variant_impl<Types...>& other);
     TEMPLATE(typename Visitor)
     REQUIRES(IS_CALLABLE(Visitor,Types)...)

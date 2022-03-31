@@ -20,13 +20,13 @@ public:
     signal(const signal<void(Types...)>&) = delete;
     signal<void(Types...)>& operator=(const signal<void(Types...)>&) = delete;
 
-	detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const;
+	NO_DISCARD_RETURN connection connect(const ddk::function<void(Types...)>& i_function) const;
 	void disconnect();
 	template<typename ... Args>
 	void execute(Args&& ... i_args) const;
 
 private:
-	void disconnect(const detail::connection_base& i_base) const override final;
+	bool disconnect(const detail::connection_base& i_base) const override final;
 
 	mutable linked_list<signal_functor_t> m_callers;
 };

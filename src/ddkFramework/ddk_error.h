@@ -26,7 +26,7 @@ public:
 	error_impl& operator=(const error_impl&) = default;
 	error_impl& operator=(error_impl&&) = default;
 	Error get_error() const;
-    const std::string& get_description() const;
+    const std::string& what() const;
 	bool operator==(const error_impl<Error>& i_error) const;
 	bool operator!=(const error_impl<Error>& i_error) const;
 	

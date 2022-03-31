@@ -628,7 +628,7 @@ inline constexpr bool holds_some_type()
 }
 
 template<typename Type, typename ... Types>
-inline constexpr size_t nth_pos_of_type = nth_pos_of_predicate<is_same_type,Type,Types...>();
+inline constexpr size_t pos_of_type = nth_pos_of_predicate<is_same_type,Type,Types...>();
 
 template<typename Type,typename ... Types>
 inline constexpr bool is_among_types = holds_type_for_some_type<is_same_type,Type,Types...>();

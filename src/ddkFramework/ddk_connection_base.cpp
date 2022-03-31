@@ -23,7 +23,10 @@ void connection_base::disable()
 }
 void connection_base::disconnect()
 {
-	m_connector.disconnect(*this);
+	if(m_connector.disconnect(*this))
+	{
+		m_isEnabled = false;
+	}
 }
 bool connection_base::is_enabled() const
 {

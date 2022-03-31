@@ -92,6 +92,12 @@ constexpr bool variant<Type>::is() const
 }
 template<typename Type>
 template<typename TType>
+constexpr unsigned char variant<Type>::pos_of_type()
+{
+	return static_cast<unsigned char>(mpl::pos_of_type<TType,Type>);
+}
+template<typename Type>
+template<typename TType>
 constexpr bool variant<Type>::contains()
 {
 	return std::is_same<TType,Type>::value;
@@ -145,7 +151,7 @@ constexpr bool variant<Type>::is() const
 	return Pos == 0;
 }
 template<typename Type>
-constexpr char variant<Type>::which() const
+constexpr unsigned char variant<Type>::which() const
 {
 	return 0;
 }

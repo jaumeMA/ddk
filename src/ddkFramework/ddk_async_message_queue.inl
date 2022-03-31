@@ -51,7 +51,7 @@ void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk
 		{
 			auto startRes = m_executor->execute(nullptr,ddk::make_function(this,&async_attachable_message_queue<MessageType>::dispatch_messages));
 
-			DDK_ASSERT(startRes == success,"Error while starting thread executor : " + startRes.error().get_description());
+			DDK_ASSERT(startRes == success,"Error while starting thread executor : " + startRes.error().what());
 		}
 
 		m_receivers.push(std::make_pair(i_id,i_processor));
@@ -83,7 +83,7 @@ void async_attachable_message_queue<MessageType>::stop(sender_id i_id)
 	{
 		auto stopRes = m_executor->resume();
 
-		DDK_ASSERT(stopRes == success,"Error while stopping thread executor : " + stopRes.error().get_description());
+		DDK_ASSERT(stopRes == success,"Error while stopping thread executor : " + stopRes.error().what());
 	}
 }
 template<typename MessageType>
@@ -123,6 +123,26 @@ void async_attachable_message_queue<MessageType>::dispatch_message(const message
 			eval(currReceiver.second,i_msg);
 		}
 	}
+}
+template<typename MessageType>
+void async_attachable_message_queue<MessageType>::lock(Reentrancy i_reentrancy)
+{
+	m_exclArea.enterWriter(i_reentrancy);
+}
+template<typename MessageType>
+void async_attachable_message_queue<MessageType>::lock(Reentrancy i_reentrancy) const
+{
+	m_exclArea.enterReader(i_reentrancy);
+}
+template<typename MessageType>
+void async_attachable_message_queue<MessageType>::unlock()
+{
+	m_exclArea.leaveWriter();
+}
+template<typename MessageType>
+void async_attachable_message_queue<MessageType>::unlock() const
+{
+	m_exclArea.leaverReader();
 }
 
 }

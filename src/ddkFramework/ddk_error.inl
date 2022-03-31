@@ -21,7 +21,7 @@ Error error_impl<Error>::get_error() const
     return m_error;
 }
 template<typename Error>
-const std::string& error_impl<Error>::get_description() const
+const std::string& error_impl<Error>::what() const
 {
     return m_errorDesc;
 }

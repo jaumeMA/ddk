@@ -34,7 +34,7 @@ public:
 		disconnect();
 	}
     //non static member functions
-    detail::connection_base& connect(const ddk::function<Return(Types...)>& i_function) const
+    NO_DISCARD_RETURN connection connect(const ddk::function<Return(Types...)>& i_function) const
 	{
 		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
@@ -61,9 +61,11 @@ public:
 	}
 
 private:
-	void disconnect(const detail::connection_base& i_base) const override final
+	bool disconnect(const detail::connection_base& i_base) const override final
 	{
 		m_recipient.clear();
+
+		return true;
 	}
 
 	mutable linked_list<signal_functor_t> m_recipient;
@@ -91,7 +93,7 @@ public:
 	{
 		disconnect();
 	}
-    detail::connection_base& connect(const ddk::function<void(Types...)>& i_function) const
+    NO_DISCARD_RETURN connection connect(const ddk::function<void(Types...)>& i_function) const
 	{
 		DDK_ASSERT(m_recipient.empty(), "You shall disconnect before reconnecting");
 
@@ -118,9 +120,11 @@ public:
 	}
 
 private:
-	void disconnect(const detail::connection_base& i_base) const override final
+	bool disconnect(const detail::connection_base& i_base) const override final
 	{
 		m_recipient.clear();
+
+		return true;
 	}
 
 	mutable linked_list<signal_functor_t> m_recipient;
