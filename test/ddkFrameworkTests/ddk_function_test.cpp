@@ -88,8 +88,8 @@ TEST(DDKFunctionTest,funcMakeSpecialization)
 {
 	Foo thisFoo;
 
-	ddk::function<int(float)> res7 = ddk::make_function(&sum_func,1,ddk::arg_0);
-	ddk::function<size_t(const std::string&)> res8 = ddk::make_function(&thisFoo,&Foo::member_func,'a',ddk::arg_0);
+	ddk::function<int()> res7 = ddk::make_function(&sum_func,1,1.5f);
+	ddk::function<size_t()> res8 = ddk::make_function(&thisFoo,&Foo::member_func,'a',"hola");
 	ddk::function<bool()> res9 = ddk::make_function([](const std::string& i_str){ return i_str.empty(); },"hola");
 
 	ddk::function<int(float)> res10 = ddk::make_function(&sum_func,ddk::system_allocator{},1,ddk::arg_0);

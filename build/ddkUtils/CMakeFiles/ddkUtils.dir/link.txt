@@ -1,2 +1,0 @@
-/usr/bin/ar qc libddkUtils.a  CMakeFiles/ddkUtils.dir/DDKLogger.cpp.o
-/usr/bin/ranlib libddkUtils.a
