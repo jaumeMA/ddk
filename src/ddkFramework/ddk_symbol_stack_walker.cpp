@@ -1,13 +1,19 @@
 #include "ddk_symbol_stack_walker.h"
+#include "ddk_macros.h"
 
 namespace ddk
 {
 
 symbol_stack_walker::symbol_stack_walker()
 {
+#if defined(WIN32)
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process,NULL,TRUE);
+#else
+    TODO("Pending");
+#endif
 }
+#if defined(WIN32)
 bool symbol_stack_walker::get_list(PCONTEXT i_context, stack_entry* i_entries, size_t i_size) const
 {
 	if(i_entries)
@@ -40,5 +46,6 @@ bool symbol_stack_walker::get_list(PCONTEXT i_context, stack_entry* i_entries, s
 		return false;
 	}
 }
+#endif
 
 }

@@ -77,6 +77,7 @@ template<typename Return>
 class cancellable_executor_interface<Return()> : public executor_interface<Return()>
 {
 public:
+    using typename executor_interface<Return()>::sink_type;
 	typedef typename async_cancellable_interface::cancel_result cancel_result;
 	typedef typename async_cancellable_interface::CancelErrorCode CancelErrorCode;
 

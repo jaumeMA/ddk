@@ -42,7 +42,7 @@ auto operator&&(future<T>&& i_lhs, future<values_array<TT,Dim>>&& i_rhs)
 		}
 		else
 		{
-			return std::move(acquiredFuture).then(make_function([acquiredValue = std::move(i_lhsValue)](values_vector<TT> i_rhsValue) mutable -> values_tuple<T,values_array<TT,Dim>>
+			return std::move(acquiredFuture).then(make_function([acquiredValue = std::move(i_lhsValue)](values_array<TT,Dim> i_rhsValue) mutable -> values_tuple<T,values_array<TT,Dim>>
 			{
 				return ddk::make_tuple(std::move(acquiredValue),std::move(i_rhsValue));
 			}));
@@ -110,14 +110,14 @@ auto operator&&(const shared_future<T>& i_lhs,const shared_future<values_array<T
 	{
 		if constexpr(std::is_same<T,TT>::value)
 		{
-			return std::move(acquiredFuture).then(make_function([acquiredValue = std::move(i_lhsValue)](values_vector<T> i_rhsValue) mutable -> values_array<T,Dim+1>
+			return std::move(acquiredFuture).then(make_function([acquiredValue = std::move(i_lhsValue)](values_array<T,Dim> i_rhsValue) mutable -> values_array<T,Dim+1>
 			{
 				return i_rhsValue.prepend(std::move(acquiredValue));
 			}));
 		}
 		else
 		{
-			return std::move(acquiredFuture).then(make_function([acquiredValue = std::move(i_lhsValue)](values_vector<TT> i_rhsValue) mutable -> values_tuple<T,values_array<TT,Dim>>
+			return std::move(acquiredFuture).then(make_function([acquiredValue = std::move(i_lhsValue)](values_array<TT,Dim> i_rhsValue) mutable -> values_tuple<T,values_array<TT,Dim>>
 			{
 				return ddk::make_tuple(std::move(acquiredValue),std::move(i_rhsValue));
 			}));
@@ -138,7 +138,7 @@ auto operator&&(const shared_future<T>& i_lhs,const shared_future<values_tuple<T
 template<typename T,typename TT, size_t Dim>
 auto operator&&(const shared_future<values_array<TT,Dim>>& i_lhs,const shared_future<T>& i_rhs)
 {
-	return contraction(std::move(i_lhs).then(make_function([acquiredFuture = i_rhs](values_vector<TT> i_lhsValue) mutable
+	return contraction(std::move(i_lhs).then(make_function([acquiredFuture = i_rhs](values_array<TT,Dim> i_lhsValue) mutable
 	{
 		if constexpr(std::is_same<T,TT>::value)
 		{

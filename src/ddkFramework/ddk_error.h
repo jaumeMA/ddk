@@ -29,7 +29,7 @@ public:
     const std::string& what() const;
 	bool operator==(const error_impl<Error>& i_error) const;
 	bool operator!=(const error_impl<Error>& i_error) const;
-	
+
 private:
     Error m_error;
     std::string m_errorDesc;
@@ -43,7 +43,7 @@ class error_impl : public error_impl<Error>
 		visit([&i_lhs](auto&& i_error)
 		{
 			i_lhs << i_error;
-		},i_rhs.m_nestedErrors)
+		},i_rhs.m_nestedErrors);
 
 		return i_lhs;
 	}

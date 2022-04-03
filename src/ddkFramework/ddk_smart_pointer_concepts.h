@@ -147,7 +147,7 @@ struct _is_lendable_pointer
 	static const bool value = false;
 };
 
-	
+
 template<typename T>
 struct is_lendable_pointer
 {
@@ -183,7 +183,7 @@ struct is_lendable_reference
 {
 private:
 	template<typename TT>
-	static constexpr decltype(lend(TT)) test(TT&&);
+	static constexpr decltype(lend(std::declval<TT>())) test(TT&&);
 	static constexpr std::false_type test(...);
 
 public:

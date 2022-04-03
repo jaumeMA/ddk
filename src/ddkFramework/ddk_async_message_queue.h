@@ -46,9 +46,7 @@ public:
 	void dispatch_messages();
 	void dispatch_message(const message_type& i_msg);
 	void lock(Reentrancy i_reentrancy = Reentrancy::NON_REENTRANT);
-	void lock(Reentrancy i_reentrancy = Reentrancy::NON_REENTRANT) const;
 	void unlock();
-	void unlock() const;
 
 private:
 	exclusion_area m_exclArea;

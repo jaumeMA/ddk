@@ -1,5 +1,4 @@
-#include "ddk_builtin_iterables.h"
-#include "ddk_view_utils.h"
+#include "ddk_iterable.h"
 
 namespace ddk
 {

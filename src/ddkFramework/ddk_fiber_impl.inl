@@ -19,7 +19,7 @@ namespace detail
 template<typename T>
 typed_yielder_context<T>* this_fiber_t::get_typed_context() const
 {
-	return (m_execContext) ? m_execContext->get_typed_context<typed_yielder_context<T>>() : nullptr;
+	return m_execContext.template get_typed_context<typed_yielder_context<T>>();
 }
 
 template<typename Return>

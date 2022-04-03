@@ -106,8 +106,8 @@ public:
 private:
     typedef variadic_union<Types...> data_type;
 
-    data_type m_storage;
     unsigned char m_currentType = s_numTypes;
+    data_type m_storage;
 };
 
 }

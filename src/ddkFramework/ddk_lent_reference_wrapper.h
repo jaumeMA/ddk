@@ -68,13 +68,13 @@ public:
 	{
 	}
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BINDABLE_BY_COND(T,TT))
+	REQUIRES(IS_BINDABLE_BY(T,TT))
 	lent_reference_wrapper(lent_reference_wrapper<TT>&& other)
 	: lent_pointer_wrapper<T>(std::move(other))
 	{
 	}
 	TEMPLATE(typename TT)
-	REQUIRES(IS_BINDABLE_BY_COND(T,TT))
+	REQUIRES(IS_BINDABLE_BY(T,TT))
 	lent_reference_wrapper(const unique_reference_wrapper<TT>& other)
 	: lent_pointer_wrapper<T>(other)
 	{

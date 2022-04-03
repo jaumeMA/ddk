@@ -14,33 +14,18 @@ struct constructor_visitor : public static_visitor<void>
 {
     typedef constructor_visitor t_visitor;
 
-    template<typename Type>
-    struct _constructor;
-
-    template<typename Type>
-    struct _constructor
-    {
-        template<typename TType>
-        static constexpr void construct(Storage& i_storage, TType&& val)
-		{
-			static_assert(mpl::is_among_constructible_types<Type, Types...>, "Constructing type non present in variant types!");
-
-			i_storage.template construct<Type>(std::forward<TType>(val));
-		}
-    };
-
 	constexpr constructor_visitor(Storage& i_storage)
 	: m_storage(i_storage)
 	{
 	}
     template<size_t PosType, typename Type>
-    static constexpr detail::void_t construct(Storage& i_storage, Type&& val)
+    static constexpr detail::void_t construct(Storage& i_storage, Type&& i_val)
 	{
 		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(), "Type out of bounds!");
 
 		typedef typename mpl::nth_type_of<PosType, Types...>::type TType;
 
-		_constructor<TType>::template construct<Type>(i_storage, std::forward<Type>(val));
+		i_storage.template construct<TType>(std::forward<Type>(i_val));
 
 		return _void;
 	}

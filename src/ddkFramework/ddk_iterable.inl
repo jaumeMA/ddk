@@ -22,7 +22,7 @@ iterable<Traits>::iterable(const iterable& other)
 template<typename Traits>
 template<typename TTraits>
 iterable<Traits>::iterable(const iterable<TTraits>& other)
-: m_iterableImpl(make_iterable_impl<transformed_iterable_action_impl<Traits,TTraits>>(other.m_iterableImpl,[](const typename action& i_action){ return action_conversion<typename TTraits::action>(i_action); }))
+: m_iterableImpl(make_iterable_impl<transformed_iterable_action_impl<Traits,TTraits>>(other.m_iterableImpl,[](const action& i_action){ return action_conversion<typename TTraits::action>(i_action); }))
 {
 }
 template<typename Traits>

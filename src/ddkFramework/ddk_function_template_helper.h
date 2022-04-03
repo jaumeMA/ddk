@@ -109,7 +109,7 @@ template<typename Functor>
 struct aqcuire_callable_return_type
 {
 private:
-    template<typename T, typename TT = decltype(&Functor::operator())>
+    template<typename T, typename TT = decltype(&T::operator())>
     static typename aqcuire_callable_return_type<TT>::type resolve(T&);
     template<typename T>
     static typename T::return_type resolve(const T&, ...);

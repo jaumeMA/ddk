@@ -53,7 +53,7 @@ public:
 	~iterable();
 
     TEMPLATE(typename Function)
-    REQUIRES(IS_CALLABLE(Function))        
+    REQUIRES(IS_CALLABLE(Function))
     action_result iterate(Function&& i_try, const shift_action& i_initialAction = go_to_place);
     TEMPLATE(typename Function)
     REQUIRES(IS_CALLABLE(Function))
@@ -109,9 +109,14 @@ using random_access_iterable = detail::iterable<detail::random_access_iterable_v
 
 }
 
-#include "ddk_iterable.inl"
 #include "ddk_iterable_resolver.h"
-#include "ddk_iterable_utils.h"
+#include "ddk_iterable_action_resolver.h"
 #include "ddk_view_utils.h"
-#include "ddk_algorithm.h"
+#include "ddk_iterable_utils.h"
 #include "ddk_builtin_iterables.h"
+
+#include "ddk_iterable.inl"
+#include "ddk_iterable_action_resolver.inl"
+#include "ddk_view_utils.inl"
+#include "ddk_iterable_utils.inl"
+#include "ddk_builtin_iterables.inl"

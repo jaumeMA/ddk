@@ -182,11 +182,11 @@ future<Return> future<future<T>>::then(const function<Return(Type)>& i_continuat
 template<typename T>
 TEMPLATE(typename Return,typename Type,typename Context)
 REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
-future<Return> future<future<T>>::then_on(const function<Return(Type)>& i_continuation,Context&& i_execContext)&&
+future<Return> future<future<T>>::then_on(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&
 {
 	if(detail::private_async_state_dist_ptr<future<T>> sharedState = m_sharedState)
 	{
-		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this)]() mutable
+		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
@@ -198,9 +198,9 @@ future<Return> future<future<T>>::then_on(const function<Return(Type)>& i_contin
 			}
 		}));
 
-		const unsigned int currDepth = m_currDepth;
+		const unsigned int currDepth = m_depth;
 
-		future<Return> res = executor->attach(asyncExecutor->get_execution_context(),currDepth);
+		future<Return> res = executor->attach(std::move(i_execContext),currDepth);
 
 		res.m_depth = currDepth + 1;
 
@@ -212,7 +212,7 @@ future<Return> future<future<T>>::then_on(const function<Return(Type)>& i_contin
 template<typename T>
 TEMPLATE(typename Return,typename Type,typename Context)
 REQUIRED(IS_CONSTRUCTIBLE(Type,rreference))
-future<Return> future<future<T>>::async(const function<Return(Type)>& i_continuation,Context&& i_execContext)&&
+future<Return> future<future<T>>::async(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&
 {
 	if(m_sharedState)
 	{
@@ -228,7 +228,7 @@ future<Return> future<future<T>>::async(const function<Return(Type)>& i_continua
 			{
 				return eval(i_continuation,acquiredFuture.extract_value());
 			}
-		}))->attach(i_execContext,currDepth);
+		}))->attach(std::move(i_execContext),currDepth);
 
 		res.m_depth = currDepth + 1;
 

@@ -85,5 +85,3 @@ extern const detail::multi_dimensional_action_resolver dimension_order;
 extern const detail::multi_dimensional_action_resolver transponse_dimension_order;
 
 }
-
-#include "ddk_iterable_action_resolver.inl"

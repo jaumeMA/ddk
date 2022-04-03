@@ -178,11 +178,11 @@ template<typename T, typename TT>
 struct is_bindable_by_impl
 {
 private:
-	static std::true_type checker(TT*);
+	static std::true_type checker(const TT*);
 	static std::false_type checker(...);
 
 public:
-	static const bool value = decltype(checker(reinterpret_cast<T*>(nullptr)))::value;
+	static const bool value = decltype(checker(std::declval<const T*>()))::value;
 };
 
 template<typename T, typename TT>

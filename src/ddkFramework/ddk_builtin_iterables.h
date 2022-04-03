@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ddk_iterable.h"
 #include "ddk_iterable_action.h"
 #include "ddk_function.h"
 
@@ -80,5 +79,3 @@ extern const const_random_access_iterable<const float> odd_reals;
 extern const const_random_access_iterable<const float> even_reals;
 
 }
-
-#include "ddk_builtin_iterables.inl"

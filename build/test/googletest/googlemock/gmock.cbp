@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="gmock"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\test\;CMake Files\test\ddkFrameworkTests\;CMake Files\test\googletest\;CMake Files\test\googletest\googlemock\;CMake Files\test\googletest\googletest\;CMake Files\test\googletest\googletest\cmake\;CMake Files\src\;CMake Files\src\ddkFramework\;CMake Files\src\ddkUtils\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock_main">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgmock_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock_main/fast">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgmock_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgmock.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gmock/fast">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgmock.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest_main">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgtest_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest_main"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest_main/fast">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgtest_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest_main/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgtest.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gtest/fast">
+				<Option output="/home/jaumema/software/3rd_party_libs/ddk/build/lib/libgtest.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_RESERVED_PAGES=60"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_DEFAULT_NUM_GUARD_PAGES=2"/>
+					<Add option="-DDDK_STACK_ALLOCATOR_NUM_COMMITED_PAGES=1"/>
+					<Add option="-DDDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/include"/>
+					<Add directory="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 gtest/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/jaumema/software/3rd_party_libs/ddk/build/test/googletest/googletest/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/src/gmock-all.cc">
+			<Option target="gmock"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/src/gmock_main.cc">
+			<Option target="gmock_main"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/src/gtest-all.cc">
+			<Option target="gtest"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/src/gtest_main.cc">
+			<Option target="gtest_main"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/CMakeConfig.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/SetupConfig.cmake">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/linux64ToolChain.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/dependencies.cmake">
+			<Option virtualFolder="CMake Files\test\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/ddkFrameworkTests/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\test\ddkFrameworkTests\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/ddkFrameworkTests/CompilerFlags.cmake">
+			<Option virtualFolder="CMake Files\test\ddkFrameworkTests\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/ddkFrameworkTests/WhiteList.cmake">
+			<Option virtualFolder="CMake Files\test\ddkFrameworkTests\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\test\googletest\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googlemock/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\test\googletest\googlemock\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\test\googletest\googletest\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/test/googletest/googletest/cmake/internal_utils.cmake">
+			<Option virtualFolder="CMake Files\test\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/src/ddkFramework/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\ddkFramework\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/src/ddkFramework/CompilerFlags.cmake">
+			<Option virtualFolder="CMake Files\src\ddkFramework\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/src/ddkFramework/WhiteList.cmake">
+			<Option virtualFolder="CMake Files\src\ddkFramework\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/src/ddkUtils/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\ddkUtils\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/src/ddkUtils/CompilerFlags.cmake">
+			<Option virtualFolder="CMake Files\src\ddkUtils\"/>
+		</Unit>
+		<Unit filename="/home/jaumema/software/3rd_party_libs/ddk/src/ddkUtils/WhiteList.cmake">
+			<Option virtualFolder="CMake Files\src\ddkUtils\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

@@ -6,6 +6,26 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename Sink>
+TEMPLATE(typename SSink)
+REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
+iteration_sink<Sink>::iteration_sink(SSink&& i_try)
+: m_try(std::forward<SSink>(i_try))
+{
+}
+
+template<typename Sink>
+TEMPLATE(typename SSink)
+REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
+mutable_iteration_sink<Sink>::mutable_iteration_sink(SSink&& i_try)
+: m_try(std::forward<SSink>(i_try))
+{
+}
+
+}
 
 template<typename Iterable, typename Sink>
 action_result execute_co_iteration(co_iteration<Iterable,Sink> i_co_iteration)
@@ -20,26 +40,25 @@ action_result execute_iteration(iteration<Iterable,Sink> i_iteration)
 }
 
 template<typename Iterable, typename Sink>
-TEMPLATE(typename SSink)
-REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
+template<typename SSink>
 iteration<Iterable,Sink>::iteration(Iterable& i_iterable, SSink&& i_try)
-: m_iterable(i_iterable)
-, m_try(std::forward<SSink>(i_try))
+: sink_type(std::forward<SSink>(i_try))
+, m_iterable(i_iterable)
 , m_received(false)
 {
 }
 template<typename Iterable, typename Sink>
 iteration<Iterable,Sink>::iteration(const iteration& other)
-: m_iterable(other.m_iterable)
-, m_try(other.m_try)
+: sink_type(other)
+, m_iterable(other.m_iterable)
 , m_received(true)
 {
 	other.m_received = true;
 }
 template<typename Iterable, typename Sink>
 iteration<Iterable,Sink>::iteration(iteration&& other)
-: m_iterable(std::move(other.m_iterable))
-, m_try(std::move(other.m_try))
+: sink_type(std::move(other))
+, m_iterable(std::move(other.m_iterable))
 , m_received(other.m_received)
 {
 }
@@ -68,7 +87,7 @@ action_result iteration<Iterable,Sink>::execute()
 	{
 		if(m_iterable != nullptr)
 		{
-			return m_iterable.iterate(m_try);
+			return m_iterable.iterate(this->m_try);
 		}
 		else
 		{
@@ -81,7 +100,7 @@ action_result iteration<Iterable,Sink>::execute()
 
 		try
 		{
-			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{m_try},action{go_no_place});
+			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place});
 		}
 		catch(const ddk::suspend_exception&)
 		{
@@ -97,7 +116,7 @@ action_result iteration<Iterable,Sink>::execute() const
 	{
 		if(m_iterable != nullptr)
 		{
-			return m_iterable.iterate(m_try);
+			return m_iterable.iterate(this->m_try);
 		}
 		else
 		{
@@ -110,7 +129,7 @@ action_result iteration<Iterable,Sink>::execute() const
 
 		try
 		{
-			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{m_try},action{go_no_place});
+			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place});
 		}
 		catch(const ddk::suspend_exception&)
 		{
@@ -134,26 +153,25 @@ future<action_result> iteration<Iterable,Sink>::attach(const detail::this_thread
 }
 
 template<typename Iterable, typename Sink>
-TEMPLATE(typename SSink)
-REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
+template<typename SSink>
 co_iteration<Iterable,Sink>::co_iteration(Iterable& i_iterable, SSink&& i_try)
-: m_iterable(i_iterable)
-, m_try(std::forward<SSink>(i_try))
+: sink_type(std::forward<SSink>(i_try))
+, m_iterable(i_iterable)
 , m_received(false)
 {
 }
 template<typename Iterable, typename Sink>
 co_iteration<Iterable,Sink>::co_iteration(const co_iteration& other)
-: m_iterable(other.m_iterable)
-, m_try(other.m_try)
+: sink_type(other)
+, m_iterable(other.m_iterable)
 , m_received(true)
 {
 	other.m_received = true;
 }
 template<typename Iterable, typename Sink>
 co_iteration<Iterable,Sink>::co_iteration(co_iteration&& other)
-: m_iterable(std::move(other.m_iterable))
-, m_try(std::move(other.m_try))
+: sink_type(std::move(other))
+, m_iterable(std::move(other.m_iterable))
 , m_received(other.m_received)
 {
 }
@@ -180,7 +198,7 @@ action_result co_iteration<Iterable,Sink>::execute()
 {
 	if(m_iterable != nullptr)
     {
-        return m_iterable.co_iterate(m_try);
+        return m_iterable.co_iterate(this->m_try);
     }
 	else
 	{
@@ -192,7 +210,7 @@ action_result co_iteration<Iterable,Sink>::execute() const
 {
     if(m_iterable != nullptr)
     {
-        return m_iterable.co_iterate(m_try);
+        return m_iterable.co_iterate(this->m_try);
     }
 	else
 	{

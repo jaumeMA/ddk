@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ddk_fiber_utils.h"
+
 
 namespace ddk
 {

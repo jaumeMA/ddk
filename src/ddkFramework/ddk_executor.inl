@@ -62,8 +62,8 @@ typename polling_executor<Context>::start_result polling_executor<Context>::exec
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		
-		const auto startRes = m_context.start(ddk::make_function(this,&polling_executor<Context>::update));
+
+		const auto startRes = this->m_context.start(ddk::make_function(this,&polling_executor<Context>::update));
 
 		if(startRes)
 		{
@@ -71,18 +71,18 @@ typename polling_executor<Context>::start_result polling_executor<Context>::exec
 		}
 		else
 		{
-			return make_error<start_result>(StartNotAvailable,startRes.error().what());
+			return make_error<start_result>(StartErrorCode::StartNotAvailable,startRes.error().what());
 		}
 	}
 	else
 	{
-		return make_error<start_result>(StartNotExecutable);
+		return make_error<start_result>(StartErrorCode::StartNotExecutable);
 	}
 }
 template<typename Context>
 bool polling_executor<Context>::pending() const
 {
-	return m_context.joinable();
+	return this->m_context.joinable();
 }
 template<typename Context>
 typename polling_executor<Context>::resume_result polling_executor<Context>::resume()
@@ -91,7 +91,7 @@ typename polling_executor<Context>::resume_result polling_executor<Context>::res
 	{
 		m_stopped = true;
 
-		const auto stopRes = m_context.stop();
+		const auto stopRes = this->m_context.stop();
 
 		if(stopRes)
 		{
@@ -229,8 +229,8 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 	{
 		m_stopped = false;
 		m_executor = i_executor;
-		
-		const auto startRes = m_context.start(ddk::make_function(this,&event_driven_executor<Context>::update));
+
+		const auto startRes = this->m_context.start(ddk::make_function(this,&event_driven_executor<Context>::update));
 
 		if(startRes)
 		{
@@ -238,18 +238,18 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 		}
 		else
 		{
-			return make_error<start_result>(StartNotAvailable,startRes.error().what());
+			return make_error<start_result>(StartErrorCode::StartNotAvailable,startRes.error().what());
 		}
 	}
 	else
 	{
-		return make_error<start_result>(StartNotExecutable);
+		return make_error<start_result>(StartErrorCode::StartNotExecutable);
 	}
 }
 template<typename Context>
 bool event_driven_executor<Context>::pending() const
 {
-	return m_context.joinable();
+	return this->m_context.joinable();
 }
 template<typename Context>
 typename event_driven_executor<Context>::resume_result event_driven_executor<Context>::resume()
@@ -264,7 +264,7 @@ typename event_driven_executor<Context>::resume_result event_driven_executor<Con
 
 		m_condVarMutex.unlock();
 
-		const auto stopRes = m_context.stop();
+		const auto stopRes = this->m_context.stop();
 
 		if(stopRes)
 		{
@@ -272,14 +272,14 @@ typename event_driven_executor<Context>::resume_result event_driven_executor<Con
 		}
 		else
 		{
-			return make_error<resume_result>(NotResumable,stopRes.error().what());
+			return make_error<resume_result>(ResumErrorCode::NotResumable,stopRes.error().what());
 		}
 	}
 	else
 	{
 		m_condVarMutex.unlock();
 
-		return NotRunning;
+        return make_error<resume_result>(ResumErrorCode::NotRunning);
 	}
 }
 template<typename Context>
@@ -341,7 +341,7 @@ typename fire_and_forget_executor<Context>::start_result fire_and_forget_executo
 {
 	m_executor = i_executor;
 
-	const auto startRes = m_context.start(ddk::make_function(this,&fire_and_forget_executor<Context>::update));
+	const auto startRes = this->m_context.start(ddk::make_function(this,&fire_and_forget_executor<Context>::update));
 
 	if(startRes)
 	{
@@ -349,18 +349,18 @@ typename fire_and_forget_executor<Context>::start_result fire_and_forget_executo
 	}
 	else
 	{
-		return make_error<start_result>(StartNotAvailable,startRes.error().what());
+		return make_error<start_result>(StartErrorCode::StartNotAvailable,startRes.error().what());
 	}
 }
 template<typename Context>
 bool fire_and_forget_executor<Context>::pending() const
 {
-	return m_context.joinable();
+	return this->m_context.joinable();
 }
 template<typename Context>
 typename fire_and_forget_executor<Context>::resume_result fire_and_forget_executor<Context>::resume()
 {
-	const auto stopRes = m_context.stop();
+	const auto stopRes = this->m_context.stop();
 
 	if(stopRes)
 	{
@@ -368,7 +368,7 @@ typename fire_and_forget_executor<Context>::resume_result fire_and_forget_execut
 	}
 	else
 	{
-		return make_error<resume_result>(NotResumable,stopRes.error().what());
+		return make_error<resume_result>(ResumErrorCode::NotResumable,stopRes.error().what());
 	}
 }
 template<typename Context>

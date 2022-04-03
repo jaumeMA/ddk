@@ -248,7 +248,7 @@ variant_impl<Types...>& variant_impl<Types...>::assign(TType&& val)
 	{
 		destroy();
 
-		constructor_visitor<data_type,Types...>::template construct<Index>(m_storage, std::forward<TType>(val));
+		constructor_visitor<data_type,Types...>::template construct<Index>(m_storage,std::forward<TType>(val));
 
 		m_currentType = static_cast<unsigned char>(Index);
 	}

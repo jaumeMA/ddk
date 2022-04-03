@@ -110,5 +110,4 @@ inline auto dimension(const T& i_container,...);
 }
 }
 
-#include "ddk_iterable_utils.inl"
-#include "ddk_iterable_algorithm.h"
+#include "ddk_algorithm.h"

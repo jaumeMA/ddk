@@ -8,6 +8,7 @@ namespace ddk
 class context_executor_interface : public executor_interface<void()>
 {
 public:
+    using typename executor_interface<void()>::sink_type;
 	typedef typename executor_interface<void()>::start_result start_result;
 
 	enum ResumErrorCode

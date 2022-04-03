@@ -29,6 +29,10 @@ public:
 	bool is_stopped() const;
 
 private:
+    typedef context_executor_interface::StartErrorCode StartErrorCode;
+    typedef context_executor_interface::ResumErrorCode ResumErrorCode;
+    typedef context_executor_interface::sink_type sink_type;
+
 	start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;
 	bool pending() const override;
 	resume_result resume() override;
@@ -60,6 +64,10 @@ public:
 	bool is_stopped() const;
 
 private:
+    typedef context_executor_interface::StartErrorCode StartErrorCode;
+    typedef context_executor_interface::ResumErrorCode ResumErrorCode;
+    typedef context_executor_interface::sink_type sink_type;
+
 	start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;
 	bool pending() const override;
 	resume_result resume() override;
@@ -90,6 +98,10 @@ public:
 	start_result start(const ddk::function<void()>& i_executor);
 
 private:
+    typedef context_executor_interface::StartErrorCode StartErrorCode;
+    typedef context_executor_interface::ResumErrorCode ResumErrorCode;
+    typedef context_executor_interface::sink_type sink_type;
+
 	start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;
 	bool pending() const override;
 	resume_result resume() override;

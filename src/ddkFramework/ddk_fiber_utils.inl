@@ -1,7 +1,5 @@
 
 #include "ddk_thread_yielder.h"
-#include "ddk_thread_impl.h"
-#include "ddk_reference_wrapper.h"
 #include "ddk_async_exceptions.h"
 
 namespace ddk

@@ -91,6 +91,16 @@ public:
 	inline ~typed_yielder_context() = default;
 };
 
+class yielder_interface
+{
+protected:
+	virtual ~yielder_interface() = default;
+
+public:
+	virtual void yield(yielder_context*) = 0;
+	virtual void suspend(yielder_context*) = 0;
+};
+
 }
 }
 

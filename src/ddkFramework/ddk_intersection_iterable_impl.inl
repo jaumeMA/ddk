@@ -1,4 +1,6 @@
 
+#include "ddk_await.h"
+
 namespace ddk
 {
 namespace detail

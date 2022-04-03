@@ -76,15 +76,23 @@ void segfault_sigaction_bridge(int i_code,siginfo_t* i_sigInfo,void* i_context)
 }
 void ddk::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
 {
-    detail::execution_context& currFiberContext = get_current_execution_context();
-    detail::execution_stack& currStack = currFiberContext.get_stack();
+	if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
+	{
+        detail::execution_stack& currStack = currFiberContext->get_stack();
 
-    if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
-    {
-        if(currAllocImpl->reallocate(currStack,i_sigInfo->si_addr))
+        if(stack_alloc_const_lent_ptr& currAllocImpl = currStack.get_allocator())
         {
-            //every time we receive an exception under a current fiber arena, reset stack limits
-            set_curr_thread_stack(&currStack);
+            if(currAllocImpl->reallocate(currStack,i_sigInfo->si_addr))
+            {
+                //every time we receive an exception under a current fiber arena, reset stack limits
+                set_curr_thread_stack(&currStack);
+            }
+            else
+            {
+                DDK_FAIL_OR_LOG("Segfault outside stack scope");
+
+                exit(0);
+            }
         }
         else
         {
@@ -92,13 +100,7 @@ void ddk::segfault_sigaction(int i_code,siginfo_t* i_sigInfo,void* i_context)
 
             exit(0);
         }
-    }
-    else
-    {
-        DDK_FAIL_OR_LOG("Segfault outside stack scope");
-
-        exit(0);
-    }
+	}
 }
 
 #endif
@@ -135,7 +137,7 @@ bool initialize_thread_stack()
 #endif
 
 #endif
-	
+
 	return true;
 }
 

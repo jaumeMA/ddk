@@ -130,19 +130,9 @@ void async_attachable_message_queue<MessageType>::lock(Reentrancy i_reentrancy)
 	m_exclArea.enterWriter(i_reentrancy);
 }
 template<typename MessageType>
-void async_attachable_message_queue<MessageType>::lock(Reentrancy i_reentrancy) const
-{
-	m_exclArea.enterReader(i_reentrancy);
-}
-template<typename MessageType>
 void async_attachable_message_queue<MessageType>::unlock()
 {
 	m_exclArea.leaveWriter();
-}
-template<typename MessageType>
-void async_attachable_message_queue<MessageType>::unlock() const
-{
-	m_exclArea.leaverReader();
 }
 
 }

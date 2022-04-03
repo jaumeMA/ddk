@@ -6,7 +6,6 @@
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
 #include "ddk_constrained_iterable_impl.h"
-#include "ddk_iterable_action_resolver.h"
 #include <array>
 
 namespace ddk
@@ -25,7 +24,7 @@ inline detail::iterable_order<T> order(const T& i_order);
 
 TEMPLATE(typename Iterable, typename ... Predicates)
 REQUIRES(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Predicates)...)
-inline std::array<decltype(deduce_iterable(std::declval<Iterable>())),mpl::num_types<Predicates...>+1> group_by(Iterable&& i_lhs, Predicates&& ... i_predicates);
+inline auto group_by(Iterable&& i_lhs, Predicates&& ... i_predicates);
 
 TEMPLATE(typename Iterable, typename Functor)
 REQUIRES(IS_BASE_OF_ITERABLE(Iterable),IS_CALLABLE(Functor))
@@ -38,5 +37,3 @@ inline auto take_n(Iterable&& i_rhs, size_t i_numItems);
 
 }
 }
-
-#include "ddk_view_utils.inl"
