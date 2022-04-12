@@ -1,5 +1,8 @@
 #pragma once
 
+#include "ddk_variant.h"
+#include <sstream>
+
 namespace ddk
 {
 namespace detail

@@ -111,7 +111,7 @@ std::string formatter<std::string>::format(const std::map<Key,Value>& i_val)
 	{
 		if(firstItem == false)
 		{
-			convert << ",";
+			convert << ";";
 		}
 
 		convert << format(keyValuePair);
@@ -258,7 +258,7 @@ std::map<Key,Value> formatter<std::map<Key,Value>>::format(std::string i_str)
 
 			do
 			{
-				const size_t separatorPos = i_str.find(",");
+				const size_t separatorPos = i_str.find(";");
 				const std::string particleStr = i_str.substr(0,separatorPos);
 
 				i_str = (separatorPos != std::string::npos) ? i_str.substr(separatorPos + 1) : "";
