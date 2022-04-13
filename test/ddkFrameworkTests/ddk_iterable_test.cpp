@@ -175,7 +175,7 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	auto deducedFooIterable = ddk::deduce_iterable(fooIterable);
 
 	ddk::thread myThread;
-	((ddk::make_function([](ddk::const_bidirectional_value<int> i_value) { printf("1 current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<= fooIterable) -> attach(std::move(myThread))).then(ddk::make_function([](const ddk::action_result&){}));
+	((ddk::make_function([](ddk::const_bidirectional_value<int> i_value) { printf("1 current value: %d at %zd\n",*i_value,value_position(i_value)); }) <<= fooIterable) -> attach(std::move(myThread))).then(ddk::make_function([](const ddk::iteration_result&){}));
 
 	//ddk::algo::swap swaper(ddk::make_function([](int i_value){ return i_value == 4; }),ddk::make_function([](int i_value){ return i_value == 76; }));
 
@@ -223,12 +223,39 @@ TEST(DDKIterableTest, iterableUnion)
 		printf("done\n");
 	}
 
-	ddk::make_function([](const A& i_value1,const A& i_value2){ printf("VALORS: %d, %d\n",*i_value1,*i_value2);}) <<= ddk::fusion(fooIterable1,fooIterable2);
+	ddk::iteration_result i_result = ddk::make_function([](const A& i_value1,const A& i_value2){ printf("VALORS: %d, %d\n",*i_value1,*i_value2);}) <<= ddk::fusion(fooIterable1,fooIterable2);
 
 	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("1 current value: %d at %zd\n",**i_value,value_position(i_value)); }) <<=  ddk::concat(fooIterable1,fooIterable2);
     ddk::const_random_access_iterable<A> fooIterableUnion2 = ddk::concat(fooIterable1,fooIterable2,fooIterable3);
-	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value) { printf("2 current value: %d\n",**i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= fooIterableUnion2,ddk::make_function([](ddk::action_result i_result) { if(i_result != ddk::success) printf("error: %d\n",i_result.error().get_nested_error<ddk::EraseActionError>().getValue()); });
-	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value){ printf("3 current value: %d\n",**i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= ddk::iter::transform([](const A& i_val1, const D& i_val2, const A& i_val3) { return i_val1; }) <<= ddk::fusion(ddk::concat(fooIterable1,fooIterable2),fooIterable2, ddk::concat(fooIterable1,fooIterable3)), ddk::make_function([](ddk::action_result i_result){ if(i_result != ddk::success) printf("error: %d\n", i_result.error().get_nested_error<ddk::EraseActionError>().getValue()); });
+	ddk::make_function([](ddk::const_bidirectional_value<const A> i_value) { printf("2 current value: %d\n",**i_value); }) <<= ddk::view::order(ddk::reverse_order) <<= fooIterableUnion2;
+	
+	enum class MyError
+	{
+		A = 100,
+		B = 200
+	};
+	
+	ddk::iteration_result iterRes = ddk::make_function([](ddk::const_bidirectional_value<const A> i_value)
+	{ 
+		ddk::stop_iteration(MyError::A,"fotli fort");
+		printf("3 current value: %d\n",**i_value); 
+	}) <<= ddk::view::order(ddk::reverse_order) <<= ddk::iter::transform([](const A& i_val1, const D& i_val2, const A& i_val3) { return i_val1; }) <<= ddk::fusion(ddk::concat(fooIterable1,fooIterable2),fooIterable2, ddk::concat(fooIterable1,fooIterable3));
+
+	if(iterRes != ddk::success)
+	{
+		const auto& iterError = iterRes.error();
+
+		if(iterError.get_error() == ddk::IterationError::Stop)
+		{
+			const ddk::stop_error& currError = iterError.get_nested_error<ddk::stop_error>();
+
+			const std::string whatStr = currError.what();
+			const MyError _code = currError.get_code<MyError>();
+
+			int a = 0;
+			++a;
+		}
+	}
 }
 
 std::vector<int> createLargeVector2(size_t size)

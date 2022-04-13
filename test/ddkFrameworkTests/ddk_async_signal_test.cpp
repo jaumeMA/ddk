@@ -50,15 +50,15 @@ TEST(DDKAsyncSignalTest,defaultConstruction)
 	typedef ddk::Id<size_t,size_t> myId;
 	ddk::async_signal<void(int,char,const std::string&)> tmp;
 
-	std::map<int,int> __kkkk;
-	__kkkk[0] = 10;
-	__kkkk[-21] = 321;
-	__kkkk[4] = 4;
-	__kkkk[75] = -67;
-	__kkkk[-768] = 100;
+	std::map<int,std::set<int>> __kkkk;
+	__kkkk[0] = {10,1,3};
+	__kkkk[-21] = {11,23,67};
+	__kkkk[4] = {90,1,78};
+	__kkkk[75] = {-12,33,-101};
+	__kkkk[-768] = {10,113,56,77};
 
 	const std::string __kkkStr = ddk::to_string(__kkkk);
-	const std::map<int,int> __kkkkk = ddk::format_to<std::map<int,int>>(__kkkStr);
+	const std::map<int,std::set<int>> __kkkkk = ddk::format_to<std::map<int,std::set<int>>>(__kkkStr);
 
 	std::set<int> __prova;
 	__prova.insert(0);
@@ -69,6 +69,12 @@ TEST(DDKAsyncSignalTest,defaultConstruction)
 
 	const std::string __provaStr = ddk::to_string(__prova);
 	const std::set<int> __fromStr = ddk::format_to<std::set<int>>(__provaStr);
+
+	unsigned char a = 0;
+	unsigned char b = 10;
+
+	const std::string res = ddk::to_string(a) + " " + ddk::to_string(b);
+
 
 	AsyncSignalCallee callee;
 
