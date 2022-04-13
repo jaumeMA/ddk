@@ -51,7 +51,7 @@ class iteration : protected mpl::static_if<std::is_reference<Sink>::value,detail
 public:
 	template<typename SSink>
 	iteration(Iterable& i_iterable, SSink&& i_try);
-	iteration(const iteration&);
+	iteration(const iteration&) = default;
 	iteration(iteration&&);
 	~iteration();
 
@@ -66,7 +66,7 @@ public:
 
 private:
 	Iterable m_iterable;
-	mutable bool m_received;
+	mutable atomic_bool m_executable;
 };
 
 template<typename Iterable, typename Sink>
@@ -80,7 +80,7 @@ class co_iteration : protected mpl::static_if<std::is_reference<Sink>::value,det
 public:
 	template<typename SSink>
 	co_iteration(Iterable& i_iterable, SSink&& i_try);
-    co_iteration(const co_iteration&);
+    co_iteration(const co_iteration&) = default;
     co_iteration(co_iteration&&);
     ~co_iteration();
 
@@ -95,7 +95,7 @@ public:
 
 private:
 	Iterable m_iterable;
-	mutable bool m_received;
+	mutable atomic_bool m_executable;
 };
 
 }

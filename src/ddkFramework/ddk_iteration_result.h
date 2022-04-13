@@ -6,18 +6,10 @@
 namespace ddk
 {
 
-SCOPED_ENUM_DECL(IterationInternalError,
-				Error);
-SCOPED_ENUM_DECL(IterationError,
-				Internal,
-				Stop);
-
-typedef error<IterationError,IterationInternalError,stop_error> iteration_error;
-
-struct iteration_result : public result<void,iteration_error>
+struct iteration_result : public result<void,stop_error>
 {
 public:
-	using result<void,iteration_error>::result;
+	using result<void,stop_error>::result;
 	iteration_result(const action_result& i_result);
 	~iteration_result();
 };

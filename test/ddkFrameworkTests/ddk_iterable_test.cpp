@@ -243,18 +243,10 @@ TEST(DDKIterableTest, iterableUnion)
 
 	if(iterRes != ddk::success)
 	{
-		const auto& iterError = iterRes.error();
+		const ddk::stop_error& currError = iterRes.error();
 
-		if(iterError.get_error() == ddk::IterationError::Stop)
-		{
-			const ddk::stop_error& currError = iterError.get_nested_error<ddk::stop_error>();
-
-			const std::string whatStr = currError.what();
-			const MyError _code = currError.get_code<MyError>();
-
-			int a = 0;
-			++a;
-		}
+		const std::string whatStr = currError.what();
+		const MyError _code = currError.get_code<MyError>();
 	}
 }
 
