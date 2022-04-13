@@ -32,6 +32,17 @@ void suspend()
         throw suspend_exception{ k_invalidFiberId };
     }
 }
+void suspend(int i_code,const std::string& i_reason)
+{
+    if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
+    {
+        throw suspend_exception{ currFiberContext->get_id(),i_code,i_reason };
+    }
+    else
+    {
+        throw suspend_exception{ k_invalidFiberId };
+    }
+}
 void yield()
 {
     if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())

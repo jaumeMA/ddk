@@ -62,7 +62,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::o
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Next error",pendingShift)));
 		}
 
 		return false;
@@ -94,7 +94,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operato
 		{
 			if(this->m_actionStatePtr)
 			{
-				this->m_actionStatePtr->forward_result(action_error(ActionError::RemovalError,EraseActionError::NonExistingValue));
+				this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::RemovalError,erase_error(EraseActionError::NonExistingValue)));
 			}
 		}
 	}
@@ -102,7 +102,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operato
     {
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::RemovalError,EraseActionError::ErasingFromConstantIterable));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::RemovalError,erase_error(EraseActionError::ErasingFromConstantIterable)));
 		}
     }
 
@@ -126,7 +126,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operato
 		{
 			if(this->m_actionStatePtr)
 			{
-				this->m_actionStatePtr->forward_result(action_error(ActionError::AdditionError,AddActionError::NonConvertibleType));
+				this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::AdditionError,add_error(AddActionError::NonConvertibleType)));
 			}
 		}
     }
@@ -134,7 +134,7 @@ bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operato
     {
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::AdditionError,AddActionError::AddingToConstantIterable));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::AdditionError,add_error(AddActionError::AddingToConstantIterable)));
 		}
     }
 
@@ -158,7 +158,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Ada
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Prev error",pendingShift)));
 		}
 
 		return false;
@@ -182,7 +182,7 @@ bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>:
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Prev error",pendingShift)));
 		}
 
 		return false;
@@ -207,7 +207,7 @@ bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Ada
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Shift error",pendingShift)));
 		}
 
 		return false;
@@ -232,7 +232,7 @@ bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>:
 	{
 		if(this->m_actionStatePtr)
 		{
-			this->m_actionStatePtr->forward_result(action_error(ActionError::ShiftError,ShiftActionError(pendingShift)));
+			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Shift error",pendingShift)));
 		}
 
 		return false;

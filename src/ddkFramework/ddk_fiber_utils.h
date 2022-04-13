@@ -23,6 +23,8 @@ fiber_id get_current_fiber_id();
 
 void suspend();
 
+void suspend(int i_code, const std::string& i_reason);
+
 void yield();
 
 template<typename T>

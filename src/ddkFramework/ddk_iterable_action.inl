@@ -1,6 +1,7 @@
 
 #include "ddk_variant.h"
 #include "ddk_scoped_enum.h"
+#include "ddk_error.h"
 #include "ddk_result.h"
 
 namespace ddk
@@ -9,20 +10,62 @@ namespace ddk
 SCOPED_ENUM_DECL(EraseActionError,
                  NonExistingValue,
                  ErasingFromConstantIterable);
-typedef ddk::result<void,EraseActionError> erase_result;
+typedef error<EraseActionError> erase_error;
+typedef result<void,erase_error> erase_result;
 
 SCOPED_ENUM_DECL(AddActionError,
                 NonConvertibleType,
                 AddingToConstantIterable,
                 AddedItemFiltered);
-typedef ddk::result<void,AddActionError> add_result;
+typedef error<AddActionError> add_error;
+typedef result<void,add_error> add_result;
+
+SCOPED_ENUM_DECL(ShiftError,
+                 Error);
+
+struct shift_error : public error<ShiftError>
+{
+public:
+    shift_error(const ShiftError& i_error, int i_pendingShift);
+    shift_error(const ShiftError& i_error, const std::string& i_errorDesc, long long int i_pendingShift);
+    shift_error(const shift_error&) = default;
+
+    shift_error& operator=(const shift_error&) = default;
+
+    long long int get_pending_shift() const;
+
+private:
+    long long int _pendingShift;
+};
+typedef result<void,shift_error> shift_result;
+
+SCOPED_ENUM_DECL(StopError,
+                 Error);
+
+struct stop_error : public error<StopError>
+{
+public:
+    stop_error(const StopError& i_error,int i_code);
+    stop_error(const StopError& i_error,const std::string& i_errorDesc,int i_code);
+    stop_error(const stop_error&) = default;
+
+    stop_error& operator=(const stop_error&) = default;
+
+    template<typename Enum>
+    inline Enum get_code() const
+    {
+        return static_cast<Enum>(_code);
+    }
+
+private:
+    int _code;
+};
 
 SCOPED_ENUM_DECL(ActionError,
                  RemovalError,
                  AdditionError,
-                 ShiftError);
-
-typedef result<void,ShiftActionError> shift_result;
+                 ShiftError,
+                 StopError);
 
 typedef variant<go_forward_action,erase_action,add_action> input_action;
 typedef variant<go_forward_action,erase_action,add_action> output_action;

@@ -28,13 +28,13 @@ mutable_iteration_sink<Sink>::mutable_iteration_sink(SSink&& i_try)
 }
 
 template<typename Iterable, typename Sink>
-action_result execute_co_iteration(co_iteration<Iterable,Sink> i_co_iteration)
+iteration_result execute_co_iteration(co_iteration<Iterable,Sink> i_co_iteration)
 {
     return i_co_iteration.m_iterable.co_iterate(i_co_iteration.m_try);
 }
 
 template<typename Iterable, typename Sink>
-action_result execute_iteration(iteration<Iterable,Sink> i_iteration)
+iteration_result execute_iteration(iteration<Iterable,Sink> i_iteration)
 {
 	return i_iteration.m_iterable.iterate(i_iteration.m_try);
 }
@@ -80,8 +80,13 @@ const iteration<Iterable,Sink>* iteration<Iterable,Sink>::operator->() const
 {
 	return this;
 }
+template<typename Iterable,typename Sink>
+iteration<Iterable,Sink>::operator iteration_result() &&
+{
+	return execute();
+}
 template<typename Iterable, typename Sink>
-action_result iteration<Iterable,Sink>::execute()
+iteration_result iteration<Iterable,Sink>::execute()
 {
 	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
@@ -100,17 +105,25 @@ action_result iteration<Iterable,Sink>::execute()
 
 		try
 		{
-			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place});
+			lendable<action_state> _actionState;
+
+			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place},ddk::lend(_actionState));
+		
+			return _actionState->get();
 		}
-		catch(const ddk::suspend_exception&)
+		catch(const ddk::suspend_exception& i_excp)
 		{
+			if(i_excp)
+			{
+				return ddk::make_error<iteration_result>(IterationError::Stop,stop_error(StopError::Error,i_excp.what(),i_excp.get_code()));
+			}
 		}
 
-		return {};
+		return success;
 	}
 }
 template<typename Iterable, typename Sink>
-action_result iteration<Iterable,Sink>::execute() const
+iteration_result iteration<Iterable,Sink>::execute() const
 {
 	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
@@ -129,25 +142,35 @@ action_result iteration<Iterable,Sink>::execute() const
 
 		try
 		{
-			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place});
-		}
-		catch(const ddk::suspend_exception&)
-		{
-		}
+			lendable<action_state> _actionState;
 
-		return {};
+			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place},ddk::lend(_actionState));
+
+			return _actionState->get();
+		}
+		catch(const ddk::suspend_exception& i_excp)
+		{
+			if(i_excp)
+			{
+				return ddk::make_error<iteration_result>(IterationError::Stop,stop_error(StopError::Error,i_excp.what(),i_excp.get_code()));
+			}
+			else
+			{
+				return success;
+			}
+		}
 	}
 }
 template<typename Iterable, typename Sink>
 template<typename T>
-future<action_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
+future<iteration_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
 {
-	shared_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
+	shared_reference_wrapper<async_executor<iteration_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
 
 	return res->attach(std::forward<T>(i_execContext));
 }
 template<typename Iterable, typename Sink>
-future<action_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
+future<iteration_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
 {
 	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
 }
@@ -193,8 +216,13 @@ const co_iteration<Iterable,Sink>* co_iteration<Iterable,Sink>::operator->() con
 {
     return this;
 }
+template<typename Iterable,typename Sink>
+co_iteration<Iterable,Sink>::operator iteration_result() &&
+{
+	return execute();
+}
 template<typename Iterable, typename Sink>
-action_result co_iteration<Iterable,Sink>::execute()
+iteration_result co_iteration<Iterable,Sink>::execute()
 {
 	if(m_iterable != nullptr)
     {
@@ -206,7 +234,7 @@ action_result co_iteration<Iterable,Sink>::execute()
 	}
 }
 template<typename Iterable, typename Sink>
-action_result co_iteration<Iterable,Sink>::execute() const
+iteration_result co_iteration<Iterable,Sink>::execute() const
 {
     if(m_iterable != nullptr)
     {
@@ -219,14 +247,14 @@ action_result co_iteration<Iterable,Sink>::execute() const
 }
 template<typename Iterable, typename Sink>
 template<typename T>
-future<action_result> co_iteration<Iterable,Sink>::attach(T&& i_execContext)
+future<iteration_result> co_iteration<Iterable,Sink>::attach(T&& i_execContext)
 {
-	distributed_reference_wrapper<async_executor<action_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
+	distributed_reference_wrapper<async_executor<iteration_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
 
     return res->attach(std::forward<T>(i_execContext));
 }
 template<typename Iterable, typename Sink>
-future<action_result> co_iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
+future<iteration_result> co_iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
 {
 	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
 }

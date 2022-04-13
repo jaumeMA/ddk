@@ -43,9 +43,9 @@ error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode, NestedEr
 , m_nestedErrors(i_nestedError)
 {
 }
-template<typename Error, typename ... NestedErrors>
+template<typename Error,typename ... NestedErrors>
 template<typename NestedError>
-error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode, const std::string& i_errorDesc, NestedError&& i_nestedError)
+error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode,const std::string& i_errorDesc,NestedError&& i_nestedError)
 : error_impl<Error>(i_errorCode,i_errorDesc)
 , m_nestedErrors(i_nestedError)
 {

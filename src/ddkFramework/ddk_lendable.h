@@ -22,9 +22,7 @@ class lendable
     typedef typename std::add_pointer<const_value_type>::type const_pointer_type;
 
 public:
-	lendable()
-	{
-	}
+	lendable() = default;
 	template<typename ... Args>
 	lendable(Args&& ... i_args)
 	: m_value(T(std::forward<Args>(i_args) ...))

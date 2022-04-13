@@ -62,9 +62,9 @@ public:
 	error_impl& operator=(const error_impl&) = default;
     template<typename NestedError>
     error_impl(const Error& i_errorCode, NestedError&& i_nestedError);
-    template<typename NestedError>
-    error_impl(const Error& i_errorCode, const std::string& i_errorDesc, NestedError&& i_nestedError);
-    template<typename NestedError>
+	template<typename NestedError>
+	error_impl(const Error& i_errorCode,const std::string& i_errorDesc,NestedError&& i_nestedError);
+	template<typename NestedError>
     const NestedError& get_nested_error() const;
     template<typename Visitor>
     typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& i_visitor) const;

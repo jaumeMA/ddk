@@ -70,7 +70,7 @@ std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs.
     return std::make_pair(iterable_state::npos,go_no_place);
 }
 template<size_t ... Indexs,typename ... Iterables>
-std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::operator()(const ShiftActionError& i_action) const
+std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::operator()(const shift_error& i_action) const
 {
     const auto pendingShift = i_action.get_pending_shift();
 
@@ -139,10 +139,17 @@ void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs.
 
         union_iterable_visitor<Iterables...> unionVisitor(iterableIndex,m_iterables);
 
-        const std::pair<size_t,shift_action> currIndexes = i_actionStatePtr->visit(unionVisitor);
+        try
+        {
+            const std::pair<size_t,shift_action> currIndexes = i_actionStatePtr->visit(unionVisitor);
 
-        iterableIndex = currIndexes.first;
-		initialAction = currIndexes.second;
+            iterableIndex = currIndexes.first;
+		    initialAction = currIndexes.second;
+        }
+        catch(const iteration_exception&)
+        {
+            break;
+        }
     }
 
     suspend();
@@ -164,10 +171,17 @@ void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs.
 
         union_iterable_visitor<Iterables...> unionVisitor(iterableIndex,m_iterables);
 
-        const std::pair<size_t,shift_action> currIndexes = i_actionStatePtr->visit(unionVisitor);
+        try
+        {
+            const std::pair<size_t,shift_action> currIndexes = i_actionStatePtr->visit(unionVisitor);
 
-        iterableIndex = currIndexes.first;
-		initialAction = currIndexes.second;
+            iterableIndex = currIndexes.first;
+		    initialAction = currIndexes.second;
+        }
+        catch(const iteration_exception&)
+        {
+            break;
+        }
     }
 
     suspend();

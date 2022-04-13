@@ -3,6 +3,7 @@
 #include "ddk_future.h"
 #include "ddk_container_concepts.h"
 #include "ddk_concepts.h"
+#include "ddk_iteration_result.h"
 
 namespace ddk
 {
@@ -68,7 +69,7 @@ template<typename Sink,typename ValueType>
 using iterable_dumper_type = decltype(iterable_dumper_resolver(std::declval<Sink&>(),std::declval<ValueType>()));
 
 template<typename Sink,typename Traits>
-inline future<ddk::action_result> iterable_transformation_dump(Sink& i_sink, const ddk::detail::iterable<Traits>& i_transformedIterable);
+inline future<iteration_result> iterable_transformation_dump(Sink& i_sink, const ddk::detail::iterable<Traits>& i_transformedIterable);
 
 }
 }

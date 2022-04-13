@@ -47,8 +47,12 @@ action_result iterable<Traits>::iterate(Function&& i_try, const shift_action& i_
 			return m_currAction;
 		}),i_initialAction,lend(m_actionState));
 	}
-	catch(const suspend_exception&)
+	catch(const suspend_exception& i_excp)
 	{
+		if(i_excp)
+		{
+			m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
+		}
 	}
 
 	return m_actionState->get();
@@ -71,8 +75,12 @@ action_result iterable<Traits>::iterate(Function&& i_try, const shift_action& i_
 			return m_currAction;
 		}),i_initialAction,lend(m_actionState));
 	}
-	catch(const suspend_exception&)
+	catch(const suspend_exception& i_excp)
 	{
+		if(i_excp)
+		{
+			m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
+		}
 	}
 
 	return m_actionState->get();
@@ -96,9 +104,14 @@ action_result iterable<Traits>::co_iterate(Function&& i_try, const shift_action&
 
                 eval(std::forward<Function>(i_try),make_iterable_value<iterable_value>(*m_iterableValueContainer.template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action),static_cast<iterable_interface&>(*this)));
             }
-            catch(const suspend_exception&)
+            catch(const suspend_exception& i_excp)
             {
-                break;
+				if(i_excp)
+				{
+					m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
+				}
+				
+				break;
             }
         }
         else
@@ -130,9 +143,14 @@ action_result iterable<Traits>::co_iterate(Function&& i_try, const shift_action&
 
                 eval(std::forward<Function>(i_try),make_iterable_value<iterable_const_value>(*m_iterableValueContainer.template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action),const_cast<iterable_interface&>(static_cast<const iterable_interface&>(*this))));
             }
-            catch(const suspend_exception&)
+            catch(const suspend_exception& i_excp)
             {
-                break;
+				if(i_excp)
+				{
+					m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
+				}
+				
+				break;
             }
         }
         else
@@ -176,14 +194,14 @@ action_state_const_lent_ref iterable<Traits>::get_action_state() const
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
 {
-	action_result actionResult = m_actionState->get();
-
-	if(actionResult == success)
+	if(const action_result actionResult = m_actionState->get())
 	{
-		if(actionResult.is_base_of<shift_action>())
+		const random_access_action& resolvedAction = actionResult.get();
+
+		if(resolvedAction.is_base_of<shift_action>())
 		{
 			//in case of shift action consolidate it against result
-			const shift_action& currReturnedAction = actionResult.get_as<shift_action>();
+			const shift_action& currReturnedAction = resolvedAction.get_as<shift_action>();
 			const consolidate_visitor consolidateVisitor(currReturnedAction);
 
 			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
@@ -208,14 +226,14 @@ typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_
 template<typename Traits>
 typename iterable<Traits>::action iterable<Traits>::private_iterate(const_reference i_value) const
 {
-	const action_result actionResult = m_actionState->get();
-
-	if(actionResult == success)
+	if(const action_result actionResult = m_actionState->get())
 	{
-		if(actionResult.is_base_of<shift_action>())
+		const random_access_action& resolvedAction = actionResult.get();
+
+		if(resolvedAction.is_base_of<shift_action>())
 		{
 			//in case of shift action consolidate it against result
-			const shift_action& currReturnedAction = actionResult.get_as<shift_action>();
+			const shift_action& currReturnedAction = resolvedAction.get_as<shift_action>();
 			const consolidate_visitor consolidateVisitor(currReturnedAction);
 
 			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))

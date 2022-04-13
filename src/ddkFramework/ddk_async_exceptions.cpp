@@ -7,13 +7,27 @@ suspend_exception::suspend_exception(fiber_id i_id)
 : m_id(i_id)
 {
 }
-const char* suspend_exception::what() const noexcept
+suspend_exception::suspend_exception(fiber_id i_id, int i_code, const std::string& i_reason)
+: m_id(i_id)
+, m_code(i_code)
+, m_reason(i_reason)
 {
-	return ("Fiber " + ddk::formatter<std::string>::format(m_id) + "suspended").c_str();
 }
 fiber_id suspend_exception::get_id() const
 {
 	return m_id;
+}
+int suspend_exception::get_code() const
+{
+	return m_code;
+}
+const char* suspend_exception::what() const noexcept
+{
+	return m_reason.c_str();
+}
+suspend_exception::operator bool() const
+{
+	return m_code != s_valid_code;
 }
 
 async_error::async_error(AsyncExceptionCode i_code,const std::string& i_reason)

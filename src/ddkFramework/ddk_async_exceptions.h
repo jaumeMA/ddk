@@ -9,14 +9,21 @@ namespace ddk
 
 struct suspend_exception : public std::exception
 {
+	const int s_valid_code = 0xFFFF;
+
 public:
 	suspend_exception(fiber_id i_id);
+	suspend_exception(fiber_id i_id, int i_code, const std::string& i_reason);
 
-	const char* what() const noexcept;
 	fiber_id get_id() const;
+	int get_code() const;
+	const char* what() const noexcept;
+	operator bool() const;
 
 private:
 	fiber_id m_id;
+	const int m_code = s_valid_code;
+	const std::string m_reason;
 };
 
 struct cancel_exception : public std::exception

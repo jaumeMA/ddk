@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddk_any_value.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 #include <stddef.h>
 namespace ddk
 {
@@ -9,9 +11,11 @@ struct base_action
 {
 };
 
-struct stop_action: base_action
+struct stop_action : base_action
 {
     void operator()() const;
+    template<typename T>
+    void operator()(const T& i_code, const std::string& i_reason = "") const;
 };
 
 struct erase_action: base_action
@@ -107,3 +111,5 @@ struct go_backward_action: public shift_action
 };
 
 }
+
+#include "ddk_iterable_action_defs.inl"

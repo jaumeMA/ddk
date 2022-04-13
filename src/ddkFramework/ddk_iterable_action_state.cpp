@@ -3,35 +3,24 @@
 namespace ddk
 {
 
-const action_result::nested_result& action_result::get() const
+action_result::~action_result()
 {
-	return m_result;
-}
-const action_error& action_result::error() const
-{
-	return m_result.get<0>();
+	//in this case its not mandatory to check result
+	dismiss();
 }
 bool action_result::operator==(const result_success_t&) const
 {
-	return m_result.is<action_error>() == false;
+	return operator bool();
 }
 bool action_result::operator!=(const result_success_t&) const
 {
-	return m_result.is<action_error>();
-}
-bool action_result::operator==(const action_error& i_error) const
-{
-	return m_result.is<action_error>();
-}
-bool action_result::operator!=(const action_error& i_error) const
-{
-	return m_result.is<action_error>() == false;
-}
-action_result::operator bool() const
-{
-	return m_result.is<action_error>() == false;
+	return operator bool() == false;
 }
 
+action_state::action_state()
+: m_actionResult(go_no_place)
+{
+}
 action_result action_state::get() const
 {
 	return m_actionResult;
@@ -43,14 +32,6 @@ bool action_state::operator==(result_success_t) const
 bool action_state::operator!=(result_success_t) const
 {
 	return m_actionResult != success;
-}
-bool action_state::operator==(const action_error& i_error) const
-{
-	return m_actionResult == i_error;
-}
-bool action_state::operator!=(const action_error& i_error) const
-{
-	return m_actionResult != i_error;
 }
 
 }
