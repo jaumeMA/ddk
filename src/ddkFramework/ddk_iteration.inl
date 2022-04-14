@@ -30,13 +30,26 @@ mutable_iteration_sink<Sink>::mutable_iteration_sink(SSink&& i_try)
 template<typename Iterable, typename Sink>
 iteration_result execute_co_iteration(co_iteration<Iterable,Sink> i_co_iteration)
 {
-    return i_co_iteration.m_iterable.co_iterate(i_co_iteration.m_try);
+	if(ddk::atomic_compare_exchange(i_co_iteration.m_executable,true,false))
+	{        return i_co_iteration._execute();
+    }
+    else
+    {
+		throw iteration_exception{ "Exeuting empty iteration" };
+    }
 }
 
 template<typename Iterable, typename Sink>
 iteration_result execute_iteration(iteration<Iterable,Sink> i_iteration)
 {
-	return i_iteration.m_iterable.iterate(i_iteration.m_try);
+	if(ddk::atomic_compare_exchange(i_iteration.m_executable,true,false))
+	{
+        return i_iteration._execute();
+	}
+    else
+    {
+		throw iteration_exception{ "Exeuting empty iteration" };
+    }
 }
 
 template<typename Iterable, typename Sink>
@@ -51,24 +64,24 @@ template<typename Iterable,typename Sink>
 iteration<Iterable,Sink>::iteration(const iteration& other)
 : sink_type(other)
 , m_iterable(other.m_iterable)
-, m_executable(false)
+, m_executable(true)
 {
-	std::swap(m_executable,other.m_executable);
+	other.m_executable = false;
 }
 template<typename Iterable, typename Sink>
 iteration<Iterable,Sink>::iteration(iteration&& other)
 : sink_type(std::move(other))
 , m_iterable(std::move(other.m_iterable))
-, m_executable(false)
+, m_executable(true)
 {
-	std::swap(m_executable,other.m_executable);
+	other.m_executable = false;
 }
 template<typename Iterable, typename Sink>
 iteration<Iterable,Sink>::~iteration()
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		execute();
+		_execute();
 	}
 }
 template<typename Iterable, typename Sink>
@@ -86,7 +99,7 @@ iteration<Iterable,Sink>::operator iteration_result() &&
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		return execute();
+		return _execute();
 	}
 	else
 	{
@@ -96,7 +109,43 @@ iteration<Iterable,Sink>::operator iteration_result() &&
 template<typename Iterable, typename Sink>
 iteration_result iteration<Iterable,Sink>::execute()
 {
-	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
+	if(ddk::atomic_compare_exchange(m_executable,true,false))
+	{
+		return _execute();
+	}
+	else
+	{
+		throw iteration_exception{ "Exeuting empty iteration" };
+	}
+}
+template<typename Iterable, typename Sink>
+iteration_result iteration<Iterable,Sink>::execute() const
+{
+	if(ddk::atomic_compare_exchange(m_executable,true,false))
+	{
+		return _execute();
+	}
+	else
+	{
+		throw iteration_exception{ "Exeuting empty iteration" };
+	}
+}
+template<typename Iterable, typename Sink>
+template<typename T>
+future<iteration_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
+{
+	shared_reference_wrapper<async_executor<iteration_result>> res = make_async_executor(make_function(&ddk::execute_iteration<Iterable,Sink>,*this));
+
+	return res->attach(std::forward<T>(i_execContext));
+}
+template<typename Iterable, typename Sink>
+future<iteration_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
+{
+	return make_async_executor(make_function(&ddk::execute_iteration<Iterable,Sink>,*this));
+}
+template<typename Iterable, typename Sink>
+iteration_result iteration<Iterable,Sink>::_execute()
+{	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
 		return m_iterable.iterate(this->m_try);
 	}
@@ -109,7 +158,7 @@ iteration_result iteration<Iterable,Sink>::execute()
 			lendable<action_state> _actionState;
 
 			ddk::visit_iterator(m_iterable,ddk::forwarding_iterable_value_callable<Sink,action>{this->m_try},action{go_no_place},ddk::lend(_actionState));
-		
+
 			return _actionState->get();
 		}
 		catch(const ddk::suspend_exception& i_excp)
@@ -124,7 +173,7 @@ iteration_result iteration<Iterable,Sink>::execute()
 	}
 }
 template<typename Iterable, typename Sink>
-iteration_result iteration<Iterable,Sink>::execute() const
+iteration_result iteration<Iterable,Sink>::_execute() const
 {
 	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
@@ -155,19 +204,6 @@ iteration_result iteration<Iterable,Sink>::execute() const
 		}
 	}
 }
-template<typename Iterable, typename Sink>
-template<typename T>
-future<iteration_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
-{
-	shared_reference_wrapper<async_executor<iteration_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
-
-	return res->attach(std::forward<T>(i_execContext));
-}
-template<typename Iterable, typename Sink>
-future<iteration_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
-{
-	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
-}
 
 template<typename Iterable, typename Sink>
 template<typename SSink>
@@ -181,24 +217,24 @@ template<typename Iterable,typename Sink>
 co_iteration<Iterable,Sink>::co_iteration(const co_iteration& other)
 : sink_type(other)
 , m_iterable(other.m_iterable)
-, m_executable(false)
+, m_executable(true)
 {
-	std::swap(m_executable,other.m_executable);
+	other.m_executable = false;
 }
 template<typename Iterable, typename Sink>
 co_iteration<Iterable,Sink>::co_iteration(co_iteration&& other)
 : sink_type(std::move(other))
 , m_iterable(std::move(other.m_iterable))
-, m_executable(false)
+, m_executable(true)
 {
-	std::swap(m_executable,other.m_executable);
+	other.m_executable = false;
 }
 template<typename Iterable, typename Sink>
 co_iteration<Iterable,Sink>::~co_iteration()
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-        execute();
+        _execute();
     }
 }
 template<typename Iterable, typename Sink>
@@ -216,18 +252,36 @@ co_iteration<Iterable,Sink>::operator iteration_result() &&
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		return execute();
+		return _execute();
+	}
+	else
+	{
+		throw iteration_exception{ "Exeuting empty iteration" };
 	}
 }
 template<typename Iterable, typename Sink>
 iteration_result co_iteration<Iterable,Sink>::execute()
 {
-	return m_iterable.co_iterate(this->m_try);
+	if(ddk::atomic_compare_exchange(m_executable,true,false))
+	{
+		return _execute();
+	}
+	else
+	{
+		throw iteration_exception{ "Exeuting empty iteration" };
+	}
 }
 template<typename Iterable, typename Sink>
 iteration_result co_iteration<Iterable,Sink>::execute() const
 {
-	return m_iterable.co_iterate(this->m_try);
+	if(ddk::atomic_compare_exchange(m_executable,true,false))
+	{
+		return _execute();
+	}
+	else
+	{
+		throw iteration_exception{ "Exeuting empty iteration" };
+	}
 }
 template<typename Iterable, typename Sink>
 template<typename T>
@@ -241,6 +295,15 @@ template<typename Iterable, typename Sink>
 future<iteration_result> co_iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
 {
 	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
+}
+template<typename Iterable, typename Sink>
+iteration_result co_iteration<Iterable,Sink>::_execute()
+{	return m_iterable.co_iterate(this->m_try);
+}
+template<typename Iterable, typename Sink>
+iteration_result co_iteration<Iterable,Sink>::_execute() const
+{
+	return m_iterable.co_iterate(this->m_try);
 }
 
 }

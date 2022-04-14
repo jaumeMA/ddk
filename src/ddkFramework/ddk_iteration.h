@@ -65,6 +65,9 @@ public:
 	future<iteration_result> attach(const detail::this_thread_t&);
 
 private:
+	iteration_result _execute();
+	iteration_result _execute() const;
+
 	Iterable m_iterable;
 	mutable atomic_bool m_executable;
 };
@@ -94,6 +97,9 @@ public:
 	future<iteration_result> attach(const detail::this_thread_t&);
 
 private:
+	iteration_result _execute();
+	iteration_result _execute() const;
+
 	Iterable m_iterable;
 	mutable atomic_bool m_executable;
 };
