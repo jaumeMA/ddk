@@ -1,6 +1,8 @@
 
-#include "ddk_thread_yielder.h"
+#include "ddk_yielder_interface.h"
+#include "ddk_typed_yielder_context.h"
 #include "ddk_async_exceptions.h"
+#include <thread>
 
 namespace ddk
 {

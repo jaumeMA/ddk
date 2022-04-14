@@ -5,7 +5,6 @@
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_fiber_local.h"
 #include "ddk_stack_allocator.h"
-#include "ddk_thread_yielder.h"
 #include "ddk_fiber_scheduler_interface.h"
 #include "ddk_execution_context.h"
 #include "ddk_error.h"

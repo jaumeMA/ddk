@@ -1,7 +1,3 @@
-#pragma once
-
-#include "ddk_fiber_utils.h"
-
 
 namespace ddk
 {
@@ -81,3 +77,4 @@ void typed_yielder_context<T>::extract_value(Sink&& i_sink) &&
 
 }
 }
+

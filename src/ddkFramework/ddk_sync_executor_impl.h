@@ -2,7 +2,6 @@
 
 #include "ddk_executor_interface.h"
 #include "ddk_sync_executor_context.h"
-#include "ddk_fiber_yielder.h"
 
 namespace ddk
 {

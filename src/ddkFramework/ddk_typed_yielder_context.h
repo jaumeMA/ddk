@@ -1,54 +1,14 @@
 #pragma once
 
-#include "ddk_arena.h"
-#include "ddk_lent_reference_wrapper.h"
-#include "ddk_lend_from_this.h"
-#include "ddk_embedded_type.h"
-#include "ddk_fiber_defs.h"
-#include "ddk_async_exceptions.h"
+#include "ddk_yielder_context.h"
 #include "ddk_variant.h"
+#include "ddk_embedded_type.h"
+#include "ddk_async_exceptions.h"
 
 namespace ddk
 {
 namespace detail
 {
-
-struct yielder_context
-{
-	enum State
-	{
-		Running,
-		Paused,
-		Stopped
-	};
-
-	yielder_context(fiber_id i_id, State i_state = Running);
-	virtual ~yielder_context() = default;
-
-	inline void stop(fiber_id i_id)
-	{
-		m_state = std::make_pair(i_id,Stopped);
-	}
-	inline bool is_stopped(fiber_id i_id) const
-	{
-		return m_state.first == i_id && m_state.second == Stopped;
-	}
-	inline void pause(fiber_id i_id)
-	{
-		m_state = std::make_pair(i_id,Paused);
-	}
-	inline bool is_paused(fiber_id i_id) const
-	{
-		return m_state.first == i_id && m_state.second == Paused;
-	}
-	inline bool is_running(fiber_id i_id) const
-	{
-		return m_state.first == i_id && m_state.second == Running;
-	}
-
-private:
-	std::pair<fiber_id,State> m_state;
-};
 
 template<typename T>
 struct typed_yielder_context : yielder_context
@@ -91,17 +51,7 @@ public:
 	inline ~typed_yielder_context() = default;
 };
 
-class yielder_interface
-{
-protected:
-	virtual ~yielder_interface() = default;
-
-public:
-	virtual void yield(yielder_context*) = 0;
-	virtual void suspend(yielder_context*) = 0;
-};
-
 }
 }
 
-#include "ddk_thread_yielder.inl"
+#include "ddk_typed_yielder_context.inl"

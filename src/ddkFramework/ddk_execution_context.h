@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_fiber_defs.h"
-#include "ddk_fiber_yielder.h"
+#include "ddk_yielder_interface.h"
 #include "ddk_execution_stack.h"
 #include "ddk_ucontext.h"
 

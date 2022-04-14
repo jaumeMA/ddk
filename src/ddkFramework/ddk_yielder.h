@@ -1,12 +1,12 @@
 #pragma once
 
+#include "ddk_yielder_interface.h"
+#include "ddk_yielder_context.h"
+
 namespace ddk
 {
 namespace detail
 {
-
-struct yielder_context;
-class yielder_interface;
 
 struct yielder
 {

@@ -7,7 +7,7 @@
 #include "ddk_fiber_scheduler_interface.h"
 #include "ddk_fiber_impl.h"
 #include "ddk_fiber.h"
-#include "ddk_fiber_yielder.h"
+#include "ddk_yielder_interface.h"
 #include "ddk_thread.h"
 #include "ddk_lend_from_this.h"
 #include <unordered_map>
