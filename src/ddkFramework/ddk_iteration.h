@@ -51,8 +51,8 @@ class iteration : protected mpl::static_if<std::is_reference<Sink>::value,detail
 public:
 	template<typename SSink>
 	iteration(Iterable& i_iterable, SSink&& i_try);
-	iteration(const iteration&) = default;
-	iteration(iteration&&);
+	iteration(const iteration& other);
+	iteration(iteration&& other);
 	~iteration();
 
 	iteration* operator->();
@@ -80,7 +80,7 @@ class co_iteration : protected mpl::static_if<std::is_reference<Sink>::value,det
 public:
 	template<typename SSink>
 	co_iteration(Iterable& i_iterable, SSink&& i_try);
-    co_iteration(const co_iteration&) = default;
+    co_iteration(const co_iteration& other);
     co_iteration(co_iteration&&);
     ~co_iteration();
 

@@ -47,6 +47,14 @@ iteration<Iterable,Sink>::iteration(Iterable& i_iterable, SSink&& i_try)
 , m_executable(true)
 {
 }
+template<typename Iterable,typename Sink>
+iteration<Iterable,Sink>::iteration(const iteration& other)
+: sink_type(other)
+, m_iterable(other.m_iterable)
+, m_executable(false)
+{
+	std::swap(m_executable,other.m_executable);
+}
 template<typename Iterable, typename Sink>
 iteration<Iterable,Sink>::iteration(iteration&& other)
 : sink_type(std::move(other))
@@ -168,6 +176,14 @@ co_iteration<Iterable,Sink>::co_iteration(Iterable& i_iterable, SSink&& i_try)
 , m_iterable(i_iterable)
 , m_executable(true)
 {
+}
+template<typename Iterable,typename Sink>
+co_iteration<Iterable,Sink>::co_iteration(const co_iteration& other)
+: sink_type(other)
+, m_iterable(other.m_iterable)
+, m_executable(false)
+{
+	std::swap(m_executable,other.m_executable);
 }
 template<typename Iterable, typename Sink>
 co_iteration<Iterable,Sink>::co_iteration(co_iteration&& other)
