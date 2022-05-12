@@ -151,8 +151,6 @@ void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs.
             break;
         }
     }
-
-    suspend();
 }
 template<typename ... Iterables>
 template<size_t ... Indexs>
@@ -183,8 +181,6 @@ void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs.
             break;
         }
     }
-
-    suspend();
 }
 
 }
