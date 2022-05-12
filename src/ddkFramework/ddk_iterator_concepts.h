@@ -1,30 +1,52 @@
 #pragma once
 
+#define HAS_ITERATOR_DEFINED_COND(_TYPE) \
+    ddk::concepts::has_iterator_defined_v<_TYPE>
+
 #define HAS_ITERATOR_DEFINED(_TYPE) \
-    typename std::enable_if<ddk::concepts::has_iterator_defined_v<_TYPE>>::type
+    typename std::enable_if<HAS_ITERATOR_DEFINED_COND(_TYPE)>::type
+
+#define IS_FORWARD_ITERATOR_COND(_TYPE) \
+    ddk::concepts::is_forward_iterator_v<_TYPE>
 
 #define IS_FORWARD_ITERATOR(_TYPE) \
-    typename std::enable_if<ddk::concepts::is_forward_iterator_v<_TYPE>>::type
+    typename std::enable_if<IS_FORWARD_ITERATOR_COND(_TYPE)>::type
+
+#define IS_BACKWARD_ITERATOR_COND(_TYPE) \
+    ddk::concepts::is_backward_iterator_v<_TYPE>
+
+#define IS_BACKWARD_ITERATOR(_TYPE) \
+    typename std::enable_if<IS_BACKWARD_ITERATOR_COND(_TYPE)>::type
+
+#define IS_BIDIRECTIONAL_ITERATOR_COND(_TYPE) \
+    (IS_FORWARD_ITERATOR_COND(_TYPE) && IS_BACKWARD_ITERATOR_COND(_TYPE))
 
 #define IS_BIDIRECTIONAL_ITERATOR(_TYPE) \
-    IS_FORWARD_ITERATOR(_TYPE),typename std::enable_if<ddk::concepts::is_backward_iterator_v<_TYPE>>::type
+    typename std::enable_if<IS_BIDIRECTIONAL_ITERATOR_COND(_TYPE)>::type
+
+#define IS_RANDOM_ACCESS_ITERATOR_COND(_TYPE) \
+    (IS_BIDIRECTIONAL_ITERATOR_COND(_TYPE) && ddk::concepts::is_random_access_iterator_v<_TYPE>)
 
 #define IS_RANDOM_ACCESS_ITERATOR(_TYPE) \
-    IS_BIDIRECTIONAL_ITERATOR(_TYPE),typename std::enable_if<ddk::concepts::is_backward_iterator_v<_TYPE>>::type
+    typename std::enable_if<IS_RANDOM_ACCESS_ITERATOR_COND(_TYPE)>::type
+
+#define IS_EXCLUSIVE_FORWARD_ITERATOR_COND(_TYPE) \
+    (IS_FORWARD_ITERATOR_COND(_TYPE) && (IS_BACKWARD_ITERATOR_COND(_TYPE) == false))
 
 #define IS_EXCLUSIVE_FORWARD_ITERATOR(_TYPE) \
-    typename std::enable_if<ddk::concepts::is_forward_iterator_v<_TYPE>>::type, \
-    typename std::enable_if<ddk::concepts::is_backward_iterator_v<_TYPE> == false>::type
+    typename std::enable_if<IS_EXCLUSIVE_FORWARD_ITERATOR_COND(_TYPE)>::type
+
+#define IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR_COND(_TYPE) \
+    (IS_FORWARD_ITERATOR_COND(_TYPE) && IS_BACKWARD_ITERATOR_COND(_TYPE) && (IS_RANDOM_ACCESS_ITERATOR_COND(_TYPE) == false))
 
 #define IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR(_TYPE) \
-    typename std::enable_if<ddk::concepts::is_forward_iterator_v<_TYPE>>::type, \
-    typename std::enable_if<ddk::concepts::is_backward_iterator_v<_TYPE>>::type, \
-    typename std::enable_if<ddk::concepts::is_random_access_iterator_v<_TYPE> == false>::type
+    typename std::enable_if<IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR_COND(_TYPE)>::type
+
+#define IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR_COND(_TYPE) \
+    (IS_FORWARD_ITERATOR_COND(_TYPE) && IS_BACKWARD_ITERATOR_COND(_TYPE) && IS_RANDOM_ACCESS_ITERATOR_COND(_TYPE))
 
 #define IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR(_TYPE) \
-    typename std::enable_if<ddk::concepts::is_forward_iterator_v<_TYPE>>::type, \
-    typename std::enable_if<ddk::concepts::is_backward_iterator_v<_TYPE>>::type, \
-    typename std::enable_if<ddk::concepts::is_random_access_iterator_v<_TYPE>>::type
+    typename std::enable_if<IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR_COND(_TYPE)>::type
 
 namespace ddk
 {

@@ -23,9 +23,9 @@ fiber_id get_current_fiber_id()
 
 void suspend()
 {
-	if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
+    if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
     {
-	    throw suspend_exception{ currFiberContext->get_id() };
+        throw suspend_exception{ currFiberContext->get_id() };
     }
     else
     {

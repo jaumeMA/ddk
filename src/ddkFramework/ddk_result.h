@@ -81,7 +81,7 @@ public:
 	result(result&& other) = default;
 	result& operator=(const result& other) = default;
 	result& operator=(result&& other) = default;
-	Error error() const;
+	const Error& error() const;
 	explicit operator bool() const;
 	result& dismiss();
 	const result& dismiss() const;
@@ -149,8 +149,8 @@ public:
 	result(result&& other) = default;
 	result& operator=(const result& other) = default;
 	result& operator=(result&& other) = default;
-	Error error() const;
-	T get() const;
+	const Error& error() const;
+	const T& get() const;
 	T extract() &&;
 	explicit operator bool() const;
 	result& dismiss();

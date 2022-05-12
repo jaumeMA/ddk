@@ -111,8 +111,6 @@ namespace ddk
 bool initialize_thread_stack()
 {
 
-#if DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE
-
 #if defined(WIN32)
 
 	AddVectoredExceptionHandler(1,VectoredExceptionHandler);
@@ -133,8 +131,6 @@ bool initialize_thread_stack()
     sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
 
 	sigaction(SIGSEGV,&sa,nullptr);
-
-#endif
 
 #endif
 
@@ -176,18 +172,7 @@ detail::execution_stack stack_allocator::allocate() const
 	void* initStack = m_stackAllocImpl->reserve(m_numMaxPages);
 	std::pair<void*,void*> endDeallocStack = m_stackAllocImpl->allocate(initStack,s_num_ready_to_use_pages);
 
-#ifdef	DDK_USE_CUSTOM_STACK_ALLOCATION_INFRASTRUCTURE
-
-	//in this case we "hack" the os so we have full control over reallocations due to page faults
-	return { initStack,endDeallocStack.first,endDeallocStack.first };
-
-#else
-
-	//in this version we allow the os to handle stack growth between end and dealloc addresses
-	return { initStack,endDeallocStack.first,endDeallocStack.second };
-
-#endif
-
+	return { initStack,endDeallocStack.first,reinterpret_cast<char*>(initStack) - m_numMaxPages * stack_allocator_interface::s_pageSize };
 }
 void stack_allocator::deallocate(const detail::execution_stack& i_stack) const
 {

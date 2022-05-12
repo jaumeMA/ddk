@@ -251,8 +251,6 @@ void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_ini
 	{
 		actionVisitor.template loop<action_visitor_t>(i_initialAction.template get_as<shift_action>());
 	}
-
-	suspend();
 }
 
 }

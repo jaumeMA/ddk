@@ -25,7 +25,7 @@ result<void,Error>::result(const Error& i_error)
 {
 }
 template<typename Error>
-Error result<void,Error>::error() const
+const Error& result<void,Error>::error() const
 {
     CHECK_RESULT
 
@@ -94,14 +94,14 @@ result<T,Error>::result(const Error& i_error)
 {
 }
 template<typename T, typename Error>
-Error result<T,Error>::error() const
+const Error& result<T,Error>::error() const
 {
     CHECK_RESULT
 
     return m_nestedRes.template get<Error>();
 }
 template<typename T, typename Error>
-T result<T,Error>::get() const
+const T& result<T,Error>::get() const
 {
     CHECK_RESULT
 

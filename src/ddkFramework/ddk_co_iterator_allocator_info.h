@@ -26,6 +26,15 @@ struct co_iterator_allocator_info<std::vector<T,Alloc>>
 	typedef detail::static_stack_allocator<s_max_num_pages> allocator;
 };
 
+template<typename T, typename Alloc>
+struct co_iterator_allocator_info<const std::vector<T, Alloc>>
+{
+	//although max num pages coul be 1, we shall reserve 3 pages because of stack unwinding
+	static const size_t s_max_num_pages = 6;
+
+	typedef detail::static_stack_allocator<s_max_num_pages> allocator;
+};
+
 //...
 
 }

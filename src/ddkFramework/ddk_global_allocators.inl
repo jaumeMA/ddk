@@ -54,12 +54,12 @@ void fixed_size_or_allocator<T,Allocator>::deallocate(TT* i_ptr) const
 {
 	if(i_ptr)
 	{
-		if constexpr(std::is_class<TT>::value)
+		if constexpr (std::is_class<TT>::value)
 		{
 			i_ptr->~TT();
 		}
 
-		if(const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
+		if (const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
 		{
 			fixedSizeAllocator->deallocate_chunk(i_ptr);
 		}

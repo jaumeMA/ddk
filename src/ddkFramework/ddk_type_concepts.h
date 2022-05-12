@@ -168,6 +168,18 @@
 #define IS_SCOPED_ENUM(_TYPE) \
 	TYPE_CONTAINS_SYMBOL_COND(_TYPE,scoped_enum_tag)
 
+#define IS_TYPE_CONST_COND(_TYPE) \
+	std::is_const<_TYPE>::value
+
+#define IS_TYPE_CONST(_TYPE) \
+	typename std::enable_if<IS_TYPE_CONST_COND(_TYPE)>::type
+
+#define IS_TYPE_NON_CONST_COND(_TYPE) \
+	(std::is_const<_TYPE>::value == false)
+
+#define IS_TYPE_NON_CONST(_TYPE) \
+	typename std::enable_if<IS_TYPE_NON_CONST_COND(_TYPE)>::type
+
 
 namespace ddk
 {

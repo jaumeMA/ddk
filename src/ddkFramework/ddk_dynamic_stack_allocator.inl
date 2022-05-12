@@ -78,15 +78,15 @@ bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack&
 {
     static const size_t s_guard_area = NumGuardPages * s_pageSize;
 
-	if(reinterpret_cast<char*>(i_stackAddr.get_end()) >= i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.get_init()) - k_maxNumStackPages * s_pageSize))
+	if(reinterpret_cast<char*>(i_stackAddr.get_end()) >= i_reason && i_reason > (reinterpret_cast<char*>(i_stackAddr.get_end()) - s_guard_area))
 	{
+		//exception by page fault
 
 #if defined(WIN32)
 
 		if(VirtualAlloc(reinterpret_cast<char*>(i_stackAddr.get_end()) - ((s_numGuardPages + 1) * s_pageSize),s_pageSize,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD))
 		{
 			i_stackAddr.set_end(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_pageSize);
-			i_stackAddr.set_dealloc(i_stackAddr.get_end());
 
 			return true;
 		}
@@ -96,7 +96,6 @@ bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack&
         if(mprotect(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_guard_area,s_guard_area,PROT_READ|PROT_WRITE) == 0)
         {
 			i_stackAddr.set_end(reinterpret_cast<char*>(i_stackAddr.get_end()) - s_guard_area);
-			i_stackAddr.set_dealloc(i_stackAddr.get_end());
 
 			return true;
         }
@@ -104,6 +103,31 @@ bool dynamic_stack_allocator<NumGuardPages>::reallocate(detail::execution_stack&
 #endif
 
     }
+	else if (reinterpret_cast<char*>(i_stackAddr.get_end()) >= i_reason && i_reason > i_stackAddr.get_dealloc())
+	{
+		//exception beyond guard area but still inside our reserved area
+
+#if defined(WIN32)
+
+		if (VirtualAlloc(i_reason,reinterpret_cast<char*>(i_stackAddr.get_end()) - reinterpret_cast<char*>(i_reason),MEM_COMMIT,PAGE_READWRITE))
+		{
+			const void* guardPage = VirtualAlloc(reinterpret_cast<char*>(i_reason) - s_guard_area,s_guard_area,MEM_COMMIT,PAGE_READWRITE | PAGE_GUARD);
+
+			i_stackAddr.set_end(i_reason);
+
+			return true;
+		}
+#elif defined(__LINUX__) or defined(__APPLE__)
+
+		if (mprotect(i_reason,reinterpret_cast<char*>(i_stackAddr.get_end()) - reinterpret_cast<char*>(i_reason),PROT_READ | PROT_WRITE) == 0)
+		{
+			i_stackAddr.set_end(i_reason);
+
+			return true;
+		}
+
+#endif
+	}
 
 	return false;
 }
