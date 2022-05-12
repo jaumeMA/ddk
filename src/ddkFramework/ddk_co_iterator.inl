@@ -31,7 +31,7 @@ co_forward_iterator<T>::co_forward_iterator(const co_forward_iterator& other,con
 template<typename T>
 template<typename Iterable>
 co_forward_iterator<T>::co_forward_iterator(Iterable& i_iterable,typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
-: m_function([&i_iterable](const shift_action& i_initialAction,const detail::relative_function_impl<co_forward_iterator<T>,go_forward_action&&,reference>& i_sink) -> reference { visit_iterator(i_iterable,i_sink,const_forward_action{i_initialAction}); return crash_on_return<reference>::value(); })
+: m_function([&i_iterable](const shift_action& i_initialAction,const detail::relative_function_impl<co_forward_iterator<T>,go_forward_action&&,reference>& i_sink) -> reference { visit_iterator(i_iterable,i_sink,const_forward_action{i_initialAction}); suspend(); return crash_on_return<reference>::value(); })
 , m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_forward_iterator<T>::acquire_iterable_value))
 			 ,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
@@ -147,7 +147,7 @@ co_bidirectional_iterator<T>::co_bidirectional_iterator(const co_bidirectional_i
 template<typename T>
 template<typename Iterable>
 co_bidirectional_iterator<T>::co_bidirectional_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
-: m_function([&i_iterable](const shift_action& i_initialAction,const detail::relative_function_impl<co_bidirectional_iterator<T>,bidirectional_action&&,reference>& i_sink) -> reference { visit_iterator(i_iterable,i_sink,const_bidirectional_action{ i_initialAction }); return crash_on_return<reference>::value(); })
+: m_function([&i_iterable](const shift_action& i_initialAction,const detail::relative_function_impl<co_bidirectional_iterator<T>,bidirectional_action&&,reference>& i_sink) -> reference { visit_iterator(i_iterable,i_sink,const_bidirectional_action{ i_initialAction }); suspend(); return crash_on_return<reference>::value(); })
 ,m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_bidirectional_iterator<T>::acquire_iterable_value))
 			,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
@@ -287,7 +287,7 @@ co_random_access_iterator<T>::co_random_access_iterator(const co_random_access_i
 template<typename T>
 template<typename Iterable>
 co_random_access_iterator<T>::co_random_access_iterator(Iterable& i_iterable, typename std::enable_if<is_co_iterator<Iterable>::value == false>::type*)
-: m_function([&i_iterable](const shift_action& i_initialAction, const detail::relative_function_impl<co_random_access_iterator<T>,shift_action&&,reference>& i_sink) -> reference { visit_iterator(i_iterable,i_sink,const_random_access_action{i_initialAction}); return crash_on_return<reference>::value(); })
+: m_function([&i_iterable](const shift_action& i_initialAction, const detail::relative_function_impl<co_random_access_iterator<T>,shift_action&&,reference>& i_sink) -> reference { visit_iterator(i_iterable,i_sink,const_random_access_action{i_initialAction}); suspend(); return crash_on_return<reference>::value(); })
 , m_executor(m_function(go_to_place(static_cast<int>(m_currState.position())),make_member_function(this,&co_random_access_iterator<T>::acquire_iterable_value))
 			,{ make_stack_allocator<typename co_iterator_allocator_info<Iterable>::allocator>(),co_iterator_allocator_info<Iterable>::s_max_num_pages })
 {
