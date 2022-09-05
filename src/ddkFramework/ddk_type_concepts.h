@@ -159,14 +159,11 @@
 #define IS_NUMERIC(_TYPE) \
 	typename std::enable_if<IS_NUMERIC_COND(_TYPE)>::type
 
-#define TYPE_CONTAINS_SYMBOL_COND(_TYPE,_SYMBOL) \
-	contains_symbol_##_SYMBOL<_TYPE>::value
-
 #define TYPE_CONTAINS_SYMBOL(_TYPE,_SYMBOL) \
-	typename std::enable_if<TYPE_CONTAINS_SYMBOL_COND(_TYPE,_SYMBOL)>::type
+	typename _TYPE::_SYMBOL
 
 #define IS_SCOPED_ENUM(_TYPE) \
-	TYPE_CONTAINS_SYMBOL_COND(_TYPE,scoped_enum_tag)
+	TYPE_CONTAINS_SYMBOL(_TYPE,scoped_enum_tag)
 
 #define IS_TYPE_CONST_COND(_TYPE) \
 	std::is_const<_TYPE>::value

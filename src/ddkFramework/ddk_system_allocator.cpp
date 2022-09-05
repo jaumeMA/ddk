@@ -65,20 +65,25 @@ private:
 
 }
 
-system_allocator_impl sysAlloc;
+system_allocator_impl& get_system_allocator_iml()
+{
+	static system_allocator_impl s_sysAlloc;
+
+	return s_sysAlloc;
+}
 
 void system_deleter::deallocate(const void* i_ptr) const
 {
-	sysAlloc.deallocate(i_ptr);
+	get_system_allocator_iml().deallocate(i_ptr);
 }
 
 void* system_allocator::allocate(size_t i_size) const
 {
-    return sysAlloc.allocate(i_size);
+    return get_system_allocator_iml().allocate(i_size);
 }
 void* system_allocator::reallocate(void *ptr, size_t i_newSize) const
 {
-	return sysAlloc.reallocate(ptr,i_newSize);
+	return get_system_allocator_iml().reallocate(ptr,i_newSize);
 }
 
 }

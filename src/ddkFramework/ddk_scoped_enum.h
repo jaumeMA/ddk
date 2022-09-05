@@ -124,7 +124,7 @@ inline bool get_enum_from_name(ClassName& className, const char* i_name) \
 	{ \
 		if(strcmp(_names[nameIndex],i_name) == 0) \
 		{ \
-			className = ClassName(nameIndex); \
+			className = static_cast<ClassName>(nameIndex); \
 			\
 			return true; \
 		} \

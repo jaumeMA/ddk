@@ -129,7 +129,7 @@ std::pair<First,Second> formatter<std::pair<First,Second>>::format(std::string i
 {
 	std::pair<First,Second> res;
 
-	if(i_str.empty() == false)
+	if(i_str.size() > 2)
 	{
 		if(i_str[0] == '<' && i_str[i_str.size() - 1] == '>')
 		{
@@ -160,7 +160,7 @@ std::vector<T> formatter<std::vector<T>>::format(std::string i_str)
 {
 	std::vector<T> res;
 
-	if(i_str.empty() == false)
+	if(i_str.size() > 2)
 	{
 		if(i_str[0] == '[' && i_str[i_str.size() - 1] == ']')
 		{
@@ -190,7 +190,7 @@ std::list<T> formatter<std::list<T>>::format(std::string i_str)
 {
 	std::list<T> res;
 
-	if(i_str.empty() == false)
+	if(i_str.size() > 2)
 	{
 		if(i_str[0] == '[' && i_str[i_str.size() - 1] == ']')
 		{
@@ -220,7 +220,7 @@ std::set<T> formatter<std::set<T>>::format(std::string i_str)
 {
 	std::set<T> res;
 
-	if(i_str.empty() == false)
+	if(i_str.size() > 2)
 	{
 		if(i_str[0] == '[' && i_str[i_str.size() - 1] == ']')
 		{
@@ -250,7 +250,7 @@ std::map<Key,Value> formatter<std::map<Key,Value>>::format(std::string i_str)
 {
 	std::map<Key,Value> res;
 
-	if(i_str.empty() == false)
+	if(i_str.size() > 2)
 	{
 		if(i_str[0] == '[' && i_str[i_str.size() - 1] == ']')
 		{

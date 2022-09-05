@@ -62,16 +62,12 @@ iwaiting_room::SharedState::SharedState()
 }
 void iwaiting_room::enter(Reentrancy i_reentrancy)
 {
-	PUSH_THREAD_ID
-
 	_enter_area(i_reentrancy);
 }
 bool iwaiting_room::tryToEnter(Reentrancy i_reentrancy)
 {
 	if (_try_to_enter_area(i_reentrancy))
 	{
-		PUSH_THREAD_ID
-
 		return true;
 	}
 
@@ -79,8 +75,6 @@ bool iwaiting_room::tryToEnter(Reentrancy i_reentrancy)
 }
 void iwaiting_room::leave()
 {
-	POP_THREAD_ID
-
 	_leave_area();
 }
 bool iwaiting_room::SharedState::hasWaitingWriters() const

@@ -5,29 +5,21 @@
 namespace ddk
 {
 
-struct lock_reader
+struct guard_reader
 {
 public:
-	lock_reader(exclusion_area& m_exclArea);
-	~lock_reader();
-
-	void lock(const Reentrancy& i_reentrancy);
-	bool try_lock(const Reentrancy& i_reentrancy);
-	void unlock();
+	guard_reader(exclusion_area& m_exclArea);
+	~guard_reader();
 
 private:
 	exclusion_area& m_exclArea;
 };
 
-struct lock_writer
+struct guard_writer
 {
 public:
-	lock_writer(exclusion_area& m_exclArea);
-	~lock_writer();
-
-	void lock(const Reentrancy& i_reentrancy);
-	bool try_lock(const Reentrancy& i_reentrancy);
-	void unlock();
+	guard_writer(exclusion_area& m_exclArea);
+	~guard_writer();
 
 private:
 	exclusion_area& m_exclArea;

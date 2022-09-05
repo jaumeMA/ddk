@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "ddk_arena.h"
+#include "ddk_scoped_enum.h"
 #include <utility>
 
 using namespace testing;
@@ -8,7 +9,7 @@ class DDKArenaTest : public TestWithParam<std::pair<size_t,size_t>>
 {
 };
 
-TEST_P(DDKArenaTest, defaultConstruction)
+TEST(DDKArenaTest, defaultConstruction)
 {
 	ddk::arena<sizeof(int),alignof(int)> emptyArena;
 
@@ -16,7 +17,7 @@ TEST_P(DDKArenaTest, defaultConstruction)
 
 	emptyArena.destroy<int>();
 }
-TEST_P(DDKArenaTest, arenaConstruction)
+TEST(DDKArenaTest, arenaConstruction)
 {
 	ddk::arena<sizeof(int),alignof(int)> playGround;
 
@@ -26,7 +27,7 @@ TEST_P(DDKArenaTest, arenaConstruction)
 
 	playGround.destroy<int>();
 }
-TEST_P(DDKArenaTest, arenaAssignment)
+TEST(DDKArenaTest, arenaAssignment)
 {
 	ddk::arena<sizeof(int),alignof(int)> playGround;
 
@@ -40,7 +41,7 @@ TEST_P(DDKArenaTest, arenaAssignment)
 
 	playGround.destroy<int>();
 }
-TEST_P(DDKArenaTest, arenaGet)
+TEST(DDKArenaTest, arenaGet)
 {
 	ddk::arena<sizeof(int),alignof(int)> playGround;
 
@@ -56,7 +57,7 @@ TEST_P(DDKArenaTest, arenaGet)
 
 	playGround.destroy<int>();
 }
-TEST_P(DDKArenaTest, arenaGetPtr)
+TEST(DDKArenaTest, arenaGetPtr)
 {
 	ddk::arena<sizeof(int),alignof(int)> playGround;
 
@@ -70,7 +71,7 @@ TEST_P(DDKArenaTest, arenaGetPtr)
 
 	playGround.destroy<int>();
 }
-TEST_P(DDKArenaTest, arenaDestruction)
+TEST(DDKArenaTest, arenaDestruction)
 {
 	ddk::arena<sizeof(int),alignof(int)> playGround;
 
@@ -82,5 +83,3 @@ TEST_P(DDKArenaTest, arenaDestruction)
 
 	EXPECT_EQ(playGround.empty(), true);
 }
-
-INSTANTIATE_TEST_SUITE_P(DDKArenaTest, DDKArenaTest, Values(std::make_pair(sizeof(int),alignof(int))));
