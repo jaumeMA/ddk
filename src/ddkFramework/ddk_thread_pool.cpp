@@ -303,6 +303,12 @@ void thread_pool::deallocate(detail::thread_impl_interface* i_object) const
 		on_availableThreads.execute();
 	}
 }
+void thread_pool::join() const
+{
+	mutex_guard lg(m_mutex);
+
+	m_condVar.wait_until(m_mutex, [this]() { return m_underUseThreads.empty() == false; });
+}
 size_t thread_pool::size() const
 {
 	mutex_guard lg(m_mutex);

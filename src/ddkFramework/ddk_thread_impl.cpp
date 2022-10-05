@@ -102,12 +102,18 @@ typename one_shot_thread_impl::stop_result one_shot_thread_impl::stop()
 	if(m_started)
 	{
 		void *res = nullptr;
+		const int joinRes = pthread_join(m_thread, &res);
 
-		pthread_join(m_thread,&res);
+		if (joinRes == 0)
+		{
+			m_started = false;
 
-		m_started = false;
-
-		return success;
+			return success;
+		}
+		else
+		{
+			return ddk::make_error<stop_result>(StopErrorCode::NotStoppable, "Could not stop thread: " + ddk::to_string(joinRes));
+		}
 	}
 	else
 	{

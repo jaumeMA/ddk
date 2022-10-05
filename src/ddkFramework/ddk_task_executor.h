@@ -57,7 +57,7 @@ public:
 	~task_executor();
 
 	bool start();
-	void stop();
+	bool stop();
 	void set_max_num_pending_tasks(size_t i_maxNumPendingTasks);
 	size_t get_max_num_pending_tasks();
 	bool running() const;
@@ -70,6 +70,7 @@ private:
 	enum State
 	{
 		Idle,
+		Starting,
 		Running
 	};
 
@@ -77,7 +78,7 @@ private:
 
 	thread_pool m_availableThreads;
 	size_t m_maxNumPendingTasks = 0;
-	State m_state;
+	ddk::atomic<State> m_state;
 	atomic_size_t m_numPendingTasks;
 	thread_event_driven_executor m_updateThread;
 	single_consumer_lock_free_stack<unique_pending_task> m_pendingTasks;

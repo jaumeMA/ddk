@@ -9,11 +9,11 @@ task_executor::task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks)
 : m_availableThreads(thread_pool::FixedSize,i_numThreads)
 , m_maxNumPendingTasks(i_maxNumPendingTasks)
 , m_state(Idle)
-,m_numPendingTasks(0)
+, m_numPendingTasks(0)
 {
 	m_connection = m_availableThreads.on_availableThreads.connect(make_function([this]()
 	{
-        if(m_state == Running)
+        if(m_state.get() == Running)
         {            m_updateThread.signal_thread();
         }
     }));
@@ -24,7 +24,7 @@ task_executor::~task_executor()
 }
 bool task_executor::start()
 {
-	if(m_state != Running)
+	if(ddk::atomic_compare_exchange(m_state,Idle,Starting))
 	{
 		if(m_updateThread.start(make_function(this,&task_executor::update),make_function([this](){ return (m_pendingTasks.empty() == false) && m_availableThreads.available_threads(); })))
 		{
@@ -32,26 +32,26 @@ bool task_executor::start()
 		}
 	}
 
-    return m_state == Running;
+    return m_state.get() != Idle;
 }
-void task_executor::stop()
+bool task_executor::stop()
 {
-	if(m_state == Running)
+	if (ddk::atomic_compare_exchange(m_state,Running, Idle) || ddk::atomic_compare_exchange(m_state, Starting, Idle))
 	{
-		m_state = Idle;
-
-		if(m_updateThread.stop())
+		if (m_updateThread.stop())
 		{
-			while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
-			{
-				unique_pending_task newTask = optTask.extract();
+			m_availableThreads.join();
 
-				if(newTask->empty() == false)
-				{
-					newTask->cancel();
-				}
-			}
+			return true;
 		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 void task_executor::set_max_num_pending_tasks(size_t i_maxNumPendingTasks)
@@ -68,17 +68,12 @@ size_t task_executor::set_affinity(const cpu_set_t& i_set)
 }
 bool task_executor::running() const
 {
-	return m_state == Running;
+	return m_state.get() == Running;
 }
 void task_executor::update()
 {
 	while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
 	{
-		if(m_state != Running)
-		{
-			return;
-		}
-
 		unique_pending_task newTask = optTask.extract();
 
 		if(newTask->empty() == false)

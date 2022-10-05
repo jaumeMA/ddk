@@ -4,6 +4,8 @@
 #include <utility>
 #include "ddk_template_helper.h"
 #include "ddk_arena.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 #include <type_traits>
 
 #ifdef _WIN32
@@ -29,10 +31,15 @@ struct atomic8
 					std::is_copy_assignable<T>::value &&
 					std::is_move_assignable<T>::value,"You cannot apply atomic32 operation son types of non trivial data type");
 
-	template<typename TT>
-	friend bool atomic_compare_exchange(atomic8<TT>&,const TT&,const TT&);
-	template<typename TT>
-	friend TT atomic_compare_exchange_val(atomic8<TT>&,const TT&,const TT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend TT atomic_exchange(atomic8<TT>&, const TTT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend bool atomic_compare_exchange(atomic8<TT>&,const TTT&,const TTT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend TT atomic_compare_exchange_val(atomic8<TT>&,const TTT&,const TTT&);
 	template<typename TT>
 	friend TT atomic_pre_increment(atomic8<TT>&);
 	template<typename TT>
@@ -49,6 +56,12 @@ struct atomic8
 	atomic8(atomic8&& other);
 	atomic8& operator=(const atomic8& other);
 	atomic8& operator=(atomic8&& other);
+	bool operator==(const atomic8& other) const;
+	bool operator==(const T& other) const;
+	T operator++();
+	T operator++(int);
+	T operator--();
+	T operator--(int);
 	inline const T& get() const;
 	inline T& get();
 	inline void set(const T& i_value);
@@ -63,6 +76,7 @@ private:
 
 typedef atomic8<bool> atomic_bool;
 typedef atomic8<char> atomic_char;
+typedef atomic8<unsigned char> atomic_uchar;
 
 template<typename T>
 struct atomic32
@@ -74,10 +88,15 @@ struct atomic32
 					std::is_copy_assignable<T>::value &&
 					std::is_move_assignable<T>::value, "You cannot apply atomic32 operation son types of non trivial data type");
 
-	template<typename TT>
-	friend bool atomic_compare_exchange(atomic32<TT>&, const TT&, const TT&);
-	template<typename TT>
-	friend TT atomic_compare_exchange_val(atomic32<TT>&, const TT&, const TT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend TT atomic_exchange(atomic32<TT>&, const TTT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend bool atomic_compare_exchange(atomic32<TT>&, const TTT&, const TTT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend TT atomic_compare_exchange_val(atomic32<TT>&, const TTT&, const TTT&);
 	template<typename TT>
 	friend TT atomic_pre_increment(atomic32<TT>&);
 	template<typename TT>
@@ -94,6 +113,12 @@ struct atomic32
 	atomic32(atomic32&& other);
 	atomic32& operator=(const atomic32& other);
 	atomic32& operator=(atomic32&& other);
+	bool operator==(const atomic32& other) const;
+	bool operator==(const T& other) const;
+	T operator++();
+	T operator++(int);
+	T operator--();
+	T operator--(int);
 	inline const T& get() const;
 	inline T& get();
 	inline void set(const T& i_value);
@@ -120,10 +145,15 @@ struct atomic64
 					std::is_copy_assignable<T>::value &&
 					std::is_move_assignable<T>::value, "You cannot apply atomic32 operation son types of non trivial data type");
 
-	template<typename TT>
-	friend bool atomic_compare_exchange(atomic64<TT>&, const TT&, const TT&);
-	template<typename TT>
-	friend TT atomic_compare_exchange_val(atomic64<TT>&, const TT&, const TT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend TT atomic_exchange(atomic64<TT>&, const TTT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend bool atomic_compare_exchange(atomic64<TT>&, const TTT&, const TTT&);
+	TEMPLATE(typename TT, typename TTT)
+	REQUIRED(IS_CONSTRUCTIBLE(TT, TTT))
+	friend TT atomic_compare_exchange_val(atomic64<TT>&, const TTT&, const TTT&);
 	template<typename TT>
 	friend TT atomic_pre_increment(atomic64<TT>&);
 	template<typename TT>
@@ -140,6 +170,12 @@ struct atomic64
 	atomic64(atomic64&& other);
 	atomic64& operator=(const atomic64& other);
 	atomic64& operator=(atomic64&& other);
+	bool operator==(const atomic64& other) const;
+	bool operator==(const T& other) const;
+	T operator++();
+	T operator++(int);
+	T operator--();
+	T operator--(int);
 	inline const T& get() const;
 	inline T& get();
 	inline void set(const T& i_value);
@@ -173,6 +209,12 @@ struct atomic<T*>
 	friend TT* atomic_compare_exchange_val(atomic<TT*>&, TT*, TT*);
 
 	atomic(T* i_value);
+	bool operator==(const atomic& other) const;
+	bool operator==(const T* other) const;
+	T operator++();
+	T operator++(int);
+	T operator--();
+	T operator--(int);
 	const T* get() const;
 	T* get();
 	void set(T* i_value);
@@ -185,22 +227,43 @@ private:
 	T* 	m_arena;
 };
 
-template<typename T>
-inline bool atomic_compare_exchange(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue);
-template<typename T>
-inline bool atomic_compare_exchange(atomic32<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
-template<typename T>
-inline bool atomic_compare_exchange(atomic64<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
-template<typename T>
-inline bool atomic_compare_exchange(atomic<T*>& i_atomic, T* i_expectedValue, T* i_desiredValue);
-template<typename T>
-inline T atomic_compare_exchange_val(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue);
-template<typename T>
-inline T atomic_compare_exchange_val(atomic32<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
-template<typename T>
-inline T atomic_compare_exchange_val(atomic64<T>& i_atomic, const T& i_expectedValue, const T& i_desiredValue);
-template<typename T>
-inline T* atomic_compare_exchange_val(atomic<T*>& i_atomic, T* i_expectedValue, T* i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline T atomic_exchange(atomic8<T>& i_atomic, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T, TT))
+inline T atomic_exchange(atomic32<T>& i_atomic, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline T atomic_exchange(atomic64<T>& i_atomic, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_BASE_OF(T,TT))
+inline T* atomic_exchange(atomic<T*>& i_atomic, TT* i_desiredValue);
+
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline bool atomic_compare_exchange(atomic8<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline bool atomic_compare_exchange(atomic32<T>& i_atomic, const TT& i_expectedValue, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline bool atomic_compare_exchange(atomic64<T>& i_atomic, const TT& i_expectedValue, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_BASE_OF(T,TT))
+inline T* atomic_compare_exchange(atomic<T*>& i_atomic, TT* i_expectedValue, TT* i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline T atomic_compare_exchange_val(atomic8<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline T atomic_compare_exchange_val(atomic32<T>& i_atomic, const TT& i_expectedValue, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline T atomic_compare_exchange_val(atomic64<T>& i_atomic, const TT& i_expectedValue, const TT& i_desiredValue);
+TEMPLATE(typename T, typename TT)
+REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+inline T* atomic_compare_exchange_val(atomic<T*>& i_atomic, TT* i_expectedValue, TT* i_desiredValue);
 template<typename T>
 inline T atomic_pre_increment(atomic8<T>& i_atomic);
 template<typename T>

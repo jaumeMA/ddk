@@ -13,6 +13,7 @@ class context_promise : public promise<Return>
 public:
 	using promise<Return>::promise;
 	context_promise();
+	context_promise(const context_promise&) = default;
 	context_promise(context_promise&&) = default;
 	~context_promise();
 

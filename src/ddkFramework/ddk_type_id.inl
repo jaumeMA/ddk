@@ -12,6 +12,13 @@ Id<UnderlyingType,T>::Id(UnderlyingType&& i_key)
 : m_key(std::move(i_key))
 {
 }
+template<typename UnderlyingType, typename T>
+TEMPLATE(typename UUnderlyingType, typename TT)
+REQUIRED(IS_CONVERTIBLE(UnderlyingType, UUnderlyingType))
+Id<UnderlyingType, T>::Id(const Id<UUnderlyingType, TT>& other)
+: m_key(static_cast<UnderlyingType>(other.getValue()))
+{
+}
 template<typename UnderlyingType,typename T>
 bool Id<UnderlyingType,T>::operator==(const Id & other) const
 {

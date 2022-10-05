@@ -37,6 +37,36 @@ atomic8<T>& atomic8<T>::operator=(atomic8&& other)
 	return *this;
 }
 template<typename T>
+bool atomic8<T>::operator==(const atomic8& other) const
+{
+	return m_value == other.m_value;
+}
+template<typename T>
+bool atomic8<T>::operator==(const T& i_value) const
+{
+	return m_value == i_value;
+}
+template<typename T>
+T atomic8<T>::operator++()
+{
+	return atomic_post_increment(*this);
+}
+template<typename T>
+T atomic8<T>::operator++(int)
+{
+	return atomic_pre_increment(*this);
+}
+template<typename T>
+T atomic8<T>::operator--()
+{
+	return atomic_post_decrement(*this);
+}
+template<typename T>
+T atomic8<T>::operator--(int)
+{
+	return atomic_pre_decremeemt(*this);
+}
+template<typename T>
 const T& atomic8<T>::get() const
 {
 	return m_value;
@@ -100,6 +130,36 @@ atomic32<T>& atomic32<T>::operator=(atomic32&& other)
 	m_value = std::move(other.m_value);
 
 	return *this;
+}
+template<typename T>
+bool atomic32<T>::operator==(const atomic32& other) const
+{
+	return m_value == other.m_value;
+}
+template<typename T>
+bool atomic32<T>::operator==(const T& i_value) const
+{
+	return m_value == i_value;
+}
+template<typename T>
+T atomic32<T>::operator++()
+{
+	return atomic_post_increment(*this);
+}
+template<typename T>
+T atomic32<T>::operator++(int)
+{
+	return atomic_pre_increment(*this);
+}
+template<typename T>
+T atomic32<T>::operator--()
+{
+	return atomic_post_decrement(*this);
+}
+template<typename T>
+T atomic32<T>::operator--(int)
+{
+	return atomic_pre_decremeemt(*this);
 }
 template<typename T>
 const T& atomic32<T>::get() const
@@ -167,6 +227,36 @@ atomic64<T>& atomic64<T>::operator=(atomic64&& other)
 	return *this;
 }
 template<typename T>
+bool atomic64<T>::operator==(const atomic64& other) const
+{
+	return m_value == other.m_value;
+}
+template<typename T>
+bool atomic64<T>::operator==(const T& i_value) const
+{
+	return m_value == i_value;
+}
+template<typename T>
+T atomic64<T>::operator++()
+{
+	return atomic_post_increment(*this);
+}
+template<typename T>
+T atomic64<T>::operator++(int)
+{
+	return atomic_pre_increment(*this);
+}
+template<typename T>
+T atomic64<T>::operator--()
+{
+	return atomic_post_decrement(*this);
+}
+template<typename T>
+T atomic64<T>::operator--(int)
+{
+	return atomic_pre_decremeemt(*this);
+}
+template<typename T>
 const T& atomic64<T>::get() const
 {
 	return m_value;
@@ -203,6 +293,36 @@ atomic<T*>::atomic(T* i_value)
 	memcpy(&m_arena,&i_value,sizeof(T*));
 }
 template<typename T>
+bool atomic<T*>::operator==(const atomic& other) const
+{
+	return m_value == other.m_value;
+}
+template<typename T>
+bool atomic<T*>::operator==(const T* i_value) const
+{
+	return m_value == i_value;
+}
+template<typename T>
+T atomic<T*>::operator++()
+{
+	return atomic_post_increment(*this);
+}
+template<typename T>
+T atomic<T*>::operator++(int)
+{
+	return atomic_pre_increment(*this);
+}
+template<typename T>
+T atomic<T*>::operator--()
+{
+	return atomic_post_decrement(*this);
+}
+template<typename T>
+T atomic<T*>::operator--(int)
+{
+	return atomic_pre_decremeemt(*this);
+}
+template<typename T>
 const T* atomic<T*>::get() const
 {
 	return m_arena;
@@ -233,225 +353,282 @@ void* volatile* atomic<T*>::_get_arena()
 	return reinterpret_cast<void* volatile*>(&m_arena);
 }
 
-template<typename T>
-bool atomic_compare_exchange(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
+T atomic_exchange(atomic8<T>& i_atomic, const TT& i_desiredValue)
 {
-	#if defined(WIN32)
+#if defined(WIN32)
+	return T(_InterlockedExchange8(i_atomic._get_arena(), T(i_desiredValue)));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+#else
+	#error "Unsupported platform"
+#endif
+}
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
+T atomic_exchange(atomic32<T>& i_atomic, const TT& i_desiredValue)
+{
+#if defined(WIN32)
+	return T(InterlockedExchange(reinterpret_cast<LONG*>(i_atomic._get_arena()),i_desiredValue));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+#else
+	#error "Unsupported platform"
+#endif
+}
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
+T atomic_exchange(atomic64<T>& i_atomic, const TT& i_desiredValue)
+{
+#if defined(WIN32)
+	return T(_InterlockedExchange64(i_atomic._get_arena(),T(i_desiredValue)));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+#else
+	#error "Unsupported platform"
+#endif
+}
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_BASE_OF(T,TT))
+T* atomic_exchange(atomic<T*>&i_atomic, TT* i_desiredValue)
+{
+#if defined(WIN32)
+	return reinterpret_cast<T*>(InterlockedExchangePointer(i_atomic._get_arena(),i_desiredValue));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+#else
+	#error "Unsupported platform"
+#endif
+}
+
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T, TT))
+bool atomic_compare_exchange(atomic8<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue)
+{
+#if defined(WIN32)
 	return _InterlockedCompareExchange8(i_atomic._get_arena(),i_desiredValue,i_expectedValue) == static_cast<char>(i_expectedValue);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-bool atomic_compare_exchange(atomic32<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T, TT))
+bool atomic_compare_exchange(atomic32<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue)
 {
-	#if defined(WIN32)
+#if defined(WIN32)
 	return InterlockedCompareExchange(reinterpret_cast<LONG*>(i_atomic._get_arena()),i_desiredValue,i_expectedValue) == i_expectedValue;
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-bool atomic_compare_exchange(atomic64<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T, TT))
+bool atomic_compare_exchange(atomic64<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return InterlockedCompareExchange64(i_atomic._get_arena(),i_desiredValue,i_expectedValue) == i_expectedValue;
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-bool atomic_compare_exchange(atomic<T*>& i_atomic,T* i_expectedValue,T* i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_BASE_OF(T, TT))
+bool atomic_compare_exchange(atomic<T*>& i_atomic, TT* i_expectedValue, TT* i_desiredValue)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return InterlockedCompareExchangePointer(i_atomic._get_arena(),i_desiredValue,i_expectedValue) == i_expectedValue;
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_bool_compare_and_swap(i_atomic.m_arena,i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-inline T atomic_compare_exchange_val(atomic8<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T, TT))
+inline T atomic_compare_exchange_val(atomic8<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(_InterlockedCompareExchange8(i_atomic._get_arena(),i_desiredValue,i_expectedValue));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_val_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-inline T atomic_compare_exchange_val(atomic32<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T, TT))
+inline T atomic_compare_exchange_val(atomic32<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedCompareExchange(reinterpret_cast<LONG*>(i_atomic._get_arena()),i_desiredValue,i_expectedValue));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_val_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-inline T atomic_compare_exchange_val(atomic64<T>& i_atomic,const T& i_expectedValue,const T& i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T, TT))
+inline T atomic_compare_exchange_val(atomic64<T>& i_atomic,const TT& i_expectedValue,const TT& i_desiredValue)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedCompareExchange64(i_atomic._get_arena(),i_desiredValue,i_expectedValue));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_val_compare_and_swap(i_atomic._get_typed_arena(),i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
-template<typename T>
-inline T* atomic_compare_exchange_val(atomic<T*>& i_atomic,T* i_expectedValue,T* i_desiredValue)
+TEMPLATE(typename T, typename TT)
+REQUIRED(IS_BASE_OF(T, TT))
+inline T* atomic_compare_exchange_val(atomic<T*>& i_atomic, TT* i_expectedValue, TT* i_desiredValue)
 {
-	#ifdef _WIN32
-	return T(InterlockedCompareExchangePointer(i_atomic._get_arena(),i_desiredValue,i_expectedValue));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#ifdef _WIN32
+	return reinterpret_cast<T*>(InterlockedCompareExchangePointer(i_atomic._get_arena(),i_desiredValue,i_expectedValue));
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_val_compare_and_swap(i_atomic.m_arena,i_expectedValue,i_desiredValue);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_pre_increment(atomic8<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedIncrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())) - 1);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_add(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_pre_increment(atomic32<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedIncrement(reinterpret_cast<LONG*>(i_atomic._get_arena())) - 1);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_add(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_pre_increment(atomic64<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedIncrement64(i_atomic._get_arena()) - 1);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_add(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_post_increment(atomic8<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedIncrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_add_and_fetch(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_post_increment(atomic32<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedIncrement(i_atomic._get_arena()));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_add_and_fetch(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_post_increment(atomic64<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedIncrement64(i_atomic._get_arena()));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_add_and_fetch(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_pre_decrement(atomic8<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedDecrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())) + 1);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_sub(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_pre_decrement(atomic32<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedDecrement(reinterpret_cast<LONG*>(i_atomic._get_arena())) + 1);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_sub(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_pre_decrement(atomic64<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedDecrement64(i_atomic._get_arena()) + 1);
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_fetch_and_sub(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_post_decrement(atomic8<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedDecrement16(reinterpret_cast<SHORT*>(i_atomic._get_arena())));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_post_decrement(atomic32<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedDecrement(reinterpret_cast<LONG*>(i_atomic._get_arena())));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 template<typename T>
 inline T atomic_post_decrement(atomic64<T>& i_atomic)
 {
-	#ifdef _WIN32
+#ifdef _WIN32
 	return T(InterlockedDecrement64(i_atomic._get_arena()));
-	#elif defined(__LINUX__) or defined(__APPLE__)
+#elif defined(__LINUX__) or defined(__APPLE__)
 	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
-	#else
+#else
 	#error "Unsupported platform"
-	#endif
+#endif
 }
 
 }

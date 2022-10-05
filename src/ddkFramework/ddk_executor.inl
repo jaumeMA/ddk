@@ -207,7 +207,7 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 {
 	if(i_testFunc != nullptr)
 	{
-		m_testFunc = i_testFunc || make_function([=]() { return m_stopped; });
+		m_testFunc = i_testFunc || make_function([this]() { mutex_guard mg(m_condVarMutex); return m_stopped; });
 	}
 
 	return execute(nullptr,i_executor);
@@ -301,7 +301,7 @@ void event_driven_executor<Context>::update()
 {
 	m_condVarMutex.lock();
 
-	while(m_stopped == false)
+	while(m_stopped == false || m_pendingWork)
 	{
 		m_pendingWork = false;
 

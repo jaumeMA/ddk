@@ -40,7 +40,7 @@ future<Return> task_executor::pending_task_impl<Return>::as_future()
 template<typename Return>
 future<Return> task_executor::enqueue(const function<Return()>& i_task)
 {
-	if(m_state == Running)
+	if(m_state.get() == Running)
 	{
 		typedef fixed_size_or_allocator<async_executor<Return>,system_allocator> allocator_t;
 		static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_distributed_allocation<pending_task_impl<Return>,allocator_t>());

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <sstream>
 #include "ddk_formatter.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
+#include <sstream>
 
 namespace ddk
 {
@@ -32,6 +34,9 @@ public:
 	Id(Id&&) = default;
 	explicit Id(const UnderlyingType& i_key);
 	explicit Id(UnderlyingType&& i_key);
+	TEMPLATE(typename UUnderlyingType, typename TT)
+	REQUIRES(IS_CONVERTIBLE(UnderlyingType,UUnderlyingType))
+	explicit Id(const Id<UUnderlyingType,TT>& other);
 	Id& operator=(const Id&) = default;
 	Id& operator=(Id&&) = default;
 	inline bool operator==(const Id& other) const;

@@ -139,7 +139,6 @@ future<Return> future<T>::then(const function<Return(Type)>& i_continuation) &&
 {
 	if(detail::private_async_state_dist_ptr<T> sharedState = m_sharedState)
 	{
-
 		auto executor = make_async_executor(make_function([acquiredFuture = std::move(*this),i_continuation]() mutable
 		{
 			if constexpr(std::is_same<Return,void>::value)
@@ -351,4 +350,5 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 
 #include "ddk_future_future.inl"
 #include "ddk_shared_future.inl"
+#include "ddk_composed_future.inl"
 #include "ddk_future_utils.inl"

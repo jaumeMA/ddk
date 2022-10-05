@@ -207,17 +207,6 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 		return "hola";
 	}));
 
-	ddk::future<ddk::values_array<const char*,4>> res = std::move(myOtherFuture) && std::move(myOtherFuture) && std::move(myOtherFuture) && std::move(myOtherFuture);
-
-	try
-	{
-		const ddk::values_array<const char*,4> resStr = res.extract_value();
-		int a = 0;
-	}
-	catch(...)
-	{
-	}
-
 	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);
 	ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
 	if(acquireRes == ddk::success)

@@ -31,6 +31,8 @@ class future
 
 public:
 	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	struct future_tag;
+	typedef T value_type;
 	typedef typename detail::private_async_state<T>::reference reference;
 	typedef typename detail::private_async_state<T>::const_reference const_reference;
 	typedef typename detail::private_async_state<T>::rreference rreference;
@@ -79,6 +81,8 @@ template<>
 class future<void> : public future<detail::void_t>
 {
 public:
+	typedef void value_type;
+
 	using future<detail::void_t>::future;
 	future(const future& other) = delete;
 	future(future&& other) = default;
@@ -128,5 +132,7 @@ public:
 }
 
 #include "ddk_future_future.h"
+#include "ddk_context_future.h"
 #include "ddk_shared_future.h"
+#include "ddk_composed_future.h"
 #include "ddk_future_utils.h"
