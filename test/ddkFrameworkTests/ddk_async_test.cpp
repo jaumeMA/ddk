@@ -215,6 +215,6 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 		ddk::future<void> provaFuture = ddk::async(recursive_func) -> attach(std::move(fiberSheaf));
 
 		provaFuture.wait();
-		provaFuture.extract_value();
+		std::move(provaFuture).extract_value();
 	}
 }

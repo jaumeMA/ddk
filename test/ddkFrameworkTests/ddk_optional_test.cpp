@@ -118,7 +118,7 @@ TEST(DDKOptionalTest,extraction)
 
 	EXPECT_EQ(foo.get(),0xFF);
 
-	const DefaultType value = foo.extract();
+	const DefaultType value = std::move(foo).extract();
 
 	EXPECT_EQ(foo.empty(),true);
 

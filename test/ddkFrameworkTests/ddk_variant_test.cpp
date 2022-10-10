@@ -46,10 +46,10 @@ using testing::Types;
 
 TEST(DDKVariantTest,defaultConstruction)
 {
-	constexpr ddk::variant<int,char> foo(10);
-	constexpr ddk::variant<int,char> fooo = constexpr_copy_variant(foo);
+	constexpr ddk::variant<int,char> foo('a');
+	constexpr ddk::variant<int,char> fooo(foo);
 
-	EXPECT_EQ(foo.is<0>(),true);
+	static_assert(fooo.is<1>(),"wtf");
 }
 TEST(DDKVariantTest,construction1)
 {
