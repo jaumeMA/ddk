@@ -102,7 +102,7 @@ action_result iterable<Traits>::co_iterate(Function&& i_try, const shift_action&
             {
                 m_iterableState.apply(m_currAction);
 
-                eval(std::forward<Function>(i_try),make_iterable_value<iterable_value>(*m_iterableValueContainer.template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action),static_cast<iterable_interface&>(*this)));
+                eval(std::forward<Function>(i_try),make_iterable_value<iterable_value>(std::move(m_iterableValueContainer).template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action),static_cast<iterable_interface&>(*this)));
             }
             catch(const suspend_exception& i_excp)
             {
@@ -141,7 +141,7 @@ action_result iterable<Traits>::co_iterate(Function&& i_try, const shift_action&
             {
                 m_iterableState.apply(m_currAction);
 
-                eval(std::forward<Function>(i_try),make_iterable_value<iterable_const_value>(*m_iterableValueContainer.template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action),const_cast<iterable_interface&>(static_cast<const iterable_interface&>(*this))));
+                eval(std::forward<Function>(i_try),make_iterable_value<iterable_const_value>(std::move(m_iterableValueContainer).template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action),const_cast<iterable_interface&>(static_cast<const iterable_interface&>(*this))));
             }
             catch(const suspend_exception& i_excp)
             {
@@ -264,7 +264,7 @@ typename iterable<Traits>::reference iterable<Traits>::resolve_action(const acti
     {
         m_iterableState.apply(m_currAction);
 
-        return m_iterableValueContainer.template extract<reference>();
+        return std::move(m_iterableValueContainer).template extract<reference>();
     }
     else
     {
@@ -280,7 +280,7 @@ typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(cons
     {
         m_iterableState.apply(m_currAction);
 
-        return m_iterableValueContainer.template extract<const_reference>();
+        return std::move(m_iterableValueContainer).template extract<const_reference>();
     }
     else
     {

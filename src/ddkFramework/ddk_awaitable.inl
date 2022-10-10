@@ -19,7 +19,7 @@ awaited_result<T>::awaited_result(awaited_result&& other)
 {
 	if(other.m_content.empty() == false)
 	{
-		m_content.template construct<result_type>(other.m_content.template extract<result_type>());
+		m_content.template construct<result_type>(std::move(other.m_content).template extract<result_type>());
 	}
 }
 template<typename T>
@@ -34,11 +34,11 @@ awaited_result<T>& awaited_result<T>::operator=(awaited_result<T>&& other)
 	{
 		if (m_content.empty())
 		{
-			m_content.template construct<result_type>(other.m_content.template extract<result_type>());
+			m_content.template construct<result_type>(std::move(other.m_content).template extract<result_type>());
 		}
 		else
 		{
-			m_content.template assign<result_type>(other.m_content.template extract<result_type>());
+			m_content.template assign<result_type>(std::move(other.m_content).template extract<result_type>());
 		}
 	}
 	else if(m_content.empty() == false)

@@ -79,13 +79,13 @@ typename embedded_type<T>::ref_type arena<ArenaSize,ArenaAlignment>::get()
 }
 template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T>
-embedded_type<T> arena<ArenaSize,ArenaAlignment>::extract()
+embedded_type<T> arena<ArenaSize,ArenaAlignment>::extract() &&
 {
 	DDK_ASSERT(m_empty == false, "Accessing empty arena");
 
 	embedded_type<T>* nestedData = reinterpret_cast<embedded_type<T>*>(&m_storage);
 
-	embedded_type<T> res(nestedData->extract());
+	embedded_type<T> res(std::move(*nestedData).extract());
 
 	embedded_type<T>::destroy(&m_storage);
 

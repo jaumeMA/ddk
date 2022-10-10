@@ -61,8 +61,8 @@ public:
 	bool valid() const;
 	bool ready() const;
 	bool empty() const;
-	future<T> extract_future();
-	auto extract_value();
+	future<T> extract_future() &&;
+	auto extract_value() &&;
 	void wait() const;
 	bool wait_for(const std::chrono::milliseconds& i_period) const;
 	cancel_result cancel();

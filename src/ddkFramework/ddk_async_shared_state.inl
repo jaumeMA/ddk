@@ -147,7 +147,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 	}
 }
 template<typename T>
-embedded_type<T> private_async_state<T>::extract_value()
+embedded_type<T> private_async_state<T>::extract_value() &&
 {
 	mutex_guard lg(m_mutex);
 

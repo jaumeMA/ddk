@@ -1,190 +1,260 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename SuperClass>
+optional_destructor<SuperClass,false>::~optional_destructor()
+{
+    static_cast<SuperClass*>(this)->destroy();
+}
 
 template<typename T>
-optional<T>::optional()
+constexpr variadic_union<none_t,T> construct_union(const optional<T>& i_opt)
 {
-}
-template<typename T>
-optional<T>::optional(detail::none_t)
-{
-}
-template<typename T>
-optional<T>::optional(const optional<T>& other)
-{
-    if (!other.m_storage.empty())
+    //here we rely on RVO
+    if(i_opt.empty())
     {
-		m_storage.template construct<T>(other.m_storage.template get<T>());
+        return {};
+    }
+    else
+    {
+        return { mpl::class_holder<T>{},i_opt.get() };
     }
 }
 template<typename T>
-optional<T>::optional(optional<T>&& other)
+constexpr variadic_union<none_t, T> construct_union(optional<T>&& i_opt)
 {
-    if (!other.m_storage.empty())
+    //here we rely on RVO
+    if (i_opt.empty())
     {
-		m_storage.template construct<T>(other.m_storage.template extract<T>());
+        return {};
+    }
+    else
+    {
+        return { mpl::class_holder<T>{},std::move(i_opt).extract() };
+    }
+}
+
+}
+
+template<typename T>
+constexpr optional<T>::optional()
+{
+}
+template<typename T>
+constexpr optional<T>::optional(detail::none_t)
+{
+}
+template<typename T>
+constexpr optional<T>::optional(const optional<T>& other)
+: m_storage(detail::construct_union(other))
+, m_set(other.m_set)
+{
+}
+template<typename T>
+constexpr optional<T>::optional(optional<T>&& other)
+: m_set(other.m_set)
+{
+    if (other.m_set)
+    {
+        other.m_set = false;
+        m_storage.template construct<T>(std::move(other.m_storage).template extract<T>());
     }
 }
 template<typename T>
-optional<T>::optional(reference_const_type val)
+constexpr optional<T>::optional(reference_const_type i_val)
+: m_storage(mpl::class_holder<T>{},i_val)
+, m_set(true)
 {
-	m_storage.template construct<T>(val);
 }
 template<typename T>
-optional<T>::optional(reference_type val)
+constexpr optional<T>::optional(reference_type i_val)
+: m_storage(mpl::class_holder<T>{},i_val)
+, m_set(true)
 {
-	m_storage.template construct<T>(val);
 }
 template<typename T>
-optional<T>::optional(rreference_type val)
+constexpr optional<T>::optional(rreference_type i_val)
+: m_storage(mpl::class_holder<T>{}, std::move(i_val))
+, m_set(true)
 {
-	m_storage.template construct<T>(std::move(val));
 }
 template<typename T>
-template<typename TT>
-optional<T>::optional(const optional<TT>& other)
+TEMPLATE(typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
+constexpr optional<T>::optional(const optional<TT>& other)
+: m_set(true)
 {
-    if (!other.m_storage.empty())
+    if (other.m_set)
     {
 		m_storage.template construct<T>(other.m_storage.template get<TT>());
     }
 }
 template<typename T>
-template<typename TT>
-optional<T>::optional(optional<TT>&& other)
+TEMPLATE(typename TT)
+REQUIRED(IS_CONSTRUCTIBLE(T,TT))
+constexpr optional<T>::optional(optional<TT>&& other)
+: m_set(true)
 {
-    if (!other.m_storage.empty())
+    if (other.m_set)
     {
-		m_storage.template construct<T>(other.m_storage.template extract<TT>());
+		m_storage.template construct<T>(std::move(other.m_storage).template extract<TT>());
     }
 }
 template<typename T>
-template<typename Arg>
-optional<T>::optional(Arg&& i_arg, typename std::enable_if<std::is_convertible<Arg,optional<T>>::value == false>::type*)
+TEMPLATE(typename Arg)
+REQUIRED(IS_CONSTRUCTIBLE(T,Arg))
+constexpr optional<T>::optional(Arg&& i_arg)
+: m_storage(mpl::class_holder<T>{},std::forward<Arg>(i_arg))
+, m_set(true)
 {
-	m_storage.template construct<T>(std::forward<Arg>(i_arg));
 }
 template<typename T>
-optional<T>::~optional()
+constexpr void optional<T>::destroy()
 {
-	m_storage.template destroy<T>();
-}
-template<typename T>
-optional<T>& optional<T>::operator=(const optional<T>& other)
-{
-    if (other.m_storage.empty() == false)
+    if (m_set)
     {
-		m_storage.template set_value<T>(other.m_storage.template get<T>());
-    }
-    else
-    {
-		m_storage.template destroy<T>();
-    }
-
-    return *this;
-}
-template<typename T>
-optional<T>& optional<T>::operator=(optional<T>&& other)
-{
-    if (other.m_storage.empty() == false)
-    {
-		m_storage.template set_value<T>(other.m_storage.template extract<T>());
-    }
-    else
-    {
+        m_set = false;
         m_storage.template destroy<T>();
     }
-
-    return *this;
 }
 template<typename T>
-template<typename TT>
-optional<T>& optional<T>::operator=(const optional<TT>& other)
+constexpr optional<T>& optional<T>::operator=(const optional<T>& other)
 {
-    if (other.m_storage.empty() == false)
+    if (other.m_set)
     {
-		m_storage.template set_value<T>(other.m_storage.template extract<TT>());
+        (m_set) ? m_storage.template assign<T>(other.m_storage.template get<T>()) : m_storage.template construct<T>(other.m_storage.template get<T>());
+
+        m_set = true;
     }
     else
     {
-		m_storage.template destroy<T>();
+        destroy();
     }
 
     return *this;
 }
 template<typename T>
-template<typename TT>
-optional<T>& optional<T>::operator=(optional<TT>&& other)
+constexpr optional<T>& optional<T>::operator=(optional<T>&& other)
 {
-    if (other.m_storage.empty() == false)
+    if (other.m_set)
     {
-		m_storage.template set_value<T>(other.m_storage.template extract<TT>());
+        (m_set) ? m_storage.template assign<T>(std::move(other.m_storage).template extract<T>()) : m_storage.template construct<T>(std::move(other.m_storage).template extract<T>());
+
+        m_set = true;
+
+        other.m_set = false;
     }
     else
     {
-        m_storage.template destroy<T>();
+        destroy();
     }
 
     return *this;
 }
 template<typename T>
-optional<T>& optional<T>::operator=(detail::none_t)
+TEMPLATE(typename TT)
+REQUIRED(IS_ASSIGNABLE(T,TT),IS_CONSTRUCTIBLE(T,TT))
+constexpr optional<T>& optional<T>::operator=(const optional<TT>& other)
 {
-	m_storage.template destroy<T>();
+    if (other.m_set)
+    {
+        (m_set) ? m_storage.template assign<T>(other.m_storage.template get<TT>()) : m_storage.template construct<T>(other.m_storage.template get<TT>());
+
+        m_set = true;
+    }
+    else
+    {
+        destroy();
+    }
 
     return *this;
 }
 template<typename T>
-optional<T>& optional<T>::operator=(reference_type val)
+TEMPLATE(typename TT)
+REQUIRED(IS_ASSIGNABLE(T,TT),IS_CONSTRUCTIBLE(T,TT))
+constexpr optional<T>& optional<T>::operator=(optional<TT>&& other)
 {
-	m_storage.template set_value<T>(val);
+    if (other.m_set)
+    {
+        (m_set) ? m_storage.template assign<T>(std::move(other.m_storage).template extract<TT>()) : m_storage.template construct<T>(std::move(other.m_storage).template extract<TT>());
+
+        m_set = true;
+
+        other.m_set = false;
+    }
+    else
+    {
+        destroy();
+    }
 
     return *this;
 }
 template<typename T>
-optional<T>& optional<T>::operator=(reference_const_type val)
+constexpr optional<T>& optional<T>::operator=(detail::none_t)
 {
-	m_storage.template set_value<T>(val);
+    destroy();
 
     return *this;
 }
 template<typename T>
-optional<T>& optional<T>::operator=(rreference_type val)
+constexpr optional<T>& optional<T>::operator=(reference_type val)
 {
-	m_storage.template set_value<T>(std::move(val));
+    (m_set) ? m_storage.template assign<T>(val) : m_storage.template construct<T>(val);
+
+    m_set = true;
 
     return *this;
 }
 template<typename T>
-bool optional<T>::empty() const
+constexpr optional<T>& optional<T>::operator=(reference_const_type val)
 {
-    return m_storage.empty();
+    (m_set) ? m_storage.template assign<T>(val) : m_storage.template construct<T>(val);
+
+    m_set = true;
+
+    return *this;
 }
 template<typename T>
-optional<T>::operator bool() const
+constexpr optional<T>& optional<T>::operator=(rreference_type val)
 {
-    return m_storage.empty() == false;
+    (m_set) ? m_storage.template assign<T>(std::move(val)) : m_storage.template construct<T>(std::move(val));
+
+    m_set = true;
+
+    return *this;
 }
 template<typename T>
-bool optional<T>::operator!() const
+constexpr bool optional<T>::empty() const
 {
-    return m_storage.empty();
+    return m_set == false;
 }
 template<typename T>
-typename embedded_type<T>::cref_type optional<T>::get() const
+constexpr optional<T>::operator bool() const
+{
+    return m_set;
+}
+template<typename T>
+constexpr bool optional<T>::operator!() const
+{
+    return m_set == false;
+}
+template<typename T>
+constexpr typename embedded_type<T>::cref_type optional<T>::get() const
 {
 	return m_storage.template get<T>();
 }
 template<typename T>
-typename embedded_type<T>::ref_type optional<T>::get()
+constexpr typename embedded_type<T>::ref_type optional<T>::get()
 {
 	return m_storage.template get<T>();
 }
 template<typename T>
-typename embedded_type<T>::cref_type optional<T>::get_value_or(typename embedded_type<T>::cref_type default_value) const
+constexpr typename embedded_type<T>::cref_type optional<T>::get_value_or(typename embedded_type<T>::cref_type default_value) const
 {
-    if (m_storage.empty() == false)
+    if (m_set)
     {
 		return m_storage.template get<T>();
     }
@@ -192,9 +262,9 @@ typename embedded_type<T>::cref_type optional<T>::get_value_or(typename embedded
     return default_value;
 }
 template<typename T>
-typename embedded_type<T>::ref_type optional<T>::get_value_or(typename embedded_type<T>::ref_type default_value)
+constexpr typename embedded_type<T>::ref_type optional<T>::get_value_or(typename embedded_type<T>::ref_type default_value)
 {
-    if (m_storage.empty() == false)
+    if (m_set)
     {
 		return m_storage.template get<T>();
     }
@@ -202,9 +272,9 @@ typename embedded_type<T>::ref_type optional<T>::get_value_or(typename embedded_
     return default_value;
 }
 template<typename T>
-typename embedded_type<T>::cpointer_type optional<T>::get_ptr() const
+constexpr typename embedded_type<T>::cpointer_type optional<T>::get_ptr() const
 {
-    if (m_storage.empty() == false)
+    if (m_set)
     {
 		return m_storage.template get<T>();
     }
@@ -212,9 +282,9 @@ typename embedded_type<T>::cpointer_type optional<T>::get_ptr() const
     return nullptr;
 }
 template<typename T>
-typename embedded_type<T>::pointer_type optional<T>::get_ptr()
+constexpr typename embedded_type<T>::pointer_type optional<T>::get_ptr()
 {
-    if (m_storage.empty() == false)
+    if (m_set)
     {
 		return m_storage.template get<T>();
     }
@@ -222,46 +292,52 @@ typename embedded_type<T>::pointer_type optional<T>::get_ptr()
     return nullptr;
 }
 template<typename T>
-T optional<T>::extract()
+constexpr T optional<T>::extract() &&
 {
-	return m_storage.template extract<T>().extract();
+	T res = std::move(m_storage).template extract<T>();
+
+    m_set = false;
+
+    return res;
 }
 template<typename T>
-typename embedded_type<T>::cref_type optional<T>::operator*() const
+constexpr typename embedded_type<T>::cref_type optional<T>::operator*() const
 {
 	return m_storage.template get<T>();
 }
 template<typename T>
-typename embedded_type<T>::ref_type optional<T>::operator*()
+constexpr typename embedded_type<T>::ref_type optional<T>::operator*()
 {
 	return m_storage.template get<T>();
 }
 template<typename T>
-typename embedded_type<T>::cpointer_type optional<T>::operator->() const
+constexpr typename embedded_type<T>::cpointer_type optional<T>::operator->() const
 {
-	return m_storage.template get_ptr<T>();
+	return &(m_storage.template get<T>());
 }
 template<typename T>
-typename embedded_type<T>::pointer_type optional<T>::operator->()
+constexpr typename embedded_type<T>::pointer_type optional<T>::operator->()
 {
-	return m_storage.template get_ptr<T>();
+    return &(m_storage.template get<T>());
 }
 template<typename T>
-void optional<T>::swap(const optional<T>& other)
+constexpr void optional<T>::swap(const optional<T>& other)
 {
     optional<T>& ncOther = const_cast<optional<T>&>(other);
 
-    if (m_storage.empty() == false && ncOther.m_storage.empty() == false)
+    if (m_set && ncOther.m_set)
     {
 		std::swap(m_storage.template get<T>(),other.m_storage.template get<T>());
     }
-    else if (m_storage.empty() == false)
+    else if (m_set)
     {
 		other.m_storage.template construct<T>(m_storage.template extract<T>());
+        ncOther.m_set = true;
     }
-    else if (ncOther.m_storage.empty() == false)
+    else if (ncOther.m_set)
     {
 		m_storage.template construct<T>(other.m_storage.template extract<T>());
+        m_set = true;
     }
 }
 

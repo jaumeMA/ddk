@@ -54,7 +54,7 @@ future<Return> task_executor::enqueue(const function<Return()>& i_task)
 		{
 			if(optional<unique_pending_task> optTask = m_pendingTasks.pop())
 			{
-				unique_pending_task newTask = optTask.extract();
+				unique_pending_task newTask = std::move(optTask).extract();
 
 				newTask->cancel();
 

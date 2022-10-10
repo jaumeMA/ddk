@@ -48,10 +48,14 @@ class variadic_union<Type,Types...>
 
 public:
 	constexpr variadic_union();
+	variadic_union(const variadic_union& other) = delete;
+	variadic_union(variadic_union&& other) = delete;
 	constexpr variadic_union(const detail::none_t&);
 	template<typename T, typename TT>
 	constexpr variadic_union(const mpl::class_holder<T>&, TT&& i_value);
 	~variadic_union() = default;
+	variadic_union& operator=(const variadic_union& other) = delete;
+	variadic_union& operator=(variadic_union&& other) = delete;
 	template<typename T,typename ... Args>
 	constexpr void construct(Args&& ... i_args);
 	template<typename T,typename ... Args>
@@ -63,7 +67,7 @@ public:
 	template<typename T>
 	constexpr typename embedded_type<T>::ref_type get();
 	template<typename T>
-	inline typename embedded_type<T>::rref_type extract();
+	inline typename embedded_type<T>::rref_type extract() &&;
 
 private:
 	constexpr variadic_union(const std::true_type&);

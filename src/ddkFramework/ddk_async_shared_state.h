@@ -54,7 +54,7 @@ public:
 	void signal() const;
 	const_reference get_value() const;
 	reference get_value();
-	embedded_type<T> extract_value();
+	embedded_type<T> extract_value() &&;
 	void clear();
 	void wait() const;
 	void wait_for(const std::chrono::milliseconds& i_period) const;

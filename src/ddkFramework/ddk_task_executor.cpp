@@ -74,7 +74,7 @@ void task_executor::update()
 {
 	while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
 	{
-		unique_pending_task newTask = optTask.extract();
+		unique_pending_task newTask = std::move(optTask).extract();
 
 		if(newTask->empty() == false)
 		{

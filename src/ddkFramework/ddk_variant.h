@@ -7,8 +7,6 @@
 #include "ddk_none.h"
 #include "ddk_class_rules.h"
 
-#define constexpr_copy_variant(_VARIANT) _VARIANT.template get<_VARIANT.which()>();
-
 namespace ddk
 {
 

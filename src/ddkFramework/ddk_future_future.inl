@@ -73,13 +73,13 @@ typename future<future<T>>::const_reference future<future<T>>::get_value() const
 	}
 }
 template<typename T>
-future<T> future<future<T>>::extract_future()
+future<T> future<future<T>>::extract_future() &&
 {
 	if(m_sharedState)
 	{
-		embedded_type<future<T>> res = m_sharedState->extract_value();
+		embedded_type<future<T>> res = std::move(*m_sharedState).extract_value();
 
-		return res.extract();
+		return std::move(res).extract();
 	}
 	else
 	{
@@ -87,11 +87,11 @@ future<T> future<future<T>>::extract_future()
 	}
 }
 template<typename T>
-auto future<future<T>>::extract_value()
+auto future<future<T>>::extract_value() &&
 {
 	if(m_sharedState)
 	{
-		auto res = m_sharedState->extract_value()->extract_value();
+		auto res = std::move(*std::move(*m_sharedState).extract_value()).extract_value();
 
 		return std::move(res);
 	}
@@ -152,11 +152,11 @@ future<Return> future<future<T>>::then(const function<Return(Type)>& i_continuat
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
-				eval(i_continuation,acquiredFuture.extract_value());
+				eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation,acquiredFuture.extract_value());
+				return eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 		}));
 
@@ -190,11 +190,11 @@ future<Return> future<future<T>>::then_on(const function<Return(Type)>& i_contin
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
-				eval(i_continuation,acquiredFuture.extract_value());
+				eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation,acquiredFuture.extract_value());
+				return eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 		}));
 
@@ -222,11 +222,11 @@ future<Return> future<future<T>>::async(const function<Return(Type)>& i_continua
 		{
 			if constexpr(std::is_same<Return,void>::value)
 			{
-				eval(i_continuation,acquiredFuture.extract_value());
+				eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation,acquiredFuture.extract_value());
+				return eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 		}))->attach(std::move(i_execContext),currDepth);
 
@@ -250,11 +250,11 @@ future<T> future<future<T>>::on_error(const function<void(const async_error&)>& 
 			{
 				if constexpr(std::is_same<T,void>::value)
 				{
-					acquiredFuture.extract_value();
+					std::move(acquiredFuture).extract_value();
 				}
 				else
 				{
-					return acquiredFuture.extract_value();
+					return std::move(acquiredFuture).extract_value();
 				}
 			}
 			catch(const async_exception& i_excp)
@@ -297,11 +297,11 @@ future<T> future<future<T>>::on_error(const function<void(const async_error&)>& 
 			{
 				if constexpr(std::is_same<T,void>::value)
 				{
-					acquiredFuture.extract_value();
+					std::move(acquiredFuture).extract_value();
 				}
 				else
 				{
-					return acquiredFuture.extract_value();
+					return std::move(acquiredFuture).extract_value();
 				}
 			}
 			catch(const async_exception& i_excp)

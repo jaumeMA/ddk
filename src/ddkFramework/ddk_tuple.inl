@@ -19,9 +19,9 @@ constexpr typename tuple_base<Index,T>::reference tuple_base<Index,T>::get()
     return m_value.get();
 }
 template<size_t Index,typename T>
-typename tuple_base<Index,T>::rreference tuple_base<Index,T>::extract()&&
+typename tuple_base<Index,T>::rreference tuple_base<Index,T>::extract() &&
 {
-    return m_value.extract();
+    return std::move(m_value).extract();
 }
 template<size_t Index,typename T>
 constexpr typename tuple_base<Index,T>::const_reference tuple_base<Index,T>::get() const

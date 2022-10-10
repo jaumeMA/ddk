@@ -24,6 +24,80 @@ variant_impl_destructor<SuperClass,false>::~variant_impl_destructor()
 	static_cast<SuperClass*>(this)->destroy();
 }
 
+template<typename ... Types, typename ... TTypes>
+constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, const variant_impl<TTypes...>& other)
+{
+	//here we rely on RVO
+	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	{
+		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
+		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
+		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
+
+		constructor_visitor<variadic_union<Types...>,TTypes...> ctr;
+
+		return _variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,other);
+	}
+	else
+	{
+		return none;
+	}
+}
+template<typename ... Types, typename ... TTypes>
+constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, variant_impl<TTypes...>&& other)
+{
+	//here we rely on RVO
+	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	{
+		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
+		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
+		typedef variant_visitor_invoker<return_type, TTypes...> _variant_visitor_t;
+
+		constructor_visitor<variadic_union<Types...>, TTypes...> ctr;
+
+		return _variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,std::move(other));
+	}
+	else
+	{
+		return none;
+	}
+}
+template<typename ... Types, typename ... TTypes>
+constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, const variant_impl<TTypes...>& other)
+{
+	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	{
+		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
+		typedef typename constructor_inplace_visitor<variadic_union<Types...>,TTypes...>::return_type return_type;
+		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
+
+		constructor_inplace_visitor<variadic_union<Types...>,TTypes...> ctr(i_storage);
+
+		_variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,other);
+	}
+
+	return i_storage;
+}
+template<typename ... Types, typename ... TTypes>
+constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, variant_impl<TTypes...>&& other)
+{
+	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	{
+		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
+		typedef typename constructor_inplace_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
+		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
+
+		constructor_inplace_visitor<variadic_union<Types...>, TTypes...> ctr(i_storage);
+
+		_variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,std::move(other));
+	}
+
+	return i_storage;
+}
+
+template<typename ... Types>
+const mpl::type_pack<Types...> variant_impl<Types...>::s_types = mpl::type_pack<Types...>{};
+
 template<typename ... Types>
 constexpr variant_impl<Types...>::variant_impl()
 : m_currentType((std::is_default_constructible<typename mpl::nth_type_of<0,Types...>::type>::value) ? 0 : s_numTypes)
@@ -39,61 +113,30 @@ constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&,
 template<typename ... Types>
 constexpr variant_impl<Types...>::variant_impl(const variant_impl<Types...>& other)
 : m_currentType(other.m_currentType)
-, m_storage(none)
+, m_storage(construct_union(s_types,other))
 {
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,Types...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,Types);
-		CALL_INNER_VISITOR(ctr,other);
-	}
 }
 template<typename ... Types>
 constexpr variant_impl<Types...>::variant_impl(variant_impl<Types...>&& other)
 : m_currentType(other.m_currentType)
-, m_storage(none)
+, m_storage(construct_union(s_types,std::move(other)))
 {
-
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,Types...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,Types);
-		CALL_INNER_VISITOR(ctr,std::move(other));
-
-		other.m_currentType = s_numTypes;
-	}
+	other.m_currentType = s_numTypes;
 }
 template<typename ... Types>
 template<typename ... TTypes>
 constexpr variant_impl<Types...>::variant_impl(const variant_impl<TTypes...>& other)
 : m_currentType(other.m_currentType)
-, m_storage(none)
+, m_storage(construct_union(s_types,other))
 {
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,TTypes...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,TTypes);
-		CALL_INNER_VISITOR(ctr,other);
-	}
 }
 template<typename ... Types>
 template<typename ... TTypes>
 constexpr variant_impl<Types...>::variant_impl(variant_impl<TTypes...>&& other)
 : m_currentType(other.m_currentType)
-, m_storage(none)
+, m_storage(construct_union(s_types,std::move(other)))
 {
-	if (other.m_currentType < s_numTypes)
-	{
-		constructor_visitor<data_type,TTypes...> ctr(m_storage);
-
-		CREATE_INNER_VISITOR(ctr,TTypes);
-		CALL_INNER_VISITOR(ctr,std::move(other));
-
-		other.m_currentType = s_numTypes;
-	}
+	other.m_currentType = s_numTypes;
 }
 template<typename ... Types>
 void variant_impl<Types...>::destroy()
@@ -126,10 +169,7 @@ variant_impl<Types...>& variant_impl<Types...>::operator=(const variant_impl<Typ
 
 			m_currentType = other.m_currentType;
 
-			constructor_visitor<data_type,Types...> ctr(m_storage);
-
-			CREATE_INNER_VISITOR(ctr,Types);
-			CALL_INNER_VISITOR(ctr,other);
+			construct_union(m_storage,other);
 		}
 	}
 	else
@@ -157,10 +197,7 @@ variant_impl<Types...>& variant_impl<Types...>::operator=(variant_impl<Types...>
 
 			m_currentType = other.m_currentType;
 
-			constructor_visitor<data_type,Types...> ctr(m_storage);
-
-			CREATE_INNER_VISITOR(ctr,Types);
-			CALL_INNER_VISITOR(ctr,std::move(other));
+			construct_union(m_storage,std::move(other));
 		}
 	}
 	else
@@ -191,10 +228,7 @@ variant_impl<Types...>& variant_impl<Types...>::operator=(const variant_impl<TTy
 
 			m_currentType = other.m_currentType;
 
-			constructor_visitor<data_type,Types...> ctr(m_storage);
-
-			CREATE_INNER_VISITOR(ctr,TTypes);
-			CALL_INNER_VISITOR(ctr,other);
+			construct_union(m_storage,other);
 		}
 	}
 	else
@@ -223,10 +257,7 @@ variant_impl<Types...>& variant_impl<Types...>::operator=(variant_impl<TTypes...
 
 			m_currentType = other.m_currentType;
 
-			constructor_visitor<data_type,Types...> ctr(m_storage);
-
-			CREATE_INNER_VISITOR(ctr,TTypes);
-			CALL_INNER_VISITOR(ctr,std::move(other));
+			construct_union(m_storage, std::move(other));
 		}
 	}
 	else
@@ -248,14 +279,18 @@ variant_impl<Types...>& variant_impl<Types...>::assign(TType&& val)
 	{
 		destroy();
 
-		constructor_visitor<data_type,Types...>::template construct<Index>(m_storage,std::forward<TType>(val));
+		constructor_inplace_visitor<data_type, Types...> ctr(m_storage);
+
+		ctr.template operator()<Index>(std::forward<TType>(val));
 
 		m_currentType = static_cast<unsigned char>(Index);
 	}
 	else if (m_currentType < s_numTypes)
 	{
 		//just an assignment
-		assigner_visitor<data_type,Types...>::template assign<Index>(m_storage, std::forward<TType>(val));
+		assigner_visitor<data_type, Types...> ass(m_storage);
+
+		ass.template operator()<Index>(std::forward<TType>(val));
 	}
 
 	return *this;
@@ -371,7 +406,7 @@ TType variant_impl<Types...>::extract() &&
 {
 	m_currentType = s_numTypes;
 
-	return m_storage.template extract<TType>();
+	return std::move(m_storage).template extract<TType>();
 }
 template<typename ... Types>
 template<typename TType>
@@ -448,7 +483,7 @@ embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> variant_impl<Types.
 
 	m_currentType = s_numTypes;
 
-	return embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>{ m_storage.template extract<embeddedType>() };
+	return embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>{ std::move(m_storage).template extract<embeddedType>() };
 }
 template<typename ... Types>
 template<size_t Pos>
@@ -480,10 +515,10 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 
 			//construction of tmp
 			variant_impl<Types...> tmp;
-			constructor_visitor<Types...> ctr(&tmp.m_storage);
+
 			tmp.m_currentType = m_currentType;
-			CREATE_INNER_VISITOR(ctr,Types);
-			CALL_INNER_VISITOR(ctr,*this);
+
+			construct_union(tmp.m_storage,*this);
 
 			//reconstruction of us
 			*this = other;
@@ -495,16 +530,12 @@ void variant_impl<Types...>::swap(variant_impl<Types...>& other)
 	else if (m_currentType < s_numTypes)
 	{
 		//construct us with other data
-		constructor_visitor<Types...> ctr(&(other.m_storage));
-		CREATE_INNER_VISITOR(ctr,Types);
-		CALL_INNER_VISITOR(ctr,*this);
+		construct_union(other.m_storage,*this);
 	}
 	else if (other.m_currentType < s_numTypes)
 	{
 		//construct other with our data
-		constructor_visitor<data_type,Types...> ctr(m_storage);
-		CREATE_INNER_VISITOR(ctr,Types);
-		CALL_INNER_VISITOR(ctr,other);
+		construct_union(m_storage,other);
 	}
 }
 template<typename ... Types>

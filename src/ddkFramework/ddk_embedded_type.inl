@@ -26,7 +26,7 @@ constexpr bool embedded_type<T&>::operator==(const embedded_type<T&>& other) con
 	return m_data == other.m_data;
 }
 template<typename T>
-typename embedded_type<T&>::rref_type embedded_type<T&>::extract()
+typename embedded_type<T&>::rref_type embedded_type<T&>::extract() &&
 {
 	return m_data;
 }
@@ -140,7 +140,7 @@ constexpr typename embedded_type<T&&>::pointer_type embedded_type<T&&>::get_ptr(
 	return &m_data;
 }
 template<typename T>
-typename embedded_type<T&&>::rref_type embedded_type<T&&>::extract()
+typename embedded_type<T&&>::rref_type embedded_type<T&&>::extract() &&
 {
 	return std::move(m_data);
 }
@@ -286,7 +286,7 @@ constexpr typename embedded_type<T>::pointer_type embedded_type<T>::get_ptr()
 	return &m_data;
 }
 template<typename T>
-inline typename embedded_type<T>::rref_type embedded_type<T>::extract()
+inline typename embedded_type<T>::rref_type embedded_type<T>::extract() &&
 {
 	return std::forward<embedded_type<T>::rref_type>(m_data);
 }

@@ -51,7 +51,7 @@ public:
 	bool valid() const;
 	bool ready() const;
 	bool empty() const;
-	T extract_value();
+	T extract_value() &&;
 	void wait() const;
 	bool wait_for(const std::chrono::milliseconds& i_period) const;
 	cancel_result cancel();
@@ -101,9 +101,9 @@ public:
 		return *this;
 	}
 
-	void extract_value()
+	void extract_value() &&
 	{
-		future<detail::void_t>::extract_value();
+		static_cast<future<detail::void_t>&&>(std::move(*this)).extract_value();
 	}
 	future<void> then(const function<void()>& i_continuation) &&
 	{

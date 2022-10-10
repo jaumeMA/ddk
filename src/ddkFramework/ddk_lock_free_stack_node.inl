@@ -66,11 +66,11 @@ T lock_free_stack_node<T>::extract_value()
 {
 	if constexpr (std::is_move_constructible<T>::value)
 	{
-		return std::move(m_arena.template extract<T>());
+		return std::move(m_arena).template extract<T>();
 	}
 	else
 	{
-		T res = std::move(m_arena.template get<T>());
+		T res = std::move(m_arena).template get<T>();
 
 		m_arena.template destroy<T>();
 

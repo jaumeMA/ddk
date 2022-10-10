@@ -31,11 +31,20 @@ struct variant_impl_destructor<SuperClass,false>
 template<typename ... Types>
 class variant_impl : public variant_impl_destructor<variant_impl<Types...>,mpl::holds_any_type<std::is_trivially_destructible,Types...>()>
 {
+    template<typename ... Types, typename ... TTypes>
+    friend constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, const variant_impl<TTypes...>&);
+    template<typename ... Types, typename ... TTypes>
+    friend constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, variant_impl<TTypes...>&&);
+    template<typename ... Types, typename ... TTypes>
+    friend constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>&, const variant_impl<TTypes...>&);
+    template<typename ... Types, typename ... TTypes>
+    friend constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>&, variant_impl<TTypes...>&&);
     template<typename ...>
     friend class variant_impl;
     template<typename,typename ...>
     friend class variant_visitor_invoker;
     static const size_t s_numTypes = mpl::get_num_types<Types...>();
+    static const mpl::type_pack<Types...> s_types;
 
 public:
 	static const size_t npos = s_numTypes;

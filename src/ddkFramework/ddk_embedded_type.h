@@ -32,7 +32,7 @@ public:
 	template<typename Type>
 	inline embedded_type& operator=(Type&& val);
 	constexpr bool operator==(const embedded_type<T&>& other) const;
-	inline rref_type extract();
+	inline rref_type extract() &&;
 	constexpr cref_type get() const;
 	constexpr ref_type get();
 	constexpr pointer_type get_ptr();
@@ -78,7 +78,7 @@ public:
 	constexpr cref_type get() const;
 	constexpr ref_type get();
 	constexpr pointer_type get_ptr();
-	inline rref_type extract();
+	inline rref_type extract() &&;
 	constexpr cref_type operator*() const;
 	constexpr ref_type operator*();
 	constexpr pointer_type operator->();
@@ -124,7 +124,7 @@ public:
 	constexpr ref_type get();
 	constexpr cpointer_type get_ptr() const;
 	constexpr pointer_type get_ptr();
-	inline rref_type extract();
+	inline rref_type extract() &&;
 	constexpr cref_type operator*() const;
 	constexpr ref_type operator*();
 	constexpr pointer_type operator->();

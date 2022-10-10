@@ -93,7 +93,7 @@ shared_future<TT> shared_future<T>::then_on(const function<TT(const_reference)>&
 			{
 				shared_future<TT> nestedFuture = ddk::async(i_continuation(acquiredFuture.get_value()))->attach(std::forward<TTT>(acquiredExecContext),acquiredFuture.m_depth);
 
-				return nestedFuture.extract_value();
+				return std::move(nestedFuture).extract_value();
 			}
 		}));
 
@@ -148,11 +148,11 @@ shared_future<TT> shared_future<T>::async(const function<TT(const_reference)>& i
 		{
 			if constexpr(std::is_same<TT,void>::value)
 			{
-				eval(i_continuation,acquiredFuture.extract_value());
+				eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation,acquiredFuture.extract_value());
+				return eval(i_continuation, std::move(acquiredFuture).extract_value());
 			}
 		}))->attach(i_execContext,currDepth);
 
@@ -178,11 +178,11 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			{
 				if constexpr(std::is_same<T,void>::value)
 				{
-					acquiredFuture.extract_value();
+					std::move(acquiredFuture).extract_value();
 				}
 				else
 				{
-					return acquiredFuture.extract_value();
+					return std::move(acquiredFuture).extract_value();
 				}
 			}
 			catch(const async_exception& i_excp)
@@ -225,11 +225,11 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			{
 				if constexpr(std::is_same<T,void>::value)
 				{
-					acquiredFuture.extract_value();
+					std::move(acquiredFuture).extract_value();
 				}
 				else
 				{
-					return acquiredFuture.extract_value();
+					return std::move(acquiredFuture).extract_value();
 				}
 			}
 			catch(const async_exception& i_excp)

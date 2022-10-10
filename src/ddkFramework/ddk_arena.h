@@ -31,7 +31,7 @@ public:
 	template<typename T>
 	inline typename embedded_type<T>::ref_type get();
 	template<typename T>
-	inline embedded_type<T> extract();
+	inline embedded_type<T> extract() &&;
 	template<typename T>
 	inline typename embedded_type<T>::cpointer_type get_ptr() const;
 	template<typename T>

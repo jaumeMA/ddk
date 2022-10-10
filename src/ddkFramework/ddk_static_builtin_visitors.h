@@ -10,35 +10,42 @@ namespace detail
 {
 
 template<typename Storage, typename ... Types>
-struct constructor_visitor : public static_visitor<void>
+struct constructor_visitor : public static_visitor<Storage>
 {
     typedef constructor_visitor t_visitor;
 
+	constexpr constructor_visitor() = default;
 	constexpr constructor_visitor(Storage& i_storage)
-	: m_storage(i_storage)
 	{
 	}
     template<size_t PosType, typename Type>
-    static constexpr detail::void_t construct(Storage& i_storage, Type&& i_val)
-	{
-		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(), "Type out of bounds!");
-
-		typedef typename mpl::nth_type_of<PosType, Types...>::type TType;
-
-		i_storage.template construct<TType>(std::forward<Type>(i_val));
-
-		return _void;
-	}
-    template<size_t PosType, typename Type>
-	constexpr detail::void_t operator()(Type&& i_value) const
+	constexpr Storage operator()(Type&& i_value) const
 	{
 		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
 
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
 
-		m_storage.template construct<varType>(std::forward<Type>(i_value));
+		return { mpl::class_holder<varType>{},std::forward<Type>(i_value) };
+	}
+};
 
-		return _void;
+template<typename Storage, typename ... Types>
+struct constructor_inplace_visitor : public static_visitor<void>
+{
+	typedef constructor_inplace_visitor t_visitor;
+
+	constexpr constructor_inplace_visitor(Storage& i_storage)
+	: m_storage(i_storage)
+	{
+	}
+	template<size_t PosType, typename Type>
+	constexpr void operator()(Type&& i_value) const
+	{
+		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
+
+		typedef typename mpl::nth_type_of<PosType, Types...>::type varType;
+
+		m_storage.template construct<varType>(std::forward<Type>(i_value));
 	}
 
 private:
@@ -82,28 +89,9 @@ struct assigner_visitor : public static_visitor<void>
 {
     typedef assigner_visitor t_visitor;
 
-    template<typename Type>
-    struct _assigner
-    {
-        template<typename TType>
-        static constexpr void assign(Storage& i_storage, TType&& val)
-		{
-			static_assert(mpl::is_among_constructible_types<Type, Types...>, "Assigning type non present in variant types!");
-
-			i_storage.template assign<Type>(std::forward<TType>(val));
-		}
-    };
-
 	constexpr assigner_visitor(Storage& i_storage)
 	: m_storage(i_storage)
 	{
-	}
-    template<size_t PosType, typename Type>
-    static constexpr void assign(Storage& i_storage, Type&& val)
-	{
-		typedef typename mpl::nth_type_of<PosType, Types...>::type TType;
-
-		_assigner<TType>::template assign<Type>(i_storage, std::forward<Type>(val));
 	}
     template<size_t PosType, typename Type>
 	constexpr detail::void_t operator()(Type&& i_value) const

@@ -21,7 +21,7 @@ public:
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
-			_visitor.template operator() < TypePos > (std::forward<ref_type>(var.template get<TypePos>()));
+			_visitor.template operator()<TypePos>(std::forward<ref_type>(var.template get<TypePos>()));
 		}
 		else
 		{

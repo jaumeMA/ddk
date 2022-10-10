@@ -131,15 +131,15 @@ constexpr typename embedded_type<T>::ref_type variadic_union<Type,Types...>::get
 }
 template<typename Type,typename ... Types>
 template<typename T>
-typename embedded_type<T>::rref_type variadic_union<Type,Types...>::extract()
+typename embedded_type<T>::rref_type variadic_union<Type,Types...>::extract() &&
 {
 	if constexpr(std::is_same<Type,T>::value)
 	{
-		return m_data._local.extract();
+		return std::move(m_data._local).extract();
 	}
 	else
 	{
-		return m_data._nested.template extract<T>();
+		return std::move(m_data._nested).template extract<T>();
 	}
 }
 template<typename Type,typename ... Types>

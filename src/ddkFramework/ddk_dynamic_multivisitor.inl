@@ -94,11 +94,11 @@ void specialized_visitor<Visitor>::operator()(Args&& ... i_args)
 	}
 }
 template<typename Visitor>
-typename specialized_visitor<Visitor>::return_type specialized_visitor<Visitor>::forward_return()
+typename specialized_visitor<Visitor>::return_type specialized_visitor<Visitor>::forward_return() &&
 {
 	if constexpr (std::is_void<return_type>::value == false)
 	{
-		return m_return.template extract<return_type>();
+		return std::move(m_return).template extract<return_type>();
 	}
 }
 
@@ -155,11 +155,11 @@ void dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<Resol
 	tmpVisitor.visit(m_pendingValues[IndexsToResolve]...);
 }
 template<typename Visitor,typename ... Types,typename ... ResolvedTypes,typename Interface,size_t Dim>
-typename dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Interface,Dim>::return_type dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Interface,Dim>::forward_return()
+typename dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Interface,Dim>::return_type dynamic_multi_visitor<Visitor,mpl::type_pack<Types...>,mpl::type_pack<ResolvedTypes...>,Interface,Dim>::forward_return() &&
 {
 	if constexpr (std::is_void<return_type>::value == false)
 	{
-		return m_visitor.forward_return();
+		return std::move(m_visitor).forward_return();
 	}
 }
 
@@ -190,7 +190,7 @@ auto visit(Callable&& i_callable, const Values& ... i_values)
 
 	if constexpr(std::is_void<return_type>::value == false)
 	{
-		return multiVisitor.forward_return();
+		return std::move(multiVisitor).forward_return();
 	}
 }
 
@@ -211,7 +211,7 @@ auto visit(Callable&& i_callable, const Values& ... i_values)
 
 	if constexpr(std::is_void<return_type>::value == false)
 	{
-		return multiVisitor.forward_return();
+		return std::move(multiVisitor).forward_return();
 	}
 }
 
@@ -232,7 +232,7 @@ auto visit(const Values& ... i_values)
 
 	if constexpr(std::is_void<return_type>::value == false)
 	{
-		return multiVisitor.forward_return();
+		return std::move(multiVisitor).forward_return();
 	}
 }
 
@@ -253,7 +253,7 @@ auto visit(const Values& ... i_values)
 
 	if constexpr(std::is_void<return_type>::value == false)
 	{
-		return multiVisitor.forward_return();
+		return std::move(multiVisitor).forward_return();
 	}
 }
 

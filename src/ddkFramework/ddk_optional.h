@@ -2,12 +2,32 @@
 
 #include "ddk_arena.h"
 #include "ddk_none.h"
+#include "ddk_class_rules.h"
+#include "ddk_variadic_union.h"
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename SuperClass, bool>
+struct optional_destructor;
+
+template<typename SuperClass>
+struct optional_destructor<SuperClass, true>
+{
+    ~optional_destructor() = default;
+};
+template<typename SuperClass>
+struct optional_destructor<SuperClass, false>
+{
+    ~optional_destructor();
+};
+
+}
 
 template<typename T>
-class optional
+class optional : contravariant_rules<T>, public detail::optional_destructor<optional<T>, std::is_trivially_destructible<T>::value>
 {
 	template<typename TT>
 	friend class optional;
@@ -20,48 +40,55 @@ public:
     typedef typename embedded_type<T>::raw_type* pointer_type;
     typedef const typename embedded_type<T>::raw_type* pointer_const_type;
 
-    inline optional();
-    inline optional(detail::none_t);
-    inline optional(const optional<T>& other);
-    inline optional(optional<T>&& other);
-    inline optional(reference_type val);
-    inline optional(reference_const_type val);
-    inline optional(rreference_type val);
-    template<typename TT>
-	inline optional(const optional<TT>& other);
-    template<typename TT>
-	inline optional(optional<TT>&& other);
-    template<typename Arg>
-    explicit optional(Arg&& i_arg, typename std::enable_if<std::is_convertible<Arg,optional<T>>::value == false>::type* = NULL);
-    inline ~optional();
-    inline optional<T>& operator=(const optional<T>& other);
-    inline optional<T>& operator=(optional<T>&& other);
-    template<typename TT>
-	inline optional<T>& operator=(const optional<TT>& other);
-    template<typename TT>
-    inline optional<T>& operator=(optional<TT>&& other);
-    inline optional<T>& operator=(detail::none_t);
-    inline optional<T>& operator=(reference_type val);
-    inline optional<T>& operator=(reference_const_type val);
-    inline optional<T>& operator=(rreference_type val);
-	inline bool empty() const;
-    inline explicit operator bool() const;
-    inline bool operator!() const;
-    inline typename embedded_type<T>::cref_type get() const;
-    inline typename embedded_type<T>::ref_type get();
-    inline typename embedded_type<T>::cref_type get_value_or(typename embedded_type<T>::cref_type default_value) const;
-    inline typename embedded_type<T>::ref_type get_value_or(typename embedded_type<T>::ref_type default_value);
-    inline typename embedded_type<T>::cpointer_type get_ptr() const;
-    inline typename embedded_type<T>::pointer_type get_ptr();
-    inline T extract();
-    inline typename embedded_type<T>::cref_type operator*() const;
-    inline typename embedded_type<T>::ref_type operator*();
-    inline typename embedded_type<T>::cpointer_type operator->() const;
-    inline typename embedded_type<T>::pointer_type operator->();
-    inline void swap(const optional<T>& other);
+    constexpr optional();
+    constexpr optional(detail::none_t);
+    constexpr optional(const optional<T>& other);
+    constexpr optional(optional<T>&& other);
+    constexpr optional(reference_type val);
+    constexpr optional(reference_const_type val);
+    constexpr optional(rreference_type val);
+    TEMPLATE(typename TT)
+    REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+    constexpr optional(const optional<TT>& other);
+    TEMPLATE(typename TT)
+    REQUIRES(IS_CONSTRUCTIBLE(T,TT))
+    constexpr optional(optional<TT>&& other);
+    TEMPLATE(typename Arg)
+    REQUIRES(IS_CONSTRUCTIBLE(T,Arg))
+    constexpr explicit optional(Arg&& i_arg);
+    ~optional() = default;
+    constexpr void destroy();
+    constexpr optional<T>& operator=(const optional<T>& other);
+    constexpr optional<T>& operator=(optional<T>&& other);
+    TEMPLATE(typename TT)
+    REQUIRES(IS_ASSIGNABLE(T,TT),IS_CONSTRUCTIBLE(T, TT))
+    constexpr optional<T>& operator=(const optional<TT>& other);
+    TEMPLATE(typename TT)
+    REQUIRES(IS_ASSIGNABLE(T,TT),IS_CONSTRUCTIBLE(T,TT))
+    constexpr optional<T>& operator=(optional<TT>&& other);
+    constexpr optional<T>& operator=(detail::none_t);
+    constexpr optional<T>& operator=(reference_type val);
+    constexpr optional<T>& operator=(reference_const_type val);
+    constexpr optional<T>& operator=(rreference_type val);
+	constexpr bool empty() const;
+    constexpr explicit operator bool() const;
+    constexpr bool operator!() const;
+    constexpr typename embedded_type<T>::cref_type get() const;
+    constexpr typename embedded_type<T>::ref_type get();
+    constexpr typename embedded_type<T>::cref_type get_value_or(typename embedded_type<T>::cref_type default_value) const;
+    constexpr typename embedded_type<T>::ref_type get_value_or(typename embedded_type<T>::ref_type default_value);
+    constexpr typename embedded_type<T>::cpointer_type get_ptr() const;
+    constexpr typename embedded_type<T>::pointer_type get_ptr();
+    constexpr T extract() &&;
+    constexpr typename embedded_type<T>::cref_type operator*() const;
+    constexpr typename embedded_type<T>::ref_type operator*();
+    constexpr typename embedded_type<T>::cpointer_type operator->() const;
+    constexpr typename embedded_type<T>::pointer_type operator->();
+    constexpr void swap(const optional<T>& other);
 
 private:
-	typed_arena<embedded_type<T>> m_storage;
+    variadic_union<ddk::detail::none_t,T> m_storage;
+    bool m_set = false;
 };
 
 }

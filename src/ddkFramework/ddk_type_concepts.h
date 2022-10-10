@@ -153,6 +153,18 @@
 #define IS_COMPARABLE(_TYPE) \
     decltype(std::declval<_TYPE>() < std::declval<_TYPE>())
 
+#define IS_INTEGRAL_COND(_TYPE) \
+	std::is_integral<_TYPE>::value
+
+#define IS_INTEGRAL(_TYPE) \
+	typename std::enable_if<IS_INTEGRAL_COND(_TYPE)>::type
+
+#define IS_FRACTIONAL_COND(_TYPE) \
+	std::is_floating_point<_TYPE>::value
+
+#define IS_FRACTIONAL(_TYPE) \
+	typename std::enable_if<IS_FRACTIONAL_COND(_TYPE)>::type
+
 #define IS_NUMERIC_COND(_TYPE) \
 	std::is_arithmetic<_TYPE>::value
 

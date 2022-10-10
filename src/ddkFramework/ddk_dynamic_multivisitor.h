@@ -39,7 +39,7 @@ public:
 	specialized_visitor(const specialized_visitor&);
 	template<typename ... Args>
 	inline void operator()(Args&& ... i_args);
-	return_type forward_return();
+	return_type forward_return() &&;
 
 private:
 	Visitor& m_visitor;
@@ -83,7 +83,7 @@ public:
 	void visit(Value i_value, Values ... i_values);
 	template<typename T>
 	inline void typed_visit(T&& i_resolvedValue);
-	return_type forward_return();
+	return_type forward_return() &&;
 
 private:
 	template<size_t ... IndexsToResolve, typename T>
