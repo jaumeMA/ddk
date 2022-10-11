@@ -4,27 +4,8 @@ namespace ddk
 namespace detail
 {
 
-template<typename SuperClass>
-optional_destructor<SuperClass,false>::~optional_destructor()
-{
-    static_cast<SuperClass*>(this)->destroy();
-}
-
-template<typename T>
-constexpr variadic_union<none_t,T> construct_union(const optional<T>& i_opt)
-{
-    //here we rely on RVO
-    if(i_opt.empty())
-    {
-        return {};
-    }
-    else
-    {
-        return { mpl::class_holder<T>{},i_opt.get() };
-    }
-}
-template<typename T>
-constexpr variadic_union<none_t, T> construct_union(optional<T>&& i_opt)
+template<typename T, typename TT>
+inline constexpr variadic_union<none_t,T> construct_union(const optional<TT>& i_opt)
 {
     //here we rely on RVO
     if (i_opt.empty())
@@ -33,8 +14,27 @@ constexpr variadic_union<none_t, T> construct_union(optional<T>&& i_opt)
     }
     else
     {
-        return { mpl::class_holder<T>{},std::move(i_opt).extract() };
+        return { mpl::class_holder<T>{}, i_opt.get() };
     }
+}
+template<typename T, typename TT>
+inline constexpr variadic_union<none_t,T> construct_union(optional<TT>&& i_opt)
+{
+    //here we rely on RVO
+    if (i_opt.empty())
+    {
+        return {};
+    }
+    else
+    {
+        return { mpl::class_holder<T>{}, std::move(i_opt).extract() };
+    }
+}
+
+template<typename SuperClass>
+optional_destructor<SuperClass,false>::~optional_destructor()
+{
+    static_cast<SuperClass*>(this)->destroy();
 }
 
 }
@@ -49,19 +49,16 @@ constexpr optional<T>::optional(detail::none_t)
 }
 template<typename T>
 constexpr optional<T>::optional(const optional<T>& other)
-: m_storage(detail::construct_union(other))
+: m_storage(detail::construct_union<T>(other))
 , m_set(other.m_set)
 {
 }
 template<typename T>
 constexpr optional<T>::optional(optional<T>&& other)
-: m_set(other.m_set)
+: m_storage(detail::construct_union<T>(std::move(other)))
+, m_set(other.m_set)
 {
-    if (other.m_set)
-    {
-        other.m_set = false;
-        m_storage.template construct<T>(std::move(other.m_storage).template extract<T>());
-    }
+    other.m_set = false;
 }
 template<typename T>
 constexpr optional<T>::optional(reference_const_type i_val)
@@ -85,23 +82,18 @@ template<typename T>
 TEMPLATE(typename TT)
 REQUIRED(IS_CONSTRUCTIBLE(T,TT))
 constexpr optional<T>::optional(const optional<TT>& other)
-: m_set(true)
+: m_storage(detail::construct_union<T>(other))
+, m_set(true)
 {
-    if (other.m_set)
-    {
-		m_storage.template construct<T>(other.m_storage.template get<TT>());
-    }
 }
 template<typename T>
 TEMPLATE(typename TT)
 REQUIRED(IS_CONSTRUCTIBLE(T,TT))
 constexpr optional<T>::optional(optional<TT>&& other)
-: m_set(true)
+: m_storage(detail::construct_union<T>(std::move(other)))
+, m_set(true)
 {
-    if (other.m_set)
-    {
-		m_storage.template construct<T>(std::move(other.m_storage).template extract<TT>());
-    }
+    other.m_set = false;
 }
 template<typename T>
 TEMPLATE(typename Arg)

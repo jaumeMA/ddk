@@ -49,7 +49,7 @@ TEST(DDKVariantTest,defaultConstruction)
 	constexpr ddk::variant<int,char> foo('a');
 	constexpr ddk::variant<int,char> fooo(foo);
 
-	static_assert(fooo.is<1>(),"wtf");
+	static_assert(fooo.get<1>() == 'a', "wtf");
 }
 TEST(DDKVariantTest,construction1)
 {

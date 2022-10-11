@@ -124,6 +124,14 @@ TEST(DDKOptionalTest,extraction)
 
 	EXPECT_EQ(value,0xFF);
 }
+TEST(DDKOptionalTest, constExprCopyConstruction)
+{
+	constexpr ddk::optional<int> foo(0xFF);
+	constexpr ddk::optional<long long int> _foo(foo);
+
+	static_assert(*foo == 0xFF, "wtf");
+	static_assert(*_foo == 0xFF, "wtf");
+}
 TYPED_TEST(DDKTypedOptionalTest,OptionalCompilationError)
 {
 	ddk::optional<TypeParam> foo1;

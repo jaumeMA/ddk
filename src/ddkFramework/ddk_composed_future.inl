@@ -32,7 +32,7 @@ bool composed_future<std::array<T,Dim>>::place_future(Future&& i_future, ddk::di
 
 		if (++i_futureData->m_resolvedValues == Dim)
 		{
-			i_futureData->m_promise.set_value({ {i_futureData->m_values[Indexs].extract<T>() ...} });
+			i_futureData->m_promise.set_value({ { std::move(i_futureData->m_values[Indexs]).template extract<T>() ...} });
 		}
 	}));
 

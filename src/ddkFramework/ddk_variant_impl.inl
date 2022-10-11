@@ -18,14 +18,8 @@ namespace ddk
 namespace detail
 {
 
-template<typename SuperClass>
-variant_impl_destructor<SuperClass,false>::~variant_impl_destructor()
-{
-	static_cast<SuperClass*>(this)->destroy();
-}
-
 template<typename ... Types, typename ... TTypes>
-constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, const variant_impl<TTypes...>& other)
+inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, const variant_impl<TTypes...>& other)
 {
 	//here we rely on RVO
 	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
@@ -44,7 +38,7 @@ constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...
 	}
 }
 template<typename ... Types, typename ... TTypes>
-constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, variant_impl<TTypes...>&& other)
+inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, variant_impl<TTypes...>&& other)
 {
 	//here we rely on RVO
 	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
@@ -63,7 +57,7 @@ constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...
 	}
 }
 template<typename ... Types, typename ... TTypes>
-constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, const variant_impl<TTypes...>& other)
+inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, const variant_impl<TTypes...>& other)
 {
 	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
 	{
@@ -79,7 +73,7 @@ constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_
 	return i_storage;
 }
 template<typename ... Types, typename ... TTypes>
-constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, variant_impl<TTypes...>&& other)
+inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, variant_impl<TTypes...>&& other)
 {
 	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
 	{
@@ -93,6 +87,12 @@ constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_
 	}
 
 	return i_storage;
+}
+
+template<typename SuperClass>
+variant_impl_destructor<SuperClass,false>::~variant_impl_destructor()
+{
+	static_cast<SuperClass*>(this)->destroy();
 }
 
 template<typename ... Types>
