@@ -10,6 +10,14 @@ template<typename T>
 struct lock_unlocker
 {
 public:
+    lock_unlocker() = delete;
+    lock_unlocker(const lock_unlocker&) = delete;
+    lock_unlocker(lock_unlocker&&) = delete;
+    ~lock_unlocker() = delete;
+
+    lock_unlocker& operator=(const lock_unlocker&) = delete;
+    lock_unlocker& operator=(lock_unlocker&&) = delete;
+
     inline bool unlock()
     {
         m_lock.unlock();
