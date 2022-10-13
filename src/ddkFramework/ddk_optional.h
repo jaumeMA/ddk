@@ -87,8 +87,8 @@ public:
     constexpr void swap(const optional<T>& other);
 
 private:
-    variadic_union<ddk::detail::none_t,T> m_storage;
     bool m_set = false;
+    variadic_union<ddk::detail::none_t,T> m_storage;
 };
 
 }

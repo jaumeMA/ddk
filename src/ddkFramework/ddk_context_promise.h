@@ -17,6 +17,7 @@ public:
 	context_promise(context_promise&&) = default;
 	~context_promise();
 
+	context_promise& operator=(context_promise&& other) = default;
 	inline void set_value(const Return&);
 	inline void set_exception(const async_exception& i_exception);
 	inline context_future<Return> get_future() const;

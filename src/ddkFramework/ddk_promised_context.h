@@ -24,9 +24,9 @@ private:
 	detail::async_executor_recipients m_recipients;
 };
 
-typedef distributed_reference_wrapper<promised_context> promised_context_dist_ref;
-typedef distributed_reference_wrapper<const promised_context> promised_context_dist_const_ref;
-typedef distributed_pointer_wrapper<promised_context> promised_context_dist_ptr;
-typedef distributed_pointer_wrapper<promised_context> promised_context_dist_const_ptr;
+typedef atomic_distributed_reference_wrapper<promised_context> promised_context_dist_ref;
+typedef atomic_distributed_reference_wrapper<const promised_context> promised_context_dist_const_ref;
+typedef atomic_distributed_pointer_wrapper<promised_context> promised_context_dist_ptr;
+typedef atomic_distributed_pointer_wrapper<const promised_context> promised_context_dist_const_ptr;
 
 }

@@ -49,58 +49,56 @@ constexpr optional<T>::optional(detail::none_t)
 }
 template<typename T>
 constexpr optional<T>::optional(const optional<T>& other)
-: m_storage(detail::construct_union<T>(other))
-, m_set(other.m_set)
+: m_set(other.m_set)
+, m_storage(detail::construct_union<T>(other))
 {
 }
 template<typename T>
 constexpr optional<T>::optional(optional<T>&& other)
-: m_storage(detail::construct_union<T>(std::move(other)))
-, m_set(other.m_set)
+: m_set(other.m_set)
+, m_storage(detail::construct_union<T>(std::move(other)))
 {
-    other.m_set = false;
 }
 template<typename T>
 constexpr optional<T>::optional(reference_const_type i_val)
-: m_storage(mpl::class_holder<T>{},i_val)
-, m_set(true)
+: m_set(true)
+, m_storage(mpl::class_holder<T>{},i_val)
 {
 }
 template<typename T>
 constexpr optional<T>::optional(reference_type i_val)
-: m_storage(mpl::class_holder<T>{},i_val)
-, m_set(true)
+: m_set(true)
+, m_storage(mpl::class_holder<T>{},i_val)
 {
 }
 template<typename T>
 constexpr optional<T>::optional(rreference_type i_val)
-: m_storage(mpl::class_holder<T>{}, std::move(i_val))
-, m_set(true)
+: m_set(true)
+, m_storage(mpl::class_holder<T>{}, std::move(i_val))
 {
 }
 template<typename T>
 TEMPLATE(typename TT)
 REQUIRED(IS_CONSTRUCTIBLE(T,TT))
 constexpr optional<T>::optional(const optional<TT>& other)
-: m_storage(detail::construct_union<T>(other))
-, m_set(true)
+: m_set(other.m_set)
+, m_storage(detail::construct_union<T>(other))
 {
 }
 template<typename T>
 TEMPLATE(typename TT)
 REQUIRED(IS_CONSTRUCTIBLE(T,TT))
 constexpr optional<T>::optional(optional<TT>&& other)
-: m_storage(detail::construct_union<T>(std::move(other)))
-, m_set(true)
+: m_set(other.m_set)
+, m_storage(detail::construct_union<T>(std::move(other)))
 {
-    other.m_set = false;
 }
 template<typename T>
 TEMPLATE(typename Arg)
 REQUIRED(IS_CONSTRUCTIBLE(T,Arg))
 constexpr optional<T>::optional(Arg&& i_arg)
-: m_storage(mpl::class_holder<T>{},std::forward<Arg>(i_arg))
-, m_set(true)
+: m_set(true)
+, m_storage(mpl::class_holder<T>{},std::forward<Arg>(i_arg))
 {
 }
 template<typename T>
@@ -133,7 +131,7 @@ constexpr optional<T>& optional<T>::operator=(optional<T>&& other)
 {
     if (other.m_set)
     {
-        (m_set) ? m_storage.template assign<T>(std::move(other.m_storage).template extract<T>()) : m_storage.template construct<T>(std::move(other.m_storage).template extract<T>());
+        (m_set) ? m_storage.template assign<T>(std::move(other).extract()) : m_storage.template construct<T>(std::move(other).extract());
 
         m_set = true;
 
@@ -171,11 +169,9 @@ constexpr optional<T>& optional<T>::operator=(optional<TT>&& other)
 {
     if (other.m_set)
     {
-        (m_set) ? m_storage.template assign<T>(std::move(other.m_storage).template extract<TT>()) : m_storage.template construct<T>(std::move(other.m_storage).template extract<TT>());
+        (m_set) ? m_storage.template assign<T>(std::move(other).extract()) : m_storage.template construct<T>(std::move(other).extract());
 
         m_set = true;
-
-        other.m_set = false;
     }
     else
     {
@@ -286,11 +282,11 @@ constexpr typename embedded_type<T>::pointer_type optional<T>::get_ptr()
 template<typename T>
 constexpr T optional<T>::extract() &&
 {
-	T res = std::move(m_storage).template extract<T>();
+    T res = std::move(m_storage).template extract<T>();
 
-    m_set = false;
+    destroy();
 
-    return res;
+    return std::forward<T>(res);
 }
 template<typename T>
 constexpr typename embedded_type<T>::cref_type optional<T>::operator*() const

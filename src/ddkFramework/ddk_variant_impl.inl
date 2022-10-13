@@ -205,8 +205,6 @@ variant_impl<Types...>& variant_impl<Types...>::operator=(variant_impl<Types...>
 		destroy();
 	}
 
-	other.destroy();
-
 	return *this;
 }
 template<typename ... Types>
@@ -264,8 +262,6 @@ variant_impl<Types...>& variant_impl<Types...>::operator=(variant_impl<TTypes...
 	{
 		destroy();
 	}
-
-	other.destroy();
 
 	return *this;
 }
@@ -404,9 +400,11 @@ template<typename ... Types>
 template<typename TType>
 TType variant_impl<Types...>::extract() &&
 {
-	m_currentType = s_numTypes;
+	TType res = std::move(m_storage).template extract<TType>();
 
-	return std::move(m_storage).template extract<TType>();
+	destroy();
+
+	return std::forward<TType>(res);
 }
 template<typename ... Types>
 template<typename TType>

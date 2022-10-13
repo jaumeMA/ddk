@@ -10,7 +10,7 @@ template<typename T, unsigned char Dim>
 TEMPLATE(typename ... Futures)
 REQUIRED(IS_BASE_OF(future<T>, Futures)...)
 composed_future<std::array<T,Dim>>::composed_future(Futures&& ... i_futures)
-: composed_future(index_seq{}, ddk::context_promise<std::array<T, Dim>>{}, std::move(i_futures)...)
+: composed_future(index_seq{}, ddk::context_promise<std::array<T, Dim>>{}, std::forward<Futures>(i_futures)...)
 {
 }
 template<typename T, unsigned char Dim>
