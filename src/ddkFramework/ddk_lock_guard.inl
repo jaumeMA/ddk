@@ -12,12 +12,13 @@ struct lock_unlocker
 public:
     inline bool unlock()
     {
-        m_lock->unlock();
+        m_lock.unlock();
+
         return true;
     }
 
 private:
-    T* m_lock = nullptr;
+    T m_lock;
 };
 
 template<typename T>
