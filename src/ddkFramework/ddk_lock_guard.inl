@@ -1,4 +1,6 @@
 
+#include "ddk_lock_concepts.h"
+#include "ddk_concepts.h"
 #include <thread>
 
 namespace ddk
@@ -6,28 +8,21 @@ namespace ddk
 namespace detail
 {
 
-template<typename T>
-struct lock_unlocker
+TEMPLATE(typename T)
+REQUIRES(IS_LOCKABLE(T))
+inline bool unlock_lock(T* i_lock)
 {
-public:
-    lock_unlocker() = delete;
-    lock_unlocker(const lock_unlocker&) = delete;
-    lock_unlocker(lock_unlocker&&) = delete;
-    ~lock_unlocker() = delete;
-
-    lock_unlocker& operator=(const lock_unlocker&) = delete;
-    lock_unlocker& operator=(lock_unlocker&&) = delete;
-
-    inline bool unlock()
+    if(i_lock)
     {
-        m_lock.unlock();
+        i_lock->unlock();
 
         return true;
     }
-
-private:
-    T m_lock;
-};
+    else
+    {
+        return false;
+    }
+}
 
 template<typename T>
 lock_guard_impl<mpl::sequence<>,T>::lock_guard_impl(T& i_lockableObject)
@@ -48,7 +43,7 @@ lock_guard_impl<mpl::sequence<Indexs...>,T,TT...>::lock_guard_impl(T& i_lockable
     static const size_t s_numBytes = (s_numSecondaryLocks / 8) + 1;
     static const unsigned int s_allIn = (1 << s_numSecondaryLocks) - 1;
 
-    const void* _[] = { m_secondaryLocks[Indexs] = &i_lockableObjects ... };
+    const void* _[] = { ( m_secondaryLocks[Indexs] = &i_lockableObjects ) ... };
 
 acquire_locks:
 
@@ -58,7 +53,7 @@ acquire_locks:
 
     if(memcmp(&tryLockRes,&s_allIn,s_numBytes) != 0)
     {
-        ( (static_cast<bool>(tryLockRes & (1 << Indexs)) && reinterpret_cast<detail::lock_unlocker<TT>*>(m_secondaryLocks[Indexs])->unlock()) | ... );
+        const bool _[] = { static_cast<bool>(tryLockRes & (1 << Indexs)) && unlock_lock(reinterpret_cast<TT*>(m_secondaryLocks[Indexs])) ... };
 
         m_primaryLock.unlock();
 
@@ -70,7 +65,7 @@ acquire_locks:
 template<size_t ... Indexs,typename T, typename ... TT>
 lock_guard_impl<mpl::sequence<Indexs...>,T,TT...>::~lock_guard_impl()
 {
-    ( reinterpret_cast<detail::lock_unlocker<TT>*>(m_secondaryLocks[Indexs])->unlock() | ... );
+    const bool _[] = { unlock_lock(reinterpret_cast<TT*>(m_secondaryLocks[Indexs])) ... };
 
     m_primaryLock.unlock();
 }
