@@ -48,13 +48,19 @@ void arena<ArenaSize,ArenaAlignment>::set_value(Args&& ... i_args)
 }
 template<size_t ArenaSize, size_t ArenaAlignment>
 template<typename T>
-void arena<ArenaSize,ArenaAlignment>::destroy()
+bool arena<ArenaSize,ArenaAlignment>::destroy()
 {
 	if(m_empty == false)
 	{
 		embedded_type<T>::destroy(&m_storage);
 
 		m_empty = true;
+
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 template<size_t ArenaSize, size_t ArenaAlignment>

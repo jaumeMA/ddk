@@ -28,7 +28,7 @@ public:
 	resume_result stop();
 	bool is_stopped() const;
 
-private:
+protected:
     typedef context_executor_interface::StartErrorCode StartErrorCode;
     typedef context_executor_interface::ResumErrorCode ResumErrorCode;
     typedef context_executor_interface::sink_type sink_type;
@@ -39,6 +39,7 @@ private:
 	void signal() override;
 	void update() const;
 
+private:
 	std::chrono::milliseconds m_sleepTimeInMS;
 	ddk::function<void()> m_executor;
 	bool m_stopped = true;
@@ -63,8 +64,8 @@ public:
 	void signal_thread();
 	bool is_stopped() const;
 
-private:
-    typedef context_executor_interface::StartErrorCode StartErrorCode;
+protected:
+	typedef context_executor_interface::StartErrorCode StartErrorCode;
     typedef context_executor_interface::ResumErrorCode ResumErrorCode;
     typedef context_executor_interface::sink_type sink_type;
 
@@ -74,6 +75,7 @@ private:
 	void signal() override;
 	void update();
 
+private:
 	std::chrono::milliseconds m_sleepTimeInMS = std::chrono::milliseconds(1000);
 	ddk::function<void()> m_executor;
 	ddk::function<bool()> m_testFunc;
@@ -97,8 +99,8 @@ public:
 
 	start_result start(const ddk::function<void()>& i_executor);
 
-private:
-    typedef context_executor_interface::StartErrorCode StartErrorCode;
+protected:
+	typedef context_executor_interface::StartErrorCode StartErrorCode;
     typedef context_executor_interface::ResumErrorCode ResumErrorCode;
     typedef context_executor_interface::sink_type sink_type;
 
@@ -108,6 +110,7 @@ private:
 	void signal() override;
 	void update();
 
+private:
 	mutable ddk::function<void()> m_executor;
 };
 

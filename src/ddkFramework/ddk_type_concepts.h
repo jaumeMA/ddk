@@ -189,6 +189,11 @@
 #define IS_TYPE_NON_CONST(_TYPE) \
 	typename std::enable_if<IS_TYPE_NON_CONST_COND(_TYPE)>::type
 
+#define IS_POINTER_COND(_TYPE) \
+	std::is_pointer<_TYPE>::value
+
+#define IS_POINTER(_TYPE) \
+	typename std::enable_if<IS_POINTER_COND(_TYPE)>::type
 
 namespace ddk
 {

@@ -113,4 +113,11 @@ bool thread_sheaf::empty()
 	return m_threadCtr.empty();
 }
 
+thread_sheaf& operator<<(thread_sheaf& i_lhs, thread i_rhs)
+{
+	i_lhs.m_threadCtr.emplace_back(std::move(i_rhs));
+
+	return i_lhs;
+}
+
 }

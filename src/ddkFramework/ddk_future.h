@@ -51,6 +51,7 @@ public:
 	bool valid() const;
 	bool ready() const;
 	bool empty() const;
+	const_reference get_value() const;
 	T extract_value() &&;
 	void wait() const;
 	bool wait_for(const std::chrono::milliseconds& i_period) const;
@@ -71,8 +72,6 @@ public:
 	future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
 protected:
-	const_reference get_value() const;
-
 	detail::private_async_state_dist_ptr<T> m_sharedState;
 	unsigned char m_depth = 0;
 };

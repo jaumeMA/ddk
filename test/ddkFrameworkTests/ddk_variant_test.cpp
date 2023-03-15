@@ -50,6 +50,13 @@ TEST(DDKVariantTest,defaultConstruction)
 	constexpr ddk::variant<int,char> fooo(foo);
 
 	static_assert(fooo.get<1>() == 'a', "wtf");
+
+	int a = 10;
+	ddk::variant<int&,char> _foo(a);
+
+	int& _a = std::move(_foo).extract<int&>();
+
+	EXPECT_EQ(_a,a);
 }
 TEST(DDKVariantTest,construction1)
 {
@@ -65,6 +72,8 @@ TEST(DDKVariantTest,construction2)
 
 	EXPECT_EQ(foo.is<nonCopyConstructibleType>(),true);
 	EXPECT_EQ(foo.get<nonCopyConstructibleType>(),0xFF);
+
+	const nonCopyConstructibleType res = std::move(foo).extract<nonCopyConstructibleType>();
 }
 TEST(DDKVariantTest,construction3)
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_mutex.h"
+#include "ddk_spin_lock.h"
 #include "ddk_template_helper.h"
 
 namespace ddk
@@ -42,6 +43,7 @@ template<typename T, typename ... TT>
 using lock_guard = detail::lock_guard_impl<typename mpl::make_sequence<0,mpl::get_num_types<TT...>()>::type,T,TT...>;
 
 typedef lock_guard<mutex> mutex_guard;
+typedef lock_guard<spin_lock> spin_guard;
 
 }
 

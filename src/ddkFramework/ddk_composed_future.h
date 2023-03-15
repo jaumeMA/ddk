@@ -22,6 +22,7 @@ private:
 	struct future_data
 	{
 		future_data(ddk::context_promise<std::array<T, Dim>> i_promise);
+		~future_data();
 		ddk::context_promise<std::array<T, Dim>> m_promise;
 		ddk::atomic_uchar m_resolvedValues = 0;
 		ddk::typed_arena<T> m_values[Dim];
@@ -48,6 +49,10 @@ private:
 	struct future_data
 	{
 		future_data(ddk::context_promise<std::tuple<T...>> i_promise);
+		~future_data();
+		template<unsigned char ... Indexs>
+		void destroy_values(const mpl::sequence<Indexs...>& i_seq);
+
 		ddk::context_promise<std::tuple<T...>> m_promise;
 		ddk::atomic_uchar m_resolvedValues = 0;
 		ddk::tuple<ddk::typed_arena<T>...> m_values;

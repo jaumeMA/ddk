@@ -23,10 +23,11 @@ TYPED_TEST_SUITE(DDKTypedOptionalTest, Implementations);
 
 TYPED_TEST(DDKTypedOptionalTest,defaultConstruction)
 {
-	ddk::optional<TypeParam> foo;
+	ddk::optional<int> foo;
 
 	EXPECT_EQ(foo.empty(),true);
 }
+
 TEST(DDKOptionalTest,construction1)
 {
 	ddk::optional<DefaultType> foo(0xFF);
@@ -40,6 +41,11 @@ TEST(DDKOptionalTest,construction2)
 
 	EXPECT_EQ(foo.empty(),false);
 	EXPECT_EQ(foo.get(),0xFF);
+
+	const nonCopyConstructibleType _foo = std::move(foo).extract();
+
+	EXPECT_EQ(foo.empty(), true);
+	EXPECT_EQ(_foo,0xFF);
 }
 TEST(DDKOptionalTest,construction3)
 {

@@ -8,7 +8,6 @@ class shared_future: public future<T>
 {
 public:
 	using future<T>::future;
-	using future<T>::get_value;
 	using typename future<T>::reference;
 	using typename future<T>::const_reference;
 	shared_future(const shared_future& i_future);

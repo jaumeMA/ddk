@@ -6,26 +6,19 @@
 namespace ddk
 {
 
-template<typename>
-struct list_iterator;
-
-template<typename T>
+template<typename T, template<typename> typename Pointer = lent_pointer_wrapper>
 struct list_iterator
 {
-    static_assert(sizeof(T) == 0, "Invalid type for list iterator");
-};
-
-template<typename T>
-struct list_iterator<lent_pointer_wrapper<T>>
-{
-	template<typename>
+	template<typename,template<typename>typename>
 	friend struct list_iterator;
-	template<typename>
+	template<typename,typename>
 	friend struct list_const_iterator;
 
+	typedef Pointer<T> pointer_t;
+	typedef Pointer<const T> const_pointer_t;
     typedef int difference_type;
 	typedef typename T::value_type value_type;
-	typedef typename mpl::static_if<std::is_const<T>::value,typename T::const_reference, typename T::reference>::type reference;
+	typedef typename mpl::static_if<std::is_const<T>::value,typename T::const_reference,typename T::reference>::type reference;
 	typedef typename T::const_reference const_reference;
 	typedef typename mpl::static_if<std::is_const<T>::value,typename T::const_pointer,typename T::pointer>::type pointer;
 	typedef typename T::const_pointer const_pointer;
@@ -35,49 +28,49 @@ struct list_iterator<lent_pointer_wrapper<T>>
 	: m_currNode(nullptr)
 	{
 	}
-	explicit list_iterator(lent_pointer_wrapper<T> i_node)
+	explicit list_iterator(const pointer_t& i_node)
 	: m_currNode(i_node)
 	{
 	}
-	list_iterator(const list_iterator<lent_pointer_wrapper<T>>& other)
+	list_iterator(const list_iterator& other)
 	: m_currNode(other.m_currNode)
 	{
 	}
-	list_iterator(list_iterator<lent_pointer_wrapper<T>>&& other)
+	list_iterator(list_iterator&& other)
 	: m_currNode(std::move(other.m_currNode))
 	{
 	}
 	template<typename TT>
-	list_iterator(const list_iterator<lent_pointer_wrapper<TT>>& other)
+	list_iterator(const list_iterator<TT,Pointer>& other)
 	: m_currNode(other.m_currNode)
 	{
 	}
 	template<typename TT>
-	list_iterator(list_iterator<lent_pointer_wrapper<TT>>&& other)
+	list_iterator(list_iterator<TT,Pointer>&& other)
 	: m_currNode(std::move(other.m_currNode))
 	{
 	}
-	list_iterator& operator=(const list_iterator<lent_pointer_wrapper<T>>& other)
+	list_iterator& operator=(const list_iterator& other)
 	{
 		m_currNode = other.m_currNode;
 
 		return *this;
 	}
-	list_iterator& operator=(list_iterator<lent_pointer_wrapper<T>>&& other)
+	list_iterator& operator=(list_iterator&& other)
 	{
 		m_currNode = std::move(other.m_currNode);
 
 		return *this;
 	}
 	template<typename TT>
-	list_iterator& operator=(const list_iterator<lent_pointer_wrapper<TT>>& other)
+	list_iterator& operator=(const list_iterator<TT,Pointer>& other)
 	{
 		m_currNode = other.m_currNode;
 
 		return *this;
 	}
 	template<typename TT>
-	list_iterator& operator=(list_iterator<lent_pointer_wrapper<TT>>&& other)
+	list_iterator& operator=(list_iterator<TT,Pointer>&& other)
 	{
 		m_currNode = std::move(other.m_currNode);
 
@@ -113,23 +106,23 @@ struct list_iterator<lent_pointer_wrapper<T>>
 	{
 		return m_currNode->get_ptr();
 	}
-	inline bool operator==(const list_iterator<lent_pointer_wrapper<T>>& other) const
+	inline bool operator==(const list_iterator& other) const
 	{
 		return m_currNode == other.m_currNode;
 	}
-	inline bool operator!=(const list_iterator<lent_pointer_wrapper<T>>& other) const
+	inline bool operator!=(const list_iterator& other) const
 	{
 		return m_currNode != other.m_currNode;
 	}
-	lent_pointer_wrapper<const T> get() const
+	const_pointer_t get() const
 	{
 		return m_currNode;
 	}
-	lent_pointer_wrapper<T> get()
+	pointer_t get()
 	{
 		return *m_currNode;
 	}
-	lent_pointer_wrapper<T> extract()
+	pointer_t extract()
 	{
 		return std::move(m_currNode);
 	}
@@ -139,7 +132,7 @@ struct list_iterator<lent_pointer_wrapper<T>>
 	}
 
 private:
-	lent_pointer_wrapper<T> m_currNode;
+	pointer_t m_currNode;
 };
 
 }

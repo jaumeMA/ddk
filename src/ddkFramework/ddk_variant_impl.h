@@ -79,6 +79,10 @@ public:
     template<typename TType>
     constexpr typename embedded_type<TType>::ref_type get();
     template<typename TType>
+    constexpr typename embedded_type<TType>::cpointer_type get_ptr() const;
+    template<typename TType>
+    constexpr typename embedded_type<TType>::pointer_type get_ptr();
+    template<typename TType>
 	inline TType extract() &&;
     template<typename TType>
     constexpr bool is() const;
@@ -94,6 +98,10 @@ public:
     constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cref_type get() const;
     template<size_t Pos>
     constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::ref_type get();
+    template<size_t Pos>
+    constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cpointer_type get_ptr() const;
+    template<size_t Pos>
+    constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::pointer_type get_ptr();
     template<size_t Pos>
 	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract() &&;
     template<size_t Pos>

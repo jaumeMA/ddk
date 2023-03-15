@@ -9,6 +9,7 @@
 #include "ddk_weak_pointer_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_lend_from_this.h"
+#include "ddk_embed_from_this.h"
 #include "ddk_shared_from_this.h"
 #include "ddk_distribute_from_this.h"
 #include "ddk_lendable.h"
@@ -259,6 +260,11 @@ template<typename T,typename ReferenceCounter>
 inline lent_reference_wrapper<T> lend(detail::atomic_shared_reference_wrapper_impl<T,ReferenceCounter>& i_sharedRef);
 template<typename T,typename ReferenceCounter>
 inline lent_reference_wrapper<T> lend(const detail::atomic_shared_reference_wrapper_impl<T,ReferenceCounter>& i_sharedRef);
+
+template<typename T,typename TT>
+inline embedded_ref<TT> lend(embed_from_this<T,TT>& i_embeddable);
+template<typename T,typename TT>
+inline embedded_ref<const TT> lend(const embed_from_this<T,TT>& i_embeddable);
 
 template<typename T, typename TT>
 inline lent_reference_wrapper<TT> lend(lend_from_this<T,TT>& i_lendable);

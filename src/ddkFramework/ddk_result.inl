@@ -100,15 +100,36 @@ const Error& result<T,Error>::error() const
 
     return m_nestedRes.template get<Error>();
 }
+template<typename T,typename Error>
+typename result<T,Error>::const_pointer result<T,Error>::operator->() const
+{
+    CHECK_RESULT
+
+    return m_nestedRes.template get_ptr<T>();
+}
+template<typename T,typename Error>
+typename result<T,Error>::pointer result<T,Error>::operator->()
+{
+    CHECK_RESULT
+
+    return m_nestedRes.template get_ptr<T>();
+}
 template<typename T, typename Error>
-const T& result<T,Error>::get() const
+typename result<T,Error>::const_reference result<T,Error>::get() const
+{
+    CHECK_RESULT
+
+    return m_nestedRes.template get<T>();
+}
+template<typename T,typename Error>
+typename result<T,Error>::reference result<T,Error>::get()
 {
     CHECK_RESULT
 
     return m_nestedRes.template get<T>();
 }
 template<typename T, typename Error>
-T result<T,Error>::extract() &&
+typename result<T,Error>::value result<T,Error>::extract() &&
 {
     CHECK_RESULT
 

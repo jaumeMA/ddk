@@ -25,14 +25,14 @@ atomic8<T>::atomic8(atomic8&& other)
 template<typename T>
 atomic8<T>& atomic8<T>::operator=(const atomic8& other)
 {
-	m_value = other.m_value;
+	atomic_exchange(*this,other.m_value);
 
 	return *this;
 }
 template<typename T>
 atomic8<T>& atomic8<T>::operator=(atomic8&& other)
 {
-	m_value = std::move(other.m_value);
+	atomic_exchange(*this,std::move(other.m_value));
 
 	return *this;
 }
@@ -79,12 +79,12 @@ T& atomic8<T>::get()
 template<typename T>
 void atomic8<T>::set(const T& i_value)
 {
-	m_value = i_value;
+	atomic_exchange(*this,i_value);
 }
 template<typename T>
 void atomic8<T>::set(T&& i_value)
 {
-	m_value = std::move(i_value);
+	atomic_exchange(*this,std::move(i_value));
 }
 template<typename T>
 T* atomic8<T>::_get_typed_arena()
@@ -120,14 +120,14 @@ atomic32<T>::atomic32(atomic32&& other)
 template<typename T>
 atomic32<T>& atomic32<T>::operator=(const atomic32& other)
 {
-	m_value = other.m_value;
+	ddk::atomic_exchange(*this,other.m_value);
 
 	return *this;
 }
 template<typename T>
 atomic32<T>& atomic32<T>::operator=(atomic32&& other)
 {
-	m_value = std::move(other.m_value);
+	ddk::atomic_exchange(*this,std::move(other.m_value));
 
 	return *this;
 }
@@ -174,12 +174,12 @@ T& atomic32<T>::get()
 template<typename T>
 void atomic32<T>::set(const T& i_value)
 {
-	m_value = i_value;
+	atomic_exchange(*this,i_value);
 }
 template<typename T>
 void atomic32<T>::set(T&& i_value)
 {
-	m_value = std::move(i_value);
+	atomic_exchange(*this,std::move(i_value));
 }
 template<typename T>
 T* atomic32<T>::_get_typed_arena()
@@ -215,14 +215,14 @@ atomic64<T>::atomic64(atomic64&& other)
 template<typename T>
 atomic64<T>& atomic64<T>::operator=(const atomic64& other)
 {
-	m_value = other.m_value;
+	ddk::atomic_exchange(*this,other.m_value);
 
 	return *this;
 }
 template<typename T>
 atomic64<T>& atomic64<T>::operator=(atomic64&& other)
 {
-	m_value = std::move(other.m_value);
+	ddk::atomic_exchange(*this,std::move(other.m_value));
 
 	return *this;
 }
@@ -269,12 +269,12 @@ T& atomic64<T>::get()
 template<typename T>
 void atomic64<T>::set(const T& i_value)
 {
-	m_value = i_value;
+	atomic_exchange(*this,i_value);
 }
 template<typename T>
 void atomic64<T>::set(T&& i_value)
 {
-	m_value = std::move(i_value);
+	atomic_exchange(*this,std::move(i_value));
 }
 template<typename T>
 T* atomic64<T>::_get_typed_arena()
@@ -628,6 +628,40 @@ inline T atomic_post_decrement(atomic64<T>& i_atomic)
 	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
 #else
 	#error "Unsupported platform"
+#endif
+}
+
+template<typename T>
+T atomic_add(atomic8<T>& i_atomic,const T& i_value)
+{
+#ifdef _WIN32
+	return T(InterlockedExchangeAdd(i_atomic._get_arena(),i_value));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
+#else
+#error "Unsupported platform"
+#endif
+}
+template<typename T>
+T atomic_add(atomic32<T>& i_atomic,const T& i_value)
+{
+#ifdef _WIN32
+	return T(InterlockedExchangeAdd(i_atomic._get_arena(),i_value));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
+#else
+#error "Unsupported platform"
+#endif
+}
+template<typename T>
+T atomic_add(atomic64<T>& i_atomic,const T& i_value)
+{
+#ifdef _WIN32
+	return T(InterlockedExchangeAdd64(i_atomic._get_arena(),i_value));
+#elif defined(__LINUX__) or defined(__APPLE__)
+	return __sync_sub_and_fetch(i_atomic._get_typed_arena(),1);
+#else
+#error "Unsupported platform"
 #endif
 }
 

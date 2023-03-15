@@ -174,37 +174,57 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 }
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 {
-	ddk::future<int> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 0; }));
+	ddk::thread myThread;
+	ddk::future<char> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 'a'; }))->attach(std::move(myThread));
 
 	//ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
 	//ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));
 
-	ddk::thread myThread;
 	ddk::thread myOtherThread;
-	ddk::future<const char*> myOtherFuture = std::move(myFuture)
-	.then(ddk::make_function([](const int& i_value)
-	{
-		return std::string("hola");
-	}))
-	.on_error(ddk::make_function([](const ddk::async_error&)
-	{
-	}))
-	.then_on(ddk::make_function([](const std::string& i_value)
-	{
-		throw std::runtime_error{ "hola nens, aixo es una excepcio" };
+	ddk::future<int> myOtherFuture = ddk::async(ddk::make_function([]() { printf("funcio oroginal\n"); return 10; })) -> attach(std::move(myOtherThread));
 
-		return i_value[0];
-	}),std::move(myThread))
-	.on_error(ddk::make_function([](const ddk::async_error&)
+	ddk::thread myOtherOtherThread;
+	ddk::future<int> myOtherOtherFuture = ddk::async(ddk::make_function([]() { printf("funcio oroginal\n"); return 10; }))->attach(std::move(myOtherOtherThread));
+	//ddk::future<const char*> myOtherFuture = std::move(myFuture)
+	//.then(ddk::make_function([](const int& i_value)
+	//{
+	//	return std::string("hola");
+	//}))
+	//.on_error(ddk::make_function([](const ddk::async_error&)
+	//{
+	//}))
+	//.then_on(ddk::make_function([](const std::string& i_value)
+	//{
+	//	throw std::runtime_error{ "hola nens, aixo es una excepcio" };
+
+	//	return i_value[0];
+	//}),std::move(myThread))
+	//.on_error(ddk::make_function([](const ddk::async_error&)
+	//{
+	//}))
+	//.async(ddk::make_function([](const char& i_value)
+	//{
+	//	return 10;
+	//}),std::move(myOtherThread))
+	//.then(ddk::make_function([](const int& i_value)
+	//{
+	//	return "hola";
+	//}));
+
+	auto kk = fusion(std::move(myFuture), std::move(myOtherFuture))
+	.then(ddk::make_function([](std::tuple<char,int> i_data)
 	{
+		return std::get<1>(i_data);
+	}));
+
+	fusion(std::move(myOtherOtherFuture),std::move(kk))
+	.then(ddk::make_function([](std::array<int, 2> i_data)
+	{
+		return i_data[0] + i_data[1];
 	}))
-	.async(ddk::make_function([](const char& i_value)
+	.then(ddk::make_function([](int i_data)
 	{
-		return 10;
-	}),std::move(myOtherThread))
-	.then(ddk::make_function([](const int& i_value)
-	{
-		return "hola";
+
 	}));
 
 	ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10,25);

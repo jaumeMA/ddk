@@ -131,6 +131,32 @@ constexpr typename embedded_type<T>::ref_type variadic_union<Type,Types...>::get
 }
 template<typename Type,typename ... Types>
 template<typename T>
+constexpr typename embedded_type<T>::cpointer_type variadic_union<Type,Types...>::get_ptr() const
+{
+	if constexpr (std::is_same<Type,T>::value)
+	{
+		return m_data._local.get_ptr();
+	}
+	else
+	{
+		return m_data._nested.template get_ptr<T>();
+	}
+}
+template<typename Type,typename ... Types>
+template<typename T>
+constexpr typename embedded_type<T>::pointer_type variadic_union<Type,Types...>::get_ptr()
+{
+	if constexpr (std::is_same<Type,T>::value)
+	{
+		return m_data._local.get_ptr();
+	}
+	else
+	{
+		return m_data._nested.template get_ptr<T>();
+	}
+}
+template<typename Type,typename ... Types>
+template<typename T>
 typename embedded_type<T>::rref_type variadic_union<Type,Types...>::extract() &&
 {
 	if constexpr(std::is_same<Type,T>::value)

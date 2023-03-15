@@ -11,7 +11,16 @@ template<typename T>
 inline T* extract_raw_ptr(T*& i_ref);
 template<typename T>
 inline void clear_ptr(T*& i_ref);
+template<typename T>
+inline void rebase_ptr(T*& i_ref,std::ptrdiff_t i_diff);
 
+namespace detail
+{
+
+template<typename T>
+inline void rebase_ptr(T& i_ref,std::ptrdiff_t i_diff);
+
+}
 }
 
 #include "ddk_pointer_defs.inl"

@@ -398,6 +398,22 @@ constexpr typename embedded_type<TType>::ref_type variant_impl<Types...>::get()
 }
 template<typename ... Types>
 template<typename TType>
+constexpr typename embedded_type<TType>::cpointer_type variant_impl<Types...>::get_ptr() const
+{
+	DDK_ASSERT(is<TType>(),"Accessing non current type!");
+
+	return m_storage.template get_ptr<TType>();
+}
+template<typename ... Types>
+template<typename TType>
+constexpr typename embedded_type<TType>::pointer_type variant_impl<Types...>::get_ptr()
+{
+	DDK_ASSERT(is<TType>(),"Accessing non current type!");
+
+	return m_storage.template get_ptr<TType>();
+}
+template<typename ... Types>
+template<typename TType>
 TType variant_impl<Types...>::extract() &&
 {
 	TType res = std::move(m_storage).template extract<TType>();
@@ -472,6 +488,22 @@ constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>:
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 
 	return m_storage.template get<embeddedType>();
+}
+template<typename ... Types>
+template<size_t Pos>
+constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::cpointer_type variant_impl<Types...>::get_ptr() const
+{
+	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
+
+	return m_storage.template get_ptr<embeddedType>();
+}
+template<typename ... Types>
+template<size_t Pos>
+constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::pointer_type variant_impl<Types...>::get_ptr()
+{
+	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
+
+	return m_storage.template get_ptr<embeddedType>();
 }
 template<typename ... Types>
 template<size_t Pos>

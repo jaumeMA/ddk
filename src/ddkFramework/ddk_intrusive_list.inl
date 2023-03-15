@@ -1,34 +1,36 @@
 
+//#define DETECT_CYCLES
+
 namespace ddk
 {
 
-template<typename T>
-intrusive_list<T>::intrusive_list()
+template<typename T,template<typename> typename Pointer>
+intrusive_list<T,Pointer>::intrusive_list()
 : m_firstNode(nullptr)
 , m_lastNode(nullptr)
 {
 }
-template<typename T>
-intrusive_list<T>::intrusive_list(const intrusive_list<T>& other)
+template<typename T,template<typename> typename Pointer>
+intrusive_list<T,Pointer>::intrusive_list(const intrusive_list<T>& other)
 : m_firstNode(other.m_firstNode)
 , m_lastNode(other.m_lastNode)
 {
 }
-template<typename T>
-intrusive_list<T>::intrusive_list(intrusive_list<T>&& other)
+template<typename T,template<typename> typename Pointer>
+intrusive_list<T,Pointer>::intrusive_list(intrusive_list<T>&& other)
 : m_firstNode(nullptr)
 , m_lastNode(nullptr)
 {
 	std::swap(m_firstNode,other.m_firstNode);
 	std::swap(m_lastNode,other.m_lastNode);
 }
-template<typename T>
-intrusive_list<T>::~intrusive_list()
+template<typename T,template<typename> typename Pointer>
+intrusive_list<T,Pointer>::~intrusive_list()
 {
 	clear();
 }
-template<typename T>
-void intrusive_list<T>::push(const intrusive_ptr<T>& i_node)
+template<typename T,template<typename> typename Pointer>
+void intrusive_list<T,Pointer>::push(const pointer_t& i_node)
 {
 #ifdef DETECT_CYCLES
 	DDK_ASSERT(already_contains_node(i_node) == false, "Trying to insert already present node, about to produce a cycle");
@@ -45,12 +47,12 @@ void intrusive_list<T>::push(const intrusive_ptr<T>& i_node)
 		m_lastNode = i_node;
 	}
 }
-template<typename T>
-void intrusive_list<T>::pop()
+template<typename T,template<typename> typename Pointer>
+void intrusive_list<T,Pointer>::pop()
 {
-	if(intrusive_ptr<T> firstNode = m_firstNode)
+	if(pointer_t firstNode = m_firstNode)
 	{
-		if(intrusive_ptr<T> firstNode = m_firstNode->extract_next_node())
+		if(pointer_t firstNode = m_firstNode->extract_next_node())
 		{
 			m_firstNode = firstNode;
 		}
@@ -60,67 +62,67 @@ void intrusive_list<T>::pop()
 		}
 	}
 }
-template<typename T>
-void intrusive_list<T>::clear()
+template<typename T,template<typename> typename Pointer>
+void intrusive_list<T,Pointer>::clear()
 {
-	intrusive_ptr<T> currNode = m_firstNode;
+	pointer_t currNode = m_firstNode;
 
 	while(currNode)
 	{
-		intrusive_ptr<T> nextNode = currNode->extract_next_node();
+		pointer_t nextNode = currNode->extract_next_node();
 		currNode = nextNode;
 	}
 
 	m_firstNode = nullptr;
 	m_lastNode = nullptr;
 }
-template<typename T>
-typename intrusive_list<T>::iterator intrusive_list<T>::begin()
+template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::iterator intrusive_list<T,Pointer>::begin()
 {
 	return iterator(m_firstNode);
 }
-template<typename T>
-typename intrusive_list<T>::const_iterator intrusive_list<T>::begin() const
+template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::const_iterator intrusive_list<T,Pointer>::begin() const
 {
 	return const_iterator(m_firstNode);
 }
-template<typename T>
-typename intrusive_list<T>::iterator intrusive_list<T>::end()
+template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::iterator intrusive_list<T,Pointer>::end()
 {
 	return nullptr;
 }
-template<typename T>
-typename intrusive_list<T>::const_iterator intrusive_list<T>::end() const
+template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::const_iterator intrusive_list<T,Pointer>::end() const
 {
 	return nullptr;
 }
-template<typename T>
-typename intrusive_list<T>::iterator intrusive_list<T>::erase(iterator i_it)
+template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::iterator intrusive_list<T,Pointer>::erase(iterator i_it)
 {
-	intrusive_ptr<T> nextNode = nullptr;
+	pointer_t nextNode = nullptr;
 
-	if(intrusive_ptr<T> currNode = i_it.extract())
+	if(pointer_t currNode = i_it.extract())
 	{
 		if(m_firstNode == currNode)
 		{
-			m_firstNode = currNode->extract_next_node();
+			m_firstNode = currNode->get_next_node();
 		}
 		if(m_lastNode == currNode)
 		{
-			m_lastNode = currNode->extract_prev_node();
+			m_lastNode = currNode->get_prev_node();
 		}
 
-		nextNode = detail::intrusive_node_impl<T>::collapse(std::move(currNode));
+		nextNode = detail::intrusive_node_impl<T,Pointer>::collapse(std::move(currNode));
 	}
 
 	return iterator(nextNode);
 }
-template<typename T>
-size_t intrusive_list<T>::size() const
+template<typename T,template<typename> typename Pointer>
+size_t intrusive_list<T,Pointer>::size() const
 {
 	size_t res = 0;
 
-	if(intrusive_ptr<T> currNode = m_firstNode)
+	if(pointer_t currNode = m_firstNode)
 	{
 		do
 		{
@@ -131,15 +133,15 @@ size_t intrusive_list<T>::size() const
 
 	return res;
 }
-template<typename T>
-bool intrusive_list<T>::empty() const
+template<typename T,template<typename> typename Pointer>
+bool intrusive_list<T,Pointer>::empty() const
 {
 	return m_firstNode == nullptr;
 }
-template<typename T>
-bool intrusive_list<T>::already_contains_node(intrusive_ptr<T> i_node) const
+template<typename T,template<typename> typename Pointer>
+bool intrusive_list<T,Pointer>::already_contains_node(pointer_t i_node) const
 {
-	if(intrusive_ptr<T> currNode = m_firstNode)
+	if(pointer_t currNode = m_firstNode)
 	{
 		do
 		{

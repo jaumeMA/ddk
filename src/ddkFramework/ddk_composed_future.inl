@@ -6,6 +6,14 @@ template<typename T, unsigned char Dim>
 composed_future<std::array<T,Dim>>::future_data::future_data(ddk::context_promise<std::array<T, Dim>> i_promise)
 : m_promise(std::move(i_promise))
 {}
+template<typename T,unsigned char Dim>
+composed_future<std::array<T,Dim>>::future_data::~future_data()
+{
+	for (size_t index = 0;index < Dim;index++)
+	{
+		m_values[index].template destroy<T>();
+	}
+}
 template<typename T, unsigned char Dim>
 TEMPLATE(typename ... Futures)
 REQUIRED(IS_BASE_OF(future<T>, Futures)...)
@@ -43,6 +51,17 @@ template<typename ... T>
 composed_future<std::tuple<T...>>::future_data::future_data(ddk::context_promise<std::tuple<T...>> i_promise)
 : m_promise(std::move(i_promise))
 {}
+template<typename ... T>
+composed_future<std::tuple<T...>>::future_data::~future_data()
+{
+	destroy_values(index_seq{});
+}
+template<typename ... T>
+template<unsigned char ... Indexs>
+void composed_future<std::tuple<T...>>::future_data::destroy_values(const mpl::sequence<Indexs...>&)
+{
+	const bool _[] = { m_values.template get<Indexs>().template destroy<typename mpl::nth_type_of<Indexs,T...>::type>() ... };
+}
 template<typename ... T>
 TEMPLATE(typename ... Futures)
 REQUIRED(IS_BASE_OF(future<T>, Futures)...)

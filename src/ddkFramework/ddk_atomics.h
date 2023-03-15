@@ -48,6 +48,8 @@ struct atomic8
 	friend TT atomic_pre_decremeemt(atomic8<TT>&);
 	template<typename TT>
 	friend TT atomic_post_decrement(atomic8<TT>&);
+	template<typename TT>
+	friend TT atomic_add(atomic8<TT>&,const TT&);
 
 	atomic8() = default;
 	atomic8(const T& i_value);
@@ -105,6 +107,8 @@ struct atomic32
 	friend TT atomic_pre_decremeemt(atomic32<TT>&);
 	template<typename TT>
 	friend TT atomic_post_decrement(atomic32<TT>&);
+	template<typename TT>
+	friend TT atomic_add(atomic32<TT>&,const TT&);
 
 	atomic32() = default;
 	atomic32(const T& i_value);
@@ -162,6 +166,8 @@ struct atomic64
 	friend TT atomic_pre_decrement(atomic64<TT>&);
 	template<typename TT>
 	friend TT atomic_post_decrement(atomic64<TT>&);
+	template<typename TT>
+	friend TT atomic_add(atomic64<TT>&,const TT&);
 
 	atomic64() = default;
 	atomic64(const T& i_value);
@@ -288,6 +294,13 @@ template<typename T>
 inline T atomic_post_decrement(atomic32<T>& i_atomic);
 template<typename T>
 inline T atomic_post_decrement(atomic64<T>& i_atomic);
+
+template<typename T>
+inline T atomic_add(atomic8<T>& i_atomic, const T& i_value);
+template<typename T>
+inline T atomic_add(atomic32<T>& i_atomic, const T& i_value);
+template<typename T>
+inline T atomic_add(atomic64<T>& i_atomic, const T& i_value);
 
 }
 

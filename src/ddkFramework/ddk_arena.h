@@ -25,7 +25,7 @@ public:
 	template<typename T, typename ... Args>
 	inline void set_value(Args&& ... i_args);
 	template<typename T>
-	inline void destroy();
+	inline bool destroy();
 	template<typename T>
 	inline typename embedded_type<T>::cref_type get() const;
 	template<typename T>

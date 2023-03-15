@@ -61,11 +61,11 @@ bool future<future<T>>::empty() const
 	return m_sharedState == nullptr;
 }
 template<typename T>
-typename future<future<T>>::const_reference future<future<T>>::get_value() const
+const future<T>& future<future<T>>::get_future() const
 {
-	if(m_sharedState)
+	if (m_sharedState)
 	{
-		return m_sharedState->get_value();
+		return m_sharedState->get();
 	}
 	else
 	{
@@ -80,6 +80,18 @@ future<T> future<future<T>>::extract_future() &&
 		embedded_type<future<T>> res = std::move(*m_sharedState).extract_value();
 
 		return std::move(res).extract();
+	}
+	else
+	{
+		throw future_exception("Accessing empty future");
+	}
+}
+template<typename T>
+typename future<future<T>>::const_reference future<future<T>>::get_value() const
+{
+	if (m_sharedState)
+	{
+		return m_sharedState->get_value();
 	}
 	else
 	{

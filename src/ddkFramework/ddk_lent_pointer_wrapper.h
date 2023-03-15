@@ -87,6 +87,11 @@ class lent_pointer_wrapper
 	{
 		i_ref.m_data = nullptr;
 	}
+	friend inline void rebase_ptr(lent_pointer_wrapper& i_ref,std::ptrdiff_t i_diff)
+	{
+		i_ref.m_data = reinterpret_cast<T*>(reinterpret_cast<char*>(i_ref.m_data) + i_diff);
+		i_ref.m_refCounter.set_pointer(reinterpret_cast<tagged_reference_counter::interface_ptr>(reinterpret_cast<char*>(i_ref.m_refCounter.get_pointer()) + i_diff));
+	}
 
 	template<typename>
 	friend class lent_pointer_wrapper;

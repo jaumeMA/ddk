@@ -12,6 +12,8 @@ class thread_sheaf
 	typedef std::vector<thread> thread_container;
 	friend class thread_pool;
 
+	friend thread_sheaf& operator<<(thread_sheaf& i_lhs,thread i_rhs);
+
 public:
 	typedef thread_container::iterator iterator;
 	typedef thread_container::const_iterator const_iterator;
@@ -36,6 +38,7 @@ public:
 	size_t size() const;
 	bool empty();
 
+private:
 	thread_container m_threadCtr;
 };
 

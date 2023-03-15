@@ -904,6 +904,17 @@ constexpr unsigned long long int next_power_of_two(unsigned long long int i_valu
 
     return i_value;
 }
+constexpr unsigned char get_power_of_two(unsigned long long i_value)
+{
+    unsigned int powerOfTwo = 0;
+
+    while (i_value >>= 1)
+    {
+        powerOfTwo++;
+    }
+
+    return powerOfTwo;
+}
 
 }
 }

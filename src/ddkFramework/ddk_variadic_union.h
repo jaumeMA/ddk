@@ -67,6 +67,10 @@ public:
 	template<typename T>
 	constexpr typename embedded_type<T>::ref_type get();
 	template<typename T>
+	constexpr typename embedded_type<T>::cpointer_type get_ptr() const;
+	template<typename T>
+	constexpr typename embedded_type<T>::pointer_type get_ptr();
+	template<typename T>
 	inline typename embedded_type<T>::rref_type extract() &&;
 
 private:

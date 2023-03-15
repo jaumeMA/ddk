@@ -8,38 +8,38 @@ namespace ddk
 namespace detail
 {
 
-template<typename T>
+template<typename T,template<typename>typename Pointer>
 template<typename ... Args>
-intrusive_node_impl<T>::intrusive_node_impl(Args&& ... i_args)
+intrusive_node_impl<T,Pointer>::intrusive_node_impl(Args&& ... i_args)
 : m_value(std::forward<Args>(i_args) ...)
 {
 }
-template<typename T>
-intrusive_node_impl<T>::~intrusive_node_impl()
+template<typename T,template<typename>typename Pointer>
+intrusive_node_impl<T,Pointer>::~intrusive_node_impl()
 {
 }
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::get_prev_node()
-{
-	return m_prevNode;
-}
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_const_ptr intrusive_node_impl<T>::get_prev_node() const
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_ptr intrusive_node_impl<T,Pointer>::get_prev_node()
 {
 	return m_prevNode;
 }
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::get_next_node()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_const_ptr intrusive_node_impl<T,Pointer>::get_prev_node() const
+{
+	return m_prevNode;
+}
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_ptr intrusive_node_impl<T,Pointer>::get_next_node()
 {
 	return m_nextNode;
 }
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_const_ptr intrusive_node_impl<T>::get_next_node() const
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_const_ptr intrusive_node_impl<T,Pointer>::get_next_node() const
 {
 	return m_nextNode;
 }
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::extract_prev_node()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_ptr intrusive_node_impl<T,Pointer>::extract_prev_node()
 {
 	intrusive_node_ptr res = m_prevNode;
 
@@ -51,8 +51,8 @@ typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::extr
 
 	return res;
 }
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::extract_next_node()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_ptr intrusive_node_impl<T,Pointer>::extract_next_node()
 {
 	intrusive_node_ptr res = m_nextNode;
 
@@ -64,8 +64,8 @@ typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::extr
 
 	return res;
 }
-template<typename T>
-void intrusive_node_impl<T>::clear()
+template<typename T,template<typename>typename Pointer>
+void intrusive_node_impl<T,Pointer>::clear()
 {
 	if(m_nextNode)
 	{
@@ -74,44 +74,44 @@ void intrusive_node_impl<T>::clear()
 	}
 	m_prevNode = nullptr;
 }
-template<typename T>
-void intrusive_node_impl<T>::clear_prev_node()
+template<typename T,template<typename>typename Pointer>
+void intrusive_node_impl<T,Pointer>::clear_prev_node()
 {
 	m_prevNode = nullptr;
 }
-template<typename T>
-void intrusive_node_impl<T>::clear_next_node()
+template<typename T,template<typename>typename Pointer>
+void intrusive_node_impl<T,Pointer>::clear_next_node()
 {
 	m_nextNode = nullptr;
 }
-template<typename T>
-void intrusive_node_impl<T>::set_prev_node(const intrusive_node_ptr& i_node)
+template<typename T,template<typename>typename Pointer>
+void intrusive_node_impl<T,Pointer>::set_prev_node(const intrusive_node_ptr& i_node)
 {
 	if(get_raw_ptr(m_prevNode) != this)
 	{
 		m_prevNode = i_node;
-		m_prevNode->m_nextNode = this->ref_from_this();
+		m_prevNode->m_nextNode = lend(*this);
 	}
 	else
 	{
 		DDK_FAIL("Auto pointing!");
 	}
 }
-template<typename T>
-void intrusive_node_impl<T>::set_next_node(const intrusive_node_ptr& i_node)
+template<typename T,template<typename>typename Pointer>
+void intrusive_node_impl<T,Pointer>::set_next_node(const intrusive_node_ptr& i_node)
 {
 	if(get_raw_ptr(m_nextNode) != this)
 	{
 		m_nextNode = i_node;
-		m_nextNode->m_prevNode = this->ref_from_this();
+		m_nextNode->m_prevNode = lend(*this);
 	}
 	else
 	{
 		DDK_FAIL("Auto pointing!");
 	}
 }
-template<typename T>
-typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::collapse(intrusive_node_ptr i_node)
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::intrusive_node_ptr intrusive_node_impl<T,Pointer>::collapse(intrusive_node_ptr i_node)
 {
 	//DDK_ASSERT(get_raw_ptr(i_prevNode->m_nextNode) == this, "Breaking linked list");
 	intrusive_node_ptr res = i_node->m_nextNode;
@@ -134,145 +134,100 @@ typename intrusive_node_impl<T>::intrusive_node_ptr intrusive_node_impl<T>::coll
 
 	return res;
 }
-template<typename T>
-typename intrusive_node_impl<T>::reference intrusive_node_impl<T>::get()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::reference intrusive_node_impl<T,Pointer>::get()
 {
 	return m_value;
 }
-template<typename T>
-typename intrusive_node_impl<T>::const_reference intrusive_node_impl<T>::get() const
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::const_reference intrusive_node_impl<T,Pointer>::get() const
 {
 	return m_value;
 }
-template<typename T>
-typename intrusive_node_impl<T>::rreference intrusive_node_impl<T>::extract() &&
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::rreference intrusive_node_impl<T,Pointer>::extract() &&
 {
 	return std::move(m_value);
 }
-template<typename T>
-typename intrusive_node_impl<T>::pointer intrusive_node_impl<T>::get_ptr()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::pointer intrusive_node_impl<T,Pointer>::get_ptr()
 {
 	return &m_value;
 }
-template<typename T>
-typename intrusive_node_impl<T>::const_pointer intrusive_node_impl<T>::get_ptr() const
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node_impl<T,Pointer>::const_pointer intrusive_node_impl<T,Pointer>::get_ptr() const
 {
 	return &m_value;
 }
-template<typename T>
-intrusive_node_impl<T>::operator T&()
+template<typename T,template<typename>typename Pointer>
+intrusive_node_impl<T,Pointer>::operator T&()
 {
 	return m_value;
 }
-template<typename T>
-intrusive_node_impl<T>::operator const T&() const
+template<typename T,template<typename>typename Pointer>
+intrusive_node_impl<T,Pointer>::operator const T&() const
 {
 	return m_value;
 }
 
 }
 
-template<typename T,typename Allocator>
-intrusive_node<T,Allocator>::intrusive_node(intrusive_node&& other)
+template<typename T,template<typename>typename Pointer>
+intrusive_node<T,Pointer>::intrusive_node(intrusive_node&& other)
 : m_impl(std::move(other.m_impl))
 {
 }
-template<typename T,typename Allocator>
+template<typename T,template<typename>typename Pointer>
 template<typename ... Args>
-intrusive_node<T,Allocator>::intrusive_node(Args&& ... i_args)
-{
-	m_impl = make_unique_reference<detail::intrusive_node_impl<T>>(m_allocator,std::forward<Args>(i_args) ...);
-}
-template<typename T,typename Allocator>
-intrusive_node<T,Allocator>::~intrusive_node()
+intrusive_node<T,Pointer>::intrusive_node(Args&& ... i_args)
+: m_impl(std::forward<Args>(i_args) ...)
 {
 }
-template<typename T,typename Allocator>
-intrusive_node<T,Allocator>& intrusive_node<T,Allocator>::operator=(intrusive_node&& other)
+template<typename T,template<typename>typename Pointer>
+intrusive_node<T,Pointer>::~intrusive_node()
+{
+}
+template<typename T,template<typename>typename Pointer>
+intrusive_node<T,Pointer>& intrusive_node<T,Pointer>::operator=(intrusive_node&& other)
 {
 	m_impl = std::move(m_impl);
 
 	return *this;
 }
-template<typename T,typename Allocator>
-void intrusive_node<T,Allocator>::clear()
+template<typename T,template<typename>typename Pointer>
+void intrusive_node<T,Pointer>::clear()
 {
-	m_impl = nullptr;
+	m_impl.clear();
 }
-template<typename T,typename Allocator>
-typename intrusive_node<T,Allocator>::reference intrusive_node<T,Allocator>::get()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node<T,Pointer>::reference intrusive_node<T,Pointer>::get()
 {
-	if(m_impl)
-	{
-		return m_impl->get();
-	}
-	else
-	{
-		throw bad_access_exception{"Trying to access to empty intrusive node"};
-	}
+	return m_impl.get();
 }
-template<typename T,typename Allocator>
-typename intrusive_node<T,Allocator>::const_reference intrusive_node<T,Allocator>::get() const
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node<T,Pointer>::const_reference intrusive_node<T,Pointer>::get() const
 {
-	if(m_impl)
-	{
-		return m_impl->get();
-	}
-	else
-	{
-		throw bad_access_exception{ "Trying to access to empty intrusive node" };
-	}
+	return m_impl.get();
 }
-template<typename T,typename Allocator>
-typename intrusive_node<T,Allocator>::rreference intrusive_node<T,Allocator>::extract() &&
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node<T,Pointer>::rreference intrusive_node<T,Pointer>::extract() &&
 {
-	if(unique_pointer_wrapper<detail::intrusive_node_impl<T>> impl = std::move(m_impl))
-	{
-		return impl->extract();
-	}
-	else
-	{
-		throw bad_access_exception{ "Trying to access to empty intrusive node" };
-	}
+	return impl.extract();
 }
-template<typename T,typename Allocator>
-typename intrusive_node<T,Allocator>::pointer intrusive_node<T,Allocator>::operator->()
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node<T,Pointer>::pointer intrusive_node<T,Pointer>::operator->()
 {
-	if(m_impl)
-	{
-		return m_impl->get_ptr();
-	}
-	else
-	{
-		throw bad_access_exception{ "Trying to access to empty intrusive node" };
-	}
+	return m_impl.get_ptr();
 }
-template<typename T,typename Allocator>
-typename intrusive_node<T,Allocator>::const_pointer intrusive_node<T,Allocator>::operator->() const
+template<typename T,template<typename>typename Pointer>
+typename intrusive_node<T,Pointer>::const_pointer intrusive_node<T,Pointer>::operator->() const
 {
-	if(m_impl)
-	{
-		return m_impl->get_ptr();
-	}
-	else
-	{
-		throw bad_access_exception{ "Trying to access to empty intrusive node" };
-	}
+	return m_impl.get_ptr();
 }
-template<typename T,typename Allocator>
-bool intrusive_node<T,Allocator>::operator==(const T& other) const
+template<typename T,template<typename>typename Pointer>
+bool intrusive_node<T,Pointer>::operator==(const T& other) const
 {
-	return (m_impl) ? *m_impl == other : false;
-}
-template<typename T,typename Allocator>
-bool intrusive_node<T,Allocator>::empty() const
-{
-	return m_impl == nullptr;
-}
-template<typename T,typename Allocator>
-intrusive_node<T,Allocator>::operator bool() const
-{
-	return m_impl != nullptr;
+	return m_impl == other;
 }
 
 }

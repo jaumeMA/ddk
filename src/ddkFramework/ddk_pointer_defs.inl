@@ -26,5 +26,20 @@ void clear_ptr(T*& i_ref)
 {
 	i_ref = nullptr;
 }
+template<typename T>
+void rebase_ptr(T*& i_ref,std::ptrdiff_t i_diff)
+{
+	i_ref = reinterpret_cast<T*>(reinterpret_cast<char*>(i_ref) + i_diff);
+}
 
+namespace detail
+{
+
+template<typename T>
+void rebase_ptr(T& i_ref,std::ptrdiff_t i_diff)
+{
+	//do nothing
+}
+
+}
 }

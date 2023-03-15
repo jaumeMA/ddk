@@ -4,6 +4,7 @@
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_macros.h"
 #include "ddk_reference_tag.h"
+#include "ddk_point_from_this.h"
 #include <type_traits>
 
 namespace ddk
@@ -56,6 +57,13 @@ private:
 #ifdef DDK_DEBUG
 	mutable ddk::lent_reference_counter m_counter;
 #endif
+};
+
+template<typename T>
+class point_from_this<lent_pointer_wrapper<T>> : public lend_from_this<T,T>
+{
+public:
+	using lend_from_this<T,T>::lend_from_this;
 };
 
 }

@@ -140,6 +140,12 @@ class result : contravariant_rules<T>
 public:
 	typedef T payload_t;
 	typedef Error error_t;
+	typedef T value;
+	typedef typename embedded_type<T>::ref_type reference;
+	typedef typename embedded_type<T>::cref_type const_reference;
+	typedef typename embedded_type<T>::rref_type rreference;
+	typedef typename embedded_type<T>::pointer_type pointer;
+	typedef typename embedded_type<T>::cpointer_type const_pointer;
 
 	TEMPLATE(typename TT)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT))
@@ -150,8 +156,11 @@ public:
 	result& operator=(const result& other) = default;
 	result& operator=(result&& other) = default;
 	const Error& error() const;
-	const T& get() const;
-	T extract() &&;
+	const_reference get() const;
+	reference get();
+	const_pointer operator->() const;
+	pointer operator->();
+	value extract() &&;
 	explicit operator bool() const;
 	result& dismiss();
 	const result& dismiss() const;

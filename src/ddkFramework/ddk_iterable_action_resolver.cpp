@@ -121,6 +121,7 @@ size_t multi_dimensional_action_resolver::get_prev_item() const
 
 const detail::reversable_action_resolver forward_order = detail::reversable_action_resolver(true);
 const detail::reversable_action_resolver reverse_order = detail::reversable_action_resolver(false);
+//const detail::circular_action_resolver circular_order = detail::reversable_action_resolver(false);
 const detail::alternate_action_resolver alternate_order = detail::alternate_action_resolver(true);
 const detail::multi_dimensional_action_resolver dimension_order = detail::multi_dimensional_action_resolver(true,detail::multi_dimensional_action_resolver::Transpose);
 const detail::multi_dimensional_action_resolver transponse_dimension_order = detail::multi_dimensional_action_resolver(true,detail::multi_dimensional_action_resolver::Transpose);

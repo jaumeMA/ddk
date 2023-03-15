@@ -1,6 +1,7 @@
 #pragma once
 
-#include "ddk_unique_pointer_wrapper.h"
+#include "ddk_point_from_this.h"
+#include "ddk_embed_from_this.h"
 #include "ddk_lend_from_this.h"
 #include "ddk_system_allocator.h"
 
@@ -9,12 +10,13 @@ namespace ddk
 namespace detail
 {
 
-template<typename T>
-class intrusive_node_impl : public lend_from_this<intrusive_node_impl<T>>
+template<typename T,template<typename> typename Pointer>
+class intrusive_node_impl : public point_from_this<Pointer<intrusive_node_impl<T,Pointer>>>
 {
+	typedef Pointer<intrusive_node_impl> intrusive_node_ptr;
+	typedef Pointer<const intrusive_node_impl> intrusive_node_const_ptr;
+
 public:
-	typedef lent_pointer_wrapper<intrusive_node_impl> intrusive_node_ptr;
-	typedef lent_pointer_wrapper<const intrusive_node_impl> intrusive_node_const_ptr;
 	typedef T value_type;
 	typedef typename std::add_lvalue_reference<value_type>::type reference;
 	typedef typename std::add_lvalue_reference<typename std::add_const<value_type>::type>::type const_reference;
@@ -57,10 +59,10 @@ private:
 
 }
 
-template<typename T, typename Allocator = typed_system_allocator<detail::intrusive_node_impl<T>>>
+template<typename T, template<typename> typename Pointer = lent_pointer_wrapper>
 struct intrusive_node
 {
-	friend inline lent_pointer_wrapper<detail::intrusive_node_impl<T>> make_intrusive(intrusive_node& i_node)
+	friend inline Pointer<detail::intrusive_node_impl<T,Pointer>> make_intrusive(intrusive_node& i_node)
 	{
 		return lend(i_node.m_impl);
 	}
@@ -74,7 +76,6 @@ public:
 	typedef typename std::add_pointer<value_type>::type pointer;
 	typedef typename std::add_pointer<typename std::add_const<value_type>::type>::type const_pointer;
 
-	intrusive_node() = default;
 	intrusive_node(const intrusive_node& other) = delete;
 	intrusive_node(intrusive_node&& other);
 	template<typename ... Args>
@@ -89,22 +90,22 @@ public:
 	inline pointer operator->();
 	inline const_pointer operator->() const;
 	inline bool operator==(const T& other) const;
-	inline bool empty() const;
-	explicit operator bool() const;
 
 private:
-	unique_pointer_wrapper<detail::intrusive_node_impl<T>> m_impl;
-	Allocator m_allocator;
+	detail::intrusive_node_impl<T,Pointer> m_impl;
 };
 
 template<typename T>
-using intrusive_ref = lent_reference_wrapper<detail::intrusive_node_impl<T>>;
+using embedded_node = intrusive_node<T,embedded_ptr>;
+
 template<typename T>
-using intrusive_const_ref = lent_reference_wrapper<const detail::intrusive_node_impl<T>>;
+using intrusive_ref = lent_reference_wrapper<detail::intrusive_node_impl<T,lent_pointer_wrapper>>;
 template<typename T>
-using intrusive_ptr = lent_pointer_wrapper<detail::intrusive_node_impl<T>>;
+using intrusive_const_ref = lent_reference_wrapper<const detail::intrusive_node_impl<T,lent_pointer_wrapper>>;
 template<typename T>
-using intrusive_const_ptr = lent_pointer_wrapper<const detail::intrusive_node_impl<T>>;
+using intrusive_ptr = lent_pointer_wrapper<detail::intrusive_node_impl<T,lent_pointer_wrapper>>;
+template<typename T>
+using intrusive_const_ptr = lent_pointer_wrapper<const detail::intrusive_node_impl<T,lent_pointer_wrapper>>;
 
 }
 
