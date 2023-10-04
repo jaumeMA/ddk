@@ -13,8 +13,6 @@ public:
 	shared_future(const shared_future& i_future);
 	shared_future(shared_future&& i_future);
 	shared_future(future<T>&& i_future);
-	template<typename TT>
-	shared_future(shared_reference_wrapper<TT> i_executor,...);
 	shared_future& operator=(const shared_future&);
 	shared_future& operator=(shared_future&&);
 

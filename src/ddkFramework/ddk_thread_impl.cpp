@@ -35,7 +35,7 @@ yielder* thread_impl_interface::set_yielder(yielder* i_yielder)
 {
 	static threadlocal<yielder*,thread_impl_interface> s_yielder;
 
-	yielder* prevYielder = (s_yielder.empty() == false) ? s_yielder.extract() : nullptr;
+	yielder* prevYielder = (s_yielder.empty() == false) ? std::move(s_yielder).extract() : nullptr;
 
 	s_yielder.set(i_yielder);
 

@@ -5,7 +5,7 @@
 namespace ddk
 {
 
-template<typename T>
+template<typename T, typename Allocator>
 class thread_local_storage
 {
 public:
@@ -18,12 +18,14 @@ public:
 	template<typename ... Args>
 	inline T* assign(Args&& ... i_args);
 	T& get();
+	const T& get() const;
 	T* get_address();
-	T extract();
+	const T* get_address() const;
+	T extract() &&;
 	bool empty() const;
 
 private:
-	system_allocator m_alloc;
+	Allocator m_alloc;
 	void* m_address = nullptr;
 };
 

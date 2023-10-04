@@ -32,21 +32,21 @@ public:
 	explicit Id() = default;
 	Id(const Id&) = default;
 	Id(Id&&) = default;
-	explicit Id(const UnderlyingType& i_key);
-	explicit Id(UnderlyingType&& i_key);
+	explicit constexpr Id(const UnderlyingType& i_key);
+	explicit constexpr Id(UnderlyingType&& i_key);
 	TEMPLATE(typename UUnderlyingType, typename TT)
 	REQUIRES(IS_CONVERTIBLE(UnderlyingType,UUnderlyingType))
-	explicit Id(const Id<UUnderlyingType,TT>& other);
-	Id& operator=(const Id&) = default;
-	Id& operator=(Id&&) = default;
-	inline bool operator==(const Id& other) const;
-	inline bool operator!=(const Id& other) const;
-	inline bool operator==(const UnderlyingType& other) const;
-	inline bool operator!=(const UnderlyingType& other) const;
-	inline bool operator<(const Id& other) const;
-	inline bool operator<=(const Id& other) const;
-	inline bool operator>(const Id& other) const;
-	inline bool operator>=(const Id& other) const;
+	explicit constexpr Id(const Id<UUnderlyingType,TT>& other);
+	constexpr Id& operator=(const Id&) = default;
+	constexpr Id& operator=(Id&&) = default;
+	inline constexpr bool operator==(const Id& other) const;
+	inline constexpr bool operator!=(const Id& other) const;
+	inline constexpr bool operator==(const UnderlyingType& other) const;
+	inline constexpr bool operator!=(const UnderlyingType& other) const;
+	inline constexpr bool operator<(const Id& other) const;
+	inline constexpr bool operator<=(const Id& other) const;
+	inline constexpr bool operator>(const Id& other) const;
+	inline constexpr bool operator>=(const Id& other) const;
 	inline UnderlyingType* operator->();
 	inline const UnderlyingType* operator->() const;
 	inline const UnderlyingType& getValue() const;

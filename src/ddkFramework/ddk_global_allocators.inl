@@ -4,7 +4,7 @@
 namespace ddk
 {
 
-bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& i_entries);
+bool __append_global_allocator_map_entries(size_t i_unitSize, size_t i_numEntries = 2048);
 const fixed_size_allocator* get_fixed_size_allocator(size_t i_unitSize);
 template<size_t Size>
 inline const fixed_size_allocator* get_fixed_size_allocator()
@@ -22,22 +22,18 @@ fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(size_t i_fixedSize
 }
 template<typename T,typename Allocator>
 template<typename AAllocator>
-fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(const fixed_size_allocator* i_primaryAllocator, AAllocator&& i_secondaryAllocator)
+fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(const slab_allocator* i_primaryAllocator, AAllocator&& i_secondaryAllocator)
 : m_allocator({ i_primaryAllocator,std::forward<AAllocator>(i_secondaryAllocator) })
 {
 }
 template<typename T, typename Allocator>
 void* fixed_size_or_allocator<T,Allocator>::allocate(size_t i_size) const
 {
-	if(const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
+	if(const slab_allocator* fixedSizeAllocator = m_allocator.get_first())
 	{
 		if(void* mem = fixedSizeAllocator->allocate_chunk(i_size))
 		{
 			return mem;
-		}
-		else
-		{
-			m_allocator.set_first(nullptr);
 		}
 	}
 
@@ -59,14 +55,15 @@ void fixed_size_or_allocator<T,Allocator>::deallocate(TT* i_ptr) const
 			i_ptr->~TT();
 		}
 
-		if (const fixed_size_allocator* fixedSizeAllocator = m_allocator.get_first())
+		if (const slab_allocator* fixedSizeAllocator = m_allocator.get_first())
 		{
-			fixedSizeAllocator->deallocate_chunk(i_ptr);
+			if (fixedSizeAllocator->deallocate_chunk(i_ptr))
+			{
+				return;
+			}
 		}
-		else
-		{
-			m_allocator.get_second().deallocate(i_ptr);
-		}
+
+		m_allocator.get_second().deallocate(i_ptr);
 	}
 }
 

@@ -8,10 +8,10 @@
 namespace ddk
 {
 
-template<typename T>
+template<typename T, typename Allocator = system_allocator>
 class executor_promise
 {
-	template<typename>
+	template<typename,typename,typename,typename,typename>
 	friend class async_executor;
 
 public:
@@ -19,18 +19,28 @@ public:
 	typedef typename detail::private_async_state<T>::reference reference;
 	typedef typename detail::private_async_state<T>::const_reference const_reference;
 	typedef typename detail::private_async_state<T>::rreference rreference;
+	typedef Allocator allocator_t;
 
-	executor_promise();
-	executor_promise(const executor_promise<T>&);
-	executor_promise& operator=(const promise<T>& other);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Allocator,Args...))
+	executor_promise(Args&& ... i_args);
+	executor_promise(const executor_promise&) = delete;
+	executor_promise(executor_promise&& other);
+	executor_promise& operator=(const promise<T>& other) = delete;
+	executor_promise& operator=(promise<T>&& other);
 	void set_value(sink_type i_value);
 	void set_exception(const async_exception& i_exception);
-	void attach(async_cancellable_dist_ref i_executor);
-	void detach();
-	future<T> get_future() const;
+	template<typename Executor, typename ... Args>
+	inline future<T> attach(Args&& ... i_args) &&;
+	template<typename Callable, typename CancelOp, typename Promise, typename Scheduler, typename Executor>
+	inline void detach() &&;
+	inline void value_predicate(function<bool()> i_predicate);
+	detail::private_async_state_shared_ptr<T> shared_state();
+	detail::private_async_state_const_shared_ptr<T> shared_state() const;
 
 protected:
-	detail::private_async_state_dist_ptr<T> m_sharedState;
+	Allocator m_allocator;
+	detail::private_async_state_weak_ptr<T> m_sharedState;
 };
 
 }

@@ -1,53 +1,87 @@
 #include "ddk_promise.inl"
+#include "ddk_async_exceptions.h"
 
 namespace ddk
 {
 
-template<typename T>
-executor_promise<T>::executor_promise()
-{
-	m_sharedState = make_distributed_reference<detail::private_async_state<T>>();
-}
-template<typename T>
-executor_promise<T>::executor_promise(const executor_promise<T>& other)
-: m_sharedState(other.m_sharedState)
+template<typename T, typename Allocator>
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Allocator,Args...))
+executor_promise<T,Allocator>::executor_promise(Args&& ... i_args)
+: m_allocator(std::forward<Args>(i_args)...)
 {
 }
-template<typename T>
-executor_promise<T>& executor_promise<T>::operator=(const promise<T>& other)
+template<typename T, typename Allocator>
+executor_promise<T,Allocator>::executor_promise(executor_promise&& other)
+: m_allocator(std::move(other.m_allocator))
+, m_sharedState(std::move(other.m_sharedState))
 {
-	m_sharedState = other.m_sharedState;
+}
+template<typename T, typename Allocator>
+executor_promise<T,Allocator>& executor_promise<T,Allocator>::operator=(promise<T>&& other)
+{
+	m_sharedState = std::move(other.m_sharedState);
 
 	return *this;
 }
-template<typename T>
-void executor_promise<T>::set_value(sink_type i_value)
+template<typename T, typename Allocator>
+void executor_promise<T,Allocator>::set_value(sink_type i_value)
 {
-	m_sharedState->set_value(std::forward<sink_type>(i_value));
+	if (detail::private_async_state_shared_ptr<T> _sharedState = share(m_sharedState))
+	{
+		_sharedState->set_value(std::forward<sink_type>(i_value));
+	}
+}
+template<typename T, typename Allocator>
+void executor_promise<T,Allocator>::set_exception(const async_exception& i_exception)
+{
+	if (detail::private_async_state_shared_ptr<T> _sharedState = share(m_sharedState))
+	{
+		_sharedState->set_exception(i_exception);
+	}
+}
+template<typename T, typename Allocator>
+template<typename Executor,typename ... Args>
+future<T> executor_promise<T,Allocator>::attach(Args&& ... i_args) &&
+{
+	detail::embedded_private_async_state_shared_ptr<T,Executor> _sharedState = make_shared_reference<detail::embedded_private_async_state<T,Executor>>(m_allocator);
 
-	m_sharedState = nullptr;
-}
-template<typename T>
-void executor_promise<T>::set_exception(const async_exception& i_exception)
-{
-	m_sharedState->set_exception(i_exception);
+	m_sharedState = _sharedState;
 
-	m_sharedState = nullptr;
+	Executor& _newExecutor = _sharedState->attach(std::forward<Args>(i_args)...);
+
+	_newExecutor.attach(_sharedState);
+
+	return { _sharedState,0 };
 }
-template<typename T>
-void executor_promise<T>::attach(async_cancellable_dist_ref i_executor)
+template<typename T, typename Allocator>
+template<typename Callable, typename CancelOp, typename Promise, typename Scheduler, typename Executor>
+void executor_promise<T,Allocator>::detach() &&
 {
-	m_sharedState->attach(i_executor);
+	typedef async_executor<Callable,CancelOp,Promise,Scheduler,Executor> async_t;
+
+	if (detail::embedded_private_async_state_shared_ptr<T,async_t> _sharedState = static_shared_cast<detail::embedded_private_async_state<T,async_t>>(share(m_sharedState)))
+	{
+		_sharedState->detach();
+	}
 }
-template<typename T>
-void executor_promise<T>::detach()
+template<typename T,typename Allocator>
+void executor_promise<T,Allocator>::value_predicate(function<bool()> i_predicate)
 {
-	m_sharedState->detach();
+	if (detail::private_async_state_shared_ptr<T> _sharedState = share(m_sharedState))
+	{
+		_sharedState->m_valuePredicate = i_predicate;
+	}
 }
-template<typename T>
-future<T> executor_promise<T>::get_future() const
+template<typename T,typename Allocator>
+detail::private_async_state_shared_ptr<T> executor_promise<T,Allocator>::shared_state()
 {
-	return m_sharedState;
+	return share(m_sharedState);
+}
+template<typename T,typename Allocator>
+detail::private_async_state_const_shared_ptr<T> executor_promise<T,Allocator>::shared_state() const
+{
+	return share(m_sharedState);
 }
 
 }

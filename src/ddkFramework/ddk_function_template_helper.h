@@ -151,6 +151,16 @@ public:
     typedef decltype(resolve(std::declval<Functor&>())) type;
 };
 
+template<typename Functor, size_t Position>
+struct aqcuire_callable_arg_type
+{
+private:
+    typedef typename aqcuire_callable_args_type<Functor>::type args_type;
+
+public:
+    typedef typename args_type::template nth_type<Position>::type type;
+};
+
 std::false_type _is_function(...);
 template<typename T>
 inline constexpr bool is_function = decltype(_is_function(std::declval<typename std::remove_reference<T>::type*>()))::value;

@@ -1,160 +1,142 @@
 #pragma once
 
-#include "ddk_executor_interface.h"
 #include "ddk_sync_executor_context.h"
+#include "ddk_async_defs.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename Return>
-class deferred_executor : public cancellable_executor_interface<Return()>
+class immediate_executor
 {
 public:
-	deferred_executor();
+	immediate_executor() = default;
+	immediate_executor(immediate_executor&&) = default;
+
+	template<typename Callable, typename Sink>
+	start_result execute(Callable&& i_callable, Sink&& i_sink);
+	template<typename Callable, typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc, Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
 
 private:
-	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-	typedef typename executor_interface<Return()>::sink_type sink_type;
-	using typename cancellable_executor_interface<Return()>::start_result;
-    using typename cancellable_executor_interface<Return()>::StartErrorCode;
-    using typename cancellable_executor_interface<Return()>::cancel_result;
-    using typename cancellable_executor_interface<Return()>::CancelErrorCode;
-
-	start_result execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ptr get_execution_context() override;
-	executor_context_const_lent_ptr get_execution_context() const override;
-	bool pending() const override;
-
-	atomic<ExecutorState::underlying_type> m_state;
+	immediate_execution_context m_execContext;
+	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
 };
 
-extern deferred_execution_context s_execContext;
-
-template<typename Return>
-class fiber_executor : public cancellable_executor_interface<Return()>
+class fiber_executor
 {
 public:
 	fiber_executor(fiber i_fiber);
 
+	template<typename Callable,typename Sink>
+	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	template<typename Callable,typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
+
 private:
-	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-	typedef typename executor_interface<Return()>::sink_type sink_type;
-	using typename cancellable_executor_interface<Return()>::start_result;
-    using typename cancellable_executor_interface<Return()>::StartErrorCode;
-    using typename cancellable_executor_interface<Return()>::cancel_result;
-    using typename cancellable_executor_interface<Return()>::CancelErrorCode;
-
-	start_result execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ptr get_execution_context() override;
-	executor_context_const_lent_ptr get_execution_context() const override;
-	bool pending() const override;
-
 	fiber_execution_context m_execContext;
-	atomic<ExecutorState::underlying_type> m_state;
+	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
 };
 
-class fiber_sheaf_executor : public cancellable_executor_interface<detail::void_t()>
+class fiber_sheaf_executor
 {
 public:
 	fiber_sheaf_executor(fiber_sheaf i_fiberSheaf);
 
+	template<typename Callable,typename Sink>
+	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	template<typename Callable,typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
+
 private:
-	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
-	typedef typename executor_interface<detail::void_t()>::sink_type sink_type;
-	using typename cancellable_executor_interface<void_t()>::start_result;
-    using typename cancellable_executor_interface<void_t()>::StartErrorCode;
-    using typename cancellable_executor_interface<void_t()>::cancel_result;
-    using typename cancellable_executor_interface<void_t()>::CancelErrorCode;
-
-	start_result execute(const sink_type& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
-	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ptr get_execution_context() override;
-	executor_context_const_lent_ptr get_execution_context() const override;
-	bool pending() const override;
-
 	fiber_sheaf_execution_context m_execContext;
-	atomic32<ExecutorState::underlying_type> m_state;
+	atomic32<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
 };
 
-template<typename Return>
-class thread_executor;
-
-template<typename Return>
-class thread_executor : public cancellable_executor_interface<Return()>
+class thread_executor
 {
 public:
 	thread_executor(thread i_thread);
 
+	template<typename Callable,typename Sink>
+	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	template<typename Callable,typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
+
 private:
-	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-	typedef typename executor_interface<Return()>::sink_type sink_type;
-	using typename cancellable_executor_interface<Return()>::start_result;
-    using typename cancellable_executor_interface<Return()>::StartErrorCode;
-    using typename cancellable_executor_interface<Return()>::cancel_result;
-    using typename cancellable_executor_interface<Return()>::CancelErrorCode;
-
-	start_result execute(const sink_type& i_sink, const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ptr get_execution_context() override;
-	executor_context_const_lent_ptr get_execution_context() const override;
-	bool pending() const override;
-
 	thread_execution_context m_execContext;
-	atomic<ExecutorState::underlying_type> m_state;
+	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
 };
 
-class thread_sheaf_executor : public cancellable_executor_interface<detail::void_t()>
+class thread_sheaf_executor
 {
 public:
 	thread_sheaf_executor(thread_sheaf i_threadSheaf);
 
+	template<typename Callable,typename Sink>
+	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	template<typename Callable,typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
+
 private:
-	typedef typename executor_interface<detail::void_t()>::sink_reference sink_reference;
-	typedef typename executor_interface<detail::void_t()>::sink_type sink_type;
-	using typename cancellable_executor_interface<void_t()>::start_result;
-    using typename cancellable_executor_interface<void_t()>::StartErrorCode;
-    using typename cancellable_executor_interface<void_t()>::cancel_result;
-    using typename cancellable_executor_interface<void_t()>::CancelErrorCode;
-
-	start_result execute(const sink_type& i_sink, const ddk::function<detail::void_t()>& i_callable) override;
-	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ptr get_execution_context() override;
-	executor_context_const_lent_ptr get_execution_context() const override;
-	bool pending() const override;
-
 	thread_sheaf_execution_context m_execContext;
-	atomic<ExecutorState::underlying_type> m_state;
+	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
 };
 
-template<typename Return>
-class execution_context_executor : public cancellable_executor_interface<Return()>
+template<typename Executor>
+class on_time_context_executor
+{
+public:
+	on_time_context_executor() = default;
+
+	template<typename Callable,typename Sink, typename ... Args>
+	start_result execute(Callable&& i_callable,Sink&& i_sink, Args&& ... i_args);
+	template<typename Callable,typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
+
+private:
+	optional<Executor> m_executor;
+	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+};
+
+class execution_context_executor
 {
 public:
 	execution_context_executor(executor_context_lent_ptr i_execContext,unsigned char i_depth);
-	~execution_context_executor();
+	execution_context_executor(execution_context_executor&& other) = default;
+
+	template<typename Callable,typename Sink>
+	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	template<typename Callable,typename Sink>
+	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+
+	executor_context_lent_ptr get_execution_context();
+	executor_context_const_lent_ptr get_execution_context() const;
 
 private:
-	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-	typedef typename executor_interface<Return()>::sink_type sink_type;
-	using typename cancellable_executor_interface<Return()>::start_result;
-	using typename cancellable_executor_interface<Return()>::StartErrorCode;
-	using typename cancellable_executor_interface<Return()>::cancel_result;
-	using typename cancellable_executor_interface<Return()>::CancelErrorCode;
-
-	start_result execute(const sink_type& i_sink,const ddk::function<Return()>& i_callable) override;
-	cancel_result cancel(const sink_type& i_sink, const ddk::function<bool()>& i_cancelFunc) override;
-	executor_context_lent_ptr get_execution_context() override;
-	executor_context_const_lent_ptr get_execution_context() const override;
-	bool pending() const override;
-
 	executor_context_lent_ptr m_execContext;
 	const unsigned char m_depth;
 	continuation_token m_continuationToken;
-	atomic<ExecutorState::underlying_type> m_state;
+	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
 };
 
 }

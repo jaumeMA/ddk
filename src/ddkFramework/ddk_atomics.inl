@@ -87,6 +87,20 @@ void atomic8<T>::set(T&& i_value)
 	atomic_exchange(*this,std::move(i_value));
 }
 template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONVERTIBLE(T,TT))
+atomic8<T>::operator TT() const
+{
+	return m_value;
+}
+template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONVERTIBLE(T,TT))
+atomic8<T>::operator TT()
+{
+	return m_value;
+}
+template<typename T>
 T* atomic8<T>::_get_typed_arena()
 {
 	return &m_value;
@@ -180,6 +194,20 @@ template<typename T>
 void atomic32<T>::set(T&& i_value)
 {
 	atomic_exchange(*this,std::move(i_value));
+}
+template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONVERTIBLE(T,TT))
+atomic32<T>::operator TT() const
+{
+	return m_value;
+}
+template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONVERTIBLE(T,TT))
+atomic32<T>::operator TT()
+{
+	return m_value;
 }
 template<typename T>
 T* atomic32<T>::_get_typed_arena()
@@ -277,6 +305,20 @@ void atomic64<T>::set(T&& i_value)
 	atomic_exchange(*this,std::move(i_value));
 }
 template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONVERTIBLE(T,TT))
+atomic64<T>::operator TT() const
+{
+	return m_value;
+}
+template<typename T>
+TEMPLATE(typename TT)
+REQUIRED(IS_CONVERTIBLE(T,TT))
+atomic64<T>::operator TT()
+{
+	return m_value;
+}
+template<typename T>
 T* atomic64<T>::_get_typed_arena()
 {
 	return &m_value;
@@ -290,7 +332,7 @@ int64_t* atomic64<T>::_get_arena()
 template<typename T>
 atomic<T*>::atomic(T* i_value)
 {
-	memcpy(&m_arena,&i_value,sizeof(T*));
+	m_value = i_value;
 }
 template<typename T>
 bool atomic<T*>::operator==(const atomic& other) const
@@ -325,17 +367,17 @@ T atomic<T*>::operator--(int)
 template<typename T>
 const T* atomic<T*>::get() const
 {
-	return m_arena;
+	return m_value;
 }
 template<typename T>
 T* atomic<T*>::get()
 {
-	return m_arena;
+	return m_value;
 }
 template<typename T>
 void atomic<T*>::set(T* i_value)
 {
-	memcpy(&m_arena,&i_value,sizeof(T*));
+	m_value = i_value;
 }
 template<typename T>
 atomic_uintptr_t& atomic<T*>::as_number()
@@ -350,7 +392,7 @@ const atomic_uintptr_t& atomic<T*>::as_number() const
 template<typename T>
 void* volatile* atomic<T*>::_get_arena()
 {
-	return reinterpret_cast<void* volatile*>(&m_arena);
+	return reinterpret_cast<void* volatile*>(&m_value);
 }
 
 TEMPLATE(typename T, typename TT)

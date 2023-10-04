@@ -20,6 +20,14 @@ class error_impl<Error>
 
 		return i_lhs;
 	}
+	friend inline std::string operator<<(const std::string& i_lhs,const error_impl& i_rhs)
+	{
+		std::ostringstream res(i_lhs);
+
+		res << i_rhs.m_errorDesc;
+
+		return res.str();
+	}
 
 public:
     error_impl(const Error& i_error);
@@ -49,6 +57,17 @@ class error_impl : public error_impl<Error>
 		},i_rhs.m_nestedErrors);
 
 		return i_lhs;
+	}
+	friend inline std::string operator<<(const std::string& i_lhs,const error_impl& i_rhs)
+	{
+		std::ostringstream res(i_lhs);
+
+		visit([&res](auto&& i_error)
+		{
+			res << i_error;
+		},i_rhs.m_nestedErrors);
+
+		return res.str();
 	}
 
 public:

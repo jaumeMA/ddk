@@ -15,7 +15,7 @@ unique_value<T> make_unique_value(Args&& ... i_args)
 	return { make_unique_reference<T>(std::forward<Args>(i_args)...) };
 }
 TEMPLATE(typename T,typename TT)
-REQUIRED(IS_LENDABLE_REF(TT))
+REQUIRED(IS_LENDABLE(TT))
 lent_value<T> make_lent_value(TT&& i_value)
 {
 #ifdef DDK_DEBUG
@@ -25,13 +25,13 @@ lent_value<T> make_lent_value(TT&& i_value)
 #endif
 }
 TEMPLATE(typename T,typename TT)
-REQUIRED(IS_LENDABLE_REF(TT))
+REQUIRED(IS_LENDABLE(TT))
 lent_value<T> make_lent_value(TT&& i_value, const rtti::TypeInfo& i_typeInfo)
 {
 	return { lend(i_value),i_typeInfo };
 }
 TEMPLATE(typename T,typename TT)
-REQUIRED(IS_LENDABLE_POINTER(TT))
+REQUIRED(IS_LENDABLE(TT))
 lent_object<T> make_lent_object(TT&& i_value)
 {
 #ifdef DDK_DEBUG
@@ -41,7 +41,7 @@ lent_object<T> make_lent_object(TT&& i_value)
 #endif
 }
 TEMPLATE(typename T,typename TT)
-REQUIRED(IS_LENDABLE_POINTER(TT))
+REQUIRED(IS_LENDABLE(TT))
 lent_object<T> make_lent_object(TT&& i_value, const rtti::TypeInfo& i_typeInfo)
 {
 	return { lend(i_value),i_typeInfo };

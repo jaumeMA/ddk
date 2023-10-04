@@ -26,6 +26,8 @@ weak_pointer_wrapper<T>::weak_pointer_wrapper(const weak_pointer_wrapper<TT>& ot
 : m_data(other.m_data)
 , m_refCounter(other.m_refCounter)
 {
+	static_assert(std::is_base_of<T,TT>::value,"You shall provide a base class of T");
+
 	if(m_refCounter)
 	{
 		m_refCounter->incrementWeakReference();
@@ -45,6 +47,19 @@ weak_pointer_wrapper<T>::weak_pointer_wrapper(weak_pointer_wrapper<TT>&& other)
 	}
 
 	other.m_data = nullptr;
+}
+template<typename T>
+template<typename TT>
+weak_pointer_wrapper<T>::weak_pointer_wrapper(const shared_pointer_wrapper<TT>& other)
+: m_data(other.m_data)
+, m_refCounter(other.m_refCounter)
+{
+	static_assert(std::is_base_of<T,TT>::value,"You shall provide a base class of T");
+
+	if (m_refCounter)
+	{
+		m_refCounter->incrementWeakReference();
+	}
 }
 template<typename T>
 weak_pointer_wrapper<T>::weak_pointer_wrapper(T* i_data,const tagged_reference_counter& i_refCounter)

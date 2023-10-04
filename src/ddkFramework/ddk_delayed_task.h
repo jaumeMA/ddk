@@ -1,32 +1,31 @@
 #pragma once
 
-#include "ddk_sync_executor.h"
-#include "ddk_future.h"
+#include "ddk_sync_executor_scheduler.h"
 
 namespace ddk
 {
 
-template<typename T>
+template<typename Callable>
 class delayed_task
 {
+	template<typename Executor,typename CCallable,typename Provider>
+	friend auto async(delayed_task<CCallable>&& i_task, Provider& i_eventProvider);
+
 public:
-	delayed_task(const function<T()>& i_callable);
+	delayed_task(const Callable& i_callable);
+	delayed_task(Callable&& i_callable);
 	delayed_task(const delayed_task&) = delete;
 	delayed_task(delayed_task&&) = default;
 	delayed_task& operator=(const delayed_task&) = delete;
 	delayed_task& operator=(delayed_task&&) = delete;
-	void execute(thread i_thread);
-	void execute(fiber i_fiber);
-	void execute(thread_sheaf i_threadSheaf);
-	void execute(fiber_sheaf i_fiberSheaf);
-	void execute();
-	bool cancel();
-	future<T> as_future();
-	bool empty() const;
 
 private:
-	distributed_pointer_wrapper<async_executor<T>> m_executor;
+	const Callable m_executor;
 };
+template<typename Callable>
+delayed_task(const Callable&) -> delayed_task<Callable>;
+template<typename Callable>
+delayed_task(Callable&&)->delayed_task<Callable>;
 
 }
 

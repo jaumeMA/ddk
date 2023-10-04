@@ -38,14 +38,12 @@ struct constructor_inplace_visitor : public static_visitor<void>
 	: m_storage(i_storage)
 	{
 	}
-	template<size_t PosType, typename Type>
-	constexpr void operator()(Type&& i_value) const
+	template<size_t PosType, typename ... Args>
+	constexpr mpl::nth_type_of_t<PosType,Types...>& operator()(Args&& ... i_args) const
 	{
-		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
-
 		typedef typename mpl::nth_type_of<PosType, Types...>::type varType;
 
-		m_storage.template construct<varType>(std::forward<Type>(i_value));
+		return m_storage.template construct<varType>(std::forward<Args>(i_args)...);
 	}
 
 private:
@@ -93,16 +91,12 @@ struct assigner_visitor : public static_visitor<void>
 	: m_storage(i_storage)
 	{
 	}
-    template<size_t PosType, typename Type>
-	constexpr detail::void_t operator()(Type&& i_value) const
+    template<size_t PosType, typename ... Args>
+	constexpr mpl::nth_type_of_t<PosType,Types...>& operator()(Args&& ... i_args) const
 	{
-		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
-
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
 
-		m_storage.template assign<varType>(std::forward<Type>(i_value));
-
-		return _void;
+		return m_storage.template assign<varType>(std::forward<Args>(i_args)...);
 	}
 
 private:

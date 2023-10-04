@@ -124,6 +124,14 @@ distributed_reference_counter::distributed_reference_counter(distributed_referen
 {
 	std::swap(m_numSharedReferences,other.m_numSharedReferences);
 }
+distributed_reference_counter& distributed_reference_counter::operator=(const distributed_reference_counter& other)
+{
+	return *this;
+}
+distributed_reference_counter& distributed_reference_counter::operator=(distributed_reference_counter&& other)
+{
+	return *this;
+}
 unsigned int distributed_reference_counter::incrementSharedReference()
 {
 	return atomic_post_increment(m_numSharedReferences);

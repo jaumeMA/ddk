@@ -158,7 +158,7 @@ stack_allocator::stack_allocator(stack_alloc_const_dist_ref i_stackAllocImpl, si
 {
 }
 stack_allocator::stack_allocator(stack_allocator&& other)
-: m_stackAllocImpl(other.m_stackAllocImpl)
+: m_stackAllocImpl(std::move(other.m_stackAllocImpl))
 , m_numMaxPages(other.m_numMaxPages)
 {
 }

@@ -292,6 +292,30 @@ variant_impl<Types...>& variant_impl<Types...>::assign(TType&& val)
 	return *this;
 }
 template<typename ... Types>
+template<size_t Index,typename ... Args>
+mpl::nth_type_of_t<Index,Types...>& variant_impl<Types...>::emplace(Args&& ... i_args)
+{
+	static_assert(Index >= 0 && Index < s_numTypes,"Type out of bounds!");
+
+	if (Index != m_currentType)
+	{
+		destroy();
+
+		constructor_inplace_visitor<data_type,Types...> ctr(m_storage);
+
+		m_currentType = static_cast<unsigned char>(Index);
+
+		return ctr.template operator()<Index>(std::forward<Args>(i_args)...);
+	}
+	else
+	{
+		//just an assignment
+		assigner_visitor<data_type,Types...> ass(m_storage);
+
+		return ass.template operator()<Index>(std::forward<Args>(i_args)...);
+	}
+}
+template<typename ... Types>
 bool variant_impl<Types...>::operator==(const variant_impl<Types...>& other) const
 {
 	bool res = false;

@@ -11,31 +11,26 @@ namespace ddk
 template<typename T>
 inline void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize);
 
-template<typename Deallocator>
-class deallocator_proxy
+template<typename Deleter>
+class deleter_proxy
 {
 public:
-	typedef Deallocator deallocator;
-	typedef typename deallocator::type type;
-	typedef type* pointer;
-	typedef const type* const_pointer;
-	typedef std::ptrdiff_t difference_type;
-
-	TEMPLATE(typename DDeallocator)
-	REQUIRES(IS_CONSTRUCTIBLE(Deallocator,DDeallocator))
-	deallocator_proxy(const DDeallocator& i_deallocator);
+	deleter_proxy(const Deleter& i_deleter);
+	TEMPLATE(typename DDeleter)
+	REQUIRES(IS_CONSTRUCTIBLE(Deleter,DDeleter))
+	deleter_proxy(const DDeleter& i_deleter);
 
 	template<typename T>
 	inline void deallocate(T* i_address) const;
 
 private:
-	const Deallocator& m_deallocator;
+	const Deleter* m_deleter;
 };
-template<typename Deallocator>
-deallocator_proxy(const Deallocator&) -> deallocator_proxy<Deallocator>;
+template<typename Deleter>
+deleter_proxy(const Deleter&) -> deleter_proxy<Deleter>;
 
 template<typename Allocator>
-class allocator_proxy
+class allocator_proxy : public deleter_proxy<Allocator>
 {
 public:
 	typedef Allocator allocator;
@@ -44,16 +39,15 @@ public:
 	typedef const type* const_pointer;
 	typedef std::ptrdiff_t difference_type;
 
+	allocator_proxy(const Allocator& i_allocator);
 	TEMPLATE(typename AAllocator)
 	REQUIRES(IS_CONSTRUCTIBLE(Allocator,AAllocator))
 	allocator_proxy(const AAllocator& i_allocator);
 
 	inline auto allocate(size_t i_size = 1) const;
-	template<typename T>
-	inline void deallocate(T* i_address) const;
 
 private:
-	const Allocator& m_allocator;
+	const Allocator* m_allocator;
 };
 template<typename Allocator>
 allocator_proxy(const Allocator&) -> allocator_proxy<Allocator>;
@@ -73,26 +67,22 @@ public:
 	TEMPLATE(typename AAllocator)
 	REQUIRES(IS_CONSTRUCTIBLE(Allocator,AAllocator))
 	typed_allocator_proxy(const AAllocator& i_deallocator);
-
-	inline void deallocate(T* i_address) const;
 };
 
-template<typename T,typename Deallocator>
-class typed_deallocator_proxy : deallocator_proxy<Deallocator>
+template<typename T,typename Deleter>
+class typed_deleter_proxy : deleter_proxy<Deleter>
 {
 public:
-	typedef Deallocator deallocator;
+	typedef Deleter deleter;
 	typedef T type;
 	typedef type* pointer;
 	typedef const type* const_pointer;
 	typedef std::ptrdiff_t difference_type;
-	using deallocator_proxy<Deallocator>::deallocate;
+	using deleter_proxy<Deleter>::deallocate;
 
-	TEMPLATE(typename DDeallocator)
-	REQUIRES(IS_CONSTRUCTIBLE(Deallocator,DDeallocator))
-	typed_deallocator_proxy(const DDeallocator& i_deallocator);
-
-	inline void deallocate(T* i_address) const;
+	TEMPLATE(typename DDeleter)
+	REQUIRES(IS_CONSTRUCTIBLE(Deleter,DDeleter))
+	typed_deleter_proxy(const DDeleter& i_deleter);
 };
 
 template<typename ... Allocators>

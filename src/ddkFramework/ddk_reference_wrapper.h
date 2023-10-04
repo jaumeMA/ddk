@@ -123,6 +123,8 @@ template<typename T>
 inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr);
 template<typename T, typename Deleter>
 inline distributed_reference_wrapper<T> as_distributed_reference(T* i_ptr,const Deleter& i_refDeleter);
+template<typename T,typename ReferenceCounter>
+inline detail::shared_reference_wrapper_impl<T,ReferenceCounter> as_distributed_reference(T* i_ptr,const tagged_pointer<ReferenceCounter>& i_refCounter);
 
 template<typename T, typename ReferenceCounter>
 inline detail::shared_reference_wrapper_impl<T,ReferenceCounter> as_shared_reference(T* i_ptr, const tagged_pointer<ReferenceCounter>& i_refCounter);
@@ -270,6 +272,16 @@ template<typename T, typename TT>
 inline lent_reference_wrapper<TT> lend(lend_from_this<T,TT>& i_lendable);
 template<typename T, typename TT>
 inline lent_reference_wrapper<const TT> lend(const lend_from_this<T,TT>& i_lendable);
+
+template<typename T,typename TT>
+inline lent_reference_wrapper<TT> lend(distribute_from_this<T,TT>& i_lendable);
+template<typename T,typename TT>
+inline lent_reference_wrapper<const TT> lend(const distribute_from_this<T,TT>& i_lendable);
+
+template<typename T,typename TT>
+inline lent_reference_wrapper<TT> lend(share_from_this<T,TT>& i_lendable);
+template<typename T,typename TT>
+inline lent_reference_wrapper<const TT> lend(const share_from_this<T,TT>& i_lendable);
 
 template<typename T>
 inline lent_reference_wrapper<T> lend(lendable<T>& i_lendable);

@@ -16,7 +16,7 @@ template<typename T>
 template<typename Type>
 embedded_type<T&>& embedded_type<T&>::operator=(Type&& val)
 {
-	new(&m_data)embedded_type(std::forward<Type>(val));
+	new (this) embedded_type(std::forward<Type>(val));
 
 	return *this;
 }
@@ -76,15 +76,19 @@ constexpr embedded_type<T&>::operator cref_type() const
 	return m_data;
 }
 template<typename T>
-void embedded_type<T&>::inplace_construct(T& val)
+typename embedded_type<T&>::ref_type embedded_type<T&>::inplace_construct(T& val)
 {
-	new(this) embedded_type(val);
+	new (this) embedded_type(val);
+
+	return m_data;
 }
 template<typename T>
-void embedded_type<T&>::inplace_assign(T& val)
+typename embedded_type<T&>::ref_type embedded_type<T&>::inplace_assign(T& val)
 {
 	//references must be reconstructed every time
-	new(this) embedded_type(val);
+	new (this) embedded_type(val);
+
+	return m_data;
 }
 template<typename T>
 void embedded_type<T&>::inplace_destroy()
@@ -175,15 +179,19 @@ constexpr embedded_type<T&&>::operator cref_type() const
 	return std::move(m_data);
 }
 template<typename T>
-void embedded_type<T&&>::inplace_construct(T&& val)
+typename embedded_type<T&&>::ref_type embedded_type<T&&>::inplace_construct(T&& val)
 {
-	new(this) embedded_type(std::move(val));
+	new (this) embedded_type(std::move(val));
+
+	return std::move(m_data);
 }
 template<typename T>
-void embedded_type<T&&>::inplace_assign(T&& val)
+typename embedded_type<T&&>::ref_type embedded_type<T&&>::inplace_assign(T&& val)
 {
 	//references must be reconstructed every time
-	new(this) embedded_type(std::move(val));
+	new (this) embedded_type(std::move(val));
+
+	return std::move(m_data);
 }
 template<typename T>
 void embedded_type<T&&>::inplace_destroy()
@@ -317,13 +325,15 @@ embedded_type<T>::operator rref_type() &&
 }
 template<typename T>
 template<typename ... Args>
-void embedded_type<T>::inplace_construct(Args&& ... i_args)
+T& embedded_type<T>::inplace_construct(Args&& ... i_args)
 {
-	new(this) embedded_type{ std::forward<Args>(i_args)... };
+	new (this) embedded_type{ std::forward<Args>(i_args)... };
+
+	return m_data;
 }
 template<typename T>
 template<typename ... Args>
-constexpr void embedded_type<T>::inplace_assign(Args&& ... i_args)
+constexpr T& embedded_type<T>::inplace_assign(Args&& ... i_args)
 {
 	T obj(std::forward<Args>(i_args)...);
 
@@ -335,6 +345,8 @@ constexpr void embedded_type<T>::inplace_assign(Args&& ... i_args)
 	{
 		m_data = std::move(obj);
 	}
+
+	return m_data;
 }
 template<typename T>
 void embedded_type<T>::inplace_destroy()

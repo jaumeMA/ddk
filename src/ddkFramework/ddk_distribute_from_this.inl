@@ -12,12 +12,12 @@ distribute_from_this<T,TT>::distribute_from_this(tagged_reference_counter i_refC
 template<typename T,typename TT>
 ddk::distributed_reference_wrapper<TT> distribute_from_this<T,TT>::ref_from_this()
 {
-	return as_shared_reference(static_cast<TT*>(this),m_refCounter);
+	return as_shared_reference(static_cast<T*>(this),m_refCounter);
 }
 template<typename T,typename TT>
 ddk::distributed_reference_wrapper<const TT> distribute_from_this<T,TT>::ref_from_this() const
 {
-	return as_shared_reference(static_cast<const TT*>(this),m_refCounter);
+	return as_shared_reference(static_cast<const T*>(this),m_refCounter);
 }
 template<typename T,typename TT>
 typename distribute_from_this<T,TT>::tagged_reference_counter distribute_from_this<T,TT>::get_reference_counter() const

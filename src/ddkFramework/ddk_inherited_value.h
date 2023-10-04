@@ -19,17 +19,17 @@ template<typename T,typename ... Args>
 inline unique_value<T> make_unique_value(Args&& ... i_args);
 
 TEMPLATE(typename T,typename TT)
-REQUIRES(IS_LENDABLE_REF(TT))
+REQUIRES(IS_LENDABLE(TT))
 inline lent_value<T> make_lent_value(TT&& i_value);
 TEMPLATE(typename T, typename TT)
-REQUIRES(IS_LENDABLE_REF(TT))
+REQUIRES(IS_LENDABLE(TT))
 inline lent_value<T> make_lent_value(TT&& i_value, const rtti::TypeInfo& i_typeInfo);
 
 TEMPLATE(typename T,typename TT)
-REQUIRES(IS_LENDABLE_POINTER(TT))
+REQUIRES(IS_LENDABLE(TT))
 inline lent_object<T> make_lent_object(TT&& i_value);
 TEMPLATE(typename T,typename TT)
-REQUIRES(IS_LENDABLE_POINTER(TT))
+REQUIRES(IS_LENDABLE(TT))
 inline lent_object<T> make_lent_object(TT&& i_value, const rtti::TypeInfo& i_typeInfo);
 
 template<typename T>

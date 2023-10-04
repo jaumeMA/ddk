@@ -79,13 +79,13 @@ class lent_pointer_wrapper
 	{
 		T* res = i_ref.m_data;
 
-		i_ref.m_data = nullptr;
+		i_ref = nullptr;
 
 		return res;
 	}
 	friend inline void clear_ptr(lent_pointer_wrapper& i_ref)
 	{
-		i_ref.m_data = nullptr;
+		i_ref = nullptr;
 	}
 	friend inline void rebase_ptr(lent_pointer_wrapper& i_ref,std::ptrdiff_t i_diff)
 	{

@@ -33,8 +33,7 @@ protected:
     typedef context_executor_interface::ResumErrorCode ResumErrorCode;
     typedef context_executor_interface::sink_type sink_type;
 
-	start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;
-	bool pending() const override;
+	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
 	resume_result resume() override;
 	void signal() override;
 	void update() const;
@@ -69,8 +68,7 @@ protected:
     typedef context_executor_interface::ResumErrorCode ResumErrorCode;
     typedef context_executor_interface::sink_type sink_type;
 
-	start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;
-	bool pending() const override;
+	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
 	resume_result resume() override;
 	void signal() override;
 	void update();
@@ -104,8 +102,7 @@ protected:
     typedef context_executor_interface::ResumErrorCode ResumErrorCode;
     typedef context_executor_interface::sink_type sink_type;
 
-	start_result execute(const sink_type& i_sink,const ddk::function<void()>& i_executor) override;
-	bool pending() const override;
+	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
 	resume_result resume() override;
 	void signal() override;
 	void update();

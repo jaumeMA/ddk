@@ -45,11 +45,10 @@ public:
 protected:
 	inline ddk::distributed_reference_wrapper<TT> ref_from_this();
 	inline ddk::distributed_reference_wrapper<const TT> ref_from_this() const;
-
-private:
 	inline tagged_reference_counter get_reference_counter() const;
 	inline void set_reference_counter(tagged_reference_counter i_refCounter) const;
 
+private:
 	mutable tagged_reference_counter m_refCounter;
 };
 

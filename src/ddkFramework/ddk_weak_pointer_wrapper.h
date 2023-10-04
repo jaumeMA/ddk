@@ -48,6 +48,8 @@ public:
 	weak_pointer_wrapper(const weak_pointer_wrapper<TT>& other);
 	template<typename TT>
 	weak_pointer_wrapper(weak_pointer_wrapper<TT>&& other);
+	template<typename TT>
+	weak_pointer_wrapper(const shared_pointer_wrapper<TT>& other);
 	~weak_pointer_wrapper();
 
 	weak_pointer_wrapper& operator=(std::nullptr_t);

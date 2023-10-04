@@ -4,28 +4,28 @@
 namespace ddk
 {
 
-template<typename T>
-thread_local_storage<T>::thread_local_storage(thread_local_storage&& other)
+template<typename T, typename Allocator>
+thread_local_storage<T,Allocator>::thread_local_storage(thread_local_storage&& other)
 : m_address(nullptr)
 {
 	std::swap(m_address,other.m_address);
 }
-template<typename T>
-thread_local_storage<T>::~thread_local_storage()
+template<typename T,typename Allocator>
+thread_local_storage<T,Allocator>::~thread_local_storage()
 {
 	if (m_address)
 	{
 		destroy();
 	}
 }
-template<typename T>
-bool thread_local_storage<T>::empty() const
+template<typename T, typename Allocator>
+bool thread_local_storage<T,Allocator>::empty() const
 {
 	return m_address == nullptr;
 }
-template<typename T>
+template<typename T, typename Allocator>
 template<typename ... Args>
-T* thread_local_storage<T>::construct(Args&& ... i_args)
+T* thread_local_storage<T,Allocator>::construct(Args&& ... i_args)
 {
 	DDK_ASSERT(m_address==nullptr, "Constructing already constructed address");
 
@@ -42,8 +42,8 @@ T* thread_local_storage<T>::construct(Args&& ... i_args)
 		return nullptr;
 	}
 }
-template<typename T>
-void thread_local_storage<T>::destroy()
+template<typename T, typename Allocator>
+void thread_local_storage<T,Allocator>::destroy()
 {
 	DDK_ASSERT(m_address!=nullptr, "Destroying null address");
 
@@ -56,9 +56,9 @@ void thread_local_storage<T>::destroy()
 		m_address = nullptr;
 	}
 }
-template<typename T>
+template<typename T, typename Allocator>
 template<typename ... Args>
-T* thread_local_storage<T>::assign(Args&& ... i_args)
+T* thread_local_storage<T,Allocator>::assign(Args&& ... i_args)
 {
 	if (T* typedAddress = reinterpret_cast<T*>(m_address))
 	{
@@ -82,13 +82,18 @@ T* thread_local_storage<T>::assign(Args&& ... i_args)
 		}
 	}
 }
-template<typename T>
-T& thread_local_storage<T>::get()
+template<typename T, typename Allocator>
+T& thread_local_storage<T,Allocator>::get()
 {
 	return *reinterpret_cast<T*>(m_address);
 }
-template<typename T>
-T thread_local_storage<T>::extract()
+template<typename T,typename Allocator>
+const T& thread_local_storage<T,Allocator>::get() const
+{
+	return *reinterpret_cast<T*>(m_address);
+}
+template<typename T, typename Allocator>
+T thread_local_storage<T,Allocator>::extract() &&
 {
 	if(T* typedAddress = reinterpret_cast<T*>(m_address))
 	{
@@ -109,8 +114,13 @@ T thread_local_storage<T>::extract()
 		return crash_on_return<T>::value();
 	}
 }
-template<typename T>
-T* thread_local_storage<T>::get_address()
+template<typename T, typename Allocator>
+T* thread_local_storage<T,Allocator>::get_address()
+{
+	return reinterpret_cast<T*>(m_address);
+}
+template<typename T,typename Allocator>
+const T* thread_local_storage<T,Allocator>::get_address() const
 {
 	return reinterpret_cast<T*>(m_address);
 }

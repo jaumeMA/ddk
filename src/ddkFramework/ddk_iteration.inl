@@ -17,14 +17,6 @@ iteration_sink<Sink>::iteration_sink(SSink&& i_try)
 {
 }
 
-template<typename Sink>
-TEMPLATE(typename SSink)
-REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
-mutable_iteration_sink<Sink>::mutable_iteration_sink(SSink&& i_try)
-: m_try(std::forward<SSink>(i_try))
-{
-}
-
 }
 
 template<typename Iterable, typename Sink>
@@ -40,7 +32,7 @@ iteration_result execute_co_iteration(co_iteration<Iterable,Sink> i_co_iteration
 }
 
 template<typename Iterable, typename Sink>
-iteration_result execute_iteration(iteration<Iterable,Sink> i_iteration)
+iteration_result execute_iteration(iteration<Iterable,Sink>& i_iteration)
 {
 	if(ddk::atomic_compare_exchange(i_iteration.m_executable,true,false))
 	{
@@ -128,6 +120,24 @@ iteration_result iteration<Iterable,Sink>::execute() const
 	else
 	{
 		throw iteration_exception{ "Exeuting empty iteration" };
+	}
+}
+template<typename Iterable,typename Sink>
+template<typename Callable>
+auto iteration<Iterable,Sink>::transform(Callable&& i_callable) &&
+{
+	if (ddk::atomic_compare_exchange(m_executable,true,false))
+	{
+		typedef function<void(typename Iterable::reference)> SSink;
+
+		return iteration<Iterable,SSink>{ m_iterable,ddk::make_function([payload = m_try, callable = i_callable](typename Iterable::reference i_value)
+		{
+			ddk::eval(callable,payload(i_value));
+		}) };
+	}
+	else
+	{
+		throw iteration_exception{ "Transforming empty iteration" };
 	}
 }
 template<typename Iterable, typename Sink>
@@ -287,14 +297,30 @@ template<typename Iterable, typename Sink>
 template<typename T>
 future<iteration_result> co_iteration<Iterable,Sink>::attach(T&& i_execContext)
 {
-	distributed_reference_wrapper<async_executor<iteration_result>> res = make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
-
-    return res->attach(std::forward<T>(i_execContext));
+	return ddk::async([this]()
+	{
+		if (ddk::atomic_compare_exchange(m_executable,true,false))
+		{			return _execute();
+		}
+		else
+		{
+			throw iteration_exception{ "Exeuting empty iteration" };
+		}
+	}) -> attach(std::forward<T>(i_execContext));
 }
 template<typename Iterable, typename Sink>
 future<iteration_result> co_iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
 {
-	return make_async_executor(make_function(&ddk::execute_co_iteration<Iterable,Sink>,*this));
+	return ddk::async([this]()
+	{
+		if (ddk::atomic_compare_exchange(m_executable,true,false))
+		{			return _execute();
+		}
+		else
+		{
+			throw iteration_exception{ "Exeuting empty iteration" };
+		}
+	});
 }
 template<typename Iterable, typename Sink>
 iteration_result co_iteration<Iterable,Sink>::_execute()

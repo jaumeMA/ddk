@@ -11,7 +11,7 @@
 
 #ifdef DDK_DEBUG
 
-//#define TRACK_STACK
+#define TRACK_STACK
 
 #include "ddk_memory_tracker.h"
 
@@ -103,6 +103,9 @@ protected:
 	distributed_reference_counter(const distributed_reference_counter& other);
 	distributed_reference_counter(distributed_reference_counter&& other);
 
+	distributed_reference_counter& operator=(const distributed_reference_counter& other);
+	distributed_reference_counter& operator=(distributed_reference_counter&& other);
+
 private:
 	atomic_uint m_numSharedReferences;
 };
@@ -127,7 +130,9 @@ class share_control_block : public ReferenceCounter
 public:
 	typedef ReferenceCounter reference_counter;
 
-	share_control_block(T* i_ptr, const Deleter& i_deleter = Deleter{});
+	share_control_block(T* i_ptr, const Deleter& i_deleter);
+
+	share_control_block& operator=(const share_control_block& other);
 
 protected:
 	void destroy_shared_resource(short i_tagCategory) override;
@@ -168,7 +173,7 @@ class unique_control_block : public unique_reference_counter
 public:
 	typedef unique_reference_counter reference_counter;
 
-	unique_control_block(T* i_ptr, const Deleter& i_deleter = Deleter{});
+	unique_control_block(T* i_ptr, const Deleter& i_deleter);
 
 private:
 	void destroy_unique_resource(short i_tagCategory) override;

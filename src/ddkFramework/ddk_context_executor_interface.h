@@ -19,6 +19,7 @@ public:
 	typedef error<ResumErrorCode> resume_error;
 	typedef ddk::result<void,resume_error> resume_result;
 
+	virtual start_result execute(const ddk::function<void()>&,const sink_type&) = 0;
 	virtual resume_result resume() = 0;
 	virtual void signal() = 0;
 };

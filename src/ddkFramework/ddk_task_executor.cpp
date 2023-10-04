@@ -66,30 +66,45 @@ size_t task_executor::set_affinity(const cpu_set_t& i_set)
 {
 	return m_availableThreads.set_affinity(i_set);
 }
+void task_executor::subscribe(task_executed_scheduler i_scheduler)
+{
+	if (m_numPendingTasks.get() > m_maxNumPendingTasks)
+	{
+		if (optional<task_executed_scheduler> oldTaskOpt = m_pendingTasks.pop())
+		{
+			extract_raw_ptr(std::move(oldTaskOpt).extract())->signal({});
+
+			atomic_post_decrement(m_numPendingTasks);
+		}
+	}
+
+	m_pendingTasks.push(std::move(i_scheduler));
+
+	atomic_post_increment(m_numPendingTasks);
+
+	m_updateThread.signal_thread();
+}
 bool task_executor::running() const
 {
 	return m_state.get() == Running;
 }
 void task_executor::update()
 {
-	while(optional<unique_pending_task> optTask = m_pendingTasks.pop())
+	while(optional<task_executed_scheduler> pendingTaskOpt = m_pendingTasks.pop())
 	{
-		unique_pending_task newTask = std::move(optTask).extract();
+		task_executed_scheduler pendingTask = std::move(pendingTaskOpt).extract();
 
-		if(newTask->empty() == false)
+		if(acquire_thread_result threadRes = m_availableThreads.aquire_thread())
 		{
-			if(acquire_thread_result threadRes = m_availableThreads.aquire_thread())
-			{
-				atomic_post_decrement(m_numPendingTasks);
+			atomic_post_decrement(m_numPendingTasks);
 
-				newTask->execute(std::move(threadRes).extract());
-			}
-			else
-			{
-				m_pendingTasks.push(std::move(newTask));
+			extract_raw_ptr(pendingTask)->signal(std::move(threadRes).extract());
+		}
+		else
+		{
+			m_pendingTasks.push(std::move(pendingTask));
 
-				break;
-			}
+			break;
 		}
 	}
 }

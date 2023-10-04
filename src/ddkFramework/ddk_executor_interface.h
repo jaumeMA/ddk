@@ -6,6 +6,7 @@
 #include "ddk_reference_wrapper.h"
 #include "ddk_async_executor_interface.h"
 #include "ddk_sync_executor_context_interface.h"
+#include "ddk_async_defs.h"
 
 namespace ddk
 {
@@ -34,15 +35,6 @@ class executor_interface;
 template<typename>
 class cancellable_executor_interface;
 
-SCOPED_ENUM_DECL(ExecutorState,
-	Idle,
-	Pending,
-	Executing,
-	Executed,
-	Cancelling,
-	Cancelled
-);
-
 template<typename Return>
 class executor_interface<Return()>
 {
@@ -60,8 +52,6 @@ public:
 	typedef typename detail::sink_type_resolver<Return>::reference sink_reference;
 
 	virtual ~executor_interface() = default;
-	virtual start_result execute(const sink_type&, const ddk::function<Return()>&) = 0;
-	virtual bool pending() const = 0;
 };
 
 template<typename Return, typename ... Args>
@@ -80,10 +70,6 @@ public:
     using typename executor_interface<Return()>::sink_type;
 	typedef typename async_cancellable_interface::cancel_result cancel_result;
 	typedef typename async_cancellable_interface::CancelErrorCode CancelErrorCode;
-
-	virtual cancel_result cancel(const sink_type&, const ddk::function<bool()>&) = 0;
-	virtual executor_context_lent_ptr get_execution_context() = 0;
-	virtual executor_context_const_lent_ptr get_execution_context() const = 0;
 };
 
 template<typename Return, typename ... Args>

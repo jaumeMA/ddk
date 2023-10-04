@@ -5,7 +5,7 @@
 
 #ifdef DDK_DEBUG
 
-//#define MEM_CHECK
+#define MEM_CHECK
 
 #endif
 
@@ -72,18 +72,20 @@ system_allocator_impl& get_system_allocator_iml()
 	return s_sysAlloc;
 }
 
-void system_deleter::deallocate(const void* i_ptr) const
+void system_deleter::deallocate(const void* i_ptr)
 {
 	get_system_allocator_iml().deallocate(i_ptr);
 }
 
-void* system_allocator::allocate(size_t i_size) const
+void* system_allocator::allocate(size_t i_size)
 {
     return get_system_allocator_iml().allocate(i_size);
 }
-void* system_allocator::reallocate(void *ptr, size_t i_newSize) const
+void* system_allocator::reallocate(void *ptr, size_t i_newSize)
 {
 	return get_system_allocator_iml().reallocate(ptr,i_newSize);
 }
+
+extern system_allocator g_system_allocator = system_allocator{};
 
 }

@@ -6,6 +6,8 @@
 #include "ddk_formatter.h"
 #include "ddk_type_id.h"
 #include "ddk_mutex.h"
+#include "ddk_async.h"
+#include "test_utils.h"
 #include <utility>
 
 using namespace testing;
@@ -16,31 +18,7 @@ class DDKArenaTest : public TestWithParam<std::pair<size_t,size_t>>
 
 TEST(DDKArenaTest, defaultConstruction)
 {
-	ddk::atomic<size_t> value(10);
-
-	const size_t val = ddk::atomic_add(value,size_t(22));
-
-	value = value;
-
-	char* kk = (char*)malloc(4096);
-	ddk::embedded_buddy_allocator<ddk::mpl::get_power_of_two(4096) - ddk::mpl::get_power_of_two(64)> ba(kk,4096);
-
-	struct kk_t;
-	typedef ddk::Id<size_t,kk_t> kk_id;
-	kk_id kkk = ddk::format_to<kk_id>(std::string("10"));
-
-	void* a0 = ba.allocate(100);
-	void* a1 = ba.allocate(100);
-	void* b = ba.allocate(200);
-	void* c = ba.allocate(500);
-
-	ba.deallocate(a1);
-	ba.deallocate(a0);
-	ba.deallocate(c);
-	ba.deallocate(b);
-
-	free(kk);
-
+	ddk::unique_pointer_wrapper<ConstructionDeletionBalancer> foo = ddk::make_unique_reference<ConstructionDeletionBalancer>(0xFF);
 	ddk::arena<sizeof(int),alignof(int)> emptyArena;
 
 	EXPECT_EQ(emptyArena.empty(), true);

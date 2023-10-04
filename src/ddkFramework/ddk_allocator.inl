@@ -21,37 +21,43 @@ void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize)
 	}
 }
 
-template<typename Deallocator>
-TEMPLATE(typename DDeallocator)
-REQUIRED(IS_CONSTRUCTIBLE(Deallocator,DDeallocator))
-deallocator_proxy<Deallocator>::deallocator_proxy(const DDeallocator& i_deallocator)
-: m_deallocator(i_deallocator)
+template<typename Deleter>
+deleter_proxy<Deleter>::deleter_proxy(const Deleter& i_deleter)
+: m_deleter(&i_deleter)
 {
 }
-template<typename Deallocator>
-template<typename T>
-void deallocator_proxy<Deallocator>::deallocate(T* i_address) const
+template<typename Deleter>
+TEMPLATE(typename DDeleter)
+REQUIRED(IS_CONSTRUCTIBLE(Deleter,DDeleter))
+deleter_proxy<Deleter>::deleter_proxy(const DDeleter& i_deleter)
+: m_deleter(&i_deleter)
 {
-	m_deallocator.deallocate(i_address);
+}
+template<typename Deleter>
+template<typename T>
+void deleter_proxy<Deleter>::deallocate(T* i_address) const
+{
+	m_deleter->deallocate(i_address);
 }
 
+template<typename Allocator>
+allocator_proxy<Allocator>::allocator_proxy(const Allocator& i_allocator)
+: deleter_proxy(i_allocator)
+, m_allocator(&i_allocator)
+{
+}
 template<typename Allocator>
 TEMPLATE(typename AAllocator)
 REQUIRED(IS_CONSTRUCTIBLE(Allocator,AAllocator))
 allocator_proxy<Allocator>::allocator_proxy(const AAllocator& i_allocator)
-: m_allocator(i_allocator)
+: deleter_proxy(std::forward<AAlocator>(i_allocator))
+, m_allocator(&i_allocator)
 {
 }
 template<typename Allocator>
 auto allocator_proxy<Allocator>::allocate(size_t i_size) const
 {
-	return m_allocator.allocate(i_size);
-}
-template<typename Allocator>
-template<typename T>
-void allocator_proxy<Allocator>::deallocate(T* i_address) const
-{
-	m_allocator.deallocate(i_address);
+	return m_allocator->allocate(i_size);
 }
 
 template<typename T,typename Allocator>
@@ -61,33 +67,13 @@ typed_allocator_proxy<T,Allocator>::typed_allocator_proxy(const AAllocator& i_de
 : allocator_proxy<Allocator>(i_deallocator)
 {
 }
-template<typename T, typename Allocator>
-void typed_allocator_proxy<T,Allocator>::deallocate(type* i_ptr) const
-{
-	if(i_ptr)
-	{
-		i_ptr->~T();
 
-		allocator_proxy<Allocator>::deallocate(i_ptr);
-	}
-}
-
-template<typename T,typename Deallocator>
-TEMPLATE(typename DDeallocator)
-REQUIRED(IS_CONSTRUCTIBLE(Deallocator,DDeallocator))
-typed_deallocator_proxy<T,Deallocator>::typed_deallocator_proxy(const DDeallocator& i_deallocator)
-: deallocator_proxy<Deallocator>(i_deallocator)
+template<typename T, typename Deleter>
+TEMPLATE(typename DDeleter)
+REQUIRED(IS_CONSTRUCTIBLE(Deleter,DDeleter))
+typed_deleter_proxy<T,Deleter>::typed_deleter_proxy(const DDeleter& i_deleter)
+: deleter_proxy<Deleter>(i_deleter)
 {
-}
-template<typename T,typename Deallocator>
-void typed_deallocator_proxy<T,Deallocator>::deallocate(type* i_ptr) const
-{
-	if(i_ptr)
-	{
-		i_ptr->~T();
-
-		deallocator_proxy<Deallocator>::deallocate(i_ptr);
-	}
 }
 
 template<typename ... Allocators>

@@ -510,6 +510,11 @@ struct is_same_type<A,A>
     static const bool value = true;
 };
 
+template<typename T>
+inline constexpr bool is_void = is_same_type<T,void>::value;
+template<typename T>
+inline constexpr bool is_void_t = is_same_type<T,detail::void_t>::value;
+
 template<typename T, typename ... Types>
 constexpr bool are_same_type()
 {

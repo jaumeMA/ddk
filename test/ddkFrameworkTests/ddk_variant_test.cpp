@@ -104,6 +104,12 @@ TEST(DDKVariantTest,assignment2)
 	ddk::variant<std::array<float,3>,float,std::string> kkk = std::move(kk);
 	kkk = std::move(kk);
 
+	float& cucu = kk.emplace<float>(10.f);
+
+	cucu = 22.4f;
+
+	float cucucu = kk.get<float>();
+	
 	EXPECT_EQ(foo.is<0>(),true);
 
 	nonCopyAssignableType nestedFoo(0xFF);

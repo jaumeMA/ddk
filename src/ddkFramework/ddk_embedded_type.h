@@ -42,8 +42,8 @@ public:
 	constexpr cpointer_type operator->() const;
 	constexpr operator ref_type();
 	constexpr operator cref_type() const;
-	inline void inplace_construct(T& val);
-	inline void inplace_assign(T& val);
+	inline ref_type inplace_construct(T& val);
+	inline ref_type inplace_assign(T& val);
 	inline void inplace_destroy();
 	inline static bool construct(void* address,T& val);
 	inline static bool assign(void* address,T& val);
@@ -85,8 +85,8 @@ public:
 	constexpr cpointer_type operator->() const;
 	constexpr operator ref_type();
 	constexpr operator cref_type() const;
-	inline void inplace_construct(T&& val);
-	inline void inplace_assign(T&& val);
+	inline ref_type inplace_construct(T&& val);
+	inline ref_type inplace_assign(T&& val);
 	inline void inplace_destroy();
 	inline static bool construct(void* address,T&& val);
 	inline static bool destroy(void* address);
@@ -131,9 +131,9 @@ public:
 	constexpr cpointer_type operator->() const;
 	inline operator rref_type() &&;
 	template<typename ... Args>
-	inline void inplace_construct(Args&& ... i_args);
+	inline T& inplace_construct(Args&& ... i_args);
 	template<typename ... Args>
-	constexpr void inplace_assign(Args&& ... i_args);
+	constexpr T& inplace_assign(Args&& ... i_args);
 	inline void inplace_destroy();
 	template<typename ... Args>
 	inline static bool construct(void* address,Args&& ... i_args);

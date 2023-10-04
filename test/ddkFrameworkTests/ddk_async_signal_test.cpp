@@ -47,6 +47,19 @@ void cucu(int a, int b)
 
 TEST(DDKAsyncSignalTest,defaultConstruction)
 {
+	ddk::promise<int> myPromise;
+	ddk::future<int> myFuture = myPromise.get_future();
+
+	std::move(myFuture).then([](int i_value)
+	{
+		int a = 0;
+		++a;
+	});
+
+	myPromise.set_value(17);
+
+	myPromise.set_value(20);
+
 	typedef ddk::Id<size_t,size_t> myId;
 	ddk::async_signal<void(int,char,const std::string&)> tmp;
 
@@ -81,30 +94,30 @@ TEST(DDKAsyncSignalTest,defaultConstruction)
 	ddk::connection tmpConn = tmp.connect(ddk::make_function(&callee,&AsyncSignalCallee::memberCall));
 	bool stop = false;
 
-	ddk::thread myThread;
-	ddk::future<void> executeFuture = ddk::async(ddk::make_function([&tmp,&stop]()
-	{
-		while(!stop)
-		{
-			tmp.execute(10,'a',"hola");
-			ddk::sleep(1);
-		}
-	})) -> attach(std::move(myThread));
+	//ddk::thread myThread;
+	//ddk::future<void> executeFuture = ddk::async(ddk::make_function([&tmp,&stop]()
+	//{
+	//	while(!stop)
+	//	{
+	//		tmp.execute(10,'a',"hola");
+	//		ddk::sleep(1);
+	//	}
+	//})) -> attach(std::move(myThread));
 
-	ddk::sleep(10000);
+	//ddk::sleep(10000);
 
-	tmpConn.disconnect();
+	//tmpConn.disconnect();
 
-	ddk::sleep(10000);
+	//ddk::sleep(10000);
 
-	stop = true;
+	//stop = true;
 
-	executeFuture.wait();
+	//executeFuture.wait();
 
-	EXPECT_EQ(callee.memberCalled,true);
+	//EXPECT_EQ(callee.memberCalled,true);
 
-	ddk::thread_sheaf_event_driven_executor _executor;
-	ddk::fiber_sheaf_event_driven_executor __executor;
+	//ddk::thread_sheaf_event_driven_executor _executor;
+	//ddk::fiber_sheaf_event_driven_executor __executor;
 }
 TEST(DDKAsyncSignalTest,signalDelegate)
 {

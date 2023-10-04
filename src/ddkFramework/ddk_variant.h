@@ -118,6 +118,9 @@ public:
 	TEMPLATE(typename T)
 	REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 	variant& operator=(T&& i_value);
+	TEMPLATE(typename T, typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(T,Args...),IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+	T& emplace(Args&& ... i_args);
 	template<typename T>
 	constexpr bool operator==(T&& other) const;
 	template<typename T>

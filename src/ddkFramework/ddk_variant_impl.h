@@ -68,6 +68,8 @@ public:
     inline variant_impl<Types...>& operator=(variant_impl<TTypes...>&& other);
     template<size_t Index, typename TType>
     inline variant_impl<Types...>& assign(TType&& val);
+    template<size_t Index,typename ... Args>
+    inline mpl::nth_type_of_t<Index,Types...>& emplace(Args&& ... i_args);
     inline bool operator==(const variant_impl<Types...>& other) const;
     inline bool operator==(variant_impl<Types...>&& other) const;
     inline bool operator!=(const variant_impl<Types...>& other) const;

@@ -6,20 +6,24 @@
 namespace ddk
 {
 
-class promised_context : public executor_context_interface, public ddk::lend_from_this<promised_context,executor_context_interface>
+class promised_context : public ddk::lend_from_this<promised_context,detail::execution_context_base>
 {
 public:
 	promised_context() = default;
 	promised_context(promised_context&&) = default;
 
 	void notify_recipients();
+	void transfer_recipients(promised_context i_context);
 	void clear_recipients();
 
 private:
-	void start(const function<void()>&) override;
-	ddk::continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
-	bool dismiss(unsigned char i_depth, continuation_token i_token) override;
-	void clear() override;
+	void start(const function<void()>&);
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable))
+	ddk::continuation_token enqueue(Callable&& i_callable, unsigned char i_depth);
+	void transfer(detail::execution_context_base&& other);
+	bool dismiss(unsigned char i_depth, continuation_token i_token);
+	void clear();
 
 	detail::async_executor_recipients m_recipients;
 };
@@ -30,3 +34,5 @@ typedef atomic_distributed_pointer_wrapper<promised_context> promised_context_di
 typedef atomic_distributed_pointer_wrapper<const promised_context> promised_context_dist_const_ptr;
 
 }
+
+#include "ddk_promised_context.inl"

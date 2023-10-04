@@ -57,12 +57,6 @@ public:
 
 TEST(DDKFunctionTest,defaultConstruction)
 {
-    auto cucu = ddk::make_function(inherited_functor<int,int>{ "hola nen" });
-
-    auto caca = cucu(10);
-
-    eval(caca);
-
     ddk::function<int(int,std::string,float,double,char)> foo;
 
     ddk::function<void(const ddk::unique_pointer_wrapper<int>&)> foo2 = ddk::make_function([](const ddk::unique_pointer_wrapper<int>& i_value){});

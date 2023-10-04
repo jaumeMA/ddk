@@ -19,40 +19,11 @@ typedef Id<size_t,task_id_t> task_id;
 
 class task_executor : public lend_from_this<task_executor>
 {
-	struct pending_task
-	{
-	public:
-		pending_task() = default;
-		virtual ~pending_task() = default;
-		virtual void execute(thread i_thread) = 0;
-		virtual void execute() = 0;
-		virtual bool cancel() = 0;
-		virtual bool empty() = 0;
-	};
-	typedef unique_reference_wrapper<pending_task> unique_pending_task;
-
-	template<typename Return>
-	struct pending_task_impl: public pending_task
-	{
-	public:
-		typedef typename cancellable_executor_interface<Return()>::sink_type sink_type;
-
-		pending_task_impl(const function<Return()>& i_task);
-
-		future<Return> as_future();
-		void execute(thread i_thread) final override;
-
-	private:
-		void execute() final override;
-		bool cancel() final override;
-		bool empty() final override;
-
-		delayed_task<Return> m_task;
-	};
-	template<typename Return>
-	using unique_pending_impl_task = unique_reference_wrapper<pending_task_impl<Return>>;
+	typedef event_driven_async_scheduler_lent_ref<task_executor> task_executed_scheduler;
 
 public:
+	typedef thread payload;
+
 	task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks = k_maxNumPendingTasks);
 	~task_executor();
 
@@ -63,8 +34,10 @@ public:
 	bool running() const;
 	size_t set_affinity(const cpu_set_t& i_set);
 
-	template<typename Return>
-	future<Return> enqueue(const function<Return()>& i_task);
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable))
+	auto enqueue(Callable&& i_task);
+	void subscribe(task_executed_scheduler i_scheduler);
 
 private:
 	enum State
@@ -81,7 +54,7 @@ private:
 	ddk::atomic<State> m_state;
 	atomic_size_t m_numPendingTasks;
 	thread_event_driven_executor m_updateThread;
-	single_consumer_lock_free_stack<unique_pending_task> m_pendingTasks;
+	single_consumer_lock_free_stack<task_executed_scheduler> m_pendingTasks;
 	ddk::connection m_connection;
 };
 

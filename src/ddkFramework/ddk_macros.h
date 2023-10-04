@@ -7,6 +7,7 @@
 #define EXPAND_CLASS_TEMPLATE(_CLASS,...) \
     _CLASS<__VA_ARGS__>
 
+#define if_not(_COND) if(_COND) {} else
 
 #if defined(WIN32)
 

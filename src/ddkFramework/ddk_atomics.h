@@ -68,6 +68,12 @@ struct atomic8
 	inline T& get();
 	inline void set(const T& i_value);
 	inline void set(T&& i_value);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONVERTIBLE(T,TT))
+	inline explicit operator TT() const;
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONVERTIBLE(T,TT))
+	inline explicit operator TT();
 
 private:
 	T* _get_typed_arena();
@@ -127,6 +133,12 @@ struct atomic32
 	inline T& get();
 	inline void set(const T& i_value);
 	inline void set(T&& i_value);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONVERTIBLE(T,TT))
+	inline explicit operator TT() const;
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONVERTIBLE(T,TT))
+	inline explicit operator TT();
 
 private:
 	T* _get_typed_arena();
@@ -186,6 +198,12 @@ struct atomic64
 	inline T& get();
 	inline void set(const T& i_value);
 	inline void set(T&& i_value);
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONVERTIBLE(T,TT))
+	inline explicit operator TT() const;
+	TEMPLATE(typename TT)
+	REQUIRES(IS_CONVERTIBLE(T,TT))
+	inline explicit operator TT();
 
 private:
 	T* _get_typed_arena();
@@ -230,7 +248,7 @@ struct atomic<T*>
 private:
 	void* volatile* _get_arena();
 
-	T* 	m_arena;
+	T* m_value;
 };
 
 TEMPLATE(typename T, typename TT)

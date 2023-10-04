@@ -56,7 +56,7 @@ typename polling_executor<Context>::resume_result polling_executor<Context>::sto
 	return resume();
 }
 template<typename Context>
-typename polling_executor<Context>::start_result polling_executor<Context>::execute(const sink_type& i_sink,const ddk::function<void()>& i_executor)
+typename polling_executor<Context>::start_result polling_executor<Context>::execute(const ddk::function<void()>& i_executor, const sink_type& i_sink)
 {
 	if(m_stopped == true)
 	{
@@ -78,11 +78,6 @@ typename polling_executor<Context>::start_result polling_executor<Context>::exec
 	{
 		return make_error<start_result>(StartErrorCode::StartNotExecutable);
 	}
-}
-template<typename Context>
-bool polling_executor<Context>::pending() const
-{
-	return this->m_context.joinable();
 }
 template<typename Context>
 typename polling_executor<Context>::resume_result polling_executor<Context>::resume()
@@ -210,7 +205,7 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 		m_testFunc = i_testFunc || make_function([this]() { mutex_guard mg(m_condVarMutex); return m_stopped; });
 	}
 
-	return execute(nullptr,i_executor);
+	return execute(i_executor,[](auto&& i_value) {});
 }
 template<typename Context>
 typename event_driven_executor<Context>::resume_result event_driven_executor<Context>::stop()
@@ -223,7 +218,7 @@ void event_driven_executor<Context>::signal_thread()
 	signal();
 }
 template<typename Context>
-typename event_driven_executor<Context>::start_result event_driven_executor<Context>::execute(const sink_type& i_sink,const ddk::function<void()>& i_executor)
+typename event_driven_executor<Context>::start_result event_driven_executor<Context>::execute(const ddk::function<void()>& i_executor, const sink_type& i_sink)
 {
 	if(m_stopped == true)
 	{
@@ -245,11 +240,6 @@ typename event_driven_executor<Context>::start_result event_driven_executor<Cont
 	{
 		return make_error<start_result>(StartErrorCode::StartNotExecutable);
 	}
-}
-template<typename Context>
-bool event_driven_executor<Context>::pending() const
-{
-	return this->m_context.joinable();
 }
 template<typename Context>
 typename event_driven_executor<Context>::resume_result event_driven_executor<Context>::resume()
@@ -337,7 +327,7 @@ typename fire_and_forget_executor<Context>::start_result fire_and_forget_executo
 	return execute(nullptr,i_executor);
 }
 template<typename Context>
-typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::execute(const sink_type& i_sink,const ddk::function<void()>& i_executor)
+typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::execute(const ddk::function<void()>& i_executor, const sink_type& i_sink)
 {
 	m_executor = i_executor;
 
@@ -351,11 +341,6 @@ typename fire_and_forget_executor<Context>::start_result fire_and_forget_executo
 	{
 		return make_error<start_result>(StartErrorCode::StartNotAvailable,startRes.error().what());
 	}
-}
-template<typename Context>
-bool fire_and_forget_executor<Context>::pending() const
-{
-	return this->m_context.joinable();
 }
 template<typename Context>
 typename fire_and_forget_executor<Context>::resume_result fire_and_forget_executor<Context>::resume()

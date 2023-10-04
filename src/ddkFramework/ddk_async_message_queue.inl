@@ -49,7 +49,7 @@ void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk
 	{
 		if(m_receivers.empty())
 		{
-			auto startRes = m_executor->execute(nullptr,ddk::make_function(this,&async_attachable_message_queue<MessageType>::dispatch_messages));
+			auto startRes = m_executor->execute(ddk::make_function(this,&async_attachable_message_queue<MessageType>::dispatch_messages),nullptr);
 
 			DDK_ASSERT(startRes == success,"Error while starting thread executor : " + startRes.error().what());
 		}

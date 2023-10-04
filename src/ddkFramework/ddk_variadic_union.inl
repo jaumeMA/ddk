@@ -66,28 +66,28 @@ constexpr variadic_union<Type,Types...>::variadic_union(const mpl::class_holder<
 }
 template<typename Type,typename ... Types>
 template<typename T,typename ... Args>
-constexpr void variadic_union<Type,Types...>::construct(Args&& ... i_args)
+constexpr T& variadic_union<Type,Types...>::construct(Args&& ... i_args)
 {
 	if constexpr(std::is_same<Type,T>::value)
 	{
-		m_data._local.inplace_construct(std::forward<Args>(i_args)...);
+		return m_data._local.inplace_construct(std::forward<Args>(i_args)...);
 	}
 	else
 	{
-		m_data._nested.template construct<T>(std::forward<Args>(i_args)...);
+		return m_data._nested.template construct<T>(std::forward<Args>(i_args)...);
 	}
 }
 template<typename Type,typename ... Types>
 template<typename T,typename ... Args>
-constexpr void variadic_union<Type,Types...>::assign(Args&& ... i_args)
+constexpr T& variadic_union<Type,Types...>::assign(Args&& ... i_args)
 {
 	if constexpr(std::is_same<Type,T>::value)
 	{
-		m_data._local.inplace_assign(std::forward<Args>(i_args)...);
+		return m_data._local.inplace_assign(std::forward<Args>(i_args)...);
 	}
 	else
 	{
-		m_data._nested.template assign<T>(std::forward<Args>(i_args)...);
+		return m_data._nested.template assign<T>(std::forward<Args>(i_args)...);
 	}
 }
 template<typename Type,typename ... Types>

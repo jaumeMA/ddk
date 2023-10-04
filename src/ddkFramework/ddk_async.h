@@ -7,16 +7,11 @@
 namespace ddk
 {
 
-template<typename Return>
-using async_dist_ref = typename async_executor<Return>::async_dist_ref;
-template<typename Return>
-using async_const_dist_ref = typename async_executor<Return>::async_const_dist_ref;
+template<typename Callable>
+inline auto async(Callable&& i_callable);
 
-template<typename Return>
-inline async_dist_ref<Return> async(const ddk::function<Return()>& i_function);
-
-//void version
-async_dist_ref<void> async(const ddk::function<void()>& i_function);
+template<typename Allocator, typename Callable, typename ... Args>
+inline auto async(Callable&& i_callable, Args&& ... i_args);
 
 }
 

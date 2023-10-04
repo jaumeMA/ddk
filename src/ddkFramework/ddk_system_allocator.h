@@ -12,7 +12,10 @@ namespace ddk
 class system_deleter
 {
 public:
-    void deallocate(const void* i_ptr) const;
+    static void deallocate(const void* i_ptr);
+    TEMPLATE(typename T)
+    REQUIRES(IS_CLASS(T))
+    static void deallocate(T* i_ptr);
 };
 
 class system_allocator : public system_deleter
@@ -25,21 +28,24 @@ public:
     typedef std::ptrdiff_t difference_type;
 
 	system_allocator() = default;
-    void* allocate(size_t i_size) const;
-    void* reallocate(void *ptr, size_t i_newSize) const;
+    static void* allocate(size_t i_size);
+    static void* reallocate(void *ptr, size_t i_newSize);
 };
+extern system_allocator g_system_allocator;
 
 template<typename T>
 class typed_system_deleter
 {
 public:
+    static inline void deallocate(T* i_ptr);
+    static inline void deallocate(const void* i_ptr,...);
 
 protected:
     typed_system_deleter() = default;
 };
 
 template<typename T>
-class typed_system_allocator : public typed_system_deleter<T>, public system_allocator
+class typed_system_allocator : public typed_system_deleter<T>
 {
 public:
     typedef typed_system_allocator allocator;
@@ -49,19 +55,17 @@ public:
     typedef const T *const_pointer;
     typedef const T& const_reference;
     typedef ptrdiff_t difference_type;
-	using system_allocator::allocate;
-	using system_allocator::reallocate;
 
 	typed_system_allocator() = default;
     TEMPLATE(typename TT)
     REQUIRES(IS_BASE_OF(TT,T))       
     typed_system_allocator(const typed_system_allocator<TT>&);
-    void* allocate() const;
+    static void* allocate();
+    static void* allocate(size_t i_size);
+    static void* reallocate(void* ptr,size_t i_newSize);
     TEMPLATE(typename TT)
     REQUIRES(IS_BASE_OF(TT,T))
     typed_system_allocator& operator=(const typed_system_allocator<TT>&);
-    inline void deallocate(T* i_ptr) const;
-    inline void deallocate(const void* i_ptr, ...) const;
 };
 
 }

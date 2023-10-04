@@ -15,7 +15,7 @@ namespace ddk
 namespace detail
 {
 
-struct async_executor_recipients
+struct async_executor_recipients : public lend_from_this<async_executor_recipients>
 {
 
 struct task
@@ -26,7 +26,7 @@ struct task
 	}
 
 public:
-	task(size_t i_token, const function<void()>& i_callable);
+	task(size_t i_token, function<void()> i_callable);
 
 	bool operator==(const continuation_token& i_token) const;
 
@@ -38,94 +38,117 @@ private:
 	typedef std::map<unsigned char,std::list<task>> callable_container;
 
 public:
-	async_executor_recipients() = default;
-	async_executor_recipients(async_executor_recipients&&) = default;
-	~async_executor_recipients();
+	function<bool(bool)> call_admissionPredicate;
 
-	void notify();
-	continuation_token accept(const function<void()>&, unsigned char i_depth);
+	async_executor_recipients();
+	async_executor_recipients(async_executor_recipients&& other);
+
+	async_executor_recipients& operator=(async_executor_recipients&& other);
+	void notify(bool i_useAndKeep);
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable))
+	continuation_token accept(Callable&& i_callable, unsigned char i_depth);
 	bool dismiss(unsigned char i_depth, continuation_token i_token);
+	bool move(async_executor_recipients&& i_recipients);
 	void clear();
 
 protected:
+	bool is_admissible();
+	void resolve(callable_container& i_pendingCallables);
+
+	bool m_destroyAfterUse;
 	mutex m_mutex;
 	callable_container m_pendingCallables;
 	bool m_admissible = true;
 };
+typedef lent_reference_wrapper<async_executor_recipients> execution_recipients_ref;
+typedef lent_reference_wrapper<const async_executor_recipients> execution_recipients_const_ref;
+typedef lent_pointer_wrapper<async_executor_recipients> execution_recipients_ptr;
+typedef lent_pointer_wrapper<const async_executor_recipients> execution_recipients_const_ptr;
+
+class execution_context_base
+{
+public:
+	execution_context_base();
+	execution_context_base(execution_context_base&& other);
+	void notify_recipients(bool i_useAndKeep);
+	size_t transfer_recipients(execution_context_base&& other);
+	void admission_predicate(const function<bool(bool)>& i_callable);
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable))
+	continuation_token enqueue(Callable&& i_callable, unsigned char i_depth);
+	void transfer(execution_context_base&& other);
+	bool dismiss(unsigned char i_depth,continuation_token i_token);
+	void clear();
+
+	execution_context_base& operator=(execution_context_base&&) = default;
+
+private:
+	detail::async_executor_recipients m_recipients;
+	execution_recipients_ref m_recipientsRef;
+};
 
 }
 
-class deferred_execution_context : public executor_context_interface, public lend_from_this<deferred_execution_context,executor_context_interface>
+typedef lent_reference_wrapper<detail::execution_context_base> executor_context_lent_ref;
+typedef lent_reference_wrapper<const detail::execution_context_base> executor_context_const_lent_ref;
+typedef lent_pointer_wrapper<detail::execution_context_base> executor_context_lent_ptr;
+typedef lent_pointer_wrapper<const detail::execution_context_base> executor_context_const_lent_ptr;
+
+class immediate_execution_context : public detail::execution_context_base, public lend_from_this<immediate_execution_context,detail::execution_context_base>
 {
 public:
-	void start(const function<void()>&) override;
-	bool cancel();
+	using detail::execution_context_base::enqueue;
 
-private:
-	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
-	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
-	void clear() override;
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable))
+	void start(Callable&& i_callable, bool i_useAndKeep);
+	bool cancel();
 };
 
-class thread_execution_context : public executor_context_interface, public lend_from_this<thread_execution_context,executor_context_interface>
+class thread_execution_context : public detail::execution_context_base, public lend_from_this<thread_execution_context,detail::execution_context_base>
 {
 public:
 	thread_execution_context(thread i_thread);
-	void start(const function<void()>&) override;
+	void start(const function<void()>&, bool i_useAndKeep);
 	bool cancel();
 
 private:
-	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
-	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
-	void clear() override;
-
 	thread m_thread;
-	detail::async_executor_recipients m_recipients;
 };
 
-class fiber_execution_context : public executor_context_interface, public lend_from_this<fiber_execution_context,executor_context_interface>
+class fiber_execution_context : public detail::execution_context_base, public lend_from_this<fiber_execution_context,detail::execution_context_base>
 {
 public:
 	fiber_execution_context(fiber i_fiber);
 
-	void start(const function<void()>&) override;
+	void start(const function<void()>&, bool i_useAndKeep);
 	bool cancel();
 
 private:
-	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
-	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
-	void clear() override;
-
 	fiber m_fiber;
-	detail::async_executor_recipients m_recipients;
 };
 
-class thread_sheaf_execution_context : public executor_context_interface, public lend_from_this<thread_sheaf_execution_context,executor_context_interface>
+class thread_sheaf_execution_context : public detail::execution_context_base, public lend_from_this<thread_sheaf_execution_context,detail::execution_context_base>
 {
 public:
 	thread_sheaf_execution_context(thread_sheaf i_threadSheaf);
 	bool cancel();
-	void notify_recipients();
 	size_t add_failure();
 	size_t remove_pending_fiber();
 	bool has_pending_threads() const;
 	bool has_failures() const;
 	continuation_token enqueue(const function<void()>&);
 
-	void start(const function<void()>&) override;
+	void start(const function<void()>&);
 
 private:
-	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
-	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
-	void clear() override;
-
 	thread_sheaf m_threadSheaf;
 	atomic_size_t m_failedThreads;
 	atomic_size_t m_pendingThreads;
-	detail::async_executor_recipients m_recipients;
 };
 
-class fiber_sheaf_execution_context : public executor_context_interface, public lend_from_this<fiber_sheaf_execution_context,executor_context_interface>
+class fiber_sheaf_execution_context : public detail::execution_context_base, public lend_from_this<fiber_sheaf_execution_context,detail::execution_context_base>
 {
 public:
 	fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf);
@@ -134,22 +157,18 @@ public:
 	void clear_fibers();
 	size_t add_failure();
 	size_t remove_pending_thread();
-	void notify_recipients();
 	bool has_pending_fibers() const;
 	bool has_failures() const;
 	continuation_token enqueue(const function<void()>&);
 
-	void start(const function<void()>&) override;
+	void start(const function<void()>&);
 
 private:
-	continuation_token enqueue(const function<void()>&, unsigned char i_depth) override;
-	bool dismiss(unsigned char i_depth,continuation_token i_token) override;
-	void clear() override;
-
 	fiber_sheaf m_fiberSheaf;
 	atomic_size_t m_failedFibers;
 	atomic_size_t m_pendingFibers;
-	detail::async_executor_recipients m_recipients;
 };
 
 }
+
+#include "ddk_sync_executor_context.inl"

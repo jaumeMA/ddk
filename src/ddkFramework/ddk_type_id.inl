@@ -3,59 +3,59 @@ namespace ddk
 {
 
 template<typename UnderlyingType,typename T>
-Id<UnderlyingType,T>::Id(const UnderlyingType& i_key)
+constexpr Id<UnderlyingType,T>::Id(const UnderlyingType& i_key)
 : m_key(i_key)
 {
 }
 template<typename UnderlyingType,typename T>
-Id<UnderlyingType,T>::Id(UnderlyingType&& i_key)
+constexpr Id<UnderlyingType,T>::Id(UnderlyingType&& i_key)
 : m_key(std::move(i_key))
 {
 }
 template<typename UnderlyingType, typename T>
 TEMPLATE(typename UUnderlyingType, typename TT)
 REQUIRED(IS_CONVERTIBLE(UnderlyingType, UUnderlyingType))
-Id<UnderlyingType, T>::Id(const Id<UUnderlyingType, TT>& other)
+constexpr Id<UnderlyingType, T>::Id(const Id<UUnderlyingType, TT>& other)
 : m_key(static_cast<UnderlyingType>(other.getValue()))
 {
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator==(const Id & other) const
+constexpr bool Id<UnderlyingType,T>::operator==(const Id & other) const
 {
 	return m_key == other.m_key;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator!=(const Id & other) const
+constexpr bool Id<UnderlyingType,T>::operator!=(const Id & other) const
 {
 	return m_key != other.m_key;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator==(const UnderlyingType & other) const
+constexpr bool Id<UnderlyingType,T>::operator==(const UnderlyingType & other) const
 {
 	return m_key == other;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator!=(const UnderlyingType & other) const
+constexpr bool Id<UnderlyingType,T>::operator!=(const UnderlyingType & other) const
 {
 	return m_key != other;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator<(const Id & other) const
+constexpr bool Id<UnderlyingType,T>::operator<(const Id & other) const
 {
 	return m_key < other.m_key;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator<=(const Id & other) const
+constexpr bool Id<UnderlyingType,T>::operator<=(const Id & other) const
 {
 	return m_key <= other.m_key;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator>(const Id & other) const
+constexpr bool Id<UnderlyingType,T>::operator>(const Id & other) const
 {
 	return m_key > other.m_key;
 }
 template<typename UnderlyingType,typename T>
-bool Id<UnderlyingType,T>::operator>=(const Id & other) const
+constexpr bool Id<UnderlyingType,T>::operator>=(const Id & other) const
 {
 	return m_key >= other.m_key;
 }

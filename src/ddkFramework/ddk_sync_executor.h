@@ -1,101 +1,139 @@
 #pragma once
 
 #include "ddk_async_executor_interface.h"
+#include "ddk_sync_executor_scheduler.h"
 #include "ddk_executor_promise.h"
 #include "ddk_context_promise.h"
 #include "ddk_sync_executor_impl.h"
-#include "ddk_attachable.h"
-#include "ddk_distribute_from_this.h"
+#include "ddk_lend_from_this.h"
 #include "ddk_async_defs.h"
 
 namespace ddk
 {
 
-template<typename Return>
-class async_executor : public async_cancellable_interface, public async_execute_interface<Return>, public distribute_from_this<async_executor<Return>>
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+class async_executor_base : public async_cancellable_interface,public lend_from_this<async_executor_base<Callable,CancelOp,Promise,Executor>>
 {
-	template<typename RReturn>
-	friend distributed_reference_wrapper<async_executor<RReturn>> make_async_executor(const ddk::function<RReturn()>& i_function);
-	friend class future<Return>;
-	friend class shared_future<Return>;
-	using typename async_execute_interface<Return>::StartErrorCode;
-	typedef typename executor_interface<Return()>::start_result nested_start_result;
-	typedef typename executor_interface<Return()>::sink_reference sink_reference;
-	typedef typename executor_interface<Return()>::sink_result sink_result;
+	typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return_type;
+	typedef typename executor_interface<callable_return_type()>::sink_reference sink_reference;
+	typedef typename executor_interface<callable_return_type()>::sink_result sink_result;
+
+	struct promised_callable
+	{
+	public:
+		TEMPLATE(typename CCallable)
+		REQUIRES(IS_CONSTRUCTIBLE(Callable,CCallable))
+		promised_callable(CCallable&& i_callable,lent_reference_wrapper<async_executor_base> i_executor);
+		promised_callable(promised_callable&& other, SchedulerPolicy i_policy);
+		promised_callable(const promised_callable& other) = delete;
+		promised_callable(promised_callable&& other);
+		~promised_callable();
+
+		void share_ownership(detail::private_async_state_const_shared_ptr<callable_return_type> i_sharedState);
+		callable_return_type operator()();
+		Callable extract()&&;
+		SchedulerPolicy policy() const;
+
+	private:
+		Callable m_function;
+		detail::private_async_state_const_shared_ptr<callable_return_type> m_sharedState;
+		lent_pointer_wrapper<async_executor_base> m_executor;
+		SchedulerPolicy m_schedulerPolicy = SchedulerPolicy::None;
+	};
 
 public:
-	typedef distributed_reference_wrapper<async_executor<Return>> async_dist_ref;
-	typedef distributed_reference_wrapper<const async_executor<Return>> async_const_dist_ref;
-	using typename async_execute_interface<Return>::start_result;
+	enum StartErrorCode
+	{
+		NotAvailable,
+		AlreadyStarted,
+		AlreadyDone
+	};
+	typedef error<StartErrorCode> start_error;
+	typedef result<void,start_error> start_result;
 	using typename async_cancellable_interface::cancel_result;
-	typedef typename detail::private_async_state<Return>::reference reference;
-	typedef typename detail::private_async_state<Return>::const_reference const_reference;
-	typedef typename detail::private_async_state<Return>::rreference rreference;
 
-	async_executor(const function<Return()>& i_function);
-	async_executor(const async_executor&) = delete;
-	async_executor(async_executor&& other);
-	~async_executor();
-	async_executor& operator=(const async_executor&) = delete;
+	TEMPLATE(typename CCallable,typename CCancelOp,typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Callable,CCallable),IS_CONSTRUCTIBLE(CancelOp,CCancelOp),IS_CONSTRUCTIBLE(Executor,Args...))
+	async_executor_base(CCallable&& i_function, CCancelOp&& i_cancelOp,Promise i_promise,Args&& ... i_args);
+	async_executor_base(const async_executor_base&) = delete;
+	async_executor_base(async_executor_base&& other);
 
-	// immediat attach
-	future<Return> attach(const detail::this_thread_t&);
-	future<Return> attach(thread i_thread);
-	future<Return> attach(fiber i_fiber);
-	future<Return> attach(thread_sheaf i_threadSheaf);
-	future<Return> attach(fiber_sheaf i_fiberSheaf);
-	future<Return> attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth);
-	future<Return> attach(cancellable_executor_unique_ref<Return> i_execImpl);
-	future<Return> attach(attachable<Return> i_attachable);
+	Promise& get_promise();
+	const Promise& get_promise() const;
+	template<typename ... Args>
+	start_result execute(SchedulerPolicy i_policy, Args&& ... i_args);
+	void reset(promised_callable i_callable);
 
-	// delayed attach
-	future<Return> deferred_attach(const detail::this_thread_t&);
-	future<Return> deferred_attach(thread i_thread);
-	future<Return> deferred_attach(fiber i_fiber);
-	future<Return> deferred_attach(thread_sheaf i_threadSheaf);
-	future<Return> deferred_attach(fiber_sheaf i_fiberSheaf);
-	future<Return> deferred_attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth);
-	future<Return> deferred_attach(cancellable_executor_unique_ref<Return> i_execImpl);
-	future<Return> deferred_attach(attachable<Return> i_attachable);
-
-	async_dist_ref store(promise<Return>& i_promise);
-	async_dist_ref on_cancel(const ddk::function<bool()>& i_cancelFunc);
-	future<Return> as_future();
-
-protected:
-	async_executor() = default;
-
-private:
-	bool notify() override;
-	bool pending() const override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
-	start_result execute() override;
+
+protected:
 	cancel_result cancel() override;
-	bool empty() const override;
 
-	void set_result(sink_result i_value);
-
-	cancellable_executor_unique_ptr<Return> m_executor;
-	mutable executor_promise<Return> m_promise;
-	ddk::function<Return()> m_function;
-	ddk::function<bool()> m_cancelFunc;
+	promised_callable m_function;
+	CancelOp m_cancelFunc;
+	mutable Promise m_promise;
+	Executor m_executor;
 };
 
-template<>
-class async_executor<void> : public async_executor<detail::void_t>
+template<typename Callable,typename CancelOp, typename Promise, typename Scheduler, typename Executor>
+class async_executor : public async_executor_base<Callable,CancelOp,Promise,Executor>, public mpl::which_type<mpl::is_same_type<Scheduler,deferred_async_scheduler>::value,base_deferred_async_scheduler<async_executor_base<Callable,CancelOp,Promise,Executor>>,null_async_scheduler>::type
 {
-	template<typename Return>
-	friend distributed_reference_wrapper<async_executor<Return>> make_async_executor(const ddk::function<Return()>& i_function);
-	friend class future<void>;
+	template<typename CCallable, typename CCancelOp, typename PPromise>
+	friend auto make_async_executor(CCallable&& i_callable, CCancelOp&& i_cancelOp, PPromise i_promise);
+
+	typedef typename mpl::which_type<mpl::is_same_type<Scheduler,deferred_async_scheduler>::value,base_deferred_async_scheduler<async_executor_base<Callable,CancelOp,Promise,Executor>>,null_async_scheduler>::type scheduler_base_t;
+	typedef async_executor_base<Callable,CancelOp,Promise,Executor> async_base_t;
+	typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return_type;
+	typedef typename executor_interface<callable_return_type()>::sink_reference sink_reference;
+	typedef typename executor_interface<callable_return_type()>::sink_result sink_result;
 
 public:
-	typedef distributed_reference_wrapper<async_executor<detail::void_t>> async_dist_ref;
-	typedef distributed_reference_wrapper<const async_executor<detail::void_t>> async_const_dist_ref;
+	struct moved_async_executor
+	{
+	public:
+		moved_async_executor(Callable i_function,CancelOp i_cancelOp,Promise i_promise,Scheduler i_scheduler, Executor i_executor);
 
-    async_executor(const function<void()>& i_function)
-    : async_executor<detail::void_t>([i_function]() -> detail::void_t { eval(i_function); return _void; })
-    {}
+		moved_async_executor* operator->();
+		future<callable_return_type> attach(const detail::this_thread_t&);
+		future<callable_return_type> attach(thread i_thread);
+		future<callable_return_type> attach(fiber i_fiber);
+		future<callable_return_type> attach(thread_sheaf i_threadSheaf);
+		future<callable_return_type> attach(fiber_sheaf i_fiberSheaf);
+		future<callable_return_type> attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth);
+		template<typename EExecutor,typename ... Args>
+		future<callable_return_type> attach(Args&& ... i_args);
+		
+		template<typename PPromise,typename ... Args>
+		async_executor<Callable,CancelOp,PPromise,Scheduler,Executor> store(Args&& ... i_args);
+		template<typename CCancelOp>
+		async_executor<Callable,CCancelOp,Promise,Scheduler,Executor> on_cancel(const CCancelOp& i_cancelFunc);
+		template<typename SScheduler,typename ... Args>
+		async_executor<Callable,CancelOp,Promise,SScheduler,Executor> at(Args&& ... i_args);
+
+	private:
+		Callable m_function;
+		CancelOp m_cancelFunc;
+		mutable Promise m_promise;
+		Scheduler m_scheduler;
+		Executor m_executor;
+	};
+
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Scheduler,Args...))
+	async_executor(async_executor_base<Callable,CancelOp,Promise,Executor> i_executor, Args&& ... i_args);
+	TEMPLATE(typename CCallable, typename CCancelOp, typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Callable,CCallable),IS_CONSTRUCTIBLE(CancelOp,CCancelOp),IS_CONSTRUCTIBLE(Executor,Args...))
+	async_executor(CCallable&& i_function, CCancelOp&& i_cancelOp, Promise i_promise, Scheduler i_scheduler, Args&& ... i_args);
+	async_executor(const async_executor&) = delete;
+	async_executor(async_executor&& other);
+	async_executor& operator=(const async_executor&) = delete;
+	moved_async_executor operator->() &&;
+	operator future<callable_return_type>() &&;
+	void attach(detail::private_async_state_shared_ptr<callable_return_type> i_sharedState);
+
+private:
+	Scheduler m_scheduler;
 };
 
 }

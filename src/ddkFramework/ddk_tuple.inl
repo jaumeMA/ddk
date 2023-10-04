@@ -233,7 +233,7 @@ constexpr auto make_indexed_tuple(const mpl::sequence<Indexs...>& i_seq, Types&&
 }
 
 template<typename ... FinalTypes,size_t ... FromIndexs,size_t ... ToIndexs,size_t ... IndexsA,typename ... TypesA,size_t ... IndexsB,typename ... TypesB>
-constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq,const mpl::sequence<ToIndexs...>&,const mpl::sequence<IndexsA...>&, const tuple<TypesA...>& i_lhs,const mpl::sequence<IndexsB...>&, const tuple<TypesB...>& i_rhs)
+constexpr tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...> merge(const mpl::sequence<FromIndexs...>& i_srcSeq,const mpl::sequence<ToIndexs...>&,const mpl::sequence<IndexsA...>&, tuple<TypesA...>& i_lhs,const mpl::sequence<IndexsB...>&, tuple<TypesB...>& i_rhs)
 {
     return tuple<typename mpl::nth_type_of<ToIndexs,FinalTypes...>::type ...>(i_srcSeq,i_lhs.template get<IndexsA>() ...,i_rhs.template get<IndexsB>() ...);
 }

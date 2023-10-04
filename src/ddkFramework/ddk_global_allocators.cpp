@@ -27,16 +27,15 @@ std::map<size_t,fixed_size_allocator>& _get_global_allocator_map()
 
 }
 
-bool __append_global_allocator_map_entries(const std::initializer_list<size_t>& i_entries)
+bool __append_global_allocator_map_entries(size_t i_unitSize,size_t i_numEntries)
 {
-	std::map<size_t,fixed_size_allocator>& s_globalAllocatorMap = _get_global_allocator_map();
+	typedef std::map<size_t,fixed_size_allocator> allocator_map;
+	
+	allocator_map& s_globalAllocatorMap = _get_global_allocator_map();
 
-	for(const auto& entry : i_entries)
-	{
-		s_globalAllocatorMap.insert(std::make_pair(entry,fixed_size_allocator(entry)));
-	}
+	std::pair<allocator_map::iterator,bool> insertRes = s_globalAllocatorMap.try_emplace(i_unitSize,i_unitSize,i_numEntries);
 
-	return true;
+	return insertRes.second;
 }
 
 const fixed_size_allocator* get_fixed_size_allocator(size_t i_unitSize)

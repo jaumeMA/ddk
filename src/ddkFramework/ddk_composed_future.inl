@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<typename T, unsigned char Dim>
-composed_future<std::array<T,Dim>>::future_data::future_data(ddk::context_promise<std::array<T, Dim>> i_promise)
+composed_future<std::array<T,Dim>>::future_data::future_data(ddk::promise<std::array<T, Dim>> i_promise)
 : m_promise(std::move(i_promise))
 {}
 template<typename T,unsigned char Dim>
@@ -18,13 +18,13 @@ template<typename T, unsigned char Dim>
 TEMPLATE(typename ... Futures)
 REQUIRED(IS_BASE_OF(future<T>, Futures)...)
 composed_future<std::array<T,Dim>>::composed_future(Futures&& ... i_futures)
-: composed_future(index_seq{}, ddk::context_promise<std::array<T, Dim>>{}, std::forward<Futures>(i_futures)...)
+: composed_future(index_seq{}, ddk::promise<std::array<T, Dim>>{}, std::forward<Futures>(i_futures)...)
 {
 }
 template<typename T, unsigned char Dim>
 template<unsigned char ... Indexs, typename ... Futures>
-composed_future<std::array<T,Dim>>::composed_future(const mpl::sequence<Indexs...>& i_seq, ddk::context_promise<std::array<T, Dim>> i_promise, Futures&& ... i_futures)
-: context_future(i_promise.get_future())
+composed_future<std::array<T,Dim>>::composed_future(const mpl::sequence<Indexs...>& i_seq, ddk::promise<std::array<T, Dim>> i_promise, Futures&& ... i_futures)
+: future(i_promise.get_future())
 {
 	ddk::distributed_reference_wrapper<future_data> futureData = ddk::make_distributed_reference<future_data>(std::move(i_promise));
 
@@ -48,7 +48,7 @@ bool composed_future<std::array<T,Dim>>::place_future(Future&& i_future, ddk::di
 }
 
 template<typename ... T>
-composed_future<std::tuple<T...>>::future_data::future_data(ddk::context_promise<std::tuple<T...>> i_promise)
+composed_future<std::tuple<T...>>::future_data::future_data(ddk::promise<std::tuple<T...>> i_promise)
 : m_promise(std::move(i_promise))
 {}
 template<typename ... T>
@@ -66,13 +66,13 @@ template<typename ... T>
 TEMPLATE(typename ... Futures)
 REQUIRED(IS_BASE_OF(future<T>, Futures)...)
 composed_future<std::tuple<T...>>::composed_future(Futures&& ... i_futures)
-: composed_future(index_seq{},ddk::context_promise<std::tuple<T...>>{},std::forward<Futures>(i_futures)...)
+: composed_future(index_seq{},ddk::promise<std::tuple<T...>>{},std::forward<Futures>(i_futures)...)
 {
 }
 template<typename ... T>
 template<unsigned char ... Indexs, typename ... Futures>
-composed_future<std::tuple<T...>>::composed_future(const mpl::sequence<Indexs...>& i_seq, ddk::context_promise<std::tuple<T...>> i_promise, Futures&& ... i_futures)
-: context_future(i_promise.get_future())
+composed_future<std::tuple<T...>>::composed_future(const mpl::sequence<Indexs...>& i_seq, ddk::promise<std::tuple<T...>> i_promise, Futures&& ... i_futures)
+: future(i_promise.get_future())
 {
 	ddk::distributed_reference_wrapper<future_data> futureData = ddk::make_distributed_reference<future_data>(std::move(i_promise));
 

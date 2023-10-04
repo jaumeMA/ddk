@@ -10,6 +10,14 @@ share_control_block<T,Deleter,ReferenceCounter>::share_control_block(T* i_ptr,co
 {
 }
 template<typename T,typename Deleter,typename ReferenceCounter>
+share_control_block<T,Deleter,ReferenceCounter>& share_control_block<T,Deleter,ReferenceCounter>::operator=(const share_control_block& other)
+{
+	m_data.set_first(other.m_data.get_first());
+	m_data.set_second(other.m_data.get_second());
+
+	return *this;
+}
+template<typename T,typename Deleter,typename ReferenceCounter>
 void share_control_block<T,Deleter,ReferenceCounter>::destroy_shared_resource(short i_tagCategory)
 {
 	const bool hasWeakReferences = this->hasWeakReferences();

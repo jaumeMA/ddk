@@ -57,9 +57,9 @@ public:
 	variadic_union& operator=(const variadic_union& other) = delete;
 	variadic_union& operator=(variadic_union&& other) = delete;
 	template<typename T,typename ... Args>
-	constexpr void construct(Args&& ... i_args);
+	constexpr T& construct(Args&& ... i_args);
 	template<typename T,typename ... Args>
-	constexpr void assign(Args&& ... i_args);
+	constexpr T& assign(Args&& ... i_args);
 	template<typename T>
 	inline void destroy();
 	template<typename T>

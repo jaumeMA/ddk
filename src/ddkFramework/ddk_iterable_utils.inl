@@ -72,9 +72,10 @@ TEMPLATE(typename Function, typename Iterable)
 REQUIRED(IS_CALLABLE(Function))
 auto operator<<=(Function&& i_lhs,Iterable&& i_rhs)
 {
+	typedef typename std::remove_reference<Function>::type function_t;
 	typedef typename ddk::mpl::static_if<IS_BASE_OF_ITERABLE_COND(Iterable),typename std::remove_reference<Iterable>::type,Iterable>::type iterable_t;
 
-	typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<iterable_t,Function>,ddk::co_iteration<iterable_t,Function>,ddk::iteration<iterable_t,Function>>::type ret_type;
+	typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<iterable_t,function_t>,ddk::co_iteration<iterable_t,function_t>,ddk::iteration<iterable_t,function_t>>::type ret_type;
 
 	return ret_type{ i_rhs,std::forward<Function>(i_lhs) };
 }

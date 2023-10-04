@@ -45,8 +45,8 @@ SCOPED_ENUM_DECL(StopError,
 struct stop_error : public error<StopError>
 {
 public:
-    stop_error(const StopError& i_error,int i_code);
-    stop_error(const StopError& i_error,const std::string& i_errorDesc,int i_code);
+    stop_error(const StopError& i_error, int i_code = 0);
+    stop_error(const StopError& i_error, const std::string& i_errorDesc, int i_code = 0);
     stop_error(const stop_error&) = default;
 
     stop_error& operator=(const stop_error&) = default;

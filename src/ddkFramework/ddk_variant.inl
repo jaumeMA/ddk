@@ -279,6 +279,15 @@ variant<Types...>& variant<Types...>::operator=(T&& i_value)
 	return *this;
 }
 template<typename ... Types>
+TEMPLATE(typename T,typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(T,Args...),IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+T& variant<Types...>::emplace(Args&& ... i_args)
+{
+	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
+
+	return detail::variant_impl<Types...>::template emplace<mpl::type_match_pos<T,Types...>>(std::forward<Args>(i_args)...);
+}
+template<typename ... Types>
 template<typename T>
 constexpr bool variant<Types...>::operator==(T&& other) const
 {

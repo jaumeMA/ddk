@@ -5,7 +5,6 @@
 #include "ddk_async_executor_interface.h"
 #include "ddk_variant.h"
 #include "ddk_function.h"
-#include "ddk_attachable.h"
 #include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
 #include <chrono>
@@ -22,8 +21,6 @@ class future
 	friend class promise;
 	template<typename>
 	friend class shared_future;
-	template<typename>
-	friend class executor_promise;
 	friend inline auto share(future<T>&& i_future)
 	{
 		return i_future.m_sharedState;
@@ -40,11 +37,8 @@ public:
 	future() = default;
 	future(const future&) = delete;
 	future(future&&);
-	template<typename TT>
-	future(distributed_reference_wrapper<TT> i_executor, ...);
-	future(const detail::private_async_state_dist_ptr<T>& i_sharedState);
-	future(detail::private_async_state_dist_ptr<T>&& i_sharedState);
-	~future();
+	future(const detail::private_async_state_shared_ptr<T>& i_sharedState, unsigned char i_depth);
+	future(detail::private_async_state_shared_ptr<T>&& i_sharedState, unsigned char i_depth);
 
 	future& operator=(const future&) = delete;
 	future& operator=(future&&);
@@ -56,23 +50,27 @@ public:
 	void wait() const;
 	bool wait_for(const std::chrono::milliseconds& i_period) const;
 	cancel_result cancel();
-	TEMPLATE(typename Return, typename Type)
-	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
-	future<Return> then(const function<Return(Type)>& i_continuation) &&;
-	TEMPLATE(typename Return,typename Type, typename Context)
-	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
-	future<Return> then_on(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&;
-	TEMPLATE(typename Return,typename Type,typename Context)
-	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
-	future<Return> async(const function<Return(Type)>& i_continuation, Context&& i_execContext) &&;
-	TEMPLATE(typename Return,typename Type)
-	REQUIRES(IS_CONSTRUCTIBLE(Type,rreference))
-	future<Return> async(const function<Return(Type)>& i_continuation, executor_context_lent_ptr i_execContext)&&;
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto then(Callable&& i_continuation) &&;
+	TEMPLATE(typename Callable, typename Context)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
+	TEMPLATE(typename Callable, typename Context)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto async(Callable&& i_continuation, Context&& i_execContext) &&;
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto async(Callable&& i_continuation, executor_context_lent_ptr i_execContext)&&;
 	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
 	future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
 protected:
-	detail::private_async_state_dist_ptr<T> m_sharedState;
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto chain(Callable&& i_callback, executor_context_lent_ref i_context)&&;
+
+	detail::private_async_state_shared_ptr<T> m_sharedState;
 	unsigned char m_depth = 0;
 };
 
@@ -85,49 +83,35 @@ public:
 	using future<detail::void_t>::future;
 	future(const future& other) = delete;
 	future(future&& other) = default;
-	future(const future<detail::void_t>& other)
-	: future<detail::void_t>(other.m_sharedState)
-	{
-	}
-	future(future<detail::void_t>&& other)
-	: future<detail::void_t>(std::move(other.m_sharedState))
-	{
-	}
-	future& operator=(future&& other)
-	{
-		m_sharedState = std::move(other.m_sharedState);
-
-		return *this;
-	}
-
-	void extract_value() &&
-	{
-		static_cast<future<detail::void_t>&&>(std::move(*this)).extract_value();
-	}
-	future<void> then(const function<void()>& i_continuation) &&
-	{
-        return static_cast<future<detail::void_t>&&>(*this).then(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }));
-	}
+	future(const future<detail::void_t>& other);
+	future(future<detail::void_t>&& other);
+	future& operator=(future&& other);
+	void extract_value()&&;
+	future<void> then(const function<void()>& i_continuation)&&;
 	template<typename TT>
-	future<void> then_on(const function<void()>& i_continuation, TT&& i_execContext) &&
-	{
-        return static_cast<future<detail::void_t>&&>(*this).then_on(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }),std::forward<TT>(i_execContext));
-	}
+	future<void> then_on(const function<void()>& i_continuation,TT&& i_execContext)&&;
 	template<typename TT>
-	future<void> async(const function<void()>& i_continuation, TT&& i_execContext) &&
-	{
-        return static_cast<future<detail::void_t>&&>(*this).async(make_function([i_continuation](const detail::void_t&){ eval(i_continuation); }),std::forward<TT>(i_execContext));
-	}
-	future<void> on_error(const function<void(const async_error&)>& i_onError) &&
-	{
-        return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError);
-	}
-	future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext) &&
-	{
-		return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError,i_execContext);
-	}
+	future<void> async(const function<void()>& i_continuation,TT&& i_execContext)&&;
+	future<void> on_error(const function<void(const async_error&)>& i_onError)&&;
+	future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 };
 
+namespace mpl
+{
+
+template<typename T>
+struct is_future
+{
+	static const bool value = false;
+};
+
+template<typename T>
+struct is_future<is_future<T>>
+{
+	static const bool value = true;
+};
+
+}
 }
 
 #include "ddk_future_future.h"

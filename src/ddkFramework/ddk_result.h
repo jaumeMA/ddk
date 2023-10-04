@@ -44,31 +44,31 @@ class result<void,Error>
 
 	friend std::ostringstream& operator<<(std::ostringstream& o_stream, const result<void,Error>& i_result)
 	{
-		if (i_result.hasError())
+		if (i_result)
 		{
-			o_stream << "Error: " << i_result.getError();
+			o_stream << "Success";
 		}
 		else
 		{
-			o_stream << "Success";
+			o_stream << "Error: " << i_result.error();
 		}
 
 		return o_stream;
 	}
 	friend std::string operator<<(const std::string& i_str, const result<void,Error>& i_result)
 	{
-		std::string res;
+		std::ostringstream res(i_str);
 
-		if (i_result.hasError())
+		if (i_result)
 		{
-			res = "Error: " << i_result.getError();
+			res << "Success";
 		}
 		else
 		{
-			res = "Success";
+			res << "Error: " << i_result.error();
 		}
 
-		return res;
+		return res.str();
 	}
 
 public:
@@ -110,28 +110,28 @@ class result : contravariant_rules<T>
 
 	friend std::ostringstream& operator<<(std::ostringstream& o_stream, const result<T,Error>& i_result)
 	{
-		if (i_result.hasError())
+		if (i_result)
 		{
-			o_stream << "Error: " << i_result.getError();
+			o_stream << "Success: " << i_result.get();
 		}
 		else
 		{
-			o_stream << "Success: " << i_result.getT();
+			o_stream << "Error: " << i_result.error();
 		}
 
 		return o_stream;
 	}
 	friend std::string operator<<(const std::string& i_str, const result<T,Error>& i_result)
 	{
-		std::ostringstream res;
+		std::ostringstream res(i_str);
 
-		if (i_result.hasError())
+		if (i_result)
 		{
-			res << "Error: " << i_result.getError();
+			res << "Success " << i_result.get();
 		}
 		else
 		{
-			res << "Success " << i_result.getT();
+			res << "Error: " << i_result.error();
 		}
 
 		return res.str();

@@ -174,7 +174,7 @@ detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Func
 template<typename Return, typename Allocator, typename FunctionImpl>
 Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function)
 {
-    if constexpr (std::is_same<Return,void>::value)
+    if constexpr (mpl::is_void<Return>)
     {
         i_function.inline_eval();
     }
@@ -187,7 +187,7 @@ TEMPLATE(typename Return, typename ... Types, typename Allocator,typename Functi
 REQUIRED(is_function_argument<Args>::value==false ...)
 Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args)
 {
-    if constexpr (std::is_same<Return,void>::value)
+    if constexpr (mpl::is_void<Return>)
     {
         i_function.inline_eval(std::forward<Args>(i_args) ...);
     }
@@ -199,7 +199,7 @@ Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>
 template<typename Return, typename ... Types, typename Allocator,typename FunctionImpl, typename ... Args>
 Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args)
 {
-    if constexpr (std::is_same<Return,void>::value)
+    if constexpr (mpl::is_void<Return>)
     {
         i_function.inline_eval(i_args);
     }
@@ -212,20 +212,20 @@ TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE(Function,Args...))
 auto eval(Function&& i_function,Args&& ... i_args)
 {
-	if constexpr (std::is_same<void,typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>::value)
+	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
 	{
-		i_function(std::forward<Args>(i_args) ...);
+		std::forward<Function>(i_function)(std::forward<Args>(i_args) ...);
 	}
 	else
 	{
-		return i_function(std::forward<Args>(i_args) ...);
+		return std::forward<Function>(i_function)(std::forward<Args>(i_args) ...);
 	}
 }
 
 template<typename Return,typename Allocator,typename FunctionImpl>
 Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function)
 {
-	if constexpr(std::is_same<Return,void>::value)
+	if constexpr(mpl::is_void<Return>)
 	{
 		i_function.inline_eval();
 	}
@@ -238,7 +238,7 @@ TEMPLATE(typename Return,typename ... Types, typename Allocator,typename Functio
 REQUIRED(is_function_argumenttion_arguments<Arg>::value==false ...)
 Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args)
 {
-	if constexpr(std::is_same<Return,void>::value)
+	if constexpr(mpl::is_void<Return>)
 	{
 		i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}
@@ -250,7 +250,7 @@ Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,Functi
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
 Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args)
 {
-	if constexpr(std::is_same<Return,void>::value)
+	if constexpr(mpl::is_void<Return>)
 	{
 		i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}

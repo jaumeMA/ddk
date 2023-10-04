@@ -9,15 +9,18 @@ void promised_context::start(const ddk::function<void()>& i_callable)
 }
 void promised_context::notify_recipients()
 {
-	m_recipients.notify();
+	m_recipients.notify(false);
+}
+void promised_context::transfer_recipients(promised_context i_context)
+{
+	m_recipients.move(std::move(i_context.m_recipients));
 }
 void promised_context::clear_recipients()
 {
 	m_recipients.clear();
 }
-ddk::continuation_token promised_context::enqueue(const ddk::function<void()>& i_callable,unsigned char i_depth)
+void promised_context::transfer(detail::execution_context_base&& other)
 {
-	return m_recipients.accept(i_callable,i_depth);
 }
 bool promised_context::dismiss(unsigned char i_depth,ddk::continuation_token i_token)
 {
