@@ -14,20 +14,20 @@ inline const fixed_size_allocator* get_fixed_size_allocator()
 	return s_fixedSizeAlloc;
 }
 
-template<typename T,typename Allocator>
+template<typename Allocator>
 template<typename AAllocator>
-fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_secondaryAllocator)
+fixed_size_or_allocator<Allocator>::fixed_size_or_allocator(size_t i_fixedSize, AAllocator&& i_secondaryAllocator)
 : m_allocator({ get_fixed_size_allocator(i_fixedSize),std::forward<AAllocator>(i_secondaryAllocator) })
 {
 }
-template<typename T,typename Allocator>
+template<typename Allocator>
 template<typename AAllocator>
-fixed_size_or_allocator<T,Allocator>::fixed_size_or_allocator(const slab_allocator* i_primaryAllocator, AAllocator&& i_secondaryAllocator)
+fixed_size_or_allocator<Allocator>::fixed_size_or_allocator(const slab_allocator* i_primaryAllocator, AAllocator&& i_secondaryAllocator)
 : m_allocator({ i_primaryAllocator,std::forward<AAllocator>(i_secondaryAllocator) })
 {
 }
-template<typename T, typename Allocator>
-void* fixed_size_or_allocator<T,Allocator>::allocate(size_t i_size) const
+template<typename Allocator>
+void* fixed_size_or_allocator<Allocator>::allocate(size_t i_size) const
 {
 	if(const slab_allocator* fixedSizeAllocator = m_allocator.get_first())
 	{
@@ -44,9 +44,9 @@ void* fixed_size_or_allocator<T,Allocator>::allocate(size_t i_size) const
 
 	return nullptr;
 }
-template<typename T, typename Allocator>
+template<typename Allocator>
 template<typename TT>
-void fixed_size_or_allocator<T,Allocator>::deallocate(TT* i_ptr) const
+void fixed_size_or_allocator<Allocator>::deallocate(TT* i_ptr) const
 {
 	if(i_ptr)
 	{
@@ -74,8 +74,7 @@ fixed_size_allocate_or<Allocator>::fixed_size_allocate_or(size_t i_fixedSize, co
 {
 }
 template<typename Allocator>
-template<typename T>
-fixed_size_or_allocator<T,Allocator> fixed_size_allocate_or<Allocator>::acquire() const
+fixed_size_or_allocator<Allocator> fixed_size_allocate_or<Allocator>::acquire() const
 {
 	return { m_fixedSize,m_allocator };
 }

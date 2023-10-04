@@ -41,7 +41,7 @@ function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(T&& i_func
 {
     typedef typename mpl::static_if<detail::is_base_of_inherited_functor_impl<mpl::remove_qualifiers<T>,Return,Types...>,mpl::remove_qualifiers<T>,detail::aggregated_functor_impl<mpl::remove_qualifiers<T>,Return,Types...>>::type Functor;
 
-    m_functionImpl = make_distributed_reference<Functor>(m_allocator.template acquire<Functor>(),std::forward<T>(i_functor));
+    m_functionImpl = make_distributed_reference<Functor>(m_allocator.acquire(),std::forward<T>(i_functor));
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(Return(*i_call)(Types...), const Allocator& i_allocator)
@@ -49,7 +49,7 @@ function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(Return(*i_
 {
     typedef detail::free_function_impl<Return,Types...> Functor;
 
-    m_functionImpl = make_distributed_reference<Functor>(m_allocator.template acquire<Functor>(),i_call);
+    m_functionImpl = make_distributed_reference<Functor>(m_allocator.acquire(),i_call);
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 template<typename T>
@@ -58,7 +58,7 @@ function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(T *i_pRef,
 {
     typedef detail::relative_function_impl<T,Return,Types...> Functor;
 
-    m_functionImpl = make_distributed_reference<Functor>(m_allocator.template acquire<Functor>(),i_pRef,i_call);
+    m_functionImpl = make_distributed_reference<Functor>(m_allocator.acquire(),i_pRef,i_call);
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 template<typename T>
@@ -67,7 +67,7 @@ function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl(const T *i
 {
     typedef detail::relative_function_impl<const T,Return,Types...> Functor;
 
-    m_functionImpl = make_distributed_reference<Functor>(m_allocator.template acquire<Functor>(),i_pRef,i_call);
+    m_functionImpl = make_distributed_reference<Functor>(m_allocator.acquire(),i_pRef,i_call);
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>
 function_impl<Return(Types...),Allocator,FunctionImpl>& function_impl<Return(Types...),Allocator,FunctionImpl>::operator=(std::nullptr_t)

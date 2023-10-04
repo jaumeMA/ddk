@@ -8,6 +8,7 @@
 #include "ddk_atomics.h"
 #include "ddk_lend_from_this.h"
 #include "ddk_delayed_task.h"
+#include "ddk_global_allocators.h"
 
 namespace ddk
 {
@@ -56,6 +57,7 @@ private:
 	thread_event_driven_executor m_updateThread;
 	single_consumer_lock_free_stack<task_executed_scheduler> m_pendingTasks;
 	ddk::connection m_connection;
+	fixed_size_allocator m_allocator;
 };
 
 typedef lent_reference_wrapper<task_executor> task_executor_lent_ref;

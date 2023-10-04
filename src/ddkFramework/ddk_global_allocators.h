@@ -14,12 +14,10 @@
 namespace ddk
 {
 
-template<typename T, typename Allocator>
+template<typename Allocator>
 class fixed_size_or_allocator
 {
 public:
-	typedef T type;
-
 	template<typename AAllocator>
 	fixed_size_or_allocator(size_t i_fixedSize,AAllocator&& i_secondaryAllocator);
 	template<typename AAllocator>
@@ -38,8 +36,7 @@ class fixed_size_allocate_or
 public:
 	fixed_size_allocate_or(size_t i_fixedSize, const Allocator& = Allocator{});
 
-	template<typename T>
-	fixed_size_or_allocator<T,Allocator> acquire() const;
+	fixed_size_or_allocator<Allocator> acquire() const;
 
 private:
 	size_t m_fixedSize;

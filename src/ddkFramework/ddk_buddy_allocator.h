@@ -46,6 +46,8 @@ public:
 	void* allocate(size_t i_size) const;
 	void* reallocate(void* i_ptr, size_t i_newSize) const;
 	void deallocate(void* i_ptr) const;
+	template<typename T>
+	void deallocate(T* i_ptr);
 	bool empty() const;
 
 private:
@@ -62,3 +64,5 @@ private:
 
 
 }
+
+#include "ddk_buddy_allocator.inl"

@@ -8,8 +8,8 @@ namespace ddk
 template<typename Callable>
 class delayed_task
 {
-	template<typename Executor,typename CCallable,typename Provider>
-	friend auto async(delayed_task<CCallable>&& i_task, Provider& i_eventProvider);
+	template<typename Executor, typename Allocator,typename CCallable,typename Provider, typename ... Args>
+	friend auto async(delayed_task<CCallable>&& i_task, Provider& i_eventProvider, Args&& ... i_args);
 
 public:
 	delayed_task(const Callable& i_callable);

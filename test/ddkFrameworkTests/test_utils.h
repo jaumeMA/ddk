@@ -9,8 +9,11 @@ template<typename T>
 class TestDynamicDeleter
 {
 public:
-	void deallocate(T* i_object) const
+	template<typename TT>
+	void deallocate(TT* i_object) const
 	{
+		static_assert(std::is_base_of<TT,T>::value,"You shall provide inherited class");
+
 		delete i_object;
 	}
 };
