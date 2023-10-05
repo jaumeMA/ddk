@@ -11,7 +11,7 @@
 
 #ifdef DDK_DEBUG
 
-#define TRACK_STACK
+//#define TRACK_STACK
 
 #include "ddk_memory_tracker.h"
 

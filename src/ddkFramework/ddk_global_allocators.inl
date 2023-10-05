@@ -22,8 +22,8 @@ fixed_size_or_allocator<Allocator>::fixed_size_or_allocator(size_t i_fixedSize, 
 }
 template<typename Allocator>
 template<typename AAllocator>
-fixed_size_or_allocator<Allocator>::fixed_size_or_allocator(const slab_allocator* i_primaryAllocator, AAllocator&& i_secondaryAllocator)
-: m_allocator({ i_primaryAllocator,std::forward<AAllocator>(i_secondaryAllocator) })
+fixed_size_or_allocator<Allocator>::fixed_size_or_allocator(const slab_allocator& i_primaryAllocator, AAllocator&& i_secondaryAllocator)
+: m_allocator({ &i_primaryAllocator,std::forward<AAllocator>(i_secondaryAllocator) })
 {
 }
 template<typename Allocator>

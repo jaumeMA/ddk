@@ -24,7 +24,7 @@ public:
 
 private:
 	immediate_execution_context m_execContext;
-	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state = ExecutorState::Idle;
 };
 
 class fiber_executor
@@ -60,7 +60,7 @@ public:
 
 private:
 	fiber_sheaf_execution_context m_execContext;
-	atomic32<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state = ExecutorState::Idle;
 };
 
 class thread_executor
@@ -78,7 +78,7 @@ public:
 
 private:
 	thread_execution_context m_execContext;
-	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state = ExecutorState::Idle;
 };
 
 class thread_sheaf_executor
@@ -96,7 +96,7 @@ public:
 
 private:
 	thread_sheaf_execution_context m_execContext;
-	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state = ExecutorState::Idle;
 };
 
 template<typename Executor>
@@ -115,7 +115,7 @@ public:
 
 private:
 	optional<Executor> m_executor;
-	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state = ExecutorState::Idle;
 };
 
 class execution_context_executor
@@ -136,7 +136,7 @@ private:
 	executor_context_lent_ptr m_execContext;
 	const unsigned char m_depth;
 	continuation_token m_continuationToken;
-	atomic<ExecutorState::underlying_type> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state = ExecutorState::Idle;
 };
 
 }

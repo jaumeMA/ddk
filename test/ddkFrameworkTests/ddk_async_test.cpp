@@ -162,6 +162,8 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	ddk::thread myThread;
 	int step = 0;
 
+	ddk::async([]() {}) -> attach(std::move(myThread));
+
 	//ddk::async([&]() -> my_result 
 	//{ 
 	//	step += 1; return ddk::make_unique_reference<int>(10); 

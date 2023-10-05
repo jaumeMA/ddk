@@ -73,7 +73,9 @@ void task_executor::subscribe(task_executed_scheduler i_scheduler)
 	{
 		if (optional<task_executed_scheduler> oldTaskOpt = m_pendingTasks.pop())
 		{
-			extract_raw_ptr(std::move(oldTaskOpt).extract())->signal({});
+			task_executed_scheduler oldTask = std::move(oldTaskOpt).extract();
+
+			extract_raw_ptr(oldTask)->signal({});
 
 			atomic_post_decrement(m_numPendingTasks);
 		}

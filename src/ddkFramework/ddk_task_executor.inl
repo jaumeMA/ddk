@@ -14,7 +14,7 @@ auto task_executor::enqueue(Callable&& i_task)
 
 	if(m_state.get() == Running)
 	{
-		return async<detail::thread_executor,fixed_size_or_allocator<system_allocator>>(delayed_task{ std::forward<Callable>(i_task) },*this,&m_allocator,g_system_allocator);
+		return async<detail::thread_executor,fixed_size_or_allocator<system_allocator>>(delayed_task{ std::forward<Callable>(i_task) },*this,m_allocator,g_system_allocator);
 	}
 	else
 	{

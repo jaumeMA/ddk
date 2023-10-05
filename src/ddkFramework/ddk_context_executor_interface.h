@@ -40,7 +40,7 @@ unique_reference_wrapper<Executor> make_executor(Args&& ... i_args)
 	typedef fixed_size_or_allocator<system_allocator> allocator_t;
 	static const fixed_size_allocator* s_allocator = get_fixed_size_allocator(size_of_unique_allocation<Executor,allocator_t>());
 	
-	return (s_allocator) ? ddk::make_unique_reference<Executor>(allocator_t{ s_allocator,system_allocator{} },std::forward<Args>(i_args) ...)
+	return (s_allocator) ? ddk::make_unique_reference<Executor>(allocator_t{ *s_allocator,system_allocator{} },std::forward<Args>(i_args) ...)
 						 : ddk::make_unique_reference<Executor>(std::forward<Args>(i_args) ...);
 }
 
