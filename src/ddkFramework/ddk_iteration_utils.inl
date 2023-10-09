@@ -1,6 +1,6 @@
 
 template<typename Iterable,typename Sink>
-ddk::context_future<ddk::iteration_result> operator<<=(ddk::task_executor& i_lhs, ddk::iteration<Iterable,Sink>& i_rhs)
+ddk::future<ddk::iteration_result> operator<<=(ddk::task_executor& i_lhs, ddk::iteration<Iterable,Sink>& i_rhs)
 {
 	typedef void ret_type;
 	typedef typename ddk::mpl::which_type<ddk::mpl::is_same_type<ret_type,void>::value,ddk::detail::void_t,ret_type>::type sink_ret_type;
