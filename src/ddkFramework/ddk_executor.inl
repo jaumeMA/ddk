@@ -48,7 +48,7 @@ std::chrono::milliseconds polling_executor<Context>::get_update_time() const
 template<typename Context>
 typename polling_executor<Context>::start_result polling_executor<Context>::start(const ddk::function<void()>& i_executor)
 {
-	return execute(nullptr,i_executor);
+	return execute(i_executor,nullptr);
 }
 template<typename Context>
 typename polling_executor<Context>::resume_result polling_executor<Context>::stop()
@@ -324,7 +324,7 @@ fire_and_forget_executor<Context>::fire_and_forget_executor(fire_and_forget_exec
 template<typename Context>
 typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::start(const ddk::function<void()>& i_executor)
 {
-	return execute(nullptr,i_executor);
+	return execute(i_executor,nullptr);
 }
 template<typename Context>
 typename fire_and_forget_executor<Context>::start_result fire_and_forget_executor<Context>::execute(const ddk::function<void()>& i_executor, const sink_type& i_sink)

@@ -3,6 +3,7 @@
 namespace ddk
 {
 
+const size_t k_maxNumPendingTasks = 64;
 const size_t k_maxTaskSize = 1024;
 
 task_executor::task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks)
