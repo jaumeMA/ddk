@@ -33,11 +33,11 @@
 			{ \
 				if constexpr (mpl::num_types<Args...> >= 1) \
 				{ \
-					return transform(_FUNC(m_args.template get<Indexs>()...)) <<= deduce_iterable(i_iterable); \
+					return transform(_FUNC(m_args.template get<Indexs>()...)) <<= std::forward<Iterable>(i_iterable); \
 				} \
 				else \
 				{ \
-					return transform(_FUNC) <<= deduce_iterable(i_iterable); \
+					return transform(_FUNC) <<= std::forward<Iterable>(i_iterable); \
 				} \
 			} \
 			\
@@ -138,7 +138,7 @@
 			using ::operator<<=; \
 			typedef impl<mpl::remove_qualifiers<Iterable>,mpl::remove_qualifiers<Iterables>...> __iterable_impl; \
 			static const __iterable_impl _impl; \
-			return transform(_impl) <<= ddk::fusion(deduce_iterable(std::forward<Iterable>(i_iterable)),deduce_iterable(std::forward<Iterables>(i_iterables)) ...); \
+			return transform(_impl) <<= ddk::fusion(std::forward<Iterable>(i_iterable),std::forward<Iterables>(i_iterables)...); \
 		} \
 	}; \
 	const _NAME##_iterable_transform _NAME;
@@ -182,7 +182,7 @@ const transform_iterable_transform transform;
 
 TEMPLATE(typename Sink,typename Iterable)
 REQUIRES(IS_CONTAINER(Sink))
-inline auto operator<<=(Sink& i_lhs, const Iterable& i_rhs);
+inline auto operator<<=(Sink& i_lhs, Iterable&& i_rhs);
 
 #include "ddk_iterable_algorithm.inl"
 

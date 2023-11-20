@@ -59,19 +59,19 @@ void type_access_dumping<Sink>::_set(Sink& i_sink,const variant<T...>& i_value)
 	i_sink.template set<Index>(i_value.template get<Index>());
 }
 
-template<typename Sink,typename Traits>
-inline future<iteration_result> iterable_transformation_dump(Sink& i_sink,const ddk::detail::iterable<Traits>& i_transformedIterable)
+template<typename Sink,typename Iterable>
+inline future<iteration_result> iterable_transformation_dump(Sink& i_sink,Iterable&& i_transformedIterable)
 {
 	return ddk::async([&]()
 	{
-		typedef typename Traits::const_reference const_reference;
+		typedef typename Iterable::const_reference const_reference;
 
-		iterable_dumper_type<Sink,typename Traits::value_type> _dumper(i_sink);
+		iterable_dumper_type<Sink,typename Iterable::value_type> _dumper(i_sink);
 
 		return static_cast<iteration_result>([dumper = std::move(_dumper)](const_reference i_value)
 		{
 			dumper.apply(i_value);
-		} <<= i_transformedIterable);
+		} <<= std::forward<Iterable>(i_transformedIterable));
 	});
 }
 

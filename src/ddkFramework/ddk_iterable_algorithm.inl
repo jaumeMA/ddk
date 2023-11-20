@@ -25,7 +25,7 @@ transform_iterable_transform::impl<Functor>::impl(Functor i_transform)
 
 TEMPLATE(typename Sink,typename Iterable)
 REQUIRED(IS_CONTAINER(Sink))
-auto operator<<=(Sink& i_sink, const Iterable& i_iterable)
+auto operator<<=(Sink& i_sink, Iterable&& i_iterable)
 {
-	return ddk::trans::detail::iterable_transformation_dump(i_sink,ddk::deduce_iterable(i_iterable));
+	return ddk::trans::detail::iterable_transformation_dump(i_sink,std::forward<Iterable>(i_iterable));
 }

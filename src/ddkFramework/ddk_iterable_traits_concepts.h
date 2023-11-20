@@ -24,9 +24,9 @@ private:
 	typedef typename ToTraits::tags_t to_tags_t;
 
 public:
-	static const bool value = true;//IS_CONVERTIBLE_COND(from_reference,to_reference) &&
-								//IS_CONVERTIBLE_COND(from_const_reference,to_const_reference) &&
-								//from_tags_t::template contains(to_tags_t{});
+	static const bool value =	IS_CONVERTIBLE_COND(from_reference,to_reference) &&
+								IS_CONVERTIBLE_COND(from_const_reference,to_const_reference) &&
+								from_tags_t::template contains(to_tags_t{});
 };
 
 template<typename Traits1, typename Traits2>

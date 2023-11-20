@@ -182,7 +182,11 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 
 	////std::vector<int> highOrderProvaSuma;
 	//////const auto res = ddk::iter::sum <<= ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
-	////highOrderProva <<= ddk::iter::pow <<= ddk::fusion(foo,foo);
+	[](float i_value)
+	{
+		int a = 0;
+		++a;
+	} <<= ddk::iter::pow <<= ddk::fusion(foo,foo);
 	////highOrderProvaSuma <<= ddk::iter::inv(foo);
 	////int provaSuma = ddk::iter::sum(foo);
 	////int provaSuma2 = ddk::sum({10,4,-25,1897,76});
