@@ -149,19 +149,19 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	//////ddk::combine(ddk::iter::one_to_n_enumerate_action_adapter{foo,foo},foo,foo);
 
 	//ddk::high_order_array<int,2,2> _highOrderProva = {1,1,2,2};
-	//ddk::high_order_array<int,2,2> highOrderProva;
+	ddk::high_order_array<int,2,2> highOrderProva;
 
-	//highOrderProva[0][0] = 1;
-	//highOrderProva[0][1] = 2;
-	//highOrderProva[1][0] = 3;
-	//highOrderProva[1][1] = 4;
+	highOrderProva[0][0] = 1;
+	highOrderProva[0][1] = 2;
+	highOrderProva[1][0] = 3;
+	highOrderProva[1][1] = 4;
 
 	////ddk::const_random_access_iterable<int> highOrderIterable = ddk::make_iterable<ddk::const_random_access_iterable<int>>(highOrderProva);
 
-	//[](const int& i_value) 
-	//{
-	//	printf("cur integer: %d\n",i_value);
-	//} <<= highOrderProva;
+	[](const int& i_value) 
+	{
+		printf("cur integer: %d\n",i_value);
+	} <<= highOrderProva;
 
 	////auto highOrderReceiver = ddk::make_function([](const int& i_value)
 	////{

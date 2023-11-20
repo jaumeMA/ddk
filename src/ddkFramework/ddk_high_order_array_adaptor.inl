@@ -34,7 +34,7 @@ bool iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const begin_
 {
 	m_currIndex = 0;
 
-	return m_currentValue < high_order_array<T,ranks ...>::s_totalSize;
+	return m_currIndex < high_order_array<T,ranks ...>::s_totalSize;
 
 }
 template<typename T,size_t ... ranks>

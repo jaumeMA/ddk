@@ -1,10 +1,7 @@
 #pragma once
 
 #include "ddk_high_order_array.h"
-#include "ddk_optional.h"
-#include "ddk_iterable_action_defs.h"
 #include "ddk_iterable_type.h"
-#include <utility>
 
 namespace ddk
 {
@@ -17,7 +14,7 @@ public:
 	typedef typename high_order_array<T,ranks...>::reference reference;
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 	typedef long long difference_type;
-	typedef detail::const_random_access_iterable_action_tag tags_t;
+	typedef mpl::type_pack<begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag> tags_t;
 
 	iterable_adaptor(high_order_array<T,ranks...>& i_iterable);
 	auto get_value();
@@ -49,7 +46,7 @@ public:
 	typedef typename high_order_array<T,ranks...>::const_reference reference;
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 	typedef long long difference_type;
-	typedef detail::const_random_access_iterable_action_tag tags_t;
+	typedef mpl::type_pack<begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag> tags_t;
 
 	iterable_adaptor(const high_order_array<T,ranks...>& i_iterable);
 	const_reference get_value() const;
