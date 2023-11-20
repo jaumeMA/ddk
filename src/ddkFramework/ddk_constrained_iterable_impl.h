@@ -21,25 +21,34 @@ private:
 template<typename Function>
 iterable_constrain(Function&&) -> iterable_constrain<mpl::remove_qualifiers<Function>>;
 
-template<typename Traits, typename Function>
-class constrained_iterable_impl : public iterable_impl_interface<typename Traits::iterable_base_traits>
+template<typename Iterable,typename Constrain>
+class constrained_iterable_impl : public iterable_impl_interface<typename Iterable::traits>
 {
-	typedef typename Traits::iterable_base_traits iterable_base_traits;
+	friend inline auto deduce_adaptor(const constrained_iterable_impl& i_iterableImpl)
+	{
+		return deduce_adaptor(i_iterableImpl.m_iterable);
+	}
 
 public:
-	typedef typename Traits::value_type value_type;
-	typedef typename Traits::reference reference;
-	typedef typename Traits::const_reference const_reference;
-	typedef typename Traits::action action;
+	typedef typename Iterable::traits traits;
+	typedef typename traits::value_type value_type;
+	typedef typename traits::reference reference;
+	typedef typename traits::const_reference const_reference;
 
-	constrained_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef,const Function& i_constrain);
+	TEMPLATE(typename IIterable,typename CConstrain)
+	REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Constrain,CConstrain))
+	constrained_iterable_impl(IIterable&& i_iterable,CConstrain&& i_constrain);
+
+	TEMPLATE(typename Function,typename Action)
+	REQUIRES(IS_CALLABLE_BY(Function,reference))
+	void iterate_impl(Function&& i_try,const Action& i_initialAction);
+	TEMPLATE(typename Function,typename Action)
+	REQUIRES(IS_CALLABLE_BY(Function,const_reference))
+	void iterate_impl(Function&& i_try,const Action& i_initialAction) const;
 
 private:
-	void iterate_impl(const function<action(reference)>& i_try,const shift_action& i_initialAction,action_state_lent_ptr i_actionStatePtr) override;
-	void iterate_impl(const function<action(const_reference)>& i_try,const shift_action& i_initialAction,action_state_lent_ptr i_actionStatePtr) const override;
-
-	iterable_impl_dist_ref<iterable_base_traits> m_iterableRef;
-	const Function m_constrain;
+	Iterable m_iterable;
+	const Constrain m_constrain;
 };
 
 }

@@ -11,8 +11,6 @@ namespace detail
 template<typename Function>
 class iterable_filter
 {
-	static_assert(std::is_same<typename Function::return_type,bool>::value, "You shall provide a boolen function");
-
 public:
 	iterable_filter(const Function& i_filter);
 
@@ -22,26 +20,34 @@ private:
 	const Function m_filter;
 };
 
-
-template<typename Traits, typename Function>
-class filtered_iterable_impl : public iterable_impl_interface<typename Traits::iterable_base_traits>
+template<typename Iterable, typename Filter>
+class filtered_iterable_impl : public iterable_impl_interface<typename Iterable::traits>
 {
-    typedef typename Traits::iterable_base_traits iterable_base_traits;
+    friend inline auto deduce_adaptor(const filtered_iterable_impl& i_iterableImpl)
+    {
+        return deduce_adaptor(i_iterableImpl.m_iterable);
+    }
 
 public:
-    typedef typename Traits::value_type value_type;
-    typedef typename Traits::reference reference;
-    typedef typename Traits::const_reference const_reference;
-    typedef typename Traits::action action;
+    typedef typename Iterable::traits traits;
+    typedef typename traits::value_type value_type;
+    typedef typename traits::reference reference;
+    typedef typename traits::const_reference const_reference;
 
-    filtered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const Function& i_filter);
+    TEMPLATE(typename IIterable,typename FFilter)
+    REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Filter,FFilter))
+    filtered_iterable_impl(IIterable&& i_iterable, FFilter&& i_filter);
+
+    TEMPLATE(typename Function,typename Action)
+    REQUIRES(IS_CALLABLE_BY(Function,reference))
+    void iterate_impl(Function&& i_try,const Action& i_initialAction);
+    TEMPLATE(typename Function,typename Action)
+    REQUIRES(IS_CALLABLE_BY(Function,const_reference))
+    void iterate_impl(Function&& i_try,const Action& i_initialAction) const;
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-
-    iterable_impl_dist_ref<iterable_base_traits> m_iterableRef;
-    const Function m_filter;
+    Iterable m_iterable;
+    const Filter m_filter;
 };
 
 }

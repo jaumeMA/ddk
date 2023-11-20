@@ -4,11 +4,11 @@ ddk::future<ddk::iteration_result> operator<<=(ddk::task_executor& i_lhs, ddk::i
 {
 	typedef void ret_type;
 	typedef typename ddk::mpl::which_type<ddk::mpl::is_same_type<ret_type,void>::value,ddk::detail::void_t,ret_type>::type sink_ret_type;
-	ddk::optional<ddk::context_future<ddk::detail::void_t>> res;
+	ddk::optional<ddk::future<ddk::detail::void_t>> res;
 
 	auto newIteration = std::move(i_rhs).transform([&i_lhs,&i_rhs,&res](const ddk::function<void()>& i_func)
 	{
-		ddk::context_future<ddk::detail::void_t> visitationRes = i_lhs.enqueue(ddk::make_function([payload = i_func]()
+		ddk::future<ddk::detail::void_t> visitationRes = i_lhs.enqueue(ddk::make_function([payload = i_func]()
 		{
 			ddk::eval(payload);
 

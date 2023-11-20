@@ -1,4 +1,6 @@
 
+#include "ddk_iterable_action.h"
+
 namespace ddk
 {
 namespace detail
@@ -16,21 +18,33 @@ T iterable_order<T>::init(const Iterable& i_iterable) const
 	return m_order.init(i_iterable);
 }
 
-template<typename T, typename Traits>
-ordered_iterable_impl<T,Traits>::ordered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const T& i_actionResolver)
-: m_iterableRef(i_iterableRef)
-, m_actionResolver(i_actionResolver)
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename IIterable,typename AActionResolver)
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(ActionResolver,AActionResolver))
+ordered_iterable_impl<Iterable,ActionResolver>::ordered_iterable_impl(IIterable&& i_iterable,AActionResolver&& i_actionResolver)
+: m_iterable(std::forward<IIterable>(i_iterable))
+, m_actionResolver(std::forward<AActionResolver>(i_actionResolver))
 {
 }
-template<typename T, typename Traits>
-void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference))
+void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { return m_actionResolver.resolve(eval(i_try,i_value)); }),m_actionResolver.resolve(i_initialAction),i_actionStatePtr);
+	m_iterable.iterate_impl([&](reference i_value)
+	{ 
+		return m_actionResolver(ddk::eval(std::forward<Function>(i_try),i_value));
+	},m_actionResolver(i_initialAction));
 }
-template<typename T, typename Traits>
-void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,const_reference))
+void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { return m_actionResolver.resolve(eval(i_try,i_value)); }),m_actionResolver.resolve(i_initialAction),i_actionStatePtr);
+	m_iterable.iterate_impl([&](const_reference i_value)
+	{
+		return m_actionResolver(ddk::eval(std::forward<Function>(i_try),i_value));
+	},m_actionResolver(i_initialAction));
 }
 
 }

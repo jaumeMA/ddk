@@ -7,181 +7,458 @@ namespace ddk
 namespace detail
 {
 
-template<size_t Index, typename ... Iterables>
-void navigate(tuple<Iterables...>& i_iterables, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
-{
-    typedef typename mpl::nth_type_of<Index,Iterables...>::type curr_iterable_type;
-    typedef typename curr_iterable_type::reference curr_reference;
-    typedef typename union_iterable_impl<Iterables...>::reference reference;
-
-    try
-    {
-        if constexpr(std::is_same<reference,curr_reference>::value)
-        {
-            lend(i_iterables.template get<Index>())->iterate_impl(i_try,i_initialAction,i_actionStatePtr);
-        }
-        else
-        {
-            lend(i_iterables.template get<Index>())->iterate_impl(make_composition(i_try,make_function([](curr_reference i_value) -> reference { return i_value; })),i_initialAction,i_actionStatePtr);
-        }
-    }
-    catch(const suspend_exception&)
-    {
-    }
-}
-template<size_t Index, typename ... Iterables>
-void navigate(const tuple<Iterables...>& i_iterables, const function<typename union_iterable_impl<Iterables...>::action(typename union_iterable_impl<Iterables...>::const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
-{
-    typedef typename mpl::nth_type_of<Index,Iterables...>::type curr_iterable_type;
-    typedef typename curr_iterable_type::const_reference curr_const_reference;
-    typedef typename union_iterable_impl<Iterables...>::const_reference const_reference;
-
-    try
-    {
-        if constexpr (std::is_same<const_reference,curr_const_reference>::value)
-        {
-            lend(i_iterables.template get<Index>())->iterate_impl(i_try,i_initialAction,i_actionStatePtr);
-        }
-        else
-        {
-            lend(i_iterables.template get<Index>())->iterate_impl(make_composition(i_try,make_function([](curr_const_reference i_value) -> const_reference { return i_value; })),i_initialAction,i_actionStatePtr);
-        }
-    }
-    catch(const suspend_exception&)
-    {
-    }
-}
-
-template<size_t ... Indexs, typename ... Iterables>
-const typename union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::size_t_func union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::s_size_funcs[s_num_iterables] = { &union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::template iterable_size<Indexs> ...};
-
-template<size_t ... Indexs, typename ... Iterables>
-union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables)
-: m_currIterableIndex(i_currIterableIndex)
-, m_iterables(i_iterables)
+template<typename ... Iterables>
+union_iterable_impl<Iterables...>::union_iterable_impl(Iterables& ... i_iterables)
+: iterable_visitor<detail::union_iterable_impl<Iterables...>>(i_iterables...)
 {
 }
-template<size_t ... Indexs,typename ... Iterables>
-template<typename T>
-std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::operator()(const T& i_action) const
+template<typename ... Iterables>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference))
+void union_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,Action&& i_initialAction)
 {
-    suspend();
-
-    return std::make_pair(iterable_state::npos,go_no_place);
+    loop(std::forward<Function>(i_try),std::forward<Action>(i_initialAction));
 }
-template<size_t ... Indexs,typename ... Iterables>
-std::pair<size_t,shift_action> union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::operator()(const shift_error& i_action) const
+template<typename ... Iterables>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,const_reference))
+void union_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,Action&& i_initialAction) const
 {
-    const auto pendingShift = i_action.get_pending_shift();
+    loop(std::forward<Function>(i_try),std::forward<Action>(i_initialAction));
+}
 
-    const size_t newIterableIndex = (pendingShift > 0) ? m_currIterableIndex + 1 : m_currIterableIndex - 1;
+}
 
-    if(newIterableIndex < s_num_iterables)
+template<typename ... Iterables>
+iterable_adaptor<detail::union_iterable_impl<Iterables...>>::iterable_adaptor(Iterables& ... i_iterables)
+: m_adaptors(deduce_adaptor(i_iterables)...)
+{
+}
+template<typename ... Iterables>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::get_value()
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return get_value(seq_type{});
+}
+template<typename ... Iterables>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::get_value() const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return get_value(seq_type{});
+}
+template<typename ... Iterables>
+template<typename Sink>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink)
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return forward_value(seq_type{},std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<typename Sink>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink) const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return forward_value(seq_type{},std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::valid() const noexcept
+{
+    if (m_currIndex >= 0 && m_currIndex < s_numTypes)
     {
-        return std::make_pair(newIterableIndex,go_to_place((pendingShift > 0) ? pendingShift - 1 : pendingShift + 1));
+        typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+        return valid(seq_type{});
     }
     else
     {
-        return std::make_pair(iterable_state::npos,go_no_place);
+        return false;
     }
 }
-template<size_t ... Indexs, typename ... Iterables>
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    {
+        return true;
+    }
+    else if (m_currIndex < s_numTypes)
+    {
+        m_currIndex++;
+
+        return perform_default_action(seq_type{});
+    }
+    else
+    {
+        return false;
+    }
+}
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    {
+        return true;
+    }
+    else if (m_currIndex < s_numTypes)
+    {
+        m_currIndex++;
+
+        return perform_default_action(seq_type{});
+    }
+    else
+    {
+        return false;
+    }
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::get_value(const mpl::sequence<Indexs...>&)
+{
+    typedef reference(*funcType)(tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_get_value<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
 template<size_t Index>
-size_t union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...>::iterable_size(const tuple<Iterables...>& i_iterables)
+typename iterable_adaptor<detail::union_iterable_impl<Iterables...>>::reference iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_get_value(tuple<deduced_adaptor<Iterables>...>& i_adaptors)
 {
-    return i_iterables.template get<Index>().size();
-}
-
-template<typename ... Iterables>
-union_iterable_impl<Iterables...>::union_iterable_impl(const Iterables& ... i_iterables)
-: m_iterables(i_iterables...)
-{
-}
-template<typename ... Iterables>
-union_iterable_impl<Iterables...>::union_iterable_impl(const tuple<Iterables...>& i_tupleIterable)
-: m_iterables(i_tupleIterable)
-{
-}
-template<typename ... Iterables>
-const tuple<Iterables...>& union_iterable_impl<Iterables...>::get_iterables() const
-{
-    return m_iterables;
-}
-template<typename ... Iterables>
-tuple<Iterables...>& union_iterable_impl<Iterables...>::get_iterables()
-{
-    return m_iterables;
-}
-template<typename ... Iterables>
-void union_iterable_impl<Iterables...>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
-{
-    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
-}
-template<typename ... Iterables>
-void union_iterable_impl<Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
-{
-    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
+    return i_adaptors.template get<Index>().get_value();
 }
 template<typename ... Iterables>
 template<size_t ... Indexs>
-void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::get_value(const mpl::sequence<Indexs...>&) const
 {
-    typedef void(*navigate_func)(tuple<Iterables...>&, const function<action(reference)>&,const shift_action&,action_state_lent_ptr);
+    typedef const_reference(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_get_value<Indexs> ... };
 
-    static const navigate_func s_navFuncs[s_num_iterables] = { navigate<Indexs,Iterables...> ...};
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
+template<size_t Index>
+typename iterable_adaptor<detail::union_iterable_impl<Iterables...>>::const_reference iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_get_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptors)
+{
+    return i_adaptors.template get<Index>().get_value();
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename Sink>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::forward_value(const mpl::sequence<Indexs...>&,Sink&& i_sink)
+{
+    typedef typename mpl::aqcuire_callable_return_type<Sink>::type return_type;
+    typedef return_type(*funcType)(tuple<deduced_adaptor<Iterables>...>&,Sink&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_forward_value<Indexs,Sink&&> ... };
 
-    size_t iterableIndex= (i_initialAction.shifting() == -1) ? s_num_iterables - 1 : 0;
-	shift_action initialAction = i_initialAction;
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<size_t Index,typename Sink>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_forward_value(tuple<deduced_adaptor<Iterables>...>& i_adaptors, Sink&& i_sink)
+{
+    return i_adaptors.template get<Index>().forward_value(std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename Sink>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::forward_value(const mpl::sequence<Indexs...>& ,Sink&& i_sink) const
+{
+    typedef typename mpl::aqcuire_callable_return_type<Sink>::type return_type;
+    typedef return_type(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,Sink&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_forward_value<Indexs,Sink&&> ... };
 
-    while(iterableIndex != iterable_state::npos)
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<size_t Index,typename Sink>
+auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_forward_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptors, Sink&& i_sink)
+{
+    return i_adaptors.template get<Index>().forward_value(std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::valid(const mpl::sequence<Indexs...>&) const
+{
+    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_valid<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
+template<size_t Index>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptors)
+{
+    return i_adaptors.template get<Index>().valid();
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag)
+{
+    typedef bool(*funcType)(tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t Index,typename ActionTag>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptors,ActionTag&& i_actionTag)
+{
+    return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const
+{
+    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t Index,typename ActionTag>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
+{
+    return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_default_action(const mpl::sequence<Indexs...>&)
+{
+    typedef bool(*funcType)(tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
+template<size_t Index>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor)
+{
+    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+
+    const auto defaultAction = nth_traits::default_action();
+
+    return static_cast<bool>(defaultAction.apply(i_adaptor.template get<Index>(),[&defaultAction](auto&&) -> no_action { return{}; }));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_default_action(const mpl::sequence<Indexs...>&) const
+{
+    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
+template<size_t Index>
+bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor)
+{
+    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+
+    const auto defaultAction = nth_traits::default_action();
+
+    return static_cast<bool>(defaultAction.apply(i_adaptor.template get<Index>(),[&defaultAction](auto&&) -> no_action { return{}; }));
+}
+
+template<typename ... Iterables>
+iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::iterable_adaptor(const Iterables& ... i_iterables)
+: m_adaptors(deduce_adaptor(i_iterables)...)
+{
+}
+template<typename ... Iterables>
+auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::get_value() const
+{
+    typedef typename mpl::make_sequence<0,mpl::num_types<Iterables...>>::type seq_type;
+
+    return get_value(seq_type{});
+}
+template<typename ... Iterables>
+template<typename Sink>
+auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink) const
+{
+    typedef typename mpl::make_sequence<0,mpl::num_types<Iterables...>>::type seq_type;
+
+    return forward_value(std::forward<Sink>(i_sink),seq_type{});
+}
+template<typename ... Iterables>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::valid() const noexcept
+{
+    if (m_currIndex >= 0 && m_currIndex < mpl::num_types<Iterables...>)
     {
-        (*s_navFuncs[iterableIndex])(m_iterables,i_try,initialAction,i_actionStatePtr);
+        typedef typename mpl::make_sequence<0,mpl::num_types<Iterables...>>::type seq_type;
 
-        union_iterable_visitor<Iterables...> unionVisitor(iterableIndex,m_iterables);
+        return valid(seq_type{});
+    }
+    else
+    {
+        return false;
+    }
+}
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
-        try
-        {
-            const std::pair<size_t,shift_action> currIndexes = i_actionStatePtr->visit(unionVisitor);
+    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    {
+        return true;
+    }
+    else if (m_currIndex < s_numTypes)
+    {
+        m_currIndex++;
 
-            iterableIndex = currIndexes.first;
-		    initialAction = currIndexes.second;
-        }
-        catch(const iteration_exception&)
-        {
-            break;
-        }
+        return perform_default_action(seq_type{});
+    }
+    else
+    {
+        return false;
+    }
+}
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    {
+        return true;
+    }
+    else if (m_currIndex < s_numTypes)
+    {
+        m_currIndex++;
+
+        return perform_default_action(seq_type{});
+    }
+    else
+    {
+        return false;
     }
 }
 template<typename ... Iterables>
 template<size_t ... Indexs>
-void union_iterable_impl<Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::get_value(const mpl::sequence<Indexs...>&) const
 {
-	typedef void(*navigate_func)(const tuple<Iterables...>&, const function<action(const_reference)>&, const shift_action&,action_state_lent_ptr);
+    typedef const_reference(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_get_value<Indexs> ... };
 
-	static const navigate_func s_navFuncs[s_num_iterables] = { &navigate<Indexs,Iterables...> ... };
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
+template<size_t Index>
+typename iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::const_reference iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_get_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptors)
+{
+    return i_adaptors.template get<Index>().get_value();
+}
+template<typename ... Iterables>
+template<typename Sink,size_t ... Indexs>
+auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink,const mpl::sequence<Indexs...>&) const
+{
+    typedef typename mpl::aqcuire_callable_return_type<Sink>::type return_type;
+    typedef return_type(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,Sink&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_forward_value<Indexs,Sink&&> ... };
 
-    size_t iterableIndex= 0;
-	shift_action initialAction = i_initialAction;
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<size_t Index,typename Sink>
+auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_forward_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptors,Sink&& i_sink)
+{
+    return i_adaptors.template get<Index>().forward_value(std::forward<Sink>(i_sink));
+}
+template<typename ... Iterables>
+template<typename Sink,size_t ... Indexs>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::valid(const mpl::sequence<Indexs...>&) const
+{
+    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_valid<Indexs> ... };
 
-    while(iterableIndex != iterable_state::npos)
-    {
-        (*s_navFuncs[iterableIndex])(m_iterables,i_try,initialAction,i_actionStatePtr);
+    return (*s_navFuncs[m_currIndex])(m_adaptors);
+}
+template<typename ... Iterables>
+template<size_t Index,typename Sink>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptors)
+{
+    return i_adaptors.template get<Index>().valid();
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag)
+{
+    typedef bool(*funcType)(tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
 
-        union_iterable_visitor<Iterables...> unionVisitor(iterableIndex,m_iterables);
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t Index,typename ActionTag>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
+{
+    return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const
+{
+    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
 
-        try
-        {
-            const std::pair<size_t,shift_action> currIndexes = i_actionStatePtr->visit(unionVisitor);
+    return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t Index,typename ActionTag>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
+{
+    return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_default_action(const mpl::sequence<Indexs...>&)
+{
+    typedef bool(*funcType)(iterable_adaptor<const detail::union_iterable_impl<Iterables...>>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action<Indexs> ... };
 
-            iterableIndex = currIndexes.first;
-		    initialAction = currIndexes.second;
-        }
-        catch(const iteration_exception&)
-        {
-            break;
-        }
-    }
+    return (*s_navFuncs[m_currIndex])(*this);
+}
+template<typename ... Iterables>
+template<size_t Index>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_default_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor)
+{
+    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+
+    const auto defaultAction = nth_traits::default_action();
+
+    return static_cast<bool>(defaultAction.apply(i_adaptor,[&defaultAction](auto&&) -> no_action { return {}; }));
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_default_action(const mpl::sequence<Indexs...>&) const
+{
+    typedef bool(*funcType)(iterable_adaptor<const detail::union_iterable_impl<Iterables...>>&);
+    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action<Indexs> ... };
+
+    return (*s_navFuncs[m_currIndex])(*this);
+}
+template<typename ... Iterables>
+template<size_t Index>
+bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_default_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor)
+{
+    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+
+    const auto defaultAction = nth_traits::default_action();
+
+    return static_cast<bool>(defaultAction.apply(i_adaptor,[&defaultAction](auto&&) -> no_action { return {}; }));
 }
 
-}
 }

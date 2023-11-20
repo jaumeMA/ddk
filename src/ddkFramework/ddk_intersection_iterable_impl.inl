@@ -6,129 +6,205 @@ namespace ddk
 namespace detail
 {
 
-template<size_t Index, typename ... Iterables>
-typename mpl::nth_type_of<Index, Iterables...>::type::reference intersection_navigate(tuple<Iterables...>* i_iterables, const shift_action& i_initialAction)
+template<typename ... Iterables>
+intersection_iterable_impl<Iterables...>::intersection_iterable_impl(Iterables& ... i_iterables)
+: iterable_visitor<intersection_iterable_impl<Iterables...>>(i_iterables...)
 {
-	typedef typename mpl::nth_type_of<Index, Iterables...>::type::reference curr_reference;
-	typedef typename mpl::nth_type_of<Index, Iterables...>::type::reference curr_reference;
-
-	i_iterables->template get<Index>().iterate(make_function([](curr_reference i_value){ yield<curr_reference>(i_value); }),i_initialAction);
-
-	suspend();
-
-	return crash_on_return<curr_reference>::value();
 }
-template<size_t Index, typename ... Iterables>
-typename mpl::nth_type_of<Index, Iterables...>::type::const_reference const_intersection_navigate(const tuple<Iterables...>* i_iterables, const shift_action& i_initialAction)
+template<typename ... Iterables>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference),IS_BASE_OF(shift_action,Action))
+void intersection_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-	typedef typename mpl::nth_type_of<Index, Iterables...>::type::const_reference curr_const_reference;
-	typedef typename mpl::nth_type_of<Index, Iterables...>::type::const_reference curr_const_reference;
-
-	i_iterables->template get<Index>().iterate(make_function([](curr_const_reference i_value) { yield<curr_const_reference>(i_value); }),i_initialAction);
-
-	suspend();
-
-	return crash_on_return<curr_const_reference>::value();
+    loop(std::forward<Function>(i_try),i_initialAction);
+}
+template<typename ... Iterables>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,const_reference),IS_BASE_OF(shift_action,Action))
+void intersection_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
+{
+    loop(std::forward<Function>(i_try),i_initialAction);
 }
 
-template<typename ActionAdapter,typename ... Iterables>
-intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(const ActionAdapter& i_adapter, const Iterables& ... i_iterables)
-: m_iterables(i_iterables...)
-, m_actionAdapter(i_adapter)
+}
+
+template<typename ... Iterables>
+iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::iterable_adaptor(Iterables& ... i_iterables)
+: m_adaptors(deduce_adaptor(i_iterables)...)
 {
 }
-template<typename ActionAdapter, typename ... Iterables>
-intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(const ActionAdapter& i_adapter, const tuple<Iterables...>& i_tupleIterable)
-: m_iterables(i_tupleIterable)
-, m_actionAdapter(i_adapter)
+template<typename ... Iterables>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::get_value()
 {
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return get_value(seq_type{});
 }
-template<typename ActionAdapter,typename ... Iterables>
-intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(ActionAdapter&& i_adapter,const Iterables& ... i_iterables)
-: m_iterables(i_iterables...)
-, m_actionAdapter(std::move(i_adapter))
+template<typename ... Iterables>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::get_value() const
 {
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return get_value(seq_type{});
 }
-template<typename ActionAdapter,typename ... Iterables>
-intersection_iterable_impl<ActionAdapter,Iterables...>::intersection_iterable_impl(ActionAdapter&& i_adapter,const tuple<Iterables...>& i_tupleIterable)
-: m_iterables(i_tupleIterable)
-, m_actionAdapter(std::move(i_adapter))
+template<typename ... Iterables>
+template<typename Sink>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink)
 {
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return forward_value(seq_type{},std::forward<Sink>(i_sink));
 }
-template<typename ActionAdapter, typename ... Iterables>
-const tuple<Iterables...>& intersection_iterable_impl<ActionAdapter,Iterables...>::get_iterables() const
+template<typename ... Iterables>
+template<typename Sink>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink) const
 {
-    return m_iterables;
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return forward_value(seq_type{},std::forward<Sink>(i_sink));
 }
-template<typename ActionAdapter, typename ... Iterables>
-tuple<Iterables...>& intersection_iterable_impl<ActionAdapter,Iterables...>::get_iterables()
+template<typename ... Iterables>
+bool iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::valid() const
 {
-    return m_iterables;
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return valid(seq_type{});
 }
-template<typename ActionAdapter, typename ... Iterables>
-void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const ActionTag& i_actionTag)
 {
-    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return perform_action(seq_type{},i_actionTag);
 }
-template<typename ActionAdapter, typename ... Iterables>
-void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const ActionTag& i_actionTag) const
 {
-    iterate_impl(typename mpl::make_sequence<0,s_num_iterables>::type{},i_try,i_initialAction,i_actionStatePtr);
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return perform_action(seq_type{},i_actionTag);
 }
-template<typename ActionAdapter, typename ... Iterables>
+template<typename ... Iterables>
 template<size_t ... Indexs>
-void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+typename iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::reference iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::get_value(const mpl::sequence<Indexs...>&)
 {
-    tuple<awaitable<typename Iterables::reference>...> awaitableTuple(await(make_function(intersection_navigate<Indexs,Iterables...>,&m_iterables,i_initialAction))...);
-    tuple<awaited_result<typename Iterables::reference>...> awaitableResultTuple;
-    action currAction = traits::default_action();
-
-    m_actionAdapter.template initialize<Indexs...>(i_initialAction);
-
-    do
-    {
-        if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
-        {
-            auto currActionComposition = m_actionAdapter.template resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
-
-			//update current action
-			(m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
-        }
-        else
-        {
-            break;
-        }
-    }
-    while(true);
+    return { m_adaptors.template get<Indexs>().get_value() ... };
 }
-template<typename ActionAdapter, typename ... Iterables>
+template<typename ... Iterables>
 template<size_t ... Indexs>
-void intersection_iterable_impl<ActionAdapter,Iterables...>::iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+typename iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::const_reference iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::get_value(const mpl::sequence<Indexs...>&) const
 {
-    tuple<awaitable<typename Iterables::const_reference>...> awaitableTuple(await(make_function(const_intersection_navigate<Indexs,Iterables...>,&m_iterables,i_initialAction))...);
-    tuple<awaited_result<typename Iterables::const_reference>...> awaitableResultTuple;
-    action currAction = traits::default_action();
-
-    m_actionAdapter.template initialize<Indexs...>(i_initialAction);
-
-    do
-    {
-        (m_iterables.template get<Indexs>().forward_action(currAction) && ...);
-
-        if((awaitableResultTuple.template set<Indexs>(resume(awaitableTuple.template get<Indexs>())) && ...))
-        {
-            auto currActionComposition = m_actionAdapter.template resolve<Indexs...>(eval(i_try,make_values_tuple(awaitableResultTuple.template get<Indexs>().get() ...)));
-
-            //update current action
-            (m_iterables.template get<Indexs>().forward_action(currActionComposition[Indexs]) && ...);
-        }
-        else
-        {
-            break;
-        }
-    }
-    while(true);
+    return { m_adaptors.template get<Indexs>().get_value() ... };
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename Sink>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::forward_value(const mpl::sequence<Indexs...>& ,Sink&& i_sink)
+{
+    return ddk::eval(std::forward<Sink>(i_sink),function_arguments{ m_adaptors.template get<Indexs>().get_value() ... });
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename Sink>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::forward_value(const mpl::sequence<Indexs...>& , Sink&& i_sink) const
+{
+    return ddk::eval(std::forward<Sink>(i_sink),function_arguments{ m_adaptors.template get<Indexs>().get_value() ... });
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::valid(const mpl::sequence<Indexs...>&) const
+{
+    return (m_adaptors.template get<Indexs>().valid() && ...);
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag)
+{
+    return (m_adaptors.template get<Indexs>().perform_action(i_actionTag) && ...);
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag) const
+{
+    return (m_adaptors.template get<Indexs>().perform_action(i_actionTag) && ...);
 }
 
+template<typename ... Iterables>
+iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::iterable_adaptor(const Iterables& ... i_iterables)
+: m_adaptors(deduce_adaptor(i_iterables)...)
+{
 }
+template<typename ... Iterables>
+auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::get_value() const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return get_value(seq_type{});
+}
+template<typename ... Iterables>
+template<typename Sink>
+auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::forward_value(Sink&& i_sink) const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return forward_value(std::forward<Sink>(i_sink),seq_type{});
+}
+template<typename ... Iterables>
+bool iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::valid() const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return valid(seq_type{});
+}
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const ActionTag& i_actionTag)
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return perform_action(seq_type{},i_actionTag);
+}
+template<typename ... Iterables>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+bool iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const ActionTag& i_actionTag) const
+{
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+
+    return perform_action(seq_type{},i_actionTag);
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+typename iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::const_reference iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::get_value(const mpl::sequence<Indexs...>&) const
+{
+    return { m_adaptors.template get<Indexs>().get_value() ... };
+}
+template<typename ... Iterables>
+template<size_t ... Indexs, typename Sink>
+auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::forward_value(const mpl::sequence<Indexs...>& , Sink&& i_sink) const
+{
+    return ddk::eval(std::forward<Sink>(i_sink),m_adaptors.template get<Indexs>().get_value() ...);
+}
+template<typename ... Iterables>
+template<size_t ... Indexs>
+bool iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::valid(const mpl::sequence<Indexs...>&) const
+{
+    return (m_adaptors.template get<Indexs>().valid() && ...);
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag)
+{
+    return (m_adaptors.template get<Indexs>().perform_action(i_actionTag) && ...);
+}
+template<typename ... Iterables>
+template<size_t ... Indexs,typename ActionTag>
+bool iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag) const
+{
+    return (m_adaptors.template get<Indexs>().perform_action(i_actionTag) && ...);
+}
+
 }

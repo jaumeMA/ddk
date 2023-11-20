@@ -132,6 +132,17 @@ struct aqcuire_callable_args_type<function<Return(Types...),Allocator>>
     typedef mpl::type_pack<Types...> type;
 };
 
+template<typename Return,typename ... Types,typename Allocator>
+struct _terse_callable<function<Return(function_arguments<Types...>),Allocator>>
+{
+    typedef function<Return(Types...),Allocator> type;
+};
+template<typename Return,typename ... Types,typename Allocator>
+struct _terse_callable<function<Return(Types...),Allocator>>
+{
+    typedef function<Return(Types...),Allocator> type;
+};
+
 }
 
 //template<typename Return, typename ... Types>

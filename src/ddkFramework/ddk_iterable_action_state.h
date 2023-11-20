@@ -6,12 +6,17 @@
 namespace ddk
 {
 
+enum ActionError
+{
+	InternalError,
+	StopError
+};
 typedef error<ActionError,erase_error,add_error,shift_error,stop_error> action_error;
 
-class action_result : public result<random_access_action,action_error>
+class action_result : public result<void,action_error>
 {
 public:
-	using result<random_access_action,action_error>::result;
+	using result<void,action_error>::result;
 	~action_result();
 
 	bool operator==(const result_success_t&) const;

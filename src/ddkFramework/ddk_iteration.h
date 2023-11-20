@@ -23,7 +23,7 @@ protected:
     iteration_sink(const iteration_sink&) = default;
     iteration_sink(iteration_sink&&) = default;
 
-    mutable Sink m_try;
+    Sink m_try;
 };
 
 }
@@ -37,9 +37,10 @@ class iteration : protected detail::iteration_sink<Sink>
 	typedef detail::iteration_sink<Sink> sink_type;
 
 public:
-	template<typename SSink>
-	iteration(Iterable& i_iterable, SSink&& i_try);
-	iteration(const iteration& other);
+	TEMPLATE(typename IIterable, typename SSink)
+	REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable))
+	iteration(IIterable&& i_iterable, SSink&& i_try);
+	iteration(const iteration&) = delete;
 	iteration(iteration&& other);
 	~iteration();
 
@@ -62,41 +63,9 @@ private:
 	mutable atomic_bool m_executable;
 };
 template<typename Iterable, typename Sink>
-iteration(Iterable&,Sink&&) -> iteration<Iterable,Sink>;
-
-template<typename Iterable, typename Sink>
-class co_iteration : protected mpl::static_if<std::is_reference<Sink>::value,detail::iteration_sink<Sink>,detail::iteration_sink<Sink>>::type
-{
-    template<typename IIterable, typename SSink>
-    friend iteration_result execute_co_iteration(co_iteration<IIterable,SSink> i_co_iteration);
-
-	typedef typename mpl::static_if<std::is_reference<Sink>::value,detail::iteration_sink<Sink>,detail::iteration_sink<Sink>>::type sink_type;
-
-public:
-	template<typename SSink>
-	co_iteration(Iterable& i_iterable, SSink&& i_try);
-    co_iteration(const co_iteration& other);
-    co_iteration(co_iteration&&);
-    ~co_iteration();
-
-    co_iteration* operator->();
-    const co_iteration* operator->() const;
-	operator iteration_result() &&;
-	iteration_result execute();
-    iteration_result execute() const;
-	template<typename T>
-	future<iteration_result> attach(T&& i_execContext);
-	future<iteration_result> attach(const detail::this_thread_t&);
-
-private:
-	iteration_result _execute();
-	iteration_result _execute() const;
-
-	Iterable m_iterable;
-	mutable atomic_bool m_executable;
-};
+iteration(Iterable&,const Sink&) -> iteration<Iterable,Sink>;
 template<typename Iterable,typename Sink>
-co_iteration(Iterable&,Sink&&) -> co_iteration<Iterable,Sink>;
+iteration(Iterable&,Sink&&)->iteration<Iterable,Sink>;
 
 }
 

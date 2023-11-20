@@ -11,6 +11,8 @@ class function_arguments : public tuple<Types...>
 public:
     using tuple<Types...>::tuple;
 };
+template<typename ... Types>
+function_arguments(Types&&...)->function_arguments<Types...>;
 
 template<typename Arg, typename ... Args>
 inline function_arguments<Arg,Args...> make_function_arguments(Arg&& i_arg, Args&& ... i_args);

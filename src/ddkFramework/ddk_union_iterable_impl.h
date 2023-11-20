@@ -2,73 +2,166 @@
 
 #include "ddk_tuple.h"
 #include "ddk_iterable.h"
-#include "ddk_static_visitor.h"
+#include "ddk_iterable_visitor.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename, typename ...>
-struct union_iterable_visitor_type;
-
-template<size_t ... Indexs, typename ... Iterables>
-struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : public static_visitor<std::pair<size_t,shift_action>>
+template<typename ... Iterables>
+class union_iterable_impl : public iterable_impl_interface<union_iterable_traits<typename Iterables::traits ...>>, protected iterable_visitor<union_iterable_impl<Iterables...>>
 {
-    static const size_t s_num_iterables = tuple<Iterables...>::size();
-    typedef size_t(*size_t_func)(const tuple<Iterables...>&);
+	static const size_t s_numTypes = mpl::num_types<Iterables...>;
 
 public:
-    using static_visitor<std::pair<size_t,shift_action>>::return_type;
+	typedef union_iterable_traits<typename Iterables::traits...> traits;
+	typedef typename traits::reference reference;
+	typedef typename traits::const_reference const_reference;
 
-    union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
+    union_iterable_impl(Iterables& ... i_iterables);
 
-    std::pair<size_t,shift_action> operator()(const shift_error& i_action) const;
-    template<typename T>
-    std::pair<size_t,shift_action> operator()(const T& i_action) const;
-
-private:
-    template<size_t Index>
-    static size_t iterable_size(const tuple<Iterables...>&);
-
-    size_t m_currIterableIndex;
-    const tuple<Iterables...>& m_iterables;
-    static const size_t_func s_size_funcs[s_num_iterables];
+    TEMPLATE(typename Function,typename Action)
+    REQUIRES(IS_CALLABLE_BY(Function,reference))
+    void iterate_impl(Function&& i_try,Action&& i_initialAction);
+    TEMPLATE(typename Function,typename Action)
+    REQUIRES(IS_CALLABLE_BY(Function,const_reference))
+    void iterate_impl(Function&& i_try,Action&& i_initialAction) const;
 };
-
 template<typename ... Iterables>
-using union_iterable_visitor = union_iterable_visitor_type<typename mpl::make_sequence<0,mpl::get_num_types<Iterables...>()>::type,Iterables...>;
-
-template<typename ... Iterables>
-class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>>
-{
-    static const size_t s_num_iterables = tuple<Iterables...>::size();
-    typedef iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>> base_t;
-
-public:
-    using typename base_t::reference;
-    using typename base_t::const_reference;
-    using typename base_t::action;
-
-    union_iterable_impl(const Iterables& ... i_iterables);
-    union_iterable_impl(const tuple<Iterables...>& i_tupleIterable);
-
-    const tuple<Iterables...>& get_iterables() const;
-    tuple<Iterables...>& get_iterables();
-
-private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-
-    template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr);
-    template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const;
-
-    tuple<Iterables...> m_iterables;
-};
+union_iterable_impl(Iterables& ...) -> union_iterable_impl<Iterables...>;
 
 }
+
+template<typename ... Iterables>
+class iterable_adaptor<detail::union_iterable_impl<Iterables...>>
+{
+	static const size_t s_numTypes = mpl::get_num_types<Iterables...>();
+
+public:
+	typedef detail::union_iterable_traits<typename Iterables::traits...> traits;
+	typedef typename traits::value_type value_type;
+	typedef typename traits::reference reference;
+	typedef typename traits::const_reference const_reference;
+	typedef typename traits::tags_t tags_t;
+	typedef long long difference_type;
+
+	iterable_adaptor(Iterables& ... i_iterable);
+	inline auto get_value();
+	inline auto get_value() const;
+	template<typename Sink>
+	inline auto forward_value(Sink&& i_sink);
+	template<typename Sink>
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool valid() const noexcept;
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+	bool perform_action(ActionTag&& i_actionTag);
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+	bool perform_action(ActionTag&& i_actionTag) const;
+
+private:
+	template<size_t ... Indexs>
+	inline auto get_value(const mpl::sequence<Indexs...>&);
+	template<size_t Index>
+	static inline reference _get_value(tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<size_t ... Indexs>
+	inline auto get_value(const mpl::sequence<Indexs...>&) const;
+	template<size_t Index>
+	static inline const_reference _get_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<size_t ... Indexs,typename Sink>
+	inline auto forward_value(const mpl::sequence<Indexs...>&,Sink&& i_sink);
+	template<size_t Index, typename Sink>
+	static inline auto _forward_value(tuple<deduced_adaptor<Iterables>...>& i_adaptor, Sink&& i_sink);
+	template<size_t ... Indexs,typename Sink>
+	inline auto forward_value(const mpl::sequence<Indexs...>& ,Sink&& i_sink) const;
+	template<size_t Index,typename Sink>
+	static inline auto _forward_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,Sink&& i_sink);
+	template<size_t ... Indexs>
+	inline bool valid(const mpl::sequence<Indexs...>&) const;
+	template<size_t Index>
+	static inline bool _valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<size_t ... Indexs,typename ActionTag>
+	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
+	template<size_t Index,typename ActionTag>
+	static bool _perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t ... Indexs,typename ActionTag>
+	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
+	template<size_t Index,typename ActionTag>
+	static bool _perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t ... Indexs>
+	bool perform_default_action(const mpl::sequence<Indexs...>&);
+	template<size_t Index>
+	static bool _perform_default_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<size_t ... Indexs>
+	bool perform_default_action(const mpl::sequence<Indexs...>&) const;
+	template<size_t Index>
+	static bool _perform_default_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+
+	tuple<deduced_adaptor<Iterables>...> m_adaptors;
+	mutable size_t m_currIndex = 0;
+};
+
+template<typename ... Iterables>
+class iterable_adaptor<const detail::union_iterable_impl<Iterables...>>
+{
+	static const size_t s_numTypes = mpl::get_num_types<Iterables...>();
+
+public:
+	typedef detail::union_iterable_traits<const typename Iterables::traits...> traits;
+	typedef typename traits::value_type value_type;
+	typedef typename traits::reference reference;
+	typedef typename traits::const_reference const_reference;
+	typedef typename traits::tags_t tags_t;
+	typedef long long difference_type;
+
+	iterable_adaptor(const Iterables& ... i_iterable);
+	auto get_value() const;
+	template<typename Sink>
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool valid() const noexcept;
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+	bool perform_action(ActionTag&& i_actionTag);
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+	bool perform_action(ActionTag&& i_actionTag) const;
+
+private:
+	template<size_t ... Indexs>
+	inline auto get_value(const mpl::sequence<Indexs...>&) const;
+	template<size_t Index>
+	static inline const_reference _get_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<typename Sink,size_t ... Indexs>
+	inline auto forward_value(Sink&& i_sink,const mpl::sequence<Indexs...>&) const;
+	template<size_t Index,typename Sink>
+	static inline auto _forward_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,Sink&& i_sink);
+	template<typename Sink,size_t ... Indexs>
+	inline bool valid(const mpl::sequence<Indexs...>&) const;
+	template<size_t Index,typename Sink>
+	static inline bool _valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<size_t ... Indexs,typename ActionTag>
+	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
+	template<size_t Index,typename ActionTag>
+	static bool _perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t ... Indexs,typename ActionTag>
+	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
+	template<size_t Index,typename ActionTag>
+	static bool _perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t ... Indexs>
+	bool perform_default_action(const mpl::sequence<Indexs...>&);
+	template<size_t Index>
+	static bool _perform_default_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+	template<size_t ... Indexs>
+	bool perform_default_action(const mpl::sequence<Indexs...>&) const;
+	template<size_t Index>
+	static bool _perform_default_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
+
+	tuple<deduced_adaptor<Iterables>...> m_adaptors;
+	mutable size_t m_currIndex = 0;
+};
+
 }
 
 #include "ddk_union_iterable_impl.inl"

@@ -1,6 +1,4 @@
 
-#include "ddk_iterable_visitor.h"
-
 namespace ddk
 {
 namespace detail
@@ -8,18 +6,22 @@ namespace detail
 
 template<typename Traits, typename Iterable>
 iterable_impl<Traits,Iterable>::iterable_impl(Iterable& i_iterable)
-: m_iterable(i_iterable)
+: iterable_visitor<Iterable>(i_iterable)
 {
 }
-template<typename Traits, typename Iterable>
-void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename Traits,typename Iterable>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference))
+void iterable_impl<Traits,Iterable>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-	visit_iterator(m_iterable,i_try,action{i_initialAction},i_actionStatePtr);
+	loop(std::forward<Function>(i_try),i_initialAction);
 }
-template<typename Traits, typename Iterable>
-void iterable_impl<Traits,Iterable>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename Traits,typename Iterable>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference))
+void iterable_impl<Traits,Iterable>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
-	visit_iterator(m_iterable,i_try,action{i_initialAction},i_actionStatePtr);
+	loop(std::forward<Function>(i_try),i_initialAction);
 }
 
 }

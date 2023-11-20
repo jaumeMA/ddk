@@ -1,6 +1,7 @@
 
 #include "ddk_iterable_exceptions.h"
 #include "ddk_iterable_interface_utils.h"
+#include "ddk_iterable_action_concepts.h"
 
 namespace ddk
 {
@@ -18,25 +19,87 @@ Function iterable_filter<Function>::get_filter() const
 	return m_filter;
 }
 
-template<typename Traits, typename Function>
-filtered_iterable_impl<Traits,Function>::filtered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const Function& i_filter)
-: m_iterableRef(i_iterableRef)
-, m_filter(i_filter)
+template<typename Iterable, typename Filter>
+TEMPLATE(typename IIterable,typename FFilter)
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Filter,FFilter))
+filtered_iterable_impl<Iterable,Filter>::filtered_iterable_impl(IIterable&& i_iterable,FFilter&& i_filter)
+: m_iterable(std::forward<IIterable>(i_iterable))
+, m_filter(std::forward<FFilter>(i_filter))
 {
 }
-template<typename Traits, typename Function>
-void filtered_iterable_impl<Traits,Function>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename Iterable,typename Filter>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference))
+void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-    typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
-    
-    m_iterableRef->iterate_impl(make_function([i_try,this,actionResult=action(i_initialAction)](reference i_value) mutable -> action { if(call_iterable_payload(range_seq{},m_filter,i_value)) actionResult = eval(i_try,i_value); if(actionResult.template is_base_of<shift_action>()) actionResult.template get_as<shift_action>().set_step_by_step(true); return actionResult; }),i_initialAction,i_actionStatePtr);
+    typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
+
+    step_by_step_action currAction(i_initialAction);
+
+    m_iterable.iterate_impl([&](reference i_value) mutable -> step_by_step_action<return_type>
+    {
+        if (ddk::terse_eval(m_filter,std::forward<reference>(i_value)))
+        {
+            if constexpr (IS_FILTERED_ACTION_COND(Action))
+            {
+                //allow later on filters to be applied
+                return ddk::eval(std::forward<Function>(i_try),i_value);
+            }
+            else
+            {
+                //otherwise, send whenever ready
+                if (currAction.ready())
+                {
+                    return ddk::eval(std::forward<Function>(i_try),i_value);
+                }
+                else
+                {
+                    return --currAction;
+                }
+            }
+        }
+        else
+        {
+            return currAction;
+        }
+    },currAction);
 }
-template<typename Traits, typename Function>
-void filtered_iterable_impl<Traits,Function>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename Iterable,typename Filter>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,const_reference))
+void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
-    typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
-    
-    m_iterableRef->iterate_impl(make_function([i_try,this,actionResult=action(i_initialAction)](const_reference i_value) mutable -> action { if(call_iterable_payload(range_seq{},m_filter,i_value)) actionResult = eval(i_try, i_value); if(actionResult.template is_base_of<shift_action>()) actionResult.template get_as<shift_action>().set_step_by_step(true); return actionResult; }),i_initialAction,i_actionStatePtr);
+    typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
+
+    step_by_step_action currAction(i_initialAction);
+
+    m_iterable.iterate_impl([&](const_reference i_value) mutable -> step_by_step_action<return_type>
+    {
+        if (ddk::terse_eval(m_filter,std::forward<const_reference>(i_value)))
+        {
+            if constexpr (IS_FILTERED_ACTION_COND(Action))
+            {
+                //allow later on filters to be applied
+                return ddk::eval(std::forward<Function>(i_try),i_value);
+            }
+            else
+            {
+                //otherwise, send whenever ready
+                if (currAction.ready())
+                {
+                    return ddk::eval(std::forward<Function>(i_try),i_value);
+                }
+                else
+                {
+                    return --currAction;
+                }
+            }
+        }
+        else
+        {
+            return currAction;
+        }
+    },currAction);
 }
 
 }

@@ -20,11 +20,11 @@
 #define IS_NOT_CALLABLE_COND(_TYPE, ...) \
 	ddk::mpl::is_valid_functor<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value==false
 
-#define IS_CALLABLE_BY(_TYPE, ...) \
-	typename std::enable_if<IS_CALLABLE_BY_COND(_TYPE,##__VA_ARGS__)>::type
-
 #define IS_CALLABLE_BY_COND(_TYPE, ...) \
 	ddk::concepts::is_callable_by<typename std::remove_reference<_TYPE>::type,##__VA_ARGS__>::value
+
+#define IS_CALLABLE_BY(_TYPE, ...) \
+	typename std::enable_if<IS_CALLABLE_BY_COND(_TYPE,##__VA_ARGS__)>::type
 
 #define IS_RETURN_TYPE_CONVERTIBLE_TO(_TYPE,_RETURN) \
 	typename std::enable_if<std::is_convertible<typename ddk::mpl::aqcuire_callable_return_type<_TYPE>::type,_RETURN>::value>::type
@@ -37,16 +37,28 @@ namespace ddk
 namespace concepts
 {
 
-template<typename T, typename ... Args>
+//template<typename T, typename ... Args>
+//struct is_callable_by
+//{
+//private:
+//	template<typename TT>
+//	static std::true_type resolve(const TT&, const decltype(std::declval<TT>()(std::declval<Args>()...))*);
+//	static std::false_type resolve(...);
+//
+//public:
+//	static const bool value = decltype(resolve(std::declval<T>(),nullptr))::value;
+//};
+
+template<typename T,typename ... Args>
 struct is_callable_by
 {
 private:
-	template<typename ... AArgs>
-	static std::true_type resolve(const decltype(std::declval<T>()(std::forward<AArgs>(std::declval<AArgs>())...))*, AArgs&& ... i_args);
+	template<typename TT>
+	static decltype(std::declval<TT>()(std::declval<Args>()...)) resolve(const TT&);
 	static std::false_type resolve(...);
 
 public:
-	static const bool value = decltype(resolve(nullptr,std::declval<Args>()...))::value;
+	static const bool value = !std::is_same<decltype(resolve(std::declval<T>())),std::false_type>::value;
 };
 
 }

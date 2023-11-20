@@ -123,11 +123,11 @@
 #define IS_MOVE_CONSTRUCTIBLE(_TYPE) \
 	typename std::enable_if<IS_MOVE_CONSTRUCTIBLE_COND(_TYPE)>::type
 
-#define IS_CONVERTIBLE_COND(_TYPE,...) \
-	std::is_convertible_v<_TYPE,__VA_ARGS__>
+#define IS_CONVERTIBLE_COND(_FROM,_TO) \
+	std::is_convertible_v<_FROM,_TO>
 
-#define IS_CONVERTIBLE(_TYPE,...) \
-	typename std::enable_if<IS_CONVERTIBLE_COND(_TYPE,__VA_ARGS__)>::type
+#define IS_CONVERTIBLE(_FROM,_TO) \
+	typename std::enable_if<IS_CONVERTIBLE_COND(_FROM,_TO)>::type
 
 #define IS_ASSIGNABLE_COND(_TYPE,_ARG) \
 	std::is_assignable_v<_TYPE,_ARG>

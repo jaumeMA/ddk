@@ -10,247 +10,33 @@ namespace ddk
 namespace detail
 {
 
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-template<typename FFunction>
-action_visitor_base<Iterable,FinalAction,Function,Adaptor>::action_visitor_base(Iterable& i_iterable, FFunction&& i_sink, action_state_lent_ptr i_actionStatePtr)
-: m_adaptor(i_iterable)
-, m_actionStatePtr(i_actionStatePtr)
-, m_currAction(go_no_place)
-, m_sink(std::forward<FFunction>(i_sink))
+template<typename Iterable>
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(adaptor_t,Args...))
+iterable_visitor<Iterable>::iterable_visitor(Args&& ... i_args)
+: m_adaptor(std::forward<Args>(i_args)...)
 {
 }
-template<typename Iterable,typename FinalAction,typename Function,typename Adaptor>
-bool action_visitor_base<Iterable,FinalAction,Function,Adaptor>::valid() const noexcept
+template<typename Iterable>
+template<typename Function,typename Action>
+void iterable_visitor<Iterable>::loop(Function&& i_sink, const Action& i_initialAction) const
 {
-	return m_adaptor.valid();
-}
-template<typename Iterable,typename FinalAction,typename Function,typename Adaptor>
-template<typename Visitor, typename Action>
-void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::loop(Action&& i_initialAction)
-{
-	Visitor& thisVisitor = static_cast<Visitor&>(*this);
+	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>(),std::declval<Function>())) return_type;
 
-	//first entry
-	if(this->m_adaptor.init(thisVisitor,std::forward<Action>(i_initialAction)))
+	Action currAction = i_initialAction;
+
+	if constexpr (mpl::is_same_type<Action,return_type>::value)
 	{
-		//iterate
-		while(std::move(m_currAction).visit(thisVisitor));
-	}
-}
-template<typename Iterable,typename FinalAction,typename Function,typename Adaptor>
-template<typename T>
-void action_visitor_base<Iterable,FinalAction,Function,Adaptor>::apply(T&& i_value) const
-{
-	m_currAction = eval(m_sink,std::forward<T>(i_value));
-}
-
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,const_input_action,Adaptor>::operator()(const go_forward_action& i_action)
-{
-	const difference_type pendingShift = this->m_adaptor.forward_next_value_in(*this);
-
-	if(pendingShift == 0)
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(go_to_place(1,1));
-		}
-
-		return true;
+		while (currAction = currAction.apply(m_adaptor,std::forward<Function>(i_sink)));
 	}
 	else
 	{
-		if(this->m_actionStatePtr)
+		if (auto newAction = currAction.apply(m_adaptor,std::forward<Function>(i_sink)))
 		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Next error",pendingShift)));
+			loop(std::forward<Function>(i_sink),newAction);
 		}
-
-		return false;
-	}
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(const stop_action& i_action)
-{
-	if(this->m_actionStatePtr)
-	{
-		this->m_actionStatePtr->forward_result(i_action);
-	}
-
-	return false;
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(const erase_action& i_action)
-{
-    if constexpr (std::is_const<Iterable>::value == false)
-    {
-		if(this->m_adaptor.forward_erase_value_in(*this))
-		{
-			if(this->m_actionStatePtr)
-			{
-				this->m_actionStatePtr->forward_result(i_action);
-			}
-		}
-		else
-		{
-			if(this->m_actionStatePtr)
-			{
-				this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::RemovalError,erase_error(EraseActionError::NonExistingValue)));
-			}
-		}
-	}
-    else
-    {
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::RemovalError,erase_error(EraseActionError::ErasingFromConstantIterable)));
-		}
-    }
-
-	return true;
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,input_action,Adaptor>::operator()(add_action i_action)
-{
-    if constexpr (std::is_const<Iterable>::value == false)
-    {
-		typedef typename Iterable::value_type value_type;
-
-		if(this->m_adaptor.forward_add_value_in(std::move(i_action).template extract<value_type>(),*this))
-		{
-			if(this->m_actionStatePtr)
-			{
-				this->m_actionStatePtr->forward_result(i_action);
-			}
-		}
-		else
-		{
-			if(this->m_actionStatePtr)
-			{
-				this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::AdditionError,add_error(AddActionError::NonConvertibleType)));
-			}
-		}
-    }
-    else
-    {
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::AdditionError,add_error(AddActionError::AddingToConstantIterable)));
-		}
-    }
-
-	return true;
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,const_bidirectional_action,Adaptor>::operator()(const go_backward_action& i_action)
-{
-	const difference_type pendingShift = this->m_adaptor.forward_prev_value_in(*this);
-
-	if(pendingShift == 0)
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(go_to_place(-1,-1));
-		}
-
-		return true;
-	}
-	else
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Prev error",pendingShift)));
-		}
-
-		return false;
-	}
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,bidirectional_action,Adaptor>::operator()(const go_backward_action& i_action)
-{
-	const difference_type pendingShift = this->m_adaptor.forward_prev_value_in(*this);
-
-	if(pendingShift == 0)
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(go_to_place(-1,-1));
-		}
-
-		return true;
-	}
-	else
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Prev error",pendingShift)));
-		}
-
-		return false;
-	}
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,const_random_access_action,Adaptor>::operator()(const shift_action& i_action)
-{
-	const difference_type currShift = i_action.shifting();
-	const difference_type pendingShift = this->m_adaptor.forward_shift_value_in(currShift,*this);
-
-	if(pendingShift == 0)
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(go_to_place(currShift,currShift));
-		}
-
-		return true;
-	}
-	else
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Shift error",pendingShift)));
-		}
-
-		return false;
-	}
-}
-template<typename Iterable,typename FinalAction, typename Function,typename Adaptor>
-bool action_visitor<Iterable,FinalAction,Function,random_access_action,Adaptor>::operator()(const shift_action& i_action)
-{
-	const difference_type currShift = i_action.shifting();
-	const difference_type pendingShift = this->m_adaptor.forward_shift_value_in(currShift,*this);
-
-	if(pendingShift == 0)
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(go_to_place(currShift,currShift));
-		}
-
-		return true;
-	}
-	else
-	{
-		if(this->m_actionStatePtr)
-		{
-			this->m_actionStatePtr->forward_result(make_error<action_result>(ActionError::ShiftError,shift_error(ShiftError::Error,"Shift error",pendingShift)));
-		}
-
-		return false;
 	}
 }
 
 }
-
-template<typename Iterable, typename Function, typename Action>
-void visit_iterator(Iterable& i_iterable, Function&& i_sink, const Action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
-{
-	typedef detail::action_visitor<Iterable,Action,Function,Action,iterable_adaptor<Iterable>> action_visitor_t;
-	action_visitor_t actionVisitor(i_iterable,std::forward<Function>(i_sink),i_actionStatePtr);
-
-	if(actionVisitor.valid())
-	{
-		actionVisitor.template loop<action_visitor_t>(i_initialAction.template get_as<shift_action>());
-	}
-}
-
 }

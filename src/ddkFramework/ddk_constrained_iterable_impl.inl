@@ -15,21 +15,32 @@ Function iterable_constrain<Function>::get_constrain() const
 	return m_constrain;
 }
 
-template<typename Traits,typename Function>
-constrained_iterable_impl<Traits,Function>::constrained_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef,const Function& i_actionResolver)
-: m_iterableRef(i_iterableRef)
-, m_constrain(i_actionResolver)
+template<typename Iterable,typename Constrain>
+TEMPLATE(typename IIterable,typename CConstrain)
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Constrain,CConstrain))
+constrained_iterable_impl<Iterable,Constrain>::constrained_iterable_impl(IIterable&& i_iterable,CConstrain&& i_constrain)
+: m_iterable(std::forward<IIterable>(i_iterable))
+, m_constrain(std::forward<CConstrain>(i_constrain))
 {
 }
-template<typename Traits,typename Function>
-void constrained_iterable_impl<Traits,Function>::iterate_impl(const function<action(reference)>& i_try,const shift_action& i_initialAction,action_state_lent_ptr i_actionStatePtr)
+template<typename Iterable,typename Constrain>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference))
+void constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { if(ddk::eval(m_constrain,i_value) == false) { stop_iteration(); } return ddk::eval(i_try,i_value); }),i_initialAction,i_actionStatePtr);
+    typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
+
+    m_iterable.iterate_impl([&](reference i_value) -> return_type { if (ddk::eval(m_constrain,i_value)) { return ddk::eval(i_try,i_value); } else { return return_type{ stop_iteration }; }},i_initialAction);
 }
-template<typename Traits,typename Function>
-void constrained_iterable_impl<Traits,Function>::iterate_impl(const function<action(const_reference)>& i_try,const shift_action& i_initialAction,action_state_lent_ptr i_actionStatePtr) const
+template<typename Iterable,typename Constrain>
+TEMPLATE(typename Function,typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,const_reference))
+void constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { if(ddk::eval(m_constrain,i_value) == false) { stop_iteration(); } return ddk::eval(i_try,i_value); }),i_initialAction,i_actionStatePtr);
+    typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
+
+    m_iterable.iterate_impl([&](reference i_value) -> return_type { if (ddk::eval(m_constrain,i_value)) { return ddk::eval(i_try,i_value); } else { return return_type{ stop_iteration }; }},i_initialAction);
+
 }
 
 }

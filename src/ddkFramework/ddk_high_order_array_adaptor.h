@@ -3,6 +3,7 @@
 #include "ddk_high_order_array.h"
 #include "ddk_optional.h"
 #include "ddk_iterable_action_defs.h"
+#include "ddk_iterable_type.h"
 #include <utility>
 
 namespace ddk
@@ -16,22 +17,20 @@ public:
 	typedef typename high_order_array<T,ranks...>::reference reference;
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 	typedef long long difference_type;
+	typedef detail::const_random_access_iterable_action_tag tags_t;
 
 	iterable_adaptor(high_order_array<T,ranks...>& i_iterable);
+	auto get_value();
+	auto get_value() const;
 	template<typename Sink>
-	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
+	inline auto forward_value(Sink&& i_sink);
 	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const forward_action_tag&) const;
+	inline bool perform_action(const backward_action_tag&) const;
+	inline bool perform_action(const displace_action_tag&) const;
 	inline bool valid() const noexcept;
 
 private:
@@ -50,22 +49,17 @@ public:
 	typedef typename high_order_array<T,ranks...>::const_reference reference;
 	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
 	typedef long long difference_type;
+	typedef detail::const_random_access_iterable_action_tag tags_t;
 
 	iterable_adaptor(const high_order_array<T,ranks...>& i_iterable);
+	const_reference get_value() const;
 	template<typename Sink>
-	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const forward_action_tag&) const;
+	inline bool perform_action(const backward_action_tag&) const;
+	inline bool perform_action(const displace_action_tag&) const;
 	inline bool valid() const noexcept;
 
 private:

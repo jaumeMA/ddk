@@ -8,14 +8,48 @@ iterable_adaptor<high_order_array<T,ranks...>>::iterable_adaptor(high_order_arra
 {
 }
 template<typename T,size_t ... ranks>
-template<typename Sink>
-bool iterable_adaptor<high_order_array<T,ranks...>>::init(Sink&& i_sink, const ddk::shift_action& i_initialAction)
+auto iterable_adaptor<high_order_array<T,ranks...>>::get_value()
 {
-	m_currIndex = i_initialAction.shifting();
+	return m_iterable.at(m_currIndex);
+}
+template<typename T,size_t ... ranks>
+auto iterable_adaptor<high_order_array<T,ranks...>>::get_value() const
+{
+	return m_iterable.at(m_currIndex);
+}
+template<typename T,size_t ... ranks>
+template<typename Sink>
+auto iterable_adaptor<high_order_array<T,ranks...>>::forward_value(Sink&& i_sink)
+{
+	return ddk::eval(std::forward<Sink>(i_sink),m_iterable.at(m_currIndex));
+}
+template<typename T,size_t ... ranks>
+template<typename Sink>
+auto iterable_adaptor<high_order_array<T,ranks...>>::forward_value(Sink&& i_sink) const
+{
+	return ddk::eval(std::forward<Sink>(i_sink),m_iterable.at(m_currIndex));
+}
+template<typename T,size_t ... ranks>
+bool iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const begin_action_tag&) const
+{
+	m_currIndex = 0;
 
-	if(valid())
+	return m_currentValue < high_order_array<T,ranks ...>::s_totalSize;
+
+}
+template<typename T,size_t ... ranks>
+bool iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
+{
+	m_currIndex = high_order_array<T,ranks ...>::s_totalSize - 1;
+
+	return m_currIndex > 0;
+}
+template<typename T,size_t ... ranks>
+bool iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const forward_action_tag&) const
+{
+	if (m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink.apply(m_iterable.at(m_currIndex));
+		++m_currIndex;
 
 		return true;
 	}
@@ -25,97 +59,33 @@ bool iterable_adaptor<high_order_array<T,ranks...>>::init(Sink&& i_sink, const d
 	}
 }
 template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterable_adaptor<high_order_array<T,ranks...>>::forward_next_value_in(Sink&& i_sink)
+bool iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const backward_action_tag&) const
 {
-	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
+	if (m_currIndex > 0)
 	{
-		i_sink.apply(m_iterable.at(++m_currIndex));
+		--m_currIndex;
 
-		return 0;
+		return true;
 	}
 	else
 	{
-		return 1;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterable_adaptor<high_order_array<T,ranks...>>::forward_next_value_in(Sink&& i_sink) const
+bool iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const displace_action_tag& i_action) const
 {
-	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
-	{
-		i_sink.apply(m_iterable.at(++m_currIndex));
+	const difference_type newIndex = m_currIndex + i_action.displacement();
 
-		return 0;
+	if (newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
+	{
+		m_currIndex = newIndex;
+
+		return true;
 	}
 	else
 	{
-		return 1;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterable_adaptor<high_order_array<T,ranks...>>::forward_prev_value_in(Sink&& i_sink)
-{
-	if(m_currIndex > 0)
-	{
-		i_sink.apply(m_iterable.at(--m_currIndex));
-
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterable_adaptor<high_order_array<T,ranks...>>::forward_prev_value_in(Sink&& i_sink) const
-{
-	if(m_currIndex > 0)
-	{
-		i_sink.apply(m_iterable.at(--m_currIndex));
-
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterable_adaptor<high_order_array<T,ranks...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink)
-{
-	const difference_type newIndex = m_currIndex + i_shift;
-
-	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
-	{
-		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
-
-		return 0;
-	}
-	else
-	{
-		return (newIndex > 0) ? newIndex - (high_order_array<T,ranks ...>::s_totalSize - 1) : newIndex;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<high_order_array<T,ranks...>>::difference_type iterable_adaptor<high_order_array<T,ranks...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const
-{
-	const difference_type newIndex = m_currIndex + i_shift;
-
-	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
-	{
-		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
-
-		return 0;
-	}
-	else
-	{
-		return (newIndex > 0) ? newIndex - (high_order_array<T,ranks ...>::s_totalSize - 1) : newIndex;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
@@ -131,13 +101,23 @@ iterable_adaptor<const high_order_array<T,ranks...>>::iterable_adaptor(const hig
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-bool iterable_adaptor<const high_order_array<T,ranks...>>::init(Sink&& i_sink,const ddk::shift_action& i_initialAction)
+auto iterable_adaptor<const high_order_array<T,ranks...>>::forward_value(Sink&& i_sink) const
 {
-	m_currIndex = i_initialAction.shifting();
+	return ddk::eval(std::forward<Sink>(i_sink),m_iterable.at(m_currIndex));
+}
+template<typename T,size_t ... ranks>
+bool iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
+{
+	m_currIndex = high_order_array<T,ranks ...>::s_totalSize - 1;
 
-	if(valid())
+	return m_currIndex > 0;
+}
+template<typename T,size_t ... ranks>
+bool iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const forward_action_tag&) const
+{
+	if (m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
 	{
-		i_sink.apply(m_iterable.at(m_currIndex));
+		++m_currIndex;
 
 		return true;
 	}
@@ -147,97 +127,33 @@ bool iterable_adaptor<const high_order_array<T,ranks...>>::init(Sink&& i_sink,co
 	}
 }
 template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type iterable_adaptor<const high_order_array<T,ranks...>>::forward_next_value_in(Sink&& i_sink)
+bool iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const backward_action_tag&) const
 {
-	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
+	if (m_currIndex > 0)
 	{
-		i_sink.apply(m_iterable.at(++m_currIndex));
+		--m_currIndex;
 
-		return 0;
+		return true;
 	}
 	else
 	{
-		return 1;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type iterable_adaptor<const high_order_array<T,ranks...>>::forward_next_value_in(Sink&& i_sink) const
+bool iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const displace_action_tag& i_action) const
 {
-	if(m_currIndex < high_order_array<T,ranks ...>::s_totalSize)
-	{
-		i_sink.apply(m_iterable.at(++m_currIndex));
+	const difference_type newIndex = m_currIndex + i_action.displacement();
 
-		return 0;
+	if (newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
+	{
+		m_currIndex = newIndex;
+
+		return true;
 	}
 	else
 	{
-		return 1;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type iterable_adaptor<const high_order_array<T,ranks...>>::forward_prev_value_in(Sink&& i_sink)
-{
-	if(m_currIndex > 0)
-	{
-		i_sink.apply(m_iterable.at(--m_currIndex));
-
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type iterable_adaptor<const high_order_array<T,ranks...>>::forward_prev_value_in(Sink&& i_sink) const
-{
-	if(m_currIndex > 0)
-	{
-		i_sink.apply(m_iterable.at(--m_currIndex));
-
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type iterable_adaptor<const high_order_array<T,ranks...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink)
-{
-	const difference_type newIndex = m_currIndex + i_shift;
-
-	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
-	{
-		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
-
-		return 0;
-	}
-	else
-	{
-		return (newIndex > 0) ? newIndex - (high_order_array<T,ranks ...>::s_totalSize - 1) : newIndex;
-	}
-}
-template<typename T,size_t ... ranks>
-template<typename Sink>
-typename iterable_adaptor<const high_order_array<T,ranks...>>::difference_type iterable_adaptor<const high_order_array<T,ranks...>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const
-{
-	const difference_type newIndex = m_currIndex + i_shift;
-
-	if(newIndex >= 0 && newIndex < high_order_array<T,ranks ...>::s_totalSize)
-	{
-		i_sink.apply(m_iterable.at(m_currIndex = newIndex));
-
-		return 0;
-	}
-	else
-	{
-		return (newIndex > 0) ? newIndex - (high_order_array<T,ranks ...>::s_totalSize - 1) : newIndex;
+		return false;
 	}
 }
 template<typename T,size_t ... ranks>

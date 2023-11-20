@@ -61,29 +61,6 @@ private:
     int _code;
 };
 
-SCOPED_ENUM_DECL(ActionError,
-                 RemovalError,
-                 AdditionError,
-                 ShiftError,
-                 StopError);
-
-typedef variant<go_forward_action,erase_action,add_action> input_action;
-typedef variant<go_forward_action,erase_action,add_action> output_action;
-typedef variant<go_forward_action,erase_action,add_action> forward_action;
-typedef variant<go_forward_action,go_backward_action,erase_action,add_action> bidirectional_action;
-typedef variant<go_forward_action,go_backward_action,shift_action,erase_action,add_action> random_access_action;
-
-typedef variant<go_forward_action> const_input_action;
-typedef variant<go_forward_action> const_output_action;
-typedef variant<go_forward_action> const_forward_action;
-typedef variant<go_forward_action,go_backward_action> const_bidirectional_action;
-typedef variant<shift_action> const_random_access_action;
-
-bool operator==(const base_action& i_lhs,const base_action& i_rhs);
-bool operator!=(const base_action& i_lhs,const base_action& i_rhs);
-bool operator==(const shift_action& i_lhs,const shift_action& i_rhs);
-bool operator!=(const shift_action& i_lhs,const shift_action& i_rhs);
-
 template<typename T,typename TT>
 inline T action_conversion(const TT& i_action)
 {
@@ -94,11 +71,9 @@ inline T action_conversion(const TT& i_action)
 }
 
 const extern stop_action stop_iteration;
-const extern erase_action erase_place;
-const extern add_action add_place;
-const extern go_forward_action go_next_place;
-const extern go_backward_action go_prev_place;
-const extern shift_action go_to_place;
-const extern shift_action go_no_place;
+const extern go_to_begin_action go_to_begin;
+const extern go_to_end_action go_to_end;
+const extern forward_action go_next_place;
+const extern backward_action go_prev_place;
 
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_action.h"
-#include "ddk_tuple_values.h"
+#include "ddk_function_arguments.h"
 #include <type_traits>
 
 namespace ddk
@@ -9,210 +9,79 @@ namespace ddk
 namespace detail
 {
 
-template<typename>
-struct base_iterable_traits;
-
-template<typename T>
-struct base_iterable_traits
+template<typename Value, typename Reference, typename ConstReference, typename ActionTags>
+struct iterable_by_type_traits
 {
-    typedef T base_type;
-    typedef typename std::remove_reference<T>::type value_type;
-    typedef T& reference;
-    typedef typename std::add_const<T>::type& const_reference;
-    typedef T* pointer;
-    typedef typename std::add_const<T>::type* const_pointer;
+    typedef Value value_type;
+    typedef Reference reference;
+    typedef ConstReference const_reference;
+    typedef ActionTags tags_t;
+    typedef long long difference_type;
+};
 
-    static inline pointer get_address(reference i_ref)
+template<typename T, typename ActionTags>
+using iterable_by_type_adaptor = iterable_by_type_traits<T,T&,const T&,ActionTags>;
+
+template<typename T,typename ActionTags>
+using iterable_by_value_adaptor = iterable_by_type_traits<T,T,T,ActionTags>;
+
+template<typename Adaptor>
+using iterable_adaptor_traits = iterable_by_type_traits<typename Adaptor::value_type,typename Adaptor::reference,typename Adaptor::const_reference,typename Adaptor::tags_t>;
+
+template<typename Traits>
+struct iterable_traits
+{
+    typedef typename Traits::value_type value_type;
+    typedef typename Traits::reference reference;
+    typedef typename Traits::const_reference const_reference;
+    typedef typename Traits::tags_t tags_t;
+
+    template<typename TTraits>
+	using as = iterable_traits<TTraits>;
+
+    static go_to_begin_action default_action()
     {
-        return &i_ref;
-    }
-    static inline reference get_value(pointer i_ptr)
-    {
-        return *i_ptr;
+        return {};
     }
 };
 
-template<typename ... Types>
-struct base_iterable_traits<values_tuple<Types...>>
+template<typename Trait, typename ... Traits>
+struct union_iterable_traits_resolver
 {
-    typedef values_tuple<Types...> base_type;
-    typedef values_tuple<typename std::remove_reference<Types>::type ...> value_type;
-    typedef values_tuple<Types& ...> reference;
-    typedef values_tuple<typename std::add_const<Types>::type& ...> const_reference;
-    typedef values_tuple<Types* ...> pointer;
-    typedef values_tuple<typename std::add_const<Types>::type* ...> const_pointer;
+private:
+    struct union_iterable_adaptor
+    {
+        typedef typename std::common_type<typename Trait::value_type,typename Traits::value_type...>::type value_type;
+        typedef typename std::common_type<typename Trait::reference,typename Traits::reference...>::type reference;
+        typedef typename std::common_type<typename Trait::const_reference,typename Traits::const_reference...>::type const_reference;
+        typedef mpl::type_pack_intersection<typename Trait::tags_t,typename Traits::tags_t...> tags_t;
+    };
 
-    static inline pointer get_address(reference i_ref)
-    {
-        return get_address(i_ref,typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{});
-    }
-    template<size_t ... Indexs>
-    static inline pointer get_address(reference i_ref, const mpl::sequence<Indexs...>&)
-    {
-        return make_values_tuple(&i_ref.template get<Indexs>() ...);
-    }
-    static inline reference get_value(pointer i_ptr)
-    {
-        return get_value(i_ptr,typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{});
-    }
-    template<size_t ... Indexs>
-    static inline reference get_value(pointer i_ptr, const mpl::sequence<Indexs...>&)
-    {
-        return make_values_tuple(*i_ptr.template get<Indexs>() ...);
-    }
+public:
+    typedef iterable_traits<iterable_adaptor_traits<union_iterable_adaptor>> traits;
 };
 
-template<typename ... Types>
-struct base_iterable_traits<const values_tuple<Types...>>
-{
-    typedef const values_tuple<Types...> base_type;
-    typedef values_tuple<typename std::remove_reference<Types>::type ...> value_type;
-    typedef values_tuple<typename std::add_const<Types>::type& ...> reference;
-    typedef values_tuple<typename std::add_const<Types>::type& ...> const_reference;
-    typedef values_tuple<typename std::add_const<Types>::type* ...> pointer;
-    typedef values_tuple<typename std::add_const<Types>::type* ...> const_pointer;
+template<typename ... Traits>
+using union_iterable_traits = typename union_iterable_traits_resolver<Traits ...>::traits;
 
-    static inline pointer get_address(reference i_ref)
+template<typename Trait, typename ... Traits>
+struct intersection_iterable_traits_resolver
+{
+private:
+    struct intersection_iterable_adaptor
     {
-        static const auto _indexs = typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{};
+        typedef function_arguments<typename Trait::value_type,typename Traits::value_type...> value_type;
+        typedef function_arguments<typename Trait::reference,typename Traits::reference...> reference;
+        typedef function_arguments<typename Trait::const_reference,typename Traits::const_reference... > const_reference;
+        typedef mpl::type_pack_intersection<typename Trait::tags_t,typename Traits::tags_t...> tags_t;
+    };
 
-        return get_address(i_ref,_indexs);
-    }
-    template<size_t ... Indexs>
-    static inline pointer get_address(reference i_ref, const mpl::sequence<Indexs...>&)
-    {
-        return make_values_tuple(&i_ref.template get<Indexs>() ...);
-    }
-    static inline reference get_value(pointer i_ptr)
-    {
-        static const auto _indexs = typename mpl::make_sequence<0,values_tuple<Types...>::size()>::type{};
-
-        return get_value(i_ptr,_indexs);
-    }
-    template<size_t ... Indexs>
-    static inline reference get_value(pointer i_ptr, const mpl::sequence<Indexs...>&)
-    {
-        return make_values_tuple(*i_ptr.template get<Indexs>() ...);
-    }
+public:
+    typedef iterable_traits<iterable_adaptor_traits<intersection_iterable_adaptor>> traits;
 };
 
-template<typename T>
-struct const_input_iterable_traits : base_iterable_traits<T>
-{
-    typedef const_forward_action action;
-    typedef const_input_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = const_input_iterable_traits<TT>;
-
-    static constexpr const_forward_action default_action()
-    {
-        return go_next_place;
-    }
-};
-
-template<typename T>
-struct input_iterable_traits: base_iterable_traits<T>
-{
-	typedef forward_action action;
-    typedef const_input_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = input_iterable_traits<TT>;
-
-	static constexpr forward_action default_action()
-	{
-		return go_next_place;
-	}
-};
-
-template<typename T>
-struct const_forward_iterable_traits : base_iterable_traits<T>
-{
-    typedef const_forward_action action;
-	typedef std::forward_iterator_tag iterable_tag;
-    typedef const_forward_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = const_forward_iterable_traits<TT>;
-
-    static constexpr const_forward_action default_action()
-    {
-        return go_next_place;
-    }
-};
-
-template<typename T>
-struct forward_iterable_traits: base_iterable_traits<T>
-{
-	typedef forward_action action;
-	typedef std::forward_iterator_tag iterable_tag;
-    typedef const_forward_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = forward_iterable_traits<TT>;
-
-	static constexpr forward_action default_action()
-	{
-		return go_next_place;
-	}
-};
-
-template<typename T>
-struct const_bidirectional_iterable_traits : base_iterable_traits<T>
-{
-    typedef const_bidirectional_action action;
-	typedef std::bidirectional_iterator_tag iterable_tag;
-    typedef const_bidirectional_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = const_bidirectional_iterable_traits<TT>;
-
-    static constexpr const_bidirectional_action default_action()
-    {
-        return go_next_place;
-    }
-};
-
-template<typename T>
-struct bidirectional_iterable_traits: base_iterable_traits<T>
-{
-	typedef bidirectional_action action;
-	typedef std::bidirectional_iterator_tag iterable_tag;
-    typedef const_bidirectional_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = bidirectional_iterable_traits<TT>;
-
-	static constexpr bidirectional_action default_action()
-	{
-		return go_next_place;
-	}
-};
-
-template<typename T>
-struct const_random_access_iterable_traits : base_iterable_traits<T>
-{
-    typedef const_random_access_action action;
-	typedef std::random_access_iterator_tag iterable_tag;
-    typedef const_random_access_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = const_random_access_iterable_traits<TT>;
-
-    static constexpr const_random_access_action default_action()
-    {
-        return go_next_place;
-    }
-};
-
-template<typename T>
-struct random_access_iterable_traits: base_iterable_traits<T>
-{
-	typedef random_access_action action;
-	typedef std::random_access_iterator_tag iterable_tag;
-    typedef const_random_access_iterable_traits<T> iterable_const_traits;
-    template<typename TT>
-	using as = random_access_iterable_traits<TT>;
-
-	static constexpr random_access_action default_action()
-	{
-		return go_next_place;
-	}
-};
+template<typename ... Traits>
+using intersection_iterable_traits = typename intersection_iterable_traits_resolver<Traits...>::traits;
 
 }
 }

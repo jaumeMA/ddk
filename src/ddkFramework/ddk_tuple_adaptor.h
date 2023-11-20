@@ -2,6 +2,7 @@
 
 #include "ddk_iterable_defs.h"
 #include "ddk_iterable_action_defs.h"
+#include "ddk_iterable_type.h"
 #include "ddk_variant.h"
 
 namespace ddk
@@ -14,37 +15,44 @@ class iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>
 
 public:
     typedef variant<T...> value_type;
+	typedef variant<T&...> reference;
+	typedef variant<const T&...> const_reference;
 	typedef long long difference_type;
+	typedef mpl::type_pack<begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag> tags_t;
 
 	iterable_adaptor(tuple<T...>& i_iterable);
+
+	inline auto get_value();
+	inline auto get_value() const;
 	template<typename Sink>
-	inline bool init(Sink&& i_sink, const shift_action&);
+	inline auto forward_value(Sink&& i_sink);
 	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
-	inline bool valid() const noexcept;
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const forward_action_tag&) const;
+	inline bool perform_action(const backward_action_tag&) const;
+	inline bool perform_action(const displace_action_tag&, difference_type = 0) const;
+	inline bool valid() const;
 
 private:
 	template<typename Sink, size_t ... IIndexs>
-	inline void get(const mpl::sequence<IIndexs...>&, Sink&& i_sink);
-
+	inline auto get(Sink&& i_sink,const mpl::sequence<IIndexs...>&);
 	template<typename Sink, size_t ... IIndexs>
-	inline void get(const mpl::sequence<IIndexs...>&,Sink&& i_sink) const;
-
+	inline auto get(Sink&& i_sink,const mpl::sequence<IIndexs...>&) const;
 	template<size_t Index,typename Sink>
-	inline static void _get(Sink&& i_sink, tuple<T...>&);
-
+	inline static auto _get(Sink&& i_sink, tuple<T...>&);
 	template<size_t Index,typename Sink>
-	inline static void _get(Sink&& i_sink,const tuple<T...>&);
+	inline static auto _const_get(Sink&& i_sink,const tuple<T...>&);
+
+	template<size_t ... IIndexs>
+	inline auto get(const mpl::sequence<IIndexs...>&);
+	template<size_t ... IIndexs>
+	inline auto get(const mpl::sequence<IIndexs...>&) const;
+	template<size_t Index>
+	inline static reference _get(tuple<T...>&);
+	template<size_t Index>
+	inline static const_reference _const_get(const tuple<T...>&);
 
 	tuple<T...>& m_iterable;
 	mutable size_t m_currIndex = 0;
@@ -56,32 +64,33 @@ class iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>
 	static const size_t s_numTypes = tuple<T...>::size();
 
 public:
-    typedef variant<T...> value_type;
+	typedef variant<T...> value_type;
+	typedef variant<const T&...> const_reference;
+	typedef const_reference reference;
 	typedef long long difference_type;
+	typedef mpl::type_pack<begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag> tags_t;
 
 	iterable_adaptor(const tuple<T...>& i_iterable);
+	inline auto get_value() const;
 	template<typename Sink>
-	inline bool init(Sink&& i_sink, const shift_action& i_initialAction);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
-	inline bool valid() const noexcept;
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const forward_action_tag&) const;
+	inline bool perform_action(const backward_action_tag&) const;
+	inline bool perform_action(const displace_action_tag&,difference_type) const;
+	inline bool valid() const;
 
 private:
 	template<typename Sink, size_t ... IIndexs>
 	inline void get(const mpl::sequence<IIndexs...>&,Sink&& i_sink) const;
-
 	template<size_t Index,typename Sink>
 	inline static void _get(Sink&& i_sink,const tuple<T...>&);
+
+	template<size_t ... IIndexs>
+	inline auto get(const mpl::sequence<IIndexs...>&) const;
+	template<size_t Index>
+	inline static const_reference _get(const tuple<T...>&);
 
 	const tuple<T...>& m_iterable;
 	mutable size_t m_currIndex = 0;

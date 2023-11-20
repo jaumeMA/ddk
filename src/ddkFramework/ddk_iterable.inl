@@ -1,298 +1,91 @@
 
 #include "ddk_await.h"
-#include "ddk_transformed_iterable_action_impl.h"
 #include "ddk_iterable_interface_utils.h"
+#include "ddk_callable.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename Traits>
-iterable<Traits>::iterable(iterable_impl_dist_ref<iterable_base_traits> i_iterableImpl)
-: m_iterableImpl(std::move(i_iterableImpl))
+template<typename Iterable>
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,Args...))
+iterable<Iterable>::iterable(Args&& ... i_args)
+: m_iterableImpl(std::forward<Args>(i_args)...)
 {
 }
-template<typename Traits>
-iterable<Traits>::iterable(const iterable& other)
-: m_iterableImpl(other.m_iterableImpl)
-, m_iterableState(other.m_iterableState)
-{
-}
-template<typename Traits>
-template<typename TTraits>
-iterable<Traits>::iterable(const iterable<TTraits>& other)
-: m_iterableImpl(make_iterable_impl<transformed_iterable_action_impl<Traits,TTraits>>(other.m_iterableImpl,[](const action& i_action){ return action_conversion<typename TTraits::action>(i_action); }))
-{
-}
-template<typename Traits>
-iterable<Traits>::~iterable()
-{
-}
-template<typename Traits>
-TEMPLATE(typename Function)
-REQUIRED(IS_CALLABLE(Function))
-action_result iterable<Traits>::iterate(Function&& i_try, const shift_action& i_initialAction)
+template<typename Iterable>
+TEMPLATE(typename Function, typename Action)
+REQUIRED(IS_CALLABLE_BY(Function,reference),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
+action_result iterable<Iterable>::iterate_impl(Function&& i_try, const Action& i_initialAction)
 {
 	try
 	{
-		m_iterableImpl->iterate_impl(make_function([&](reference i_value)
-		{
-			typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
+		typedef typename mpl::aqcuire_callable_return_type<Function>::type action_type;
 
-			m_iterableState.apply(m_currAction);
-
-			call_iterable_payload(range_seq{},std::forward<Function>(i_try),i_value);
-
-			return m_currAction;
-		}),i_initialAction,lend(m_actionState));
+		m_iterableImpl.iterate_impl(fixed_return_terse_callable<action_type,Function>{ std::forward<Function>(i_try) },i_initialAction);
 	}
 	catch(const suspend_exception& i_excp)
 	{
 		if(i_excp)
 		{
-			m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
+			return make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code()));
 		}
 	}
 
-	return m_actionState->get();
+	return success;
 }
-template<typename Traits>
-TEMPLATE(typename Function)
-REQUIRED(IS_CALLABLE(Function))
-action_result iterable<Traits>::iterate(Function&& i_try, const shift_action& i_initialAction) const
+template<typename Iterable>
+TEMPLATE(typename Function, typename Action)
+REQUIRED(IS_CALLABLE(Function),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
+action_result iterable<Iterable>::iterate_impl(Function&& i_try, const Action& i_initialAction) const
 {
 	try
 	{
-		m_iterableImpl->iterate_impl(make_function([&](const_reference i_value)
-		{
-			typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
+		typedef typename mpl::aqcuire_callable_return_type<Function>::type action_type;
 
-			m_iterableState.apply(m_currAction);
-
-			call_iterable_payload(range_seq{},std::forward<Function>(i_try),i_value);
-
-			return m_currAction;
-		}),i_initialAction,lend(m_actionState));
+		m_iterableImpl.iterate_impl(fixed_return_terse_callable<action_type,Function>{ std::forward<Function>(i_try) },i_initialAction);
 	}
 	catch(const suspend_exception& i_excp)
 	{
 		if(i_excp)
 		{
-			m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
+			return make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code()));
 		}
 	}
 
-	return m_actionState->get();
+	return success;
 }
-template<typename Traits>
-TEMPLATE(typename Function)
-REQUIRED(IS_CALLABLE(Function))
-action_result iterable<Traits>::co_iterate(Function&& i_try, const shift_action& i_initialAction)
-{
-	m_executor = detail::await_executor<void>(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
-
-    while(true)
-    {
-        if(m_executor.resume())
-        {
-			m_currAction = iterable_base_traits::default_action();
-
-			try
-            {
-                m_iterableState.apply(m_currAction);
-
-                eval(std::forward<Function>(i_try),make_iterable_value<iterable_value>(std::move(m_iterableValueContainer).template extract<reference>(),make_function(this,&iterable<Traits>::resolve_action),static_cast<iterable_interface&>(*this)));
-            }
-            catch(const suspend_exception& i_excp)
-            {
-				if(i_excp)
-				{
-					m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
-				}
-				
-				break;
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-
-	return m_actionState->get();
-}
-template<typename Traits>
-TEMPLATE(typename Function)
-REQUIRED(IS_CALLABLE(Function))
-action_result iterable<Traits>::co_iterate(Function&& i_try, const shift_action& i_initialAction) const
-{
-    typedef action(iterable<Traits>::*func_ptr)(const_reference)const;
-
-	m_executor = detail::await_executor<void>(make_function(m_iterableImpl.get(),&iterable_impl_interface<iterable_base_traits>::iterate_impl,make_function(this,&iterable<Traits>::private_iterate),i_initialAction,lend(m_actionState)));
-
-    while(true)
-    {
-        if(m_executor.resume())
-        {
-			m_currAction = iterable_base_traits::default_action();
-
-			try
-            {
-                m_iterableState.apply(m_currAction);
-
-                eval(std::forward<Function>(i_try),make_iterable_value<iterable_const_value>(std::move(m_iterableValueContainer).template extract<const_reference>(),make_function(this,&iterable<Traits>::resolve_action),const_cast<iterable_interface&>(static_cast<const iterable_interface&>(*this))));
-            }
-            catch(const suspend_exception& i_excp)
-            {
-				if(i_excp)
-				{
-					m_actionState->forward_result(make_error<action_result>(ActionError::StopError,stop_error(StopError::Error,i_excp.what(),i_excp.get_code())));
-				}
-				
-				break;
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-
-	return m_actionState->get();
-}
-template<typename Traits>
-bool iterable<Traits>::operator==(const std::nullptr_t&) const
+template<typename Iterable>
+bool iterable<Iterable>::operator==(const std::nullptr_t&) const
 {
     return m_iterableImpl == nullptr;
 }
-template<typename Traits>
-bool iterable<Traits>::operator!=(const std::nullptr_t&) const
+template<typename Iterable>
+bool iterable<Iterable>::operator!=(const std::nullptr_t&) const
 {
     return m_iterableImpl != nullptr;
 }
-template<typename Traits>
-iterable_state& iterable<Traits>::get_state()
+template<typename Iterable>
+const Iterable& iterable<Iterable>::get() const
 {
-    return m_iterableState;
+	return m_iterableImpl;
 }
-template<typename Traits>
-const iterable_state& iterable<Traits>::get_state() const
+template<typename Iterable>
+Iterable&& iterable<Iterable>::extract() &&
 {
-    return m_iterableState;
+	return std::move(m_iterableImpl);
 }
-template<typename Traits>
-action_state_lent_ref iterable<Traits>::get_action_state()
+template<typename Iterable>
+action_result iterable<Iterable>::iterate(terse_endpoint i_try,const action& i_initialAction)
 {
-    return lend(m_actionState);
+	return iterate_impl(std::move(i_try),i_initialAction);
 }
-template<typename Traits>
-action_state_const_lent_ref iterable<Traits>::get_action_state() const
+template<typename Iterable>
+action_result iterable<Iterable>::iterate(const_terse_endpoint i_try,const action& i_initialAction) const
 {
-    return lend(m_actionState);
-}
-template<typename Traits>
-typename iterable<Traits>::action iterable<Traits>::private_iterate(reference i_value)
-{
-	if(const action_result actionResult = m_actionState->get())
-	{
-		const random_access_action& resolvedAction = actionResult.get();
-
-		if(resolvedAction.is_base_of<shift_action>())
-		{
-			//in case of shift action consolidate it against result
-			const shift_action& currReturnedAction = resolvedAction.get_as<shift_action>();
-			const consolidate_visitor consolidateVisitor(currReturnedAction);
-
-			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
-			{
-				//we already destroyed arena by extraction
-				m_iterableValueContainer.template construct<const_reference>(i_value);
-
-				m_executor.yield();
-			}
-		}
-		else
-		{
-			//we already destroyed arena by extraction
-			m_iterableValueContainer.template construct<const_reference>(i_value);
-
-			m_executor.yield();
-		}
-	}
-
-	return m_currAction;
-}
-template<typename Traits>
-typename iterable<Traits>::action iterable<Traits>::private_iterate(const_reference i_value) const
-{
-	if(const action_result actionResult = m_actionState->get())
-	{
-		const random_access_action& resolvedAction = actionResult.get();
-
-		if(resolvedAction.is_base_of<shift_action>())
-		{
-			//in case of shift action consolidate it against result
-			const shift_action& currReturnedAction = resolvedAction.get_as<shift_action>();
-			const consolidate_visitor consolidateVisitor(currReturnedAction);
-
-			if(currReturnedAction.step_by_step() == false || m_currAction.visit(consolidateVisitor))
-			{
-				//we already destroyed arena by extraction
-				m_iterableValueContainer.template construct<const_reference>(i_value);
-
-				m_executor.yield();
-			}
-		}
-		else
-		{
-			//we already destroyed arena by extraction
-			m_iterableValueContainer.template construct<const_reference>(i_value);
-
-			m_executor.yield();
-		}
-	}
-
-	return m_currAction;
-}
-template<typename Traits>
-typename iterable<Traits>::reference iterable<Traits>::resolve_action(const action& i_action)
-{
-    m_currAction = i_action;
-
-    if (m_executor.resume())
-    {
-        m_iterableState.apply(m_currAction);
-
-        return std::move(m_iterableValueContainer).template extract<reference>();
-    }
-    else
-    {
-        throw suspend_exception{get_current_fiber_id()};
-    }
-}
-template<typename Traits>
-typename iterable<Traits>::const_reference iterable<Traits>::resolve_action(const action& i_action) const
-{
-    m_currAction = i_action;
-
-    if (m_executor.resume())
-    {
-        m_iterableState.apply(m_currAction);
-
-        return std::move(m_iterableValueContainer).template extract<const_reference>();
-    }
-    else
-    {
-        throw suspend_exception{get_current_fiber_id()};
-    }
-}
-template<typename Traits>
-bool iterable<Traits>::forward_action(action i_action) const
-{
-	m_currAction = i_action;
-
-	return true;
+	return iterate_impl(std::move(i_try),i_initialAction);
 }
 
 }

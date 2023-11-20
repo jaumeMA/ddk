@@ -11,6 +11,6 @@ class iterable;
 }
 
 template<typename Iterable>
-class iterable_adaptor;
+struct iterable_adaptor;
 
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ddk_optional.h"
 #include "ddk_iterable_action.h"
 
 namespace ddk
@@ -15,95 +14,70 @@ template<typename Iterable>
 class iterable_adaptor_base
 {
 public:
-	typedef typename Iterable::iterator iterator;
-	typedef typename Iterable::const_iterator const_iterator;
 	typedef typename Iterable::value_type value_type;
-	typedef typename Iterable::reference reference;
+	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_reference,typename Iterable::reference>::type reference;
 	typedef typename Iterable::const_reference const_reference;
-	typedef typename Iterable::pointer pointer;
-	typedef typename Iterable::const_pointer const_pointer;
 	typedef long long difference_type;
+	typedef typename mpl::which_type<std::is_const<Iterable>::value,mpl::type_pack<begin_action_tag,last_action_tag>,mpl::type_pack<begin_action_tag,last_action_tag,add_action_tag<value_type>,remove_action_tag>>::type tags_t;
 
 	iterable_adaptor_base(Iterable& i_iterable);
 
-	template<typename Sink, typename Action>
-	inline bool init(Sink&& i_sink, Action&& i_initialAction);
-	inline bool valid() const noexcept;
-	template<typename Sink, typename Value>
-	inline bool forward_add_value_in(Value&& i_value, Sink&& i_sink);
+	inline reference get_value();
+	inline const_reference get_value() const;
 	template<typename Sink>
-	inline bool forward_erase_value_in(Sink&& i_sink);
-
-protected:
-	Iterable& m_iterable;
-	iterator m_currIterator;
-	const iterator m_endIterator;
-};
-
-template<typename Iterable>
-class iterable_adaptor_base<const Iterable>
-{
-public:
-	typedef typename Iterable::iterator iterator;
-	typedef typename Iterable::const_iterator const_iterator;
-	typedef typename Iterable::value_type value_type;
-	typedef typename Iterable::reference reference;
-	typedef typename Iterable::const_reference const_reference;
-	typedef typename Iterable::const_pointer pointer;
-	typedef typename Iterable::const_pointer const_pointer;
-	typedef long long difference_type;
-
-	iterable_adaptor_base(const Iterable& i_iterable);
-
+	inline auto forward_value(Sink&& i_sink);
+	template<typename Sink>
+	inline auto forward_value(Sink&& i_sink) const;
 	inline bool valid() const noexcept;
-	template<typename Sink,typename Action>
-	inline bool init(Sink&& i_sink, Action&& i_initialAction);
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const remove_action_tag&);
+	inline bool perform_action(add_action_tag<value_type>);
 
 protected:
-	const Iterable& m_iterable;
-	const_iterator m_currIterator;
-	const const_iterator m_endIterator;
+	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
+	typedef typename Iterable::const_iterator const_iterator;
+
+	Iterable& m_iterable;
+	mutable iterator m_currIterator;
+	const iterator m_endIterator;
 };
 
 template<typename Iterable>
 class forward_iterable_adaptor : public iterable_adaptor_base<Iterable>
 {
+	typedef iterable_adaptor_base<Iterable> base_t;
 public:
-	using iterable_adaptor_base<Iterable>::iterable_adaptor_base;
-	using typename iterable_adaptor_base<Iterable>::value_type;
-	using typename iterable_adaptor_base<Iterable>::reference;
-	using typename iterable_adaptor_base<Iterable>::const_reference;
-	using typename iterable_adaptor_base<Iterable>::pointer;
-	using typename iterable_adaptor_base<Iterable>::const_pointer;
-	using typename iterable_adaptor_base<Iterable>::difference_type;
+	using base_t::base_t;
+	using base_t::perform_action;
+	using typename base_t::value_type;
+	using typename base_t::reference;
+	using typename base_t::const_reference;
+	using typename base_t::difference_type;
+	typedef typename base_t::tags_t::template add_unique<forward_action_tag>::type tags_t;
 
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
+	inline bool perform_action(const forward_action_tag&) const;
 };
 
 template<typename Iterable>
 class bidirectional_iterable_adaptor : public forward_iterable_adaptor<Iterable>
 {
-	typedef typename mpl::static_if<std::is_const<Iterable>::value,typename Iterable::const_reverse_iterator,typename Iterable::reverse_iterator>::type reverse_iterator;
+	typedef forward_iterable_adaptor<Iterable> base_t;
 
 public:
-	using typename forward_iterable_adaptor<Iterable>::value_type;
-	using typename forward_iterable_adaptor<Iterable>::reference;
-	using typename forward_iterable_adaptor<Iterable>::const_reference;
-	using typename forward_iterable_adaptor<Iterable>::pointer;
-	using typename forward_iterable_adaptor<Iterable>::const_pointer;
-	using typename forward_iterable_adaptor<Iterable>::difference_type;
+	using base_t::perform_action;
+	using typename base_t::value_type;
+	using typename base_t::reference;
+	using typename base_t::const_reference;
+	using typename base_t::difference_type;
+	typedef typename base_t::tags_t::template add_unique<backward_action_tag>::type tags_t;
 
 	bidirectional_iterable_adaptor(Iterable& i_iterable);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
+
+	inline bool perform_action(const backward_action_tag&) const;
 
 protected:
-	const reverse_iterator m_endReverseIterator;
+	const iterator m_beginIterator;
 };
 
 template<typename>
@@ -112,19 +86,18 @@ class random_access_iterable_adaptor;
 template<typename Iterable>
 class random_access_iterable_adaptor : public bidirectional_iterable_adaptor<Iterable>
 {
-public:
-	using bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor;
-	using typename bidirectional_iterable_adaptor<Iterable>::value_type;
-	using typename bidirectional_iterable_adaptor<Iterable>::reference;
-	using typename bidirectional_iterable_adaptor<Iterable>::const_reference;
-	using typename bidirectional_iterable_adaptor<Iterable>::pointer;
-	using typename bidirectional_iterable_adaptor<Iterable>::const_pointer;
-	using typename bidirectional_iterable_adaptor<Iterable>::difference_type;
+	typedef bidirectional_iterable_adaptor<Iterable> base_t;
 
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift, Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
+public:
+	using base_t::base_t;
+	using base_t::perform_action;
+	using typename base_t::value_type;
+	using typename base_t::reference;
+	using typename base_t::const_reference;
+	using typename base_t::difference_type;
+	typedef typename base_t::tags_t::template add_unique<displace_action_tag>::type tags_t;
+
+	inline bool perform_action(const displace_action_tag&) const;
 };
 
 }

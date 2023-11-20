@@ -18,7 +18,7 @@ bool action_result::operator!=(const result_success_t&) const
 }
 
 action_state::action_state()
-: m_actionResult(go_no_place)
+: m_actionResult(success)
 {
 }
 action_result action_state::get() const

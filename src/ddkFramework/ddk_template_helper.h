@@ -459,6 +459,9 @@ inline constexpr size_t type_to_index = Index;
 template<size_t Index,size_t IIndex>
 inline constexpr size_t index_to_index = IIndex;
 
+template<typename T,typename TT>
+using type_to_type = TT;
+
 template<size_t ... ranks>
 constexpr size_t get_sum_ranks()
 {
@@ -589,13 +592,19 @@ using reduce_to_common_type = typename _reduce_to_common_type<Types...>::type;
 template<template<typename,typename...> typename Predicate, typename Type, typename ... Types>
 inline constexpr size_t nth_pos_of_predicate()
 {
-    size_t res = 0;
+    const bool predicateRes[num_types<Types...>] = { Predicate<Types,Type>::value ... };
+    size_t pos = 0;
 
-    (((Predicate<Types,Type>::value == false) && (++res > 0)) && ...);
+    while (predicateRes[pos] == false)
+    {
+        if (++pos == num_types<Types...>)
+        {
+            break;
+        }
+    }
 
-    return res;
+    return pos;
 }
-
 template<template<typename,typename> typename Predicate, typename Type, typename ... Types>
 inline constexpr bool holds_type_for_any_type()
 {
@@ -704,6 +713,11 @@ struct type_pack
     {
         typedef typename merge_type_packs<typename static_if<Predicate<Types>::value,type_pack<>,type_pack<Types>>::type ...>::type type;
     };
+    template<typename Type>
+    static constexpr size_t pos_in_type_pack()
+    {
+        return pos_of_type<Type,Types...>;
+    }
     template<typename ... TTypes>
 	static constexpr bool contains(const type_pack<TTypes...>&)
 	{
@@ -714,11 +728,16 @@ struct type_pack
     {
         return num_types<TTypes...> > 0 && num_types<TTypes...> < num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
     }
-    template<typename>
-    struct at;
+    template<size_t Index>
+    struct at
+    {
+        typedef typename nth_type_of<Index,Types...>::type type;
+    };
 
+    template<typename>
+    struct subset;
     template<size_t ... Indexs>
-    struct at<sequence<Indexs...>>
+    struct subset<sequence<Indexs...>>
     {
         typedef type_pack<typename nth_type_of<Indexs,Types...>::type ...> type;
     };

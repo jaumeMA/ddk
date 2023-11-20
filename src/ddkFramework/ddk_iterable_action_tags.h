@@ -1,0 +1,53 @@
+#pragma once
+
+#include "ddk_template_helper.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
+
+namespace ddk
+{
+
+struct begin_action_tag
+{
+};
+struct last_action_tag
+{
+};
+struct forward_action_tag
+{
+};
+struct backward_action_tag
+{
+};
+struct displace_action_tag
+{
+public:
+	typedef long long difference_type;
+
+	displace_action_tag(difference_type i_displacement);
+
+	difference_type displacement() const;
+
+private:
+	const difference_type m_displacement;
+};
+template<typename T>
+struct add_action_tag
+{
+public:
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+	add_action_tag(Args&& ... i_args);
+
+	T extract() &&;
+
+private:
+	T m_payload;
+};
+struct remove_action_tag
+{
+};
+
+}
+
+#include "ddk_iterable_action_tag.inl"

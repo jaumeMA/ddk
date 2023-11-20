@@ -117,7 +117,16 @@ private:
 
 public:
     typedef decltype(resolve(std::declval<Functor&>())) type;
+
+    template<typename ... Args>
+    struct at
+    {
+        typedef decltype(std::declval<Functor>()(std::declval<Args>()...)) type;
+    };
 };
+
+template<typename Functor,typename ... Args>
+using aqcuire_callable_return_type_at = typename aqcuire_callable_return_type<Functor>::template at<Args...>::type;
 
 template<typename>
 struct aqcuire_callable_args_type;
@@ -184,6 +193,15 @@ public:
     typedef typename static_if<is_function<T>,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;
     static const bool value = type::value;
 };
+
+template<typename Function>
+struct _terse_callable
+{
+    typedef Function type;
+};
+
+template<typename T>
+using terse_callable = typename _terse_callable<T>::type;
 
 }
 

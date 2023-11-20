@@ -78,11 +78,34 @@ inline Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>&
 TEMPLATE(typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args)
 REQUIRES_COND(is_function_argument<Args>::value==false ...)
 inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args>
-inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args);
+inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args);
 TEMPLATE(typename Function, typename ... Args)
-REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE(Function,Args...))
-inline auto eval(Function&& i_function, Args&& ... i_args);
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_function, Args&& ... i_args);
+TEMPLATE(typename Function,typename ... Args)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, Args&& ... i_args);
+TEMPLATE(typename Function,typename ... Args)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args);
+TEMPLATE(typename Function,typename ... Args)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
+inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
+inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&);
+TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+TEMPLATE(typename Function,typename ... Args, size_t ... Indexs)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args, const mpl::sequence<Indexs...>&);
 
 //unsafe version
 template<typename Return,typename Allocator, typename FunctionImpl>

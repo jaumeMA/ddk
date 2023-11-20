@@ -162,12 +162,11 @@ private:
 		friend inline auto operator<<=(const impl& i_lhs, Iterable&& i_rhs)
 		{
 			using ::operator<<=;
-			return detail::iterable_transform<detail::resolved_callable<Functor>>(make_function(i_lhs.m_transform)) <<= deduce_iterable(i_rhs);
+			return detail::iterable_transform<Functor>(i_lhs.m_transform) <<= std::forward<Iterable>(i_rhs);
 		}
 		impl(Functor i_transform);
 
 	private:
-
 		const Functor m_transform;
 	};
 

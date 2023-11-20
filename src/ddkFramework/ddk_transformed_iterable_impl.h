@@ -8,42 +8,71 @@ namespace ddk
 namespace detail
 {
 
-template<typename Function>
+template<typename Transform>
 class iterable_transform
 {
 public:
-	iterable_transform(const Function& i_transform);
+    TEMPLATE(typename TTransform)
+    REQUIRES(IS_CONSTRUCTIBLE(Transform,TTransform))
+    iterable_transform(TTransform&& i_transform);
 
-	Function get_transform() const;
+	const Transform& get_transform() const;
 
 private:
-	const Function m_transform;
+	const Transform m_transform;
 };
 
-template<typename PublicTraits, typename PrivateTraits, typename Function>
-class transformed_iterable_impl : public iterable_impl_interface<typename PublicTraits::iterable_base_traits>
+template<typename FromTraits,typename ToTraits>
+class traits_conversion_callable
 {
-    static_assert(std::is_same<typename PublicTraits::action,typename PrivateTraits::action>::value, "Actions from both public and private traits shall be the same");
-    //static_assert(std::is_constructible<typename mpl::aqcuire_callable_return_type<Function>::type,typename PublicTraits::reference>::value || std::is_convertible<typename mpl::aqcuire_callable_return_type<Function>::type,typename PublicTraits::reference>::value, "You shall provider consistent transformations");
+public:
+    typedef typename FromTraits::value_type from_value_type;
+    typedef typename ToTraits::value_type to_value_type;
+    typedef typename FromTraits::reference from_reference;
+    typedef typename ToTraits::reference to_reference;
+    typedef typename FromTraits::const_reference from_const_reference;
+    typedef typename ToTraits::const_reference to_const_reference;
 
-    typedef typename PrivateTraits::iterable_base_traits private_iterable_base_traits;
-    typedef typename PrivateTraits::reference private_reference;
-    typedef typename PrivateTraits::const_reference private_const_reference;
+    inline to_reference operator()(from_reference i_value) const;
+    inline to_const_reference operator()(from_const_reference i_value) const;
+};
+
+template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform>
+class transformed_iterable_impl : public iterable_impl_interface<PublicTraits>
+{
+    typedef PrivateTraits private_traits;
+    typedef typename private_traits::value_type private_value_type;
+    typedef typename private_traits::reference private_reference;
+    typedef typename private_traits::const_reference private_const_reference;
+
+    friend inline auto deduce_adaptor(const transformed_iterable_impl& i_iterableImpl)
+    {
+        return deduce_adaptor(i_iterableImpl.m_iterable);
+    }
+
 
 public:
-    typedef typename PublicTraits::value_type value_type;
-    typedef typename PublicTraits::reference reference;
-    typedef typename PublicTraits::const_reference const_reference;
-    typedef typename PublicTraits::action action;
+    typedef PublicTraits traits;
+    typedef typename traits::value_type value_type;
+    typedef typename traits::reference reference;
+    typedef typename traits::const_reference const_reference;
 
-    transformed_iterable_impl(iterable_impl_dist_ref<private_iterable_base_traits> i_iterableRef, const Function& i_transform);
+    TEMPLATE(typename IIterable, typename TTransform)
+    REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Transform,TTransform))
+    transformed_iterable_impl(IIterable&& i_iterable, TTransform&& i_transform);
+
+    TEMPLATE(typename Function, typename Action)
+    REQUIRES(IS_CALLABLE_BY(Function,reference),TRANSFORMED_ACTION_TAGS_SUPPORTED(PublicTraits,Function))
+    void iterate_impl(Function&& i_try, const Action& i_initialAction);
+    TEMPLATE(typename Function, typename Action)
+    REQUIRES(IS_CALLABLE_BY(Function,const_reference),TRANSFORMED_ACTION_TAGS_SUPPORTED(PublicTraits,Function))
+    void iterate_impl(Function&& i_try, const Action& i_initialAction) const;
+    template<typename ... Args>
+    auto operator()(Args&& ... i_args) const;
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-
-    iterable_impl_dist_ref<private_iterable_base_traits> m_iterableRef;
-    const Function m_transform;
+    Iterable m_iterable;
+    const Transform m_transform;
 };
 
 }
