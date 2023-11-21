@@ -189,7 +189,7 @@ template<typename Traits>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,typename Action::tags_t))
 supported_action<Traits>::supported_action(const Action& i_action)
-: m_action(make_function([i_action](iterable_adaptor_wrapper<Traits> i_adaptorWrapper)
+: m_action(make_function([i_action](type_erasure_iterable_adaptor<Traits> i_adaptorWrapper)
 {
 	return static_cast<bool>(i_action.apply(i_adaptorWrapper,[](auto&&){}));
 }))

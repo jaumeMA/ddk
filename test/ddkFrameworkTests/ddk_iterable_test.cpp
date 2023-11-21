@@ -78,7 +78,7 @@ struct tuple_visitor
 }
 
 static std::vector<int> myFoo;
-void proveta2(ddk::const_bidirectional_iterable<int> i_iterable)
+void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 {
 	[](const int& i_value)
 	{

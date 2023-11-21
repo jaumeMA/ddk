@@ -2,7 +2,7 @@
 
 #include "ddk_iterable_action_tags.h"
 #include "ddk_function.h"
-#include "ddk_iterable_adaptor_wrapper.h"
+#include "ddk_type_erasured_iterable_adaptor.h"
 #include "ddk_iterable_action_tag_concepts.h"
 #include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
@@ -211,7 +211,7 @@ public:
     inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
 
 private:
-    function<bool(iterable_adaptor_wrapper<Traits>)> m_action;
+    function<bool(type_erasure_iterable_adaptor<Traits>)> m_action;
 };
 
 template<typename Action, typename ... Actions>

@@ -13,7 +13,7 @@ namespace detail
 {
 
 template<typename Traits>
-class type_erasure_iterable_impl : public iterable_impl_interface<typename Traits>
+class type_erasure_iterable_impl : public iterable_impl_interface<Traits>
 {
     friend inline auto lend(const type_erasure_iterable_impl& i_iterable)
     {
@@ -29,19 +29,25 @@ public:
     typedef mpl::terse_callable<function<action(reference)>> terse_endpoint;
     typedef mpl::terse_callable<function<action(const_reference)>> const_terse_endpoint;
 
-    template<typename Iterable>
+    TEMPLATE(typename Iterable)
+    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable))
     type_erasure_iterable_impl(const iterable<Iterable>& i_iterable);
-    template<typename Iterable>
+    TEMPLATE(typename Iterable)
+    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable))
     type_erasure_iterable_impl(iterable<Iterable>&& i_iterable);
-    template<typename Iterable,typename Allocator>
+    TEMPLATE(typename Iterable, typename Allocator)
+    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable),IS_ALLOCATOR(Allocator))
     type_erasure_iterable_impl(const iterable<Iterable>& i_iterable,const Allocator& i_allocator);
-    template<typename Iterable, typename Allocator>
+    TEMPLATE(typename Iterable, typename Allocator)
+    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable),IS_ALLOCATOR(Allocator))
     type_erasure_iterable_impl(iterable<Iterable>&& i_iterable,const Allocator& i_allocator);
     type_erasure_iterable_impl(const iterable<type_erasure_iterable_impl<Traits>>& i_iterable);
     type_erasure_iterable_impl(iterable<type_erasure_iterable_impl<Traits>>&& i_iterable);
-    template<typename TTraits>
+    TEMPLATE(typename TTraits)
+    REQUIRES(ARE_TRAITS_COMPATIBLE(TTraits,Traits))
     type_erasure_iterable_impl(const iterable<type_erasure_iterable_impl<TTraits>>& i_iterable);
-    template<typename TTraits>
+    TEMPLATE(typename TTraits)
+    REQUIRES(ARE_TRAITS_COMPATIBLE(TTraits,Traits))
     type_erasure_iterable_impl(iterable<type_erasure_iterable_impl<TTraits>>&& i_iterable);
     type_erasure_iterable_impl(type_erasure_iterable_impl&&) = default;
 

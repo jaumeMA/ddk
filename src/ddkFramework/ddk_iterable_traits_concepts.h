@@ -3,9 +3,9 @@
 #include "ddk_type_concepts.h"
 
 #define ARE_TRAITS_COMPATIBLE_COND(_TRAITS1,_TRAITS2) \
-	ddk_concepts::are_traits_compatible<_TRAITS1,_TRAITS2>;
+	(ddk::concepts::are_traits_compatible<_TRAITS1,_TRAITS2>)
 #define ARE_TRAITS_COMPATIBLE(_TRAITS1,_TRAITS2) \
-	typename ddk::enable_if<ARE_TRAITS_COMPATIBLE_COND(_TRAITS1,_TRAITS2)>::type
+	typename std::enable_if<ARE_TRAITS_COMPATIBLE_COND(_TRAITS1,_TRAITS2)>::type
 
 namespace ddk
 {
@@ -24,7 +24,7 @@ private:
 	typedef typename ToTraits::tags_t to_tags_t;
 
 public:
-	static const bool value =	IS_CONVERTIBLE_COND(from_reference,to_reference) &&
+	static const bool value = IS_CONVERTIBLE_COND(from_reference,to_reference) &&
 								IS_CONVERTIBLE_COND(from_const_reference,to_const_reference) &&
 								from_tags_t::template contains(to_tags_t{});
 };

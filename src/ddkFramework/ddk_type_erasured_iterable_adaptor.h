@@ -22,7 +22,7 @@ public:
 };
 
 template<typename Traits>
-class iterable_adaptor_wrapper
+class type_erasure_iterable_adaptor
 {
 public:
 	typedef typename Traits::value_type value_type;
@@ -32,7 +32,7 @@ public:
 	typedef typename Traits::tags_t tags_t;
 
 	template<typename Adaptor>
-	iterable_adaptor_wrapper(Adaptor& i_adaptor);
+	type_erasure_iterable_adaptor(Adaptor& i_adaptor);
 
 	inline reference get_value();
 	inline const_reference get_value() const;
@@ -57,7 +57,7 @@ private:
 	typedef bool(*func_validity)(type_erased_const_adaptor_t);
 
 	template<typename Adaptor, size_t ... Indexs>
-	iterable_adaptor_wrapper(Adaptor& i_adaptor, const mpl::sequence<Indexs...>&);
+	type_erasure_iterable_adaptor(Adaptor& i_adaptor, const mpl::sequence<Indexs...>&);
 	template<typename Adaptor, typename ActionTag>
 	static bool _perform_action(type_erased_adaptor_t i_adaptor, ActionTag i_action);
 	template<typename Adaptor,typename ActionTag>
@@ -72,4 +72,4 @@ private:
 
 }
 
-#include "ddk_iterable_adaptor_wrapper.inl"
+#include "ddk_type_erasured_iterable_adaptor.inl"
