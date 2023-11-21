@@ -8,22 +8,22 @@
 namespace ddk
 {
 
-template<typename>
-struct acquire_tuple_pointer;
-	
-template<typename ... Actions>
-struct acquire_tuple_pointer<mpl::type_pack<Actions...>>
-{
-	template<typename T>
-	using func_type = bool(*)(void*,T);
-
-public:
-	typedef tuple< func_type<Actions>...> type;
-};
-
 template<typename Traits>
 class type_erasure_iterable_adaptor
 {
+	template<typename>
+	struct acquire_tuple_pointer;
+
+	template<typename ... Actions>
+	struct acquire_tuple_pointer<mpl::type_pack<Actions...>>
+	{
+		template<typename T>
+		using func_type = bool(*)(void*,T);
+
+	public:
+		typedef tuple< func_type<Actions>...> type;
+	};
+
 public:
 	typedef typename Traits::value_type value_type;
 	typedef typename Traits::reference reference;
