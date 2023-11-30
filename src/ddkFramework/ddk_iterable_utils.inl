@@ -63,7 +63,7 @@ auto operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs)
 	typedef ddk::resolved_iterable<Iterable> iterable_t;
 	typedef ddk::detail::ordered_iterable_impl<iterable_t,T> ordered_iterable;
 
-	return ddk::detail::iterable(ordered_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.init(std::forward<Iterable>(i_rhs))));
+	return ddk::detail::iterable(ordered_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.order()));
 }
 template<typename Function,typename Iterable>
 auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable&& i_rhs)
@@ -138,31 +138,4 @@ detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<I
 	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(i_adapter,deduce_iterable(std::forward<Iterables>(i_iterables))...) };
 }
 
-namespace iter
-{
-
-TEMPLATE(typename T)
-REQUIRED(IS_SIZEABLE(T))
-size_t size(const T& i_container)
-{
-	return i_container.size();
-}
-template<typename T>
-size_t size(const const_random_access_iterable<T>& i_iterable)
-{
-}
-
-template<template<typename,size_t...> typename T,typename R,size_t ... Dims>
-std::vector<size_t> dimension(const T<R,Dims...>& i_container)
-{
-	return { Dims... };
-}
-TEMPLATE(typename T)
-REQUIRED(IS_DIMENSIONABLE(T))
-inline auto dimension(const T& i_container)
-{
-	return i_container.dimension();
-}
-
-}
 }

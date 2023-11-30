@@ -12,10 +12,9 @@ iterable_order<T>::iterable_order(const T& i_order)
 {
 }
 template<typename T>
-template<typename Iterable>
-T iterable_order<T>::init(const Iterable& i_iterable) const
+const T& iterable_order<T>::order() const
 {
-	return m_order.init(i_iterable);
+	return m_order;
 }
 
 template<typename Iterable,typename ActionResolver>
@@ -29,9 +28,9 @@ ordered_iterable_impl<Iterable,ActionResolver>::ordered_iterable_impl(IIterable&
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename Function,typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,reference))
-void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_try,const Action& i_initialAction)
+iterable_result ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-	m_iterable.iterate_impl([&](reference i_value)
+	return m_iterable.iterate_impl([&](reference i_value)
 	{ 
 		return m_actionResolver(ddk::eval(std::forward<Function>(i_try),i_value));
 	},m_actionResolver(i_initialAction));
@@ -39,9 +38,9 @@ void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_t
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename Function,typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,const_reference))
-void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
+iterable_result ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
-	m_iterable.iterate_impl([&](const_reference i_value)
+	return m_iterable.iterate_impl([&](const_reference i_value)
 	{
 		return m_actionResolver(ddk::eval(std::forward<Function>(i_try),i_value));
 	},m_actionResolver(i_initialAction));

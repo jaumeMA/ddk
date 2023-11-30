@@ -30,13 +30,13 @@ filtered_iterable_impl<Iterable,Filter>::filtered_iterable_impl(IIterable&& i_it
 template<typename Iterable,typename Filter>
 TEMPLATE(typename Function,typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,reference))
-void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,const Action& i_initialAction)
+iterable_result filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
     typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
 
     step_by_step_action currAction(i_initialAction);
 
-    m_iterable.iterate_impl([&](reference i_value) mutable -> step_by_step_action<return_type>
+    return m_iterable.iterate_impl([&](reference i_value) mutable -> step_by_step_action<return_type>
     {
         if (ddk::terse_eval(m_filter,std::forward<reference>(i_value)))
         {
@@ -67,13 +67,13 @@ void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,cons
 template<typename Iterable,typename Filter>
 TEMPLATE(typename Function,typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,const_reference))
-void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
+iterable_result filtered_iterable_impl<Iterable,Filter>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
     typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
 
     step_by_step_action currAction(i_initialAction);
 
-    m_iterable.iterate_impl([&](const_reference i_value) mutable -> step_by_step_action<return_type>
+    return m_iterable.iterate_impl([&](const_reference i_value) mutable -> step_by_step_action<return_type>
     {
         if (ddk::terse_eval(m_filter,std::forward<const_reference>(i_value)))
         {

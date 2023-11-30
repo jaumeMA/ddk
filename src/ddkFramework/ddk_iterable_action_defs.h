@@ -1,9 +1,6 @@
 #pragma once
 
 #include "ddk_iterable_action_tags.h"
-#include "ddk_function.h"
-#include "ddk_type_erasured_iterable_adaptor.h"
-#include "ddk_iterable_action_tag_concepts.h"
 #include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
 
@@ -44,6 +41,18 @@ struct no_action : action_base
     
     template<typename Adaptor, typename Sink>
     no_action apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+};
+
+struct remove_action : action_base
+{
+    typedef mpl::type_pack<backward_action_tag> tags_t;
+
+    remove_action() = default;
+    remove_action(const stop_action&);
+
+    TEMPLATE(typename Adaptor,typename Sink)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
 };
 
 template<typename T>
@@ -187,54 +196,24 @@ private:
 template<typename Action>
 step_by_step_action(const Action&) -> step_by_step_action<typename mpl::which_type<mpl::is_same_type<Action,displacement_action>::value,bidirectional_action,Action>::type>;
 
-template<typename>
-struct supported_action;
-
-template<typename Traits>
-struct supported_action : action_base
-{
-    friend inline supported_action inverse(const supported_action& other)
-    {
-        return other;
-    }
-
-public:
-    typedef typename Traits::tags_t tags_t;
-
-    TEMPLATE(typename Action)
-    REQUIRES(ACTION_TAGS_SUPPORTED(Traits,typename Action::tags_t))
-    supported_action(const Action& i_action);
-    supported_action(const stop_action&);
-
-    TEMPLATE(typename Adaptor,typename Sink)
-    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
-
-private:
-    function<bool(type_erasure_iterable_adaptor<Traits>)> m_action;
-};
-
-template<typename Action, typename ... Actions>
-struct action_list : Action
+template<typename Action, typename AAction>
+struct action_pair : Action
 {
     static const size_t s_num_pending_actions = mpl::num_types<Actions...>;
 
 public:
-    action_list(const Action& i_action, const Actions& ... i_actions);
-    action_list(const stop_action&);
+    action_pair(const Action& i_lhs, const AAction& i_rhs);
+    action_pair(const stop_action&);
 
     TEMPLATE(typename Adaptor,typename Sink)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
     inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
 
 private:
-    template<size_t ... Indexs>
-    inline auto forward_next_action(const mpl::sequence<Indexs...>&) const;
-
-    tuple<Actions...> m_pendingActions;
+    AAction m_pendingAction;
 };
-template<typename Action,typename ... Actions>
-action_list(const Action&,const Actions& ...) -> action_list<Action,Actions...>;
+template<typename Action,typename AAction>
+action_pair(const Action&,const AAction&) -> action_pair<Action,AAction>;
 
 }
 

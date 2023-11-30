@@ -58,15 +58,15 @@ type_erasure_iterable_impl<Traits>::type_erasure_iterable_impl(iterable<type_era
 }
 template<typename Traits>
 template<typename Action>
-void type_erasure_iterable_impl<Traits>::iterate_impl(terse_endpoint i_try,const Action& i_initialAction)
+iterable_result type_erasure_iterable_impl<Traits>::iterate_impl(terse_endpoint i_try,const Action& i_initialAction)
 {
-	m_iterable->iterate(std::move(i_try),i_initialAction);
+	return m_iterable->iterate(std::move(i_try),i_initialAction);
 }
 template<typename Traits>
 template<typename Action>
-void type_erasure_iterable_impl<Traits>::iterate_impl(const_terse_endpoint i_try,const Action& i_initialAction) const
+iterable_result type_erasure_iterable_impl<Traits>::iterate_impl(const_terse_endpoint i_try,const Action& i_initialAction) const
 {
-	m_iterable->iterate(std::move(i_try),i_initialAction);
+	return m_iterable->iterate(std::move(i_try),i_initialAction);
 }
 
 }

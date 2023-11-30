@@ -4,6 +4,7 @@
 #include "ddk_iterable.h"
 #include "ddk_high_order_array.h"
 #include "ddk_tuple.h"
+#include "ddk_tuple_adaptor.h"
 #include "ddk_one_to_n_action_adapter.h"
 
 using namespace testing;
@@ -97,7 +98,7 @@ ddk::random_access_iterable<int> proveta()
 	myFoo.push_back(-4);
 	myFoo.push_back(5);
 
-	return  ddk::deduce_iterable(myFoo);
+	return ddk::deduce_iterable(myFoo);
 }
 
 TEST(DDKIterableTest, forwardIterableConstruction)
@@ -112,16 +113,25 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	std::vector<int> foo;
     foo.push_back(1);
     foo.push_back(2);
+
+
     foo.push_back(3);
     foo.push_back(-4);
     foo.push_back(5);
 
-	[](const int& i_value)
+	[](const int& i_value) -> ddk::any_action<ddk::forward_action,ddk::remove_action>
 	{
 		int a = 0;
 		++a;
-	}	<<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
-		<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
+		if (i_value > 0)
+		{
+			return ddk::go_next_place;
+		}
+		else
+		{
+			return ddk::remove_place;
+		}
+	}	<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
 		<<= ddk::view::order(ddk::reverse_order)
     	<<= foo;
 
@@ -162,6 +172,12 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	{
 		printf("cur integer: %d\n",i_value);
 	} <<= highOrderProva;
+
+	[](const int& i_value)
+	{
+		printf("cur integer: %d\n",i_value);
+	}	<<= ddk::view::order(ddk::transponse_dimension_order)
+		<<= highOrderProva;
 
 	////auto highOrderReceiver = ddk::make_function([](const int& i_value)
 	////{

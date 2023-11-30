@@ -19,7 +19,7 @@ iteration_sink<Sink>::iteration_sink(SSink&& i_try)
 }
 
 template<typename Iterable, typename Sink>
-iteration_result execute_iteration(iteration<Iterable,Sink>& i_iteration)
+iterable_result execute_iteration(iteration<Iterable,Sink>& i_iteration)
 {
 	if(ddk::atomic_compare_exchange(i_iteration.m_executable,true,false))
 	{
@@ -53,7 +53,7 @@ iteration<Iterable,Sink>::~iteration()
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		_execute();
+		_execute(iterable_default_action<Iterable>::default_action()).dismiss();
 	}
 }
 template<typename Iterable, typename Sink>
@@ -67,7 +67,7 @@ const iteration<Iterable,Sink>* iteration<Iterable,Sink>::operator->() const
 	return this;
 }
 template<typename Iterable,typename Sink>
-iteration<Iterable,Sink>::operator iteration_result() &&
+iteration<Iterable,Sink>::operator iterable_result() &&
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
@@ -79,11 +79,12 @@ iteration<Iterable,Sink>::operator iteration_result() &&
 	}
 }
 template<typename Iterable, typename Sink>
-iteration_result iteration<Iterable,Sink>::execute()
+template<typename Action>
+iterable_result iteration<Iterable,Sink>::execute(const Action& i_action)
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		return _execute();
+		return _execute(i_action);
 	}
 	else
 	{
@@ -91,11 +92,12 @@ iteration_result iteration<Iterable,Sink>::execute()
 	}
 }
 template<typename Iterable, typename Sink>
-iteration_result iteration<Iterable,Sink>::execute() const
+template<typename Action>
+iterable_result iteration<Iterable,Sink>::execute(const Action& i_action) const
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		return _execute();
+		return _execute(i_action);
 	}
 	else
 	{
@@ -122,7 +124,7 @@ auto iteration<Iterable,Sink>::transform(Callable&& i_callable) &&
 }
 template<typename Iterable, typename Sink>
 template<typename T>
-future<iteration_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
+future<iterable_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
 {
 	return ddk::async([this]()
 	{
@@ -130,7 +132,7 @@ future<iteration_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
 	}) -> attach(std::forward<T>(i_execContext));
 }
 template<typename Iterable, typename Sink>
-future<iteration_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
+future<iterable_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
 {
 	return ddk::async([this]()
 	{
@@ -138,15 +140,17 @@ future<iteration_result> iteration<Iterable,Sink>::attach(const detail::this_thr
 	});
 }
 template<typename Iterable, typename Sink>
-iteration_result iteration<Iterable,Sink>::_execute()
-{	typedef typename Iterable::traits traits;	return m_iterable.iterate_impl(std::move(m_try),traits::default_action());
+template<typename Action>
+iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
+{	typedef typename Iterable::traits traits;	return m_iterable.iterate_impl(std::move(m_try),i_action);
 }
 template<typename Iterable, typename Sink>
-iteration_result iteration<Iterable,Sink>::_execute() const
+template<typename Action>
+iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
 {
 	typedef typename Iterable::traits traits;
 
-	return m_iterable.iterate_impl(std::move(m_try),traits::default_action());
+	return m_iterable.iterate_impl(std::move(m_try),i_action);
 }
 
 }

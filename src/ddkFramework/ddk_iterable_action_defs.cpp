@@ -1,5 +1,4 @@
 #include "ddk_iterable_action_defs.h"
-#include "ddk_fiber_utils.h"
 
 namespace ddk
 {
@@ -19,6 +18,11 @@ action_base::operator bool() const
 }
 
 no_action::no_action(const stop_action&)
+: action_base(false)
+{
+}
+
+remove_action::remove_action(const stop_action&)
 : action_base(false)
 {
 }

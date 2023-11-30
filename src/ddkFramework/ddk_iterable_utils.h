@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_iterable_resolver.h"
 #include "ddk_transformed_iterable_impl.h"
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
@@ -73,22 +74,6 @@ TEMPLATE(typename Adapter,typename ... Iterables)
 REQUIRES(IS_ITERABLE(Iterables)...)
 inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter, Iterables&& ... i_iterables);
 
-namespace iter
-{
-
-TEMPLATE(typename T)
-REQUIRES(IS_SIZEABLE(T))
-inline size_t size(const T& i_container);
-template<typename T>
-inline size_t size(const const_random_access_iterable<T>& i_iterable);
-
-template<template<typename,size_t...> typename T, typename R, size_t ... Dims>
-inline std::vector<size_t> dimension(const T<R,Dims...>& i_container);
-TEMPLATE(typename T)
-REQUIRES(IS_DIMENSIONABLE(T))
-inline auto dimension(const T& i_container,...);
-
-}
 }
 
 #include "ddk_algorithm.h"

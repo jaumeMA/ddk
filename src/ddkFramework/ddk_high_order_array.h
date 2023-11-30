@@ -70,6 +70,7 @@ public:
 	typedef T value_type;
 	typedef T& reference;
 	typedef const T& const_reference;
+	typedef mpl::sequence<rank,ranks...> dimension_t;
 
 	constexpr high_order_array() = default;
 	constexpr high_order_array(const high_order_array<T,rank,ranks...>& other) = default;
@@ -89,7 +90,8 @@ public:
 	high_order_array& operator=(const high_order_array<T,rank,ranks...>& other);
 	template<typename TT>
 	high_order_array& operator=(const high_order_array<TT,rank,ranks...>& other);
-	constexpr size_t size() const;
+	constexpr dimension_t dimension() const;
+	constexpr size_t total_size() const;
 	constexpr bool empty() const;
 
 private:

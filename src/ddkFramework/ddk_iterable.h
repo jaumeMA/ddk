@@ -41,18 +41,18 @@ public:
 
     TEMPLATE(typename Function, typename Action)
     REQUIRES(IS_CALLABLE_BY(Function,reference),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
-    action_result iterate_impl(Function&& i_try, const Action& i_initialAction);
+    iterable_result iterate_impl(Function&& i_try, const Action& i_initialAction);
     TEMPLATE(typename Function, typename Action)
     REQUIRES(IS_CALLABLE_BY(Function,const_reference),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
-    action_result iterate_impl(Function&& i_try, const Action& i_initialAction) const;
+    iterable_result iterate_impl(Function&& i_try, const Action& i_initialAction) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;
     inline const Iterable& get() const;
     inline Iterable&& extract() &&;
 
 private:
-    action_result iterate(terse_endpoint i_try,const action& i_initialAction) override;
-    action_result iterate(const_terse_endpoint i_try,const action& i_initialAction) const override;
+    iterable_result iterate(terse_endpoint i_try,const action& i_initialAction) override;
+    iterable_result iterate(const_terse_endpoint i_try,const action& i_initialAction) const override;
 
     iterable_t m_iterableImpl;
 };
@@ -65,12 +65,14 @@ iterable(Iterable&&)->iterable<Iterable>;
 #include "ddk_agnostic_iterable.h"
 #include "ddk_iterable_resolver.h"
 #include "ddk_iterable_action_resolver.h"
+#include "ddk_iterable_order_resolver.h"
 #include "ddk_view_utils.h"
 #include "ddk_iterable_utils.h"
 #include "ddk_builtin_iterables.h"
+#include "ddk_iterable_action_defs_ext.h"
 
 #include "ddk_iterable.inl"
-#include "ddk_iterable_action_resolver.inl"
+#include "ddk_iterable_order_resolver.inl"
 #include "ddk_view_utils.inl"
 #include "ddk_iterable_utils.inl"
 #include "ddk_builtin_iterables.inl"

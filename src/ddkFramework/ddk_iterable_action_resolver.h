@@ -1,88 +1,53 @@
 #pragma once
 
 #include "ddk_iterable_action.h"
-#include "ddk_container_concepts.h"
+#include "ddk_iterable_action_tag_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-class reversable_action_resolver
+TEMPLATE(typename Traits)
+REQUIRES(ACTION_TAGS_SUPPORTED(Traits,begin_action_tag,forward_action_tag))
+go_to_begin_action _resolve_default_action(const Traits&);
+
+TEMPLATE(typename Traits)
+REQUIRES(ACTION_TAGS_NOT_SUPPORTED(Traits,begin_action_tag,forward_action_tag),ACTION_TAGS_SUPPORTED(Traits,last_action_tag,backward_action_tag))
+go_to_end_action _resolve_default_action(const Traits&,...);
+
+template<typename Traits>
+struct default_action_deduced_by_traits
 {
-public:
-	reversable_action_resolver(bool i_forward);
+	typedef decltype(_resolve_default_action(std::declval<Traits>())) type;
 
-	template<typename Iterable>
-	reversable_action_resolver init(Iterable&& i_iterable) const;
-	template<typename Action>
-	auto operator()(const Action& i_action) const;
-
-protected:
-	mutable bool m_forward;
+	static constexpr auto default_action()
+	{
+		return type{};
+	}
 };
 
-class alternate_action_resolver : reversable_action_resolver
+template<typename Traits>
+struct default_action_provided_by_traits
 {
-public:
-	using reversable_action_resolver::operator();
+	typedef decltype(Traits::default_action()) type;
 
-	alternate_action_resolver(bool i_forward);
-
-	template<typename Iterable>
-	alternate_action_resolver init(Iterable&& i_iterable) const;
-	TEMPLATE(typename ... Actions)
-	REQUIRES(IS_BASE_OF(shift_action,Actions)...)
-	variant<Actions...> resolve(const variant<Actions...>& i_action) const;
-	alternate_action_resolver operator()(size_t i_constrain) const;
-
-private:
-	alternate_action_resolver(size_t i_constrain, bool i_forward);
-
-	const size_t m_constrain = 0;
-	mutable int m_currIndex = 0;
+	static constexpr auto default_action()
+	{
+		return Traits::default_action();
+	}
 };
 
-//class multi_dimensional_action_resolver : public reversable_action_resolver
-//{
-//public:
-//	enum Type
-//	{
-//		Forward,
-//		Transpose
-//	};
-//
-//	using reversable_action_resolver::resolve;
-//
-//	multi_dimensional_action_resolver(bool i_forward);
-//	multi_dimensional_action_resolver(bool i_forward, Type i_bottomToTop);
-//
-//	TEMPLATE(typename Iterable)
-//	REQUIRES(IS_DIMENSIONABLE(Iterable))
-//	multi_dimensional_action_resolver init(Iterable&& i_iterable) const;
-//	TEMPLATE(typename ... Actions)
-//	REQUIRES(IS_BASE_OF(shift_action,Actions)...)
-//	variant<Actions...> resolve(const variant<Actions...>& i_action) const;
-//
-//private:
-//	multi_dimensional_action_resolver(bool i_forward,Type i_bottomToTop, const std::vector<size_t>& i_dimensions);
-//
-//	size_t get_curr_item() const;
-//	size_t get_next_item() const;
-//	size_t get_prev_item() const;
-//
-//	const Type m_order = Forward;
-//	const std::vector<size_t> m_constrains;
-//	mutable std::vector<size_t> m_currIndex;
-//	mutable size_t m_currDimension = 0;
-//};
+template<typename Traits>
+default_action_provided_by_traits<Traits> resolve_default_action(const Traits&,decltype(Traits::default_action())*);
+
+template<typename Traits>
+default_action_deduced_by_traits<Traits> resolve_default_action(Traits,...);
 
 }
 
-extern const detail::reversable_action_resolver forward_order;
-extern const detail::reversable_action_resolver reverse_order;
-extern const detail::alternate_action_resolver alternate_order;
-//extern const detail::multi_dimensional_action_resolver dimension_order;
-//extern const detail::multi_dimensional_action_resolver transponse_dimension_order;
+template<typename Iterable>
+using iterable_default_action = decltype(detail::resolve_default_action(std::declval<typename Iterable::traits>(),nullptr));
 
 }

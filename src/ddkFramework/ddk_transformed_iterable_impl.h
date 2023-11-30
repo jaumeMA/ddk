@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ddk_iterable_impl_interface.h"
-#include "ddk_function.h"
 
 namespace ddk
 {
@@ -63,10 +62,10 @@ public:
 
     TEMPLATE(typename Function, typename Action)
     REQUIRES(IS_CALLABLE_BY(Function,reference),TRANSFORMED_ACTION_TAGS_SUPPORTED(PublicTraits,Function))
-    void iterate_impl(Function&& i_try, const Action& i_initialAction);
+    iterable_result iterate_impl(Function&& i_try, const Action& i_initialAction);
     TEMPLATE(typename Function, typename Action)
     REQUIRES(IS_CALLABLE_BY(Function,const_reference),TRANSFORMED_ACTION_TAGS_SUPPORTED(PublicTraits,Function))
-    void iterate_impl(Function&& i_try, const Action& i_initialAction) const;
+    iterable_result iterate_impl(Function&& i_try, const Action& i_initialAction) const;
     template<typename ... Args>
     auto operator()(Args&& ... i_args) const;
 

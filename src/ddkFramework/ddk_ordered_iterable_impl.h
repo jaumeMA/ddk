@@ -11,8 +11,7 @@ class iterable_order
 public:
 	iterable_order(const T& i_order);
 
-	template<typename Iterable>
-	T init(const Iterable& i_iterable) const;
+	const T& order() const;
 
 private:
 	const T m_order;
@@ -38,10 +37,10 @@ public:
 
 	TEMPLATE(typename Function,typename Action)
 	REQUIRES(IS_CALLABLE_BY(Function,reference))
-	void iterate_impl(Function&& i_try,const Action& i_initialAction);
+	iterable_result iterate_impl(Function&& i_try,const Action& i_initialAction);
 	TEMPLATE(typename Function,typename Action)
 	REQUIRES(IS_CALLABLE_BY(Function,const_reference))
-	void iterate_impl(Function&& i_try,const Action& i_initialAction) const;
+	iterable_result iterate_impl(Function&& i_try,const Action& i_initialAction) const;
 
 private:
 	Iterable m_iterable;

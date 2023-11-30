@@ -38,11 +38,6 @@ struct iterable_traits
 
     template<typename TTraits>
 	using as = iterable_traits<TTraits>;
-
-    static go_to_begin_action default_action()
-    {
-        return {};
-    }
 };
 
 template<typename Trait, typename ... Traits>

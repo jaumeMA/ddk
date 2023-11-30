@@ -13,7 +13,6 @@ template<typename Adaptor,size_t ... Indexs>
 type_erasure_iterable_adaptor<Traits>::type_erasure_iterable_adaptor(Adaptor& i_adaptor,const mpl::sequence<Indexs...>&)
 : m_typeErasuredAdaptor(&i_adaptor)
 , m_actionPerformers((func_action_performer_type<typename tags_t::template at<Indexs>::type>)& type_erasure_iterable_adaptor<Traits>::template _perform_action<Adaptor,typename tags_t::template at<Indexs>::type> ...)
-, m_validator(&type_erasure_iterable_adaptor<Traits>::template _valid<Adaptor>)
 {
 }
 template<typename Traits>
@@ -43,41 +42,30 @@ auto type_erasure_iterable_adaptor<Traits>::forward_value(Sink&& i_sink) const
 	return no_action{};
 }
 template<typename Traits>
-bool type_erasure_iterable_adaptor<Traits>::valid() const noexcept
-{
-	return (*m_validator)(m_typeErasuredAdaptor);
-}
-template<typename Traits>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-bool type_erasure_iterable_adaptor<Traits>::perform_action(ActionTag&& i_action)
+auto type_erasure_iterable_adaptor<Traits>::perform_action(ActionTag&& i_action)
 {
 	return (*m_actionPerformers.template get<tags_t::template pos_in_type_pack<ActionTag>()>())(m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
 }
 template<typename Traits>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-bool type_erasure_iterable_adaptor<Traits>::perform_action(ActionTag&& i_action) const
+auto type_erasure_iterable_adaptor<Traits>::perform_action(ActionTag&& i_action) const
 {
 	return (*m_actionPerformers.template get<tags_t::template pos_in_type_pack<ActionTag>()>())(m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
 }
 template<typename Traits>
 template<typename Adaptor,typename ActionTag>
-bool type_erasure_iterable_adaptor<Traits>::_perform_action(type_erased_adaptor_t i_adaptor,ActionTag i_action)
+iterable_action_result<ActionTag> type_erasure_iterable_adaptor<Traits>::_perform_action(type_erased_adaptor_t i_adaptor,ActionTag i_action)
 {
 	return reinterpret_cast<Adaptor*>(i_adaptor)->perform_action(std::move(i_action));
 }
 template<typename Traits>
 template<typename Adaptor,typename ActionTag>
-bool type_erasure_iterable_adaptor<Traits>::_perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action)
+iterable_action_result<ActionTag> type_erasure_iterable_adaptor<Traits>::_perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action)
 {
 	return reinterpret_cast<const Adaptor*>(i_adaptor)->perform_action(std::move(i_action));
-}
-template<typename Traits>
-template<typename Adaptor>
-bool type_erasure_iterable_adaptor<Traits>::_valid(type_erased_const_adaptor_t i_adaptor)
-{
-	return reinterpret_cast<const Adaptor*>(i_adaptor)->valid();
 }
 
 }

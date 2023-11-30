@@ -15,16 +15,20 @@ union_iterable_impl<Iterables...>::union_iterable_impl(Iterables& ... i_iterable
 template<typename ... Iterables>
 TEMPLATE(typename Function,typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,reference))
-void union_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,Action&& i_initialAction)
+iterable_result union_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,Action&& i_initialAction)
 {
     loop(std::forward<Function>(i_try),std::forward<Action>(i_initialAction));
+
+    return success;
 }
 template<typename ... Iterables>
 TEMPLATE(typename Function,typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,const_reference))
-void union_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,Action&& i_initialAction) const
+iterable_result union_iterable_impl<Iterables...>::iterate_impl(Function&& i_try,Action&& i_initialAction) const
 {
     loop(std::forward<Function>(i_try),std::forward<Action>(i_initialAction));
+
+    return success;
 }
 
 }
@@ -65,61 +69,55 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::forward_value(
     return forward_value(seq_type{},std::forward<Sink>(i_sink));
 }
 template<typename ... Iterables>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::valid() const noexcept
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+iterable_action_result<ActionTag> iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
 {
-    if (m_currIndex >= 0 && m_currIndex < s_numTypes)
-    {
-        typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
-        return valid(seq_type{});
+    if (auto actionRes = perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    {
+        return success;
     }
     else
     {
-        return false;
+        while(actionRes.recoverable() && ++m_currIndex < s_numTypes)
+        {
+            perform_default_action(seq_type{});
+
+            if (actionRes = perform_action(seq_type{},actionRes.recovery()))
+            {
+                return success;
+            }
+        }
+
+        return actionRes;
     }
 }
 template<typename ... Iterables>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
-    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    if (auto actionRes = perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
     {
-        return true;
-    }
-    else if (m_currIndex < s_numTypes)
-    {
-        m_currIndex++;
-
-        return perform_default_action(seq_type{});
+        return success;
     }
     else
     {
-        return false;
-    }
-}
-template<typename ... Iterables>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
-{
-    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
+        while (++m_currIndex < s_numTypes && actionRes.recoverable())
+        {
+            perform_default_action(seq_type{});
 
-    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
-    {
-        return true;
-    }
-    else if (m_currIndex < s_numTypes)
-    {
-        m_currIndex++;
+            if (actionRes = perform_action(seq_type{},actionRes.recovery()))
+            {
+                return success;
+            }
+        }
 
-        return perform_default_action(seq_type{});
-    }
-    else
-    {
-        return false;
+        return actionRes;
     }
 }
 template<typename ... Iterables>
@@ -185,47 +183,32 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_forward_value
     return i_adaptors.template get<Index>().forward_value(std::forward<Sink>(i_sink));
 }
 template<typename ... Iterables>
-template<size_t ... Indexs>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::valid(const mpl::sequence<Indexs...>&) const
-{
-    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
-    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_valid<Indexs> ... };
-
-    return (*s_navFuncs[m_currIndex])(m_adaptors);
-}
-template<typename ... Iterables>
-template<size_t Index>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptors)
-{
-    return i_adaptors.template get<Index>().valid();
-}
-template<typename ... Iterables>
 template<size_t ... Indexs,typename ActionTag>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag)
 {
-    typedef bool(*funcType)(tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    typedef iterable_action_result<ActionTag>(*funcType)(tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
     static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
 
     return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
 }
 template<typename ... Iterables>
 template<size_t Index,typename ActionTag>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptors,ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptors,ActionTag&& i_actionTag)
 {
     return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
 }
 template<typename ... Iterables>
 template<size_t ... Indexs,typename ActionTag>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const
+iterable_action_result<ActionTag> iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const
 {
-    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    typedef iterable_action_result<ActionTag>(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
     static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
 
     return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
 }
 template<typename ... Iterables>
 template<size_t Index,typename ActionTag>
-bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
 {
     return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
 }
@@ -242,9 +225,9 @@ template<typename ... Iterables>
 template<size_t Index>
 bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor)
 {
-    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+    typedef mpl::nth_type_of_t<Index,Iterables...> nth_iterable;
 
-    const auto defaultAction = nth_traits::default_action();
+    const auto defaultAction = iterable_default_action<nth_iterable>::default_action();
 
     return static_cast<bool>(defaultAction.apply(i_adaptor.template get<Index>(),[&defaultAction](auto&&) -> no_action { return{}; }));
 }
@@ -261,9 +244,9 @@ template<typename ... Iterables>
 template<size_t Index>
 bool iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_default_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor)
 {
-    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+    typedef mpl::nth_type_of_t<Index,Iterables...> nth_iterable;
 
-    const auto defaultAction = nth_traits::default_action();
+    const auto defaultAction = iterable_default_action<nth_iterable>::default_action();
 
     return static_cast<bool>(defaultAction.apply(i_adaptor.template get<Index>(),[&defaultAction](auto&&) -> no_action { return{}; }));
 }
@@ -289,23 +272,9 @@ auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::forward_
     return forward_value(std::forward<Sink>(i_sink),seq_type{});
 }
 template<typename ... Iterables>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::valid() const noexcept
-{
-    if (m_currIndex >= 0 && m_currIndex < mpl::num_types<Iterables...>)
-    {
-        typedef typename mpl::make_sequence<0,mpl::num_types<Iterables...>>::type seq_type;
-
-        return valid(seq_type{});
-    }
-    else
-    {
-        return false;
-    }
-}
-template<typename ... Iterables>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
@@ -327,13 +296,13 @@ bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_
 template<typename ... Iterables>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
+iterable_action_result<ActionTag> iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
-    if (perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
+    if (const auto performRes = perform_action(seq_type{},std::forward<ActionTag>(i_actionTag)))
     {
-        return true;
+        return performRes;
     }
     else if (m_currIndex < s_numTypes)
     {
@@ -378,47 +347,32 @@ auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_forward
     return i_adaptors.template get<Index>().forward_value(std::forward<Sink>(i_sink));
 }
 template<typename ... Iterables>
-template<typename Sink,size_t ... Indexs>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::valid(const mpl::sequence<Indexs...>&) const
-{
-    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&);
-    static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_valid<Indexs> ... };
-
-    return (*s_navFuncs[m_currIndex])(m_adaptors);
-}
-template<typename ... Iterables>
-template<size_t Index,typename Sink>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptors)
-{
-    return i_adaptors.template get<Index>().valid();
-}
-template<typename ... Iterables>
 template<size_t ... Indexs,typename ActionTag>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag)
 {
-    typedef bool(*funcType)(tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    typedef iterable_action_result<ActionTag>(*funcType)(tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
     static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
 
     return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
 }
 template<typename ... Iterables>
 template<size_t Index,typename ActionTag>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
 {
     return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
 }
 template<typename ... Iterables>
 template<size_t ... Indexs,typename ActionTag>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const
+iterable_action_result<ActionTag> iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const
 {
-    typedef bool(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
+    typedef iterable_action_result<ActionTag>(*funcType)(const tuple<deduced_adaptor<Iterables>...>&,ActionTag&&);
     static const funcType s_navFuncs[] = { &iterable_adaptor<detail::union_iterable_impl<Iterables...>>::_perform_action<Indexs> ... };
 
     return (*s_navFuncs[m_currIndex])(m_adaptors,std::forward<ActionTag>(i_actionTag));
 }
 template<typename ... Iterables>
 template<size_t Index,typename ActionTag>
-bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
+iterable_action_result<ActionTag> iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag)
 {
     return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
 }
@@ -435,9 +389,9 @@ template<typename ... Iterables>
 template<size_t Index>
 bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_default_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor)
 {
-    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+    typedef mpl::nth_type_of_t<Index,Iterables...> nth_iterable;
 
-    const auto defaultAction = nth_traits::default_action();
+    const auto defaultAction = iterable_default_action<nth_iterable>::default_action();
 
     return static_cast<bool>(defaultAction.apply(i_adaptor,[&defaultAction](auto&&) -> no_action { return {}; }));
 }
@@ -454,9 +408,9 @@ template<typename ... Iterables>
 template<size_t Index>
 bool iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::_perform_default_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor)
 {
-    typedef typename mpl::nth_type_of_t<Index,Iterables...>::traits nth_traits;
+    typedef mpl::nth_type_of_t<Index,Iterables...> nth_iterable;
 
-    const auto defaultAction = nth_traits::default_action();
+    const auto defaultAction = iterable_default_action<nth_iterable>::default_action();
 
     return static_cast<bool>(defaultAction.apply(i_adaptor,[&defaultAction](auto&&) -> no_action { return {}; }));
 }

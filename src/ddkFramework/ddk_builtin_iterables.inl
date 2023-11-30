@@ -56,18 +56,18 @@ auto iterable_adaptor<const detail::__numbers_iterable<T>>::forward_value(Sink&&
     return ddk::eval(std::forward<Sink>(i_sink),m_currValue);
 }
 template<typename T>
-bool iterable_adaptor<const detail::__numbers_iterable<T>>::perform_action(const begin_action_tag&) const
+iterable_action_result<begin_action_tag> iterable_adaptor<const detail::__numbers_iterable<T>>::perform_action(const begin_action_tag&) const
 {
     m_currValue = 0;
 
-    return true;
+    return success;
 }
 template<typename T>
-bool iterable_adaptor<const detail::__numbers_iterable<T>>::perform_action(const forward_action_tag&) const
+iterable_action_result<forward_action_tag> iterable_adaptor<const detail::__numbers_iterable<T>>::perform_action(const forward_action_tag&) const
 {
     m_currValue = ddk::eval(m_generator,m_currValue);
 
-    return true;
+    return success;
 }
 
 }

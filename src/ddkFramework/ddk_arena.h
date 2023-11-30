@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ddk_embedded_type.h"
 #include <type_traits>
 #include <cstddef>
-#include "ddk_embedded_type.h"
 
 namespace ddk
 {

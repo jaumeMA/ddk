@@ -199,7 +199,12 @@ high_order_array<T,rank,ranks...>& high_order_array<T,rank,ranks...>::operator=(
 	return *this;
 }
 template<typename T,size_t rank,size_t ... ranks>
-constexpr size_t high_order_array<T,rank,ranks...>::size() const
+constexpr typename high_order_array<T,rank,ranks...>::dimension_t high_order_array<T,rank,ranks...>::dimension() const
+{
+	return {};
+}
+template<typename T,size_t rank,size_t ... ranks>
+constexpr size_t high_order_array<T,rank,ranks...>::total_size() const
 {
 	return s_totalSize;
 }

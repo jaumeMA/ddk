@@ -30,67 +30,86 @@ auto iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::forwar
 	return get(std::forward<Sink>(i_sink),typename mpl::make_sequence<0,s_numTypes>::type{});
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const begin_action_tag&) const
+iterable_action_result<begin_action_tag> iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const begin_action_tag&) const
 {
 	m_currIndex = 0;
 
-	return valid();
+	if (m_currIndex < s_numTypes)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const last_action_tag&) const
+iterable_action_result<last_action_tag> iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const last_action_tag&) const
 {
 	m_currIndex = s_numTypes - 1;
 
-	return valid();
+	if (m_currIndex >= 0)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const forward_action_tag&) const
+iterable_action_result<forward_action_tag> iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const forward_action_tag&) const
 {
-	if (m_currIndex < s_numTypes)
+	if (m_currIndex < s_numTypes - 1)
 	{
 		m_currIndex++;
 
-		return true;
+		return success;
 	}
 	else
 	{
-		return false;
+		return {};
 	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const backward_action_tag&) const
+iterable_action_result<backward_action_tag> iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const backward_action_tag&) const
 {
-	if (m_currIndex >= 0)
+	if (m_currIndex > 0)
 	{
 		m_currIndex--;
 
-		return true;
+		return success;
 	}
 	else
 	{
-		return false;
+		return {};
 	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const displace_action_tag& i_action, difference_type i_shift) const
+iterable_action_result<displace_action_tag> iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const displace_action_tag& i_action) const
 {
-	const difference_type newIndex = m_currIndex + i_shift;
+	m_currIndex += i_action.displacement();
 
-	if (0 <= newIndex && newIndex < s_numTypes)
+	if (m_currIndex >= 0 && m_currIndex < s_numTypes)
 	{
-		m_currIndex = newIndex;
+		return success;
+	}
+	else if (m_currIndex >= s_numTypes)
+	{
+		const difference_type pendingShift = m_currIndex - (s_numTypes - 1);
 
-		return true;
+		m_currIndex = s_numTypes - 1;
+
+		return { pendingShift };
 	}
 	else
 	{
-		return false;
+		const difference_type pendingShift = m_currIndex;
+
+		m_currIndex = 0;
+
+		return { pendingShift };
 	}
-}
-template<size_t ... Indexs, typename ... T>
-bool iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::valid() const
-{
-	return 0 <= m_currIndex && m_currIndex < s_numTypes;
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink, size_t ... IIndexs>
@@ -163,7 +182,6 @@ typename iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::co
 	return i_iterable.template get<Index>();
 }
 
-
 template<size_t ... Indexs, typename ... T>
 iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::iterable_adaptor(const tuple<T...>& i_iterable)
 : m_iterable(i_iterable)
@@ -181,67 +199,86 @@ auto iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 	return get(std::forward<Sink>(i_sink),typename mpl::make_sequence<0,s_numTypes>::type{});
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const begin_action_tag&) const
+iterable_action_result<begin_action_tag> iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const begin_action_tag&) const
 {
 	m_currIndex = 0;
 
-	return valid();
+	if (m_currIndex < s_numTypes)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const last_action_tag&) const
+iterable_action_result<last_action_tag> iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const last_action_tag&) const
 {
 	m_currIndex = s_numTypes - 1;
 
-	return valid();
+	if (m_currIndex >= 0)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const forward_action_tag&) const
+iterable_action_result<forward_action_tag> iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const forward_action_tag&) const
 {
-	if (m_currIndex < s_numTypes)
+	if (m_currIndex < s_numTypes - 1)
 	{
 		m_currIndex++;
 
-		return true;
+		return success;
 	}
 	else
 	{
-		return false;
+		return {};
 	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const backward_action_tag&) const
+iterable_action_result<backward_action_tag> iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const backward_action_tag&) const
 {
-	if (m_currIndex >= 0)
+	if (m_currIndex > 0)
 	{
 		m_currIndex--;
 
-		return true;
+		return success;
 	}
 	else
 	{
-		return false;
+		return {};
 	}
 }
 template<size_t ... Indexs,typename ... T>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const displace_action_tag& i_actio, difference_type i_shift) const
+iterable_action_result<displace_action_tag> iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const displace_action_tag& i_action) const
 {
-	const difference_type newIndex = m_currIndex + i_shift;
+	m_currIndex += i_action.displacement();
 
-	if (0 <= newIndex && newIndex < s_numTypes)
+	if (m_currIndex >= 0 && m_currIndex < s_numTypes)
 	{
-		m_currIndex = newIndex;
+		return success;
+	}
+	else if (m_currIndex >= s_numTypes)
+	{
+		const difference_type pendingShift = m_currIndex - (s_numTypes - 1);
 
-		return true;
+		m_currIndex = s_numTypes - 1;
+
+		return { pendingShift };
 	}
 	else
 	{
-		return false;
+		const difference_type pendingShift = m_currIndex;
+
+		m_currIndex = 0;
+
+		return { pendingShift };
 	}
-}
-template<size_t ... Indexs, typename ... T>
-bool iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::valid() const
-{
-	return 0 <= m_currIndex && m_currIndex < s_numTypes;
 }
 template<size_t ... Indexs, typename ... T>
 template<typename Sink, size_t ... IIndexs>

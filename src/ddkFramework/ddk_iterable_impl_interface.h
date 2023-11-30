@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_traits.h"
+#include "ddk_iterable_result.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
 #include "ddk_function.h"

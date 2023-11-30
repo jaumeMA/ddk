@@ -23,10 +23,10 @@ public:
 
     TEMPLATE(typename Function,typename Action)
     REQUIRES(IS_CALLABLE_BY(Function,reference))
-    void iterate_impl(Function&& i_try,Action&& i_initialAction);
+    iterable_result iterate_impl(Function&& i_try,Action&& i_initialAction);
     TEMPLATE(typename Function,typename Action)
     REQUIRES(IS_CALLABLE_BY(Function,const_reference))
-    void iterate_impl(Function&& i_try,Action&& i_initialAction) const;
+	iterable_result iterate_impl(Function&& i_try,Action&& i_initialAction) const;
 };
 template<typename ... Iterables>
 union_iterable_impl(Iterables& ...) -> union_iterable_impl<Iterables...>;
@@ -53,13 +53,12 @@ public:
 	inline auto forward_value(Sink&& i_sink);
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
-	inline bool valid() const noexcept;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	bool perform_action(ActionTag&& i_actionTag);
+	iterable_action_result<ActionTag> perform_action(ActionTag&& i_actionTag);
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	bool perform_action(ActionTag&& i_actionTag) const;
+	iterable_action_result<ActionTag> perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	template<size_t ... Indexs>
@@ -78,18 +77,14 @@ private:
 	inline auto forward_value(const mpl::sequence<Indexs...>& ,Sink&& i_sink) const;
 	template<size_t Index,typename Sink>
 	static inline auto _forward_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,Sink&& i_sink);
-	template<size_t ... Indexs>
-	inline bool valid(const mpl::sequence<Indexs...>&) const;
-	template<size_t Index>
-	static inline bool _valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
 	template<size_t ... Indexs,typename ActionTag>
-	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
+	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
 	template<size_t Index,typename ActionTag>
-	static bool _perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	static iterable_action_result<ActionTag> _perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
 	template<size_t ... Indexs,typename ActionTag>
-	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
+	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
 	template<size_t Index,typename ActionTag>
-	static bool _perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	static iterable_action_result<ActionTag> _perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
 	template<size_t ... Indexs>
 	bool perform_default_action(const mpl::sequence<Indexs...>&);
 	template<size_t Index>
@@ -107,6 +102,8 @@ template<typename ... Iterables>
 class iterable_adaptor<const detail::union_iterable_impl<Iterables...>>
 {
 	static const size_t s_numTypes = mpl::get_num_types<Iterables...>();
+	template<typename Iterable, typename ActionTag>
+	using adaptor_action_type = decltype(std::declval<deduced_adaptor<Iterable>>().perform_action(std::declval<ActionTag>()));
 
 public:
 	typedef detail::union_iterable_traits<const typename Iterables::traits...> traits;
@@ -120,13 +117,12 @@ public:
 	auto get_value() const;
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
-	inline bool valid() const noexcept;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	bool perform_action(ActionTag&& i_actionTag);
+	iterable_action_result<ActionTag> perform_action(ActionTag&& i_actionTag);
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	bool perform_action(ActionTag&& i_actionTag) const;
+	iterable_action_result<ActionTag> perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	template<size_t ... Indexs>
@@ -137,18 +133,14 @@ private:
 	inline auto forward_value(Sink&& i_sink,const mpl::sequence<Indexs...>&) const;
 	template<size_t Index,typename Sink>
 	static inline auto _forward_value(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,Sink&& i_sink);
-	template<typename Sink,size_t ... Indexs>
-	inline bool valid(const mpl::sequence<Indexs...>&) const;
-	template<size_t Index,typename Sink>
-	static inline bool _valid(const tuple<deduced_adaptor<Iterables>...>& i_adaptor);
 	template<size_t ... Indexs,typename ActionTag>
-	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
+	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
 	template<size_t Index,typename ActionTag>
-	static bool _perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	static iterable_action_result<ActionTag> _perform_action(tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
 	template<size_t ... Indexs,typename ActionTag>
-	bool perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
+	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
 	template<size_t Index,typename ActionTag>
-	static bool _perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
+	static iterable_action_result<ActionTag> _perform_action(const tuple<deduced_adaptor<Iterables>...>& i_adaptor,ActionTag&& i_actionTag);
 	template<size_t ... Indexs>
 	bool perform_default_action(const mpl::sequence<Indexs...>&);
 	template<size_t Index>

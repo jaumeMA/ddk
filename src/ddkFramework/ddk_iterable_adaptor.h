@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_action.h"
+#include "ddk_iterable_action_result.h"
 
 namespace ddk
 {
@@ -28,11 +29,10 @@ public:
 	inline auto forward_value(Sink&& i_sink);
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
-	inline bool valid() const noexcept;
-	inline bool perform_action(const begin_action_tag&) const;
-	inline bool perform_action(const last_action_tag&) const;
-	inline bool perform_action(const remove_action_tag&);
-	inline bool perform_action(add_action_tag<value_type>);
+	inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
+	inline iterable_action_result<last_action_tag> perform_action(const last_action_tag&) const;
+	inline iterable_action_result<remove_action_tag> perform_action(const remove_action_tag&);
+	inline iterable_action_result<add_action_tag<value_type>> perform_action(add_action_tag<value_type>);
 
 protected:
 	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
@@ -56,7 +56,7 @@ public:
 	using typename base_t::difference_type;
 	typedef typename base_t::tags_t::template add_unique<forward_action_tag>::type tags_t;
 
-	inline bool perform_action(const forward_action_tag&) const;
+	inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
 };
 
 template<typename Iterable>
@@ -74,7 +74,7 @@ public:
 
 	bidirectional_iterable_adaptor(Iterable& i_iterable);
 
-	inline bool perform_action(const backward_action_tag&) const;
+	inline iterable_action_result<backward_action_tag> perform_action(const backward_action_tag&) const;
 
 protected:
 	const iterator m_beginIterator;
@@ -97,7 +97,7 @@ public:
 	using typename base_t::difference_type;
 	typedef typename base_t::tags_t::template add_unique<displace_action_tag>::type tags_t;
 
-	inline bool perform_action(const displace_action_tag&) const;
+	inline iterable_action_result<displace_action_tag> perform_action(const displace_action_tag&) const;
 };
 
 }

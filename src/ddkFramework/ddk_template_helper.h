@@ -305,7 +305,13 @@ struct sequence<>
 template<size_t ... ranks>
 struct sequence
 {
-    static const size_t size = 1 + sizeof...(ranks);
+    inline static constexpr size_t size = sizeof...(ranks);
+    template<size_t Index>
+    inline static constexpr size_t nth_rank = nth_rank_of<ranks...>(Index);
+    inline static constexpr size_t prod = ddk::mpl::prod_ranks<ranks...>;
+    inline static constexpr size_t sum = ddk::mpl::sum_ranks<ranks...>;
+    inline static constexpr size_t min = get_cond_rank<min_rank,ranks...>::value;
+    inline static constexpr size_t max = get_cond_rank<max_rank,ranks...>::value;
 
     constexpr sequence() = default;
 
@@ -317,7 +323,6 @@ struct sequence
     {
         typedef sequence<nth_rank_of<ranks...>(Indexs) ...> type;
     };
-
     static constexpr bool present(size_t i_pos)
     {
         return ((i_pos == ranks) || ...);
@@ -337,11 +342,8 @@ struct sequence
         return static_cast<size_t>(-1);
     }
 
-    template<size_t ... Indexs>
-    using drop = typename merge_sequence<typename static_if<sequence<Indexs...>::present(ranks),sequence<>,sequence<ranks>>::type...>::type;
-
-    static const size_t min = get_cond_rank<min_rank,ranks...>::value;
-    static const size_t max = get_cond_rank<max_rank,ranks...>::value;
+    template<size_t Index>
+    using drop = typename merge_sequence<typename at<typename make_sequence<0,(Index > 0) ? Index-1 : 0>::type>::type,typename at<typename make_sequence<Index+1,size>::type>::type>::type;
 };
 
 template<size_t ... ranksA, size_t ... ranksB>

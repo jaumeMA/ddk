@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ddk_iterable_defs.h"
-#include "ddk_iterable_action_defs.h"
-#include "ddk_iterable_type.h"
+#include "ddk_iterable_action.h"
 #include "ddk_variant.h"
+#include "ddk_iterable_action_result.h"
 
 namespace ddk
 {
@@ -28,12 +28,11 @@ public:
 	inline auto forward_value(Sink&& i_sink);
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
-	inline bool perform_action(const begin_action_tag&) const;
-	inline bool perform_action(const last_action_tag&) const;
-	inline bool perform_action(const forward_action_tag&) const;
-	inline bool perform_action(const backward_action_tag&) const;
-	inline bool perform_action(const displace_action_tag&, difference_type = 0) const;
-	inline bool valid() const;
+	inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
+	inline iterable_action_result<last_action_tag> perform_action(const last_action_tag&) const;
+	inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
+	inline iterable_action_result<backward_action_tag> perform_action(const backward_action_tag&) const;
+	inline iterable_action_result<displace_action_tag> perform_action(const displace_action_tag&) const;
 
 private:
 	template<typename Sink, size_t ... IIndexs>
@@ -55,7 +54,7 @@ private:
 	inline static const_reference _const_get(const tuple<T...>&);
 
 	tuple<T...>& m_iterable;
-	mutable size_t m_currIndex = 0;
+	mutable difference_type m_currIndex = 0;
 };
 
 template<size_t ... Indexs,typename ... T>
@@ -74,12 +73,11 @@ public:
 	inline auto get_value() const;
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
-	inline bool perform_action(const begin_action_tag&) const;
-	inline bool perform_action(const last_action_tag&) const;
-	inline bool perform_action(const forward_action_tag&) const;
-	inline bool perform_action(const backward_action_tag&) const;
-	inline bool perform_action(const displace_action_tag&,difference_type) const;
-	inline bool valid() const;
+	inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
+	inline iterable_action_result<last_action_tag> perform_action(const last_action_tag&) const;
+	inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
+	inline iterable_action_result<backward_action_tag> perform_action(const backward_action_tag&) const;
+	inline iterable_action_result<displace_action_tag> perform_action(const displace_action_tag&) const;
 
 private:
 	template<typename Sink, size_t ... IIndexs>
@@ -93,7 +91,7 @@ private:
 	inline static const_reference _get(const tuple<T...>&);
 
 	const tuple<T...>& m_iterable;
-	mutable size_t m_currIndex = 0;
+	mutable difference_type m_currIndex = 0;
 };
 
 }

@@ -34,51 +34,68 @@ inline auto iterable_adaptor_base<Iterable>::forward_value(Sink&& i_sink) const
 	return ddk::eval(std::forward<Sink>(i_sink),*this->m_currIterator);
 }
 template<typename Iterable>
-bool iterable_adaptor_base<Iterable>::valid() const noexcept
-{
-	return m_currIterator != m_endIterator;
-}
-template<typename Iterable>
-bool iterable_adaptor_base<Iterable>::perform_action(const begin_action_tag&) const
+iterable_action_result<begin_action_tag> iterable_adaptor_base<Iterable>::perform_action(const begin_action_tag&) const
 {
 	m_currIterator = std::begin(m_iterable);
 
-	return m_currIterator != m_endIterator;
+	if (m_currIterator != m_endIterator)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<typename Iterable>
-bool iterable_adaptor_base<Iterable>::perform_action(const last_action_tag&) const
+iterable_action_result<last_action_tag> iterable_adaptor_base<Iterable>::perform_action(const last_action_tag&) const
 {
 	m_currIterator = std::prev(std::end(m_iterable));
 
-	return m_currIterator != m_endIterator;
+	if (m_currIterator != m_endIterator)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<typename Iterable>
-bool iterable_adaptor_base<Iterable>::perform_action(const remove_action_tag&)
+iterable_action_result<remove_action_tag> iterable_adaptor_base<Iterable>::perform_action(const remove_action_tag&)
 {
-	m_iterable.erase(m_currIterator);
+	m_currIterator = m_iterable.erase(m_currIterator);
 
-	return true;
+	if (m_currIterator != m_endIterator)
+	{
+		return success;
+	}
+	else
+	{
+		return {};
+	}
 }
 template<typename Iterable>
-bool iterable_adaptor_base<Iterable>::perform_action(add_action_tag<value_type> i_action)
+iterable_action_result<add_action_tag<typename iterable_adaptor_base<Iterable>::value_type>> iterable_adaptor_base<Iterable>::perform_action(add_action_tag<value_type> i_action)
 {
 	m_iterable.insert(m_currIterator,std::move(i_action).extract());
 
-	return true;
+	//here some check would be nice
+	return success;
 }
 
 template<typename Iterable>
-bool forward_iterable_adaptor<Iterable>::perform_action(const forward_action_tag&) const
+iterable_action_result<forward_action_tag> forward_iterable_adaptor<Iterable>::perform_action(const forward_action_tag&) const
 {
 	if (std::distance(this->m_currIterator,this->m_endIterator) > 1)
 	{
 		++this->m_currIterator;
 
-		return true;
+		return success;
 	}
 	else
 	{
-		return false;
+		return {};
 	}
 }
 
@@ -89,49 +106,57 @@ bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterabl
 {
 }
 template<typename Iterable>
-bool bidirectional_iterable_adaptor<Iterable>::perform_action(const backward_action_tag&) const
+iterable_action_result<backward_action_tag> bidirectional_iterable_adaptor<Iterable>::perform_action(const backward_action_tag&) const
 {
 	if (std::distance(m_beginIterator,this->m_currIterator) > 0)
 	{
 		--this->m_currIterator;
 
-		return true;
+		return success;
 	}
 	else
 	{
-		return false;
+		return {};
 	}
 }
 
 template<typename Iterable>
-bool random_access_iterable_adaptor<Iterable>::perform_action(const displace_action_tag& i_action) const
+iterable_action_result<displace_action_tag> random_access_iterable_adaptor<Iterable>::perform_action(const displace_action_tag& i_action) const
 {
 	const difference_type shift = i_action.displacement();
 
 	if (shift > 0)
 	{
-		if (std::distance(this->m_currIterator,this->m_endIterator) > shift)
+		const difference_type maxDist = std::distance(this->m_currIterator,this->m_endIterator);
+
+		if (shift < maxDist)
 		{
 			this->m_currIterator += shift;
 
-			return true;
+			return success;
 		}
 		else
 		{
-			return false;
+			this->m_currIterator += maxDist;
+
+			return { shift - maxDist };
 		}
 	}
 	else
 	{
-		if (std::distance(this->m_beginIterator,this->m_currIterator) >= -shift)
+		const difference_type maxDist = std::distance(this->m_beginIterator,this->m_currIterator);
+
+		if (maxDist >= -shift)
 		{
 			this->m_currIterator -= shift;
 
-			return true;
+			return success;
 		}
 		else
 		{
-			return false;
+			this->m_currIterator -= maxDist;
+
+			return { shift + maxDist };
 		}
 	}
 }

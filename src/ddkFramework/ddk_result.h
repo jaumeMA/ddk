@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_result_success.h"
 #include "ddk_variant.h"
 #include "ddk_optional.h"
 #include "ddk_class_rules.h"
@@ -25,9 +26,6 @@ struct result_checker
 };
 
 #endif
-
-struct result_success_t{};
-const result_success_t success = result_success_t();
 
 template<typename,typename>
 class result;

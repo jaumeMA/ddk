@@ -3,7 +3,6 @@
 #include "ddk_iterable.h"
 #include "ddk_function.h"
 #include "ddk_future.h"
-#include "ddk_iteration_result.h"
 #include "ddk_function_concepts.h"
 #include "ddk_concepts.h"
 #include "ddk_task_executor.h"
@@ -32,11 +31,13 @@ template<typename Iterable, typename Sink>
 class iteration : protected detail::iteration_sink<Sink>
 {
 	template<typename IIterable, typename SSink>
-	friend iteration_result execute_iteration(iteration<IIterable,SSink>& i_co_iteration);
+	friend iterable_result execute_iteration(iteration<IIterable,SSink>& i_co_iteration);
 
 	typedef detail::iteration_sink<Sink> sink_type;
+	typedef typename Iterable::traits traits;
 
 public:
+
 	TEMPLATE(typename IIterable, typename SSink)
 	REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable))
 	iteration(IIterable&& i_iterable, SSink&& i_try);
@@ -46,18 +47,22 @@ public:
 
 	iteration* operator->();
 	const iteration* operator->() const;
-	operator iteration_result() &&;
-	iteration_result execute();
-	iteration_result execute() const;
+	operator iterable_result ()&&;
+	template<typename Action = typename iterable_default_action<Iterable>::type>
+	iterable_result execute(const Action& i_action = iterable_default_action<Iterable>::default_action());
+	template<typename Action = typename iterable_default_action<Iterable>::type>
+	iterable_result execute(const Action& i_action = iterable_default_action<Iterable>::default_action()) const;
 	template<typename Callable>
 	auto transform(Callable&& i_callable) &&;
 	template<typename T>
-	future<iteration_result> attach(T&& i_execContext);
-	future<iteration_result> attach(const detail::this_thread_t&);
+	future<iterable_result> attach(T&& i_execContext);
+	future<iterable_result> attach(const detail::this_thread_t&);
 
 private:
-	iteration_result _execute();
-	iteration_result _execute() const;
+	template<typename Action>
+	iterable_result _execute(const Action& i_action);
+	template<typename Action>
+	iterable_result _execute(const Action& i_action) const;
 
 	Iterable m_iterable;
 	mutable atomic_bool m_executable;

@@ -50,8 +50,8 @@ public:
     inline auto forward_value(Sink&& i_sink);
     template<typename Sink>
     inline auto forward_value(Sink&& i_sink) const;
-    inline bool perform_action(const begin_action_tag&) const;
-    inline bool perform_action(const forward_action_tag&) const;
+    inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
+    inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
 
 private:
     mutable underlying_type m_currValue = 0;

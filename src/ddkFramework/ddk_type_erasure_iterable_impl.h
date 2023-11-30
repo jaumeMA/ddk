@@ -3,6 +3,7 @@
 #include "ddk_iterable_interface.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lend_type_erasure_iterable_impl.h"
+#include "ddk_iterable_supported_action.h"
 #include "ddk_iterable_concepts.h"
 #include "ddk_iterable_traits_concepts.h"
 #include "ddk_concepts.h"
@@ -52,9 +53,9 @@ public:
     type_erasure_iterable_impl(type_erasure_iterable_impl&&) = default;
 
     template<typename Action>
-    void iterate_impl(terse_endpoint i_try,const Action& i_initialAction);
+    iterable_result iterate_impl(terse_endpoint i_try,const Action& i_initialAction);
     template<typename Action>
-    void iterate_impl(const_terse_endpoint i_try,const Action& i_initialAction) const;
+    iterable_result iterate_impl(const_terse_endpoint i_try,const Action& i_initialAction) const;
 
 private:
     distributed_reference_wrapper<iterable_base<Traits>> m_iterable;

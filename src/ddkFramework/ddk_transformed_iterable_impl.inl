@@ -42,16 +42,16 @@ transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::transf
 template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform>
 TEMPLATE(typename Function, typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,reference),TRANSFORMED_ACTION_TAGS_SUPPORTED(PublicTraits,Function))
-void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Function&& i_try,const Action& i_initialAction)
+iterable_result transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Function&& i_try,const Action& i_initialAction)
 {
-	m_iterable.iterate_impl([&](private_reference i_value) { return ddk::eval(std::forward<Function>(i_try),ddk::terse_eval(m_transform,std::forward<private_reference>(i_value))); },i_initialAction);
+	return m_iterable.iterate_impl([&](private_reference i_value) { return ddk::eval(std::forward<Function>(i_try),ddk::terse_eval(m_transform,std::forward<private_reference>(i_value))); },i_initialAction);
 }
 template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform>
 TEMPLATE(typename Function, typename Action)
 REQUIRED(IS_CALLABLE_BY(Function,reference),TRANSFORMED_ACTION_TAGS_SUPPORTED(PublicTraits,Function))
-void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
+iterable_result transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
 {
-	m_iterable.iterate_impl([&](private_const_reference i_value) { return ddk::eval(std::forward<Function>(i_try),ddk::terse_eval(m_transform,std::forward<private_const_reference>(i_value))); },i_initialAction);
+	return m_iterable.iterate_impl([&](private_const_reference i_value) { return ddk::eval(std::forward<Function>(i_try),ddk::terse_eval(m_transform,std::forward<private_const_reference>(i_value))); },i_initialAction);
 }
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 template<typename ... Args>
