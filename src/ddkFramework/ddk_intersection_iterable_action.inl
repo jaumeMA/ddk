@@ -76,9 +76,16 @@ TEMPLATE(size_t ... Indexs,typename ... Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t)...)
 auto intersection_action<ActionTag>::apply(Adaptor&& ... i_adaptors)
 {
-	( std::forward<Adaptor>(i_adaptors).perform_action(m_action) && ...);
+	typedef iterable_action_tag_result<detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...>,ActionTag> intersection_result;
 
-	return make_result<iterable_action_tag_result<detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...>,ActionTag>>(success);
+	if(( std::forward<Adaptor>(i_adaptors).perform_action(m_action) && ...))
+	{
+		return make_result<intersection_result>(success);
+	}
+	else
+	{
+		return make_error<intersection_result>(std::move(m_action));
+	}
 }
 
 }
