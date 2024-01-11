@@ -43,9 +43,11 @@ auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterabl
 	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_t;
 	typedef ddk::resolved_iterable<Iterable> iterable_t;
 	typedef typename iterable_t::traits traits;
-	typedef typename traits::tags_t::template drop<ddk::add_action_tag<typename traits::value_type>,ddk::remove_action_tag>::type transformed_tags_t;
-	typedef ddk::detail::iterable_traits<ddk::detail::iterable_by_type_adaptor<const return_t,transformed_tags_t>> transformed_traits;
-	typedef ddk::detail::transformed_iterable_impl<transformed_traits,traits,iterable_t,Function> transformed_iterable;
+	typedef typename traits::const_tags_t const_tags_t;
+	typedef typename ddk::mpl::action_tags_retrait<traits,ddk::detail::by_type_traits<const return_t>,ddk::detail::reduce_type_traits,const_tags_t>::type transformed_const_tags;
+
+	typedef ddk::detail::iterable_by_value_adaptor<return_t,ddk::mpl::empty_type_pack,transformed_const_tags> iterable_transformed_traits;
+	typedef ddk::detail::transformed_iterable_impl<iterable_transformed_traits,traits,iterable_t,Function> transformed_iterable;
 
 	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_transform()));
 }

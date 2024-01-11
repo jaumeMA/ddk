@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_variant.h"
+#include "ddk_variant_impl.h"
 #include <sstream>
 
 namespace ddk
@@ -89,7 +89,7 @@ public:
     typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& i_visitor) const;
 
 private:
-    variant<NestedErrors...> m_nestedErrors;
+    variant_impl<NestedErrors...> m_nestedErrors;
 };
 
 }

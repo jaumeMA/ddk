@@ -68,7 +68,9 @@ typename mpl::remove_qualifiers<Visitor>::return_type error_impl<Error,NestedErr
 template<typename Result, typename ... Args>
 Result make_error(Args&& ... i_args)
 {
-    return Result(typename Result::error_t(std::forward<Args>(i_args) ...));
+    typedef typename Result::error_t error_t;
+
+    return error_t{ std::forward<Args>(i_args) ... };
 }
 
 }

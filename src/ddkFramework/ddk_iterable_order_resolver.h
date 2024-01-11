@@ -2,6 +2,7 @@
 
 #include "ddk_iterable_action.h"
 #include "ddk_iterable_action_tag_concepts.h"
+#include "ddk_iterable_adaptor_concepts.h"
 #include "ddk_concepts.h"
 
 namespace ddk
@@ -9,49 +10,62 @@ namespace ddk
 namespace detail
 {
 
-template<bool Forward>
-class reversable_order_resolver
+class forward_order_resolver
 {
 public:
-	reversable_order_resolver() = default;
+	forward_order_resolver() = default;
 
-	TEMPLATE(typename Action)
-	REQUIRES(ANY_ACTION_TAGS_SUPPORTED(Action,forward_action_tag,backward_action_tag,displace_action_tag))
-	inline auto operator()(const Action& i_action) const;
+	TEMPLATE(typename Adaptor,typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> operator()(Adaptor&& i_adaptor, ActionTag&& i_action) const;
 };
-typedef reversable_order_resolver<true> forward_order_resolver;
-typedef reversable_order_resolver<false> backward_order_resolver;
+
+class backward_order_resolver
+{
+public:
+	backward_order_resolver() = default;
+
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> operator()(Adaptor&& i_adaptor, ActionTag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,last_action_tag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag> operator()(Adaptor&& i_adaptor,begin_action_tag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,begin_action_tag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag> operator()(Adaptor&& i_adaptor,last_action_tag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag> operator()(Adaptor&& i_adaptor, forward_action_tag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag> operator()(Adaptor&& i_adaptor, backward_action_tag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,displace_action_tag))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag> operator()(Adaptor&& i_adaptor, displace_action_tag&& i_action) const;
+};
 
 class transpose_multi_dimensional_order_resolver
 {
 public:
-	struct action : action_base
-	{
-		friend inline action inverse(const action& other)
-		{
-			return { -other.m_shift };
-		}
-
-		typedef mpl::type_pack<displace_action_tag> tags_t;
-		typedef long long difference_type;
-
-		action(difference_type i_targetShift);
-		action(const stop_action&);
-
-		difference_type shift() const;
-		TEMPLATE(typename Adaptor,typename Sink)
-		REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-		inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
-
-	private:
-		mutable difference_type m_shift = 0;
-	};
-
 	transpose_multi_dimensional_order_resolver() = default;
 
-	TEMPLATE(typename Action)
-	REQUIRES(ANY_ACTION_TAGS_SUPPORTED(Action,begin_action_tag,forward_action_tag,backward_action_tag,displace_action_tag))
-	action operator()(const Action& i_action) const;
+	TEMPLATE(typename Adaptor,typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> operator()(Adaptor&& i_adaptor, ActionTag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag> operator()(Adaptor&& i_adaptor,forward_action_tag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag> operator()(Adaptor&& i_adaptor,backward_action_tag&& i_action) const;
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,displace_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+	inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag> operator()(Adaptor&& i_adaptor,displace_action_tag&& i_action) const;
+
+private:
+	template<typename Adaptor>
+	inline auto perform_action(Adaptor&& i_adaptor, typename mpl::remove_qualifiers<Adaptor>::traits::difference_type i_displacement) const;
 };
 
 }

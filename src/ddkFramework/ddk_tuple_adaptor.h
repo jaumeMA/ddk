@@ -1,9 +1,10 @@
 #pragma once
 
-#include "ddk_iterable_defs.h"
+#include "ddk_iterable_adaptor.h"
 #include "ddk_iterable_action.h"
 #include "ddk_variant.h"
 #include "ddk_iterable_action_result.h"
+#include "ddk_iterable_action_tag_result.h"
 
 namespace ddk
 {
@@ -14,47 +15,38 @@ class iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>
 	static const size_t s_numTypes = tuple<T...>::size();
 
 public:
-    typedef variant<T...> value_type;
-	typedef variant<T&...> reference;
-	typedef variant<const T&...> const_reference;
-	typedef long long difference_type;
-	typedef mpl::type_pack<begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag> tags_t;
+	typedef detail::iterable_by_type_traits<variant<T...>,
+											variant<T&...>,
+											variant<const T&...>,
+											mpl::type_pack<agnostic_sink_action_tag<variant<T&...>>>,
+											mpl::type_pack<agnostic_sink_action_tag<variant<const T&...>>,begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(tuple<T...>& i_iterable);
 
-	inline auto get_value();
-	inline auto get_value() const;
 	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink);
+	inline auto perform_action(const sink_action_tag<Sink>&);
 	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink) const;
-	inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
-	inline iterable_action_result<last_action_tag> perform_action(const last_action_tag&) const;
-	inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
-	inline iterable_action_result<backward_action_tag> perform_action(const backward_action_tag&) const;
-	inline iterable_action_result<displace_action_tag> perform_action(const displace_action_tag&) const;
+	inline auto perform_action(const sink_action_tag<Sink>&) const;
+	inline auto perform_action(const begin_action_tag&) const;
+	inline auto perform_action(const last_action_tag&) const;
+	inline auto perform_action(const forward_action_tag&) const;
+	inline auto perform_action(const backward_action_tag&) const;
+	inline auto perform_action(const displace_action_tag&) const;
 
 private:
-	template<typename Sink, size_t ... IIndexs>
-	inline auto get(Sink&& i_sink,const mpl::sequence<IIndexs...>&);
-	template<typename Sink, size_t ... IIndexs>
-	inline auto get(Sink&& i_sink,const mpl::sequence<IIndexs...>&) const;
-	template<size_t Index,typename Sink>
-	inline static auto _get(Sink&& i_sink, tuple<T...>&);
-	template<size_t Index,typename Sink>
-	inline static auto _const_get(Sink&& i_sink,const tuple<T...>&);
+	typedef typename traits::reference reference;
+	typedef typename traits::const_reference const_reference;
 
-	template<size_t ... IIndexs>
-	inline auto get(const mpl::sequence<IIndexs...>&);
-	template<size_t ... IIndexs>
-	inline auto get(const mpl::sequence<IIndexs...>&) const;
-	template<size_t Index>
-	inline static reference _get(tuple<T...>&);
-	template<size_t Index>
-	inline static const_reference _const_get(const tuple<T...>&);
+	template<size_t Index,typename Sink>
+	inline static reference _get(const sink_action_tag<Sink>&,tuple<T...>&);
+	template<size_t Index,typename Sink>
+	inline static const_reference _get(const sink_action_tag<Sink>&,const tuple<T...>&);
 
 	tuple<T...>& m_iterable;
-	mutable difference_type m_currIndex = 0;
+	mutable typename traits::difference_type m_currIndex = 0;
 };
 
 template<size_t ... Indexs,typename ... T>
@@ -63,35 +55,33 @@ class iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>
 	static const size_t s_numTypes = tuple<T...>::size();
 
 public:
-	typedef variant<T...> value_type;
-	typedef variant<const T&...> const_reference;
-	typedef const_reference reference;
-	typedef long long difference_type;
-	typedef mpl::type_pack<begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag> tags_t;
+	typedef detail::iterable_by_type_traits<variant<T...>,
+											variant<const T&...>,
+											variant<const T&...>,
+											mpl::type_pack<>,
+											mpl::type_pack<agnostic_sink_action_tag<variant<const T&...>>,begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(const tuple<T...>& i_iterable);
-	inline auto get_value() const;
 	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink) const;
-	inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
-	inline iterable_action_result<last_action_tag> perform_action(const last_action_tag&) const;
-	inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
-	inline iterable_action_result<backward_action_tag> perform_action(const backward_action_tag&) const;
-	inline iterable_action_result<displace_action_tag> perform_action(const displace_action_tag&) const;
+	inline auto perform_action(const sink_action_tag<Sink>&) const;
+	inline auto perform_action(const begin_action_tag&) const;
+	inline auto perform_action(const last_action_tag&) const;
+	inline auto perform_action(const forward_action_tag&) const;
+	inline auto perform_action(const backward_action_tag&) const;
+	inline auto perform_action(const displace_action_tag&) const;
 
 private:
-	template<typename Sink, size_t ... IIndexs>
-	inline void get(const mpl::sequence<IIndexs...>&,Sink&& i_sink) const;
-	template<size_t Index,typename Sink>
-	inline static void _get(Sink&& i_sink,const tuple<T...>&);
+	typedef typename traits::reference reference;
+	typedef typename traits::const_reference const_reference;
 
-	template<size_t ... IIndexs>
-	inline auto get(const mpl::sequence<IIndexs...>&) const;
-	template<size_t Index>
-	inline static const_reference _get(const tuple<T...>&);
+	template<size_t Index,typename Sink>
+	inline static const_reference _const_get(const sink_action_tag<Sink>&,const tuple<T...>&);
 
 	const tuple<T...>& m_iterable;
-	mutable difference_type m_currIndex = 0;
+	mutable typename traits::difference_type m_currIndex = 0;
 };
 
 }

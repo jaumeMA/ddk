@@ -3,6 +3,7 @@
 #include "ddk_function.h"
 #include "ddk_concepts.h"
 #include "ddk_inherited_value_concepts.h"
+#include <array>
 
 namespace ddk
 {

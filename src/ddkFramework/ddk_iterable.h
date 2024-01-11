@@ -16,21 +16,18 @@ class iterable : public iterable_base<typename Iterable::traits>
     template<typename TTraits>
     friend class iterable;
 
-    friend inline auto deduce_adaptor(const iterable& i_iterable)
+    friend inline auto deduce_adaptor(iterable& i_iterable)
     {
         return deduce_adaptor(i_iterable.m_iterableImpl);
     }
 
     typedef iterable_base<typename Iterable::traits> base_t;
     using typename base_t::action;
+    using typename base_t::const_action;
 
 public:
     using typename base_t::traits;
-    using typename base_t::value_type;
-    using typename base_t::reference;
-    using typename base_t::const_reference;
-    using typename base_t::terse_endpoint;
-    using typename base_t::const_terse_endpoint;
+    using typename base_t::const_traits;
     typedef Iterable iterable_t;
 
     TEMPLATE(typename ... Args)
@@ -39,20 +36,21 @@ public:
     iterable(const iterable&) = delete;
     iterable(iterable&&) = default;
 
-    TEMPLATE(typename Function, typename Action)
-    REQUIRES(IS_CALLABLE_BY(Function,reference),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
-    iterable_result iterate_impl(Function&& i_try, const Action& i_initialAction);
-    TEMPLATE(typename Function, typename Action)
-    REQUIRES(IS_CALLABLE_BY(Function,const_reference),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
-    iterable_result iterate_impl(Function&& i_try, const Action& i_initialAction) const;
+    TEMPLATE(typename Action)
+    REQUIRES(ACTION_SUPPORTED(traits,Action))
+    iterable_result iterate_impl(Action&& i_initialAction);
+    TEMPLATE(typename Action)
+    REQUIRES(ACTION_SUPPORTED(const_traits,Action))
+    iterable_result iterate_impl(Action&& i_initialAction) const;
     bool inline operator==(const std::nullptr_t&) const;
     bool inline operator!=(const std::nullptr_t&) const;
     inline const Iterable& get() const;
     inline Iterable&& extract() &&;
 
 private:
-    iterable_result iterate(terse_endpoint i_try,const action& i_initialAction) override;
-    iterable_result iterate(const_terse_endpoint i_try,const action& i_initialAction) const override;
+    iterable_result iterate(const action& i_initialAction) override;
+    iterable_result iterate(const const_action& i_initialAction) const override;
+    iterable_adaptor<type_erasure_iterable_impl<traits>> deduce_owned_adaptor() override;
 
     iterable_t m_iterableImpl;
 };

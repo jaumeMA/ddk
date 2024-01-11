@@ -17,7 +17,7 @@ struct iterable_traits_correspondence_resolver;
 template<typename Adaptor>
 struct iterable_traits_correspondence_resolver
 {
-	typedef detail::iterable_traits<iterable_adaptor_traits<Adaptor>> type;
+	typedef detail::iterable_traits<typename Adaptor::traits> type;
 };
 
 template<typename>
@@ -48,3 +48,5 @@ using iterable_correspondence = typename iterable_correspondence_impl<Iterable>:
 
 }
 }
+
+#include "ddk_iterable_traits_resolver.h"

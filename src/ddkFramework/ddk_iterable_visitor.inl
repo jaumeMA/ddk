@@ -1,9 +1,5 @@
 
-#include "ddk_function.h"
-#include "ddk_iterable_action.h"
-#include "ddk_fiber_utils.h"
-#include "ddk_iterable_exceptions.h"
-#include "ddk_iterable_adaptor_resolver.h"
+#pragma warning(disable: 4102)
 
 namespace ddk
 {
@@ -11,32 +7,91 @@ namespace detail
 {
 
 template<typename Iterable>
-TEMPLATE(typename ... Args)
-REQUIRED(IS_CONSTRUCTIBLE(adaptor_t,Args...))
+template<typename ... Args>
 iterable_visitor<Iterable>::iterable_visitor(Args&& ... i_args)
 : m_adaptor(std::forward<Args>(i_args)...)
 {
 }
 template<typename Iterable>
-template<typename Function,typename Action>
-void iterable_visitor<Iterable>::loop(Function&& i_sink, const Action& i_initialAction) const
+template<typename Action>
+iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction)
 {
-	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>(),std::declval<Function>())) return_type;
+	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t&>())) return_result;
 
 	Action currAction = i_initialAction;
 
-	if constexpr (mpl::is_same_type<Action,return_type>::value)
+apply_action:
+	if (auto actionRes = currAction.apply(m_adaptor))
 	{
-		while (currAction = currAction.apply(m_adaptor,std::forward<Function>(i_sink)));
+		if constexpr (mpl::is_same_type<Action,typename return_result::payload_t>::value)
+		{
+			if (currAction = std::move(actionRes).extract())
+			{
+				goto apply_action;
+			}
+			else
+			{
+				return success;
+			}
+		}
+		else
+		{
+			if (auto newAction = std::move(actionRes).extract())
+			{
+				return loop(std::move(newAction));
+			}
+			else
+			{
+				return success;
+			}
+		}
 	}
 	else
 	{
-		if (auto newAction = currAction.apply(m_adaptor,std::forward<Function>(i_sink)))
+		return actionRes.error();
+	}
+}
+template<typename Iterable>
+template<typename Action>
+iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction) const
+{
+	typedef decltype(std::declval<Action>().apply(std::declval<const adaptor_t&>())) return_result;
+
+	Action currAction = i_initialAction;
+
+apply_action:
+	if (auto actionRes = currAction.apply(m_adaptor))
+	{
+		if constexpr (mpl::is_same_type<Action,typename return_result::payload_t>::value)
 		{
-			loop(std::forward<Function>(i_sink),newAction);
+			if (currAction = std::move(actionRes).extract())
+			{
+				goto apply_action;
+			}
+			else
+			{
+				return success;
+			}
 		}
+		else
+		{
+			if (auto newAction = std::move(actionRes).extract())
+			{
+				return loop(std::move(newAction));
+			}
+			else
+			{
+				return success;
+			}
+		}
+	}
+	else
+	{
+		return actionRes.error();
 	}
 }
 
 }
 }
+
+#pragma warning(default: 4102)

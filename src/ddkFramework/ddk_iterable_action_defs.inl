@@ -1,29 +1,26 @@
 
-#include "ddk_fiber_utils.h"
-#include "ddk_iterable_adaptor_concepts.h"
+#include "ddk_iterable_action_result.h"
 
 namespace ddk
 {
 
-template<typename Adaptor,typename Sink>
-no_action no_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+template<typename Adaptor>
+auto no_action::apply(Adaptor&& i_adaptor) const
 {
-	return {};
+	return make_result<iterable_action_result<no_action>>();
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto remove_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto remove_action::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_type;
-
-	if (i_adaptor.perform_action(remove_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(remove_action_tag{}))
 	{
-		return i_adaptor.forward_value(std::forward<Sink>(i_sink));
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not remove action");
 	}
 }
 
@@ -38,193 +35,156 @@ add_action<T>::add_action(const stop_action&)
 {
 }
 template<typename T>
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto add_action<T>::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto add_action<T>::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_type;
-
-	if (i_adaptor.perform_action(add_action_tag<T>{std::move(m_value)}))
+	if (const auto actionRes = i_adaptor.perform_action(add_action_tag<T>{std::move(m_value)}))
 	{
-		return i_adaptor.forward_value(std::forward<Sink>(i_sink));
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not add action");
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
-auto forward_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto forward_action::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_type;
-
-	if (i_adaptor.perform_action(forward_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(forward_action_tag{}))
 	{
-		return i_adaptor.forward_value(std::forward<Sink>(i_sink));
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not forward action");
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
-auto backward_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto backward_action::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_type;
-
-	if (i_adaptor.perform_action(backward_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(backward_action_tag{}))
 	{
-		return i_adaptor.forward_value(std::forward<Sink>(i_sink));
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not backward action");
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
-auto go_to_begin_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto go_to_begin_action::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_sink;
-	typedef typename mpl::which_type<mpl::is_same_type<return_sink,go_to_begin_action>::value,forward_action,return_sink>::type return_type;
-
-	if (i_adaptor.perform_action(begin_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(begin_action_tag{}))
 	{
-		return return_type{ i_adaptor.forward_value(std::forward<Sink>(i_sink)) };
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not begin action");
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
-auto go_to_end_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto go_to_end_action::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_sink;
-	typedef typename mpl::which_type<mpl::is_same_type<return_sink,go_to_end_action>::value,backward_action,return_sink>::type return_type;
-
-	if (i_adaptor.perform_action(last_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(last_action_tag{}))
 	{
-		return return_type{ i_adaptor.forward_value(std::forward<Sink>(i_sink)) };
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not end action");
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto bidirectional_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto bidirectional_action::apply(Adaptor&& i_adaptor) const
 {
 	if (m_forward)
 	{
 		static const forward_action k_forwardAction;
 
-		return k_forwardAction.apply(std::forward<Adaptor>(i_adaptor),std::forward<Sink>(i_sink));
+		return k_forwardAction.apply(std::forward<Adaptor>(i_adaptor));
 	}
 	else
 	{
 		static const backward_action k_backwardAction;
 
-		return k_backwardAction.apply(std::forward<Adaptor>(i_adaptor),std::forward<Sink>(i_sink));
+		return k_backwardAction.apply(std::forward<Adaptor>(i_adaptor));
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto displacement_action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto displacement_action::apply(Adaptor&& i_adaptor) const
 {
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_type;
-
-	if (i_adaptor.perform_action(displace_action_tag{ shift() }))
+	if (const auto actionRes = i_adaptor.perform_action(displace_action_tag{ shift() }))
 	{
-		return return_type{ i_adaptor.forward_value(std::forward<Sink>(i_sink)) };
+		return make_result<iterable_action_result<no_action>>();
 	}
 	else
 	{
-		return return_type{ stop_iteration };
+		return make_error<iterable_action_result<no_action>>(IterableError::InternalError,"Could not displace action");
 	}
 }
 
-template<typename Action>
-TEMPLATE(typename AAction)
-REQUIRED(IS_CONSTRUCTIBLE(Action,AAction))
-step_by_step_action<Action>::step_by_step_action(AAction&& i_action)
-: m_action(std::forward<AAction>(i_action))
-{
-	if constexpr (IS_BASE_OF_COND(displacement_action,AAction))
-	{
-		m_steps = std::abs(i_action.shift());
-
-		i_action.set_shift((i_action.shift() > 0) ? 1 : -1);
-	}
-}
-template<typename Action>
-TEMPLATE(typename AAction)
-REQUIRED(IS_CONSTRUCTIBLE(Action,AAction))
-step_by_step_action<Action>::step_by_step_action(const step_by_step_action<AAction>& other)
-: m_action(other.m_action)
-, m_steps(other.m_steps)
+template<typename Sink>
+sink_action<Sink>::sink_action(const Sink& i_sink)
+: m_sink(i_sink)
 {
 }
-template<typename Action>
-step_by_step_action<Action>::step_by_step_action(const stop_action& i_action)
+template<typename Sink>
+sink_action<Sink>::sink_action(Sink&& i_sink)
+: m_sink(i_sink)
+{
+}
+template<typename Sink>
+TEMPLATE(typename SSink)
+REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
+sink_action<Sink>::sink_action(const sink_action<SSink>& i_action)
+: m_sink(i_action.m_sink)
+{
+}
+template<typename Sink>
+TEMPLATE(typename SSink)
+REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
+sink_action<Sink>::sink_action(sink_action<SSink>&& i_action)
+: m_sink(std::move(i_action.m_sink))
+{
+}
+template<typename Sink>
+sink_action<Sink>::sink_action(const stop_action&)
 : action_base(false)
-, m_action(i_action)
 {
 }
-template<typename Action>
-TEMPLATE(typename Adaptor,typename Sink)
+template<typename Sink>
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto step_by_step_action<Action>::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto sink_action<Sink>::apply(Adaptor&& i_adaptor) const
 {
-	return m_action.apply(std::forward<Adaptor>(i_adaptor),std::forward<Sink>(i_sink));
-}
-template<typename Action>
-step_by_step_action<Action>& step_by_step_action<Action>::operator--()
-{
-	m_steps--;
+	typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
+	typedef typename adaptor_t::traits traits;
+	typedef typename traits::reference reference;
+	typedef decltype(std::declval<Sink>()(std::declval<reference>())) return_action;
+	typedef iterable_action_result<and_action<return_action,sink_action<Sink>>> return_result;
 
-	return *this;
-}
-template<typename Action>
-bool step_by_step_action<Action>::ready() const
-{
-	return m_steps == 0;
-}
-
-template<typename Action,typename AAction>
-action_pair<Action,AAction>::action_pair(const Action& i_lhs, const AAction& i_rhs)
-: Action(i_lhs)
-,m_pendingAction(i_rhs)
-{
-}
-template<typename Action,typename AAction>
-action_pair<Action,AAction>::action_pair(const stop_action& i_action)
-: Action(i_action)
-, m_pendingAction(i_action)
-{
-}
-template<typename Action,typename AAction>
-TEMPLATE(typename Adaptor,typename Sink)
-REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto action_pair<Action,AAction>::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
-{
-	if (const auto newAction = Action::apply(std::forward<Adaptor>(i_adaptor),std::forward<Sink>(i_sink)))
+	return_action returnAction(stop_iteration);
+	if (auto actionRes = i_adaptor.perform_action(sink_action_tag{ [&](auto&& i_value) mutable { returnAction = ddk::eval(m_sink,std::forward<decltype(i_value)>(i_value)); }}))
 	{
-		return m_pending_action;
+		return make_result<return_result>(returnAction && sink_action{m_sink});
 	}
 	else
 	{
-		return AAction{ stop_iteration };
+		return make_error<return_result>(IterableError::InternalError,"Could not sink action");
 	}
 }
 

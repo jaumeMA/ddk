@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ddk_tuple.h"
 #include "ddk_tuple_template_helper.h"
 #include "ddk_function_template_helper.h"
 #include "ddk_tagged_pointer.h"
@@ -107,11 +106,11 @@ class relative_function_impl : public function_base<Return,Types...>
 {
     typedef Return(ObjectType::*NonConstFuncPointerType)(Types...);
     typedef Return(ObjectType::*ConstFuncPointerType)(Types...)const;
-    typedef typename mpl::static_if<std::is_const<ObjectType>::value,ConstFuncPointerType,NonConstFuncPointerType>::type FuncPointerType;
     using function_base<Return,Types...>::s_numTypes;
     using typename function_base<Return,Types...>::tuple_args;
 
 public:
+    typedef typename mpl::static_if<std::is_const<ObjectType>::value,ConstFuncPointerType,NonConstFuncPointerType>::type FuncPointerType;
 	typedef Return return_type;
 
 	constexpr relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
@@ -120,6 +119,7 @@ public:
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 	Return operator()(forwarded_arg<Types> ... args) const final;
+	FuncPointerType get() const;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -134,11 +134,11 @@ private:
 template<typename Return, typename ... Types>
 class free_function_impl : public function_base<Return,Types...>
 {
-    typedef Return(*FuncPointerType)(Types...);
     using function_base<Return,Types...>::s_numTypes;
     using typename function_base<Return,Types...>::tuple_args;
 
 public:
+    typedef Return(*FuncPointerType)(Types...);
 	typedef Return return_type;
 
 	constexpr free_function_impl(FuncPointerType i_funcPointer);
@@ -146,6 +146,7 @@ public:
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 	Return operator()(forwarded_arg<Types> ... args) const final;
+	FuncPointerType get() const;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -170,6 +171,8 @@ public:
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 	Return operator()(forwarded_arg<Types> ... args) const final;
+	const T& get() const;
+	T& get();
 
 private:
     Return apply(const tuple_args& i_tuple) const final;

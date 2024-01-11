@@ -26,7 +26,7 @@ public:
     action_base(const action_base&) = default;
     action_base(bool i_valid = true);
 
-    operator bool() const;
+    explicit operator bool() const;
 
 private:
     bool m_valid = true;
@@ -34,13 +34,11 @@ private:
 
 struct no_action : action_base
 {
-    typedef mpl::type_pack<forward_action_tag> tags_t;
-
     no_action() = default;
     no_action(const stop_action&);
     
-    template<typename Adaptor, typename Sink>
-    no_action apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    template<typename Adaptor>
+    auto apply(Adaptor&& i_adaptor) const;
 };
 
 struct remove_action : action_base
@@ -50,9 +48,9 @@ struct remove_action : action_base
     remove_action() = default;
     remove_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 };
 
 template<typename T>
@@ -65,9 +63,9 @@ public:
     add_action(T i_value);
     add_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor && i_adaptor,Sink && i_sink) const;
+    inline auto apply(Adaptor && i_adaptor) const;
 
 private:
     mutable T m_value;
@@ -82,9 +80,9 @@ struct forward_action : action_base
     forward_action() = default;
     forward_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor, typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor && i_adaptor,Sink && i_sink) const;
+    inline auto apply(Adaptor && i_adaptor) const;
 };
 
 struct backward_action : action_base
@@ -94,9 +92,9 @@ struct backward_action : action_base
     backward_action() = default;
     backward_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 };
 
 struct go_to_begin_action : forward_action
@@ -108,9 +106,9 @@ public:
     go_to_begin_action(const forward_action&);
     go_to_begin_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 };
 
 struct go_to_end_action : backward_action
@@ -122,9 +120,9 @@ public:
     go_to_end_action(const backward_action&);
     go_to_end_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 };
 
 struct displacement_action : action_base
@@ -137,9 +135,9 @@ public:
 
     difference_type shift() const;
     void set_shift(difference_type i_shift);
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 
 private:
     difference_type m_shift;
@@ -154,68 +152,42 @@ public:
     bidirectional_action(const displacement_action& i_action);
     bidirectional_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 
 private:
     const bool m_forward;
 };
 
-template<typename Action>
-struct step_by_step_action : action_base
+template<typename Sink>
+struct sink_action : action_base
 {
     template<typename>
-    friend struct step_by_step_action;
-    friend inline auto inverse(const step_by_step_action& i_action)
-    {
-        return step_by_step_action<decltype(inverse(std::declval<Action>()))>{ inverse(i_action.m_action) };
-    }
+    friend struct sink_action;
 
 public:
-    typedef typename Action::tags_t tags_t;
+    typedef mpl::type_pack<sink_action_tag<Sink>> tags_t;
 
-    TEMPLATE(typename AAction)
-    REQUIRES(IS_CONSTRUCTIBLE(Action,AAction))
-    step_by_step_action(AAction&& i_action);
-    TEMPLATE(typename AAction)
-    REQUIRES(IS_CONSTRUCTIBLE(Action,AAction))
-    step_by_step_action(const step_by_step_action<AAction>& other);
-    step_by_step_action(const stop_action&);
+    sink_action(const Sink& i_sink);
+    sink_action(Sink&& i_sink);
+    TEMPLATE(typename SSink)
+    REQUIRES(IS_CONSTRUCTIBLE(Sink,SSink))
+    sink_action(const sink_action<SSink>& i_action);
+    TEMPLATE(typename SSink)
+    REQUIRES(IS_CONSTRUCTIBLE(Sink,SSink))
+    sink_action(sink_action<SSink>&& i_action);
+    sink_action(const stop_action&);
 
-    TEMPLATE(typename Adaptor,typename Sink)
+    TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
-    step_by_step_action& operator--();
-    bool ready() const;
+    inline auto apply(Adaptor&& i_adaptor) const;
 
 private:
-    Action m_action;
-    size_t m_steps = 0;
+    Sink m_sink;
 };
-template<typename Action>
-step_by_step_action(const Action&) -> step_by_step_action<typename mpl::which_type<mpl::is_same_type<Action,displacement_action>::value,bidirectional_action,Action>::type>;
-
-template<typename Action, typename AAction>
-struct action_pair : Action
-{
-    static const size_t s_num_pending_actions = mpl::num_types<Actions...>;
-
-public:
-    action_pair(const Action& i_lhs, const AAction& i_rhs);
-    action_pair(const stop_action&);
-
-    TEMPLATE(typename Adaptor,typename Sink)
-    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-    inline auto apply(Adaptor&& i_adaptor,Sink&& i_sink) const;
-
-private:
-    AAction m_pendingAction;
-};
-template<typename Action,typename AAction>
-action_pair(const Action&,const AAction&) -> action_pair<Action,AAction>;
 
 }
 
-#include "ddk_iterable_action_defs.inl"
 #include "ddk_iterable_action_ops.h"
+#include "ddk_iterable_action_defs.inl"

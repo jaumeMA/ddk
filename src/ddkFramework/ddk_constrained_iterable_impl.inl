@@ -1,4 +1,6 @@
 
+#include "ddk_filtered_iterable_action.h"
+
 namespace ddk
 {
 namespace detail
@@ -19,29 +21,95 @@ template<typename Iterable,typename Constrain>
 TEMPLATE(typename IIterable,typename CConstrain)
 REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Constrain,CConstrain))
 constrained_iterable_impl<Iterable,Constrain>::constrained_iterable_impl(IIterable&& i_iterable,CConstrain&& i_constrain)
-: m_iterable(std::forward<IIterable>(i_iterable))
-, m_constrain(std::forward<CConstrain>(i_constrain))
+: base_t(std::forward<IIterable>(i_iterable),std::forward<CConstrain>(i_constrain))
 {
 }
 template<typename Iterable,typename Constrain>
-TEMPLATE(typename Function,typename Action)
-REQUIRED(IS_CALLABLE_BY(Function,reference))
-iterable_result constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Function&& i_try,const Action& i_initialAction)
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(traits,Action))
+iterable_result constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Action&& i_initialAction)
 {
-    typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
-
-    return m_iterable.iterate_impl([&](reference i_value) -> return_type { if (ddk::eval(m_constrain,i_value)) { return ddk::eval(i_try,i_value); } else { return return_type{ stop_iteration }; }},i_initialAction);
+	return loop(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable,typename Constrain>
-TEMPLATE(typename Function,typename Action)
-REQUIRED(IS_CALLABLE_BY(Function,const_reference))
-iterable_result constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Function&& i_try,const Action& i_initialAction) const
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(const_traits,Action))
+iterable_result constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Action&& i_initialAction) const
 {
-    typedef typename mpl::aqcuire_callable_return_type<Function>::type return_type;
-
-    return m_iterable.iterate_impl([&](reference i_value) -> return_type { if (ddk::eval(m_constrain,i_value)) { return ddk::eval(i_try,i_value); } else { return return_type{ stop_iteration }; }},i_initialAction);
-
+	return loop(std::forward<Action>(i_initialAction));
 }
 
 }
+
+template<typename Iterable,typename Constrain>
+iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::iterable_adaptor(Iterable& i_iterable,const Constrain& i_constrain)
+: m_adaptor(deduce_adaptor(i_iterable))
+, m_constrain(i_constrain)
+{
+}
+template<typename Iterable,typename Constrain>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag)
+{
+    typedef iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>> adaptor_t;
+    typedef filtered_iterable_action_result<adaptor_t,ActionTag,Constrain> filtered_action_result;
+
+    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
+
+    if (filtered_action_result applyRes = filteredAction.apply(m_adaptor))
+    {
+        return make_result<iterable_action_tag_result<traits,ActionTag>>(applyRes);
+    }
+    else
+    {
+        return make_error<iterable_action_tag_result<traits,ActionTag>>(applyRes.error());
+    }
+}
+template<typename Iterable,typename Constrain>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag) const
+{
+    typedef iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>> adaptor_t;
+    typedef filtered_iterable_action_result<const adaptor_t,ActionTag,Constrain> filtered_action_result;
+
+    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
+
+    if (filtered_action_result applyRes = filteredAction.apply(m_adaptor))
+    {
+        return make_result<iterable_action_tag_result<const_traits,ActionTag>>(applyRes);
+    }
+    else
+    {
+        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(applyRes.error());
+    }
+}
+
+template<typename Iterable,typename Constrain>
+iterable_adaptor<const detail::constrained_iterable_impl<Iterable,Constrain>>::iterable_adaptor(const Iterable& i_iterable,const Constrain& i_constrain)
+: m_adaptor(deduce_adaptor(i_iterable))
+, m_constrain(i_constrain)
+{
+}
+template<typename Iterable,typename Constrain>
+TEMPLATE(typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+auto iterable_adaptor<const detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag) const
+{
+    typedef iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>> adaptor_t;
+    typedef filtered_iterable_action_result<const adaptor_t,ActionTag,Constrain> filtered_action_result;
+
+    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
+
+    if (filtered_action_result applyRes = filteredAction.apply(m_adaptor))
+    {
+        return make_result<iterable_action_tag_result<const_traits,ActionTag>>(success);
+    }
+    else
+    {
+        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(applyRes.error());
+    }
+}
+
 }

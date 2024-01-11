@@ -124,6 +124,12 @@
 #define IS_NON_CONST_EXCLUSIVE_RANDOM_ACCESS_ADAPTOR(_TYPE) \
     typename std::enable_if<IS_NON_CONST_EXCLUSIVE_RANDOM_ACCESS_ADAPTOR_COND(_TYPE)>::type    
 
+#define IS_DIMENSIONABLE_ADAPTOR_COND(_ADAPTOR) \
+    ddk::concepts::is_dimensionable_adaptor_v<_ADAPTOR>
+
+#define IS_DIMENSIONABLE_ADAPTOR(_ADAPTOR) \
+    typename std::enable_if<IS_DIMENSIONABLE_ADAPTOR_COND(_ADAPTOR)>::type    
+
 namespace ddk
 {
 namespace concepts
@@ -199,6 +205,22 @@ public:
 
 template<typename T>
 inline constexpr bool is_random_access_adaptor_v = is_random_access_adaptor<T>::value;
+
+template<typename T>
+struct is_dimensionable_adaptor
+{
+private:
+    template<typename TT>
+    static std::true_type resolve(const TT&,const typename TT::dimension_t*);
+    template<typename TT>
+    static std::true_type resolve(const TT&,...);
+
+public:
+    static const bool value = decltype(resolve(std::declval<T>(),nullptr))::value;
+};
+
+template<typename T>
+inline constexpr bool is_dimensionable_adaptor_v = is_dimensionable_adaptor<mpl::remove_qualifiers<T>>::value;
 
 }
 }

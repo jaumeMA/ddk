@@ -28,42 +28,21 @@ iterable_adaptor<const detail::__numbers_iterable<Generator>>::iterable_adaptor(
 : m_generator(i_generator)
 {
 }
-template<typename T>
-bool iterable_adaptor<const detail::__numbers_iterable<T>>::valid() const
-{
-    return true;
-}
-template<typename T>
-typename iterable_adaptor<const detail::__numbers_iterable<T>>::reference iterable_adaptor<const detail::__numbers_iterable<T>>::get_value()
-{
-    return m_currValue;
-}
-template<typename T>
-typename iterable_adaptor<const detail::__numbers_iterable<T>>::const_reference iterable_adaptor<const detail::__numbers_iterable<T>>::get_value() const
-{
-    return m_currValue;
-}
-template<typename T>
+template<typename Generator>
 template<typename Sink>
-auto iterable_adaptor<const detail::__numbers_iterable<T>>::forward_value(Sink&& i_sink)
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,sink_action_tag<Sink>> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(const sink_action_tag<Sink>& i_sink) const
 {
-    return ddk::eval(std::forward<Sink>(i_sink),m_currValue);
+    return i_sink(m_currValue);
 }
-template<typename T>
-template<typename Sink>
-auto iterable_adaptor<const detail::__numbers_iterable<T>>::forward_value(Sink&& i_sink) const
-{
-    return ddk::eval(std::forward<Sink>(i_sink),m_currValue);
-}
-template<typename T>
-iterable_action_result<begin_action_tag> iterable_adaptor<const detail::__numbers_iterable<T>>::perform_action(const begin_action_tag&) const
+template<typename Generator>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,begin_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(const begin_action_tag&) const
 {
     m_currValue = 0;
 
     return success;
 }
-template<typename T>
-iterable_action_result<forward_action_tag> iterable_adaptor<const detail::__numbers_iterable<T>>::perform_action(const forward_action_tag&) const
+template<typename Generator>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,forward_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(const forward_action_tag&) const
 {
     m_currValue = ddk::eval(m_generator,m_currValue);
 

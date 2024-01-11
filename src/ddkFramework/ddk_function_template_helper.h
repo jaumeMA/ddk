@@ -39,7 +39,7 @@ template<size_t currIndex,typename>
 struct pos_place_holder;
 
 template<size_t currIndex>
-struct pos_place_holder<currIndex,type_pack<>>
+struct pos_place_holder<currIndex,empty_type_pack>
 {
     typedef sequence<> type;
 };
@@ -59,7 +59,7 @@ template<typename>
 struct sequence_place_holder;
 
 template<>
-struct sequence_place_holder<type_pack<>>
+struct sequence_place_holder<empty_type_pack>
 {
     typedef sequence<> type;
 };

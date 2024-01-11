@@ -35,6 +35,7 @@ class iteration : protected detail::iteration_sink<Sink>
 
 	typedef detail::iteration_sink<Sink> sink_type;
 	typedef typename Iterable::traits traits;
+	typedef typename Iterable::const_traits const_traits;
 
 public:
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ddk_variant_concepts.h"
-#include "ddk_callable.h"
 
 namespace ddk
 {

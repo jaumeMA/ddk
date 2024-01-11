@@ -1,10 +1,7 @@
 #pragma once
 
-#include "ddk_iterable_traits.h"
-#include "ddk_iterable_result.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lent_reference_wrapper.h"
-#include "ddk_function.h"
 
 namespace ddk
 {
@@ -16,9 +13,6 @@ class iterable_impl_interface
 {
 public:
     typedef Traits traits;
-    typedef typename traits::value_type value_type;
-    typedef typename traits::reference reference;
-    typedef typename traits::const_reference const_reference;
 
     virtual ~iterable_impl_interface() = default;
 };
@@ -43,6 +37,9 @@ using iterable_impl_const_lent_ptr = lent_pointer_wrapper<const iterable_impl_in
 
 template<typename IterableImpl, typename ... Args>
 inline distributed_reference_wrapper<IterableImpl> make_iterable_impl(Args&& ... i_args);
+
+template<typename Traits>
+Traits deduce_iterable_traits(const iterable_impl_interface<Traits>&);
 
 }
 }

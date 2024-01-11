@@ -4,74 +4,160 @@ namespace ddk
 namespace detail
 {
 
-template<bool Forward>
-TEMPLATE(typename Action)
-REQUIRED(ANY_ACTION_TAGS_SUPPORTED(Action,forward_action_tag,backward_action_tag,displace_action_tag))
-auto reversable_order_resolver<Forward>::operator()(const Action& i_action) const
+TEMPLATE(typename Adaptor,typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> forward_order_resolver::operator()(Adaptor&& i_adaptor,ActionTag&& i_action) const
 {
-	if constexpr (Forward)
+	return i_adaptor.perform_action(std::forward<ActionTag>(i_action));
+}
+
+TEMPLATE(typename Adaptor,typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> backward_order_resolver::operator()(Adaptor&& i_adaptor, ActionTag&& i_action) const
+{
+	return i_adaptor.perform_action(std::forward<ActionTag>(i_action));
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,last_action_tag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,begin_action_tag&& i_action) const
+{
+	if (const auto actionRes = i_adaptor.perform_action(last_action_tag{}))
 	{
-		return i_action;
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(success);
 	}
 	else
 	{
-		return inverse(i_action);
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>();
+	}
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,begin_action_tag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,last_action_tag&& i_action) const
+{
+	if (const auto actionRes = i_adaptor.perform_action(begin_action_tag{}))
+	{
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag>>();
+	}
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor, forward_action_tag&& i_action) const
+{
+	if (const auto actionRes = i_adaptor.perform_action(backward_action_tag{}))
+	{
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>();
+	}
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor, backward_action_tag&& i_action) const
+{
+	if (const auto actionRes = i_adaptor.perform_action(forward_action_tag{}))
+	{
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>();
+	}
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,displace_action_tag))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor, displace_action_tag&& i_action) const
+{
+	if (const auto actionRes = i_adaptor.perform_action(displace_action_tag{ -i_action.displacement() }))
+	{
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(-actionRes.error().recovery().displacement());
 	}
 }
 
-TEMPLATE(typename Adaptor,typename Sink)
-REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto transpose_multi_dimensional_order_resolver::action::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+TEMPLATE(typename Adaptor,typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> transpose_multi_dimensional_order_resolver::operator()(Adaptor&& i_adaptor,ActionTag&& i_action) const
 {
-	typedef typename mpl::remove_qualifiers<Adaptor>::dimension_t adaptor_dimension;
+	return i_adaptor.perform_action(std::forward<ActionTag>(i_action));
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag> transpose_multi_dimensional_order_resolver::operator()(Adaptor&& i_adaptor, forward_action_tag&& i_action) const
+{
+	typedef typename mpl::remove_qualifiers<Adaptor>::traits adaptor_traits;
+	typedef typename adaptor_traits::difference_type difference_type;
+
+	if (const auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),difference_type{ 1 }))
+	{
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>();
+	}
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag> transpose_multi_dimensional_order_resolver::operator()(Adaptor&& i_adaptor, backward_action_tag&& i_action) const
+{
+	typedef typename mpl::remove_qualifiers<Adaptor>::traits adaptor_traits;
+	typedef typename adaptor_traits::difference_type difference_type;
+
+	if (const auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),difference_type{ -1 }))
+	{
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>();
+	}
+}
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,displace_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
+iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag> transpose_multi_dimensional_order_resolver::operator()(Adaptor&& i_adaptor, displace_action_tag&& i_action) const
+{
+	return perform_action(std::forward<Adaptor>(i_adaptor),i_action.displacement());
+}
+template<typename Adaptor>
+auto transpose_multi_dimensional_order_resolver::perform_action(Adaptor&& i_adaptor,typename mpl::remove_qualifiers<Adaptor>::traits::difference_type i_displacement) const
+{
+	typedef typename mpl::remove_qualifiers<Adaptor> adaptor_t;
+	typedef typename adaptor_t::dimension_t adaptor_dimension;
+	typedef typename adaptor_t::traits adaptor_traits;
+	typedef typename adaptor_traits::difference_type difference_type;
 	typedef typename adaptor_dimension::template drop<0> adaptor_sub_dimension;
 
-	typedef decltype(std::declval<Adaptor>().forward_value(std::declval<Sink>())) return_type;
-
-	difference_type shift = m_shift * adaptor_sub_dimension::prod;
+	difference_type shift = i_displacement * adaptor_sub_dimension::prod;
 
 apply_action:
 
 	if (const auto actionRes = i_adaptor.perform_action(displace_action_tag{ static_cast<difference_type>(shift) }))
 	{
-		return return_type{ i_adaptor.forward_value(std::forward<Sink>(i_sink)) };
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(actionRes);
 	}
 	else
 	{
-		const displace_action_tag pendingAction = actionRes.recovery();
+		const displace_action_tag pendingAction = actionRes.error().recovery();
 
 		if (pendingAction.displacement() < shift)
 		{
-			shift = -adaptor_dimension::prod + 2;
+			shift = -static_cast<difference_type>(adaptor_dimension::prod) + 2;
 
 			goto apply_action;
 		}
 		else
 		{
-			return return_type{ stop_iteration };
+			return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(pendingAction.displacement());
 		}
-	}
-}
-
-TEMPLATE(typename Action)
-REQUIRED(ANY_ACTION_TAGS_SUPPORTED(Action,begin_action_tag,forward_action_tag,backward_action_tag,displace_action_tag))
-transpose_multi_dimensional_order_resolver::action transpose_multi_dimensional_order_resolver::operator()(const Action& i_action) const
-{
-	if constexpr (ACTION_TAGS_SUPPORTED_COND(Action,begin_action_tag))
-	{
-		return { 0 };
-	}
-	else if constexpr (ACTION_TAGS_SUPPORTED_COND(Action,forward_action_tag))
-	{
-		return { 1 };
-	}
-	else if constexpr (ACTION_TAGS_SUPPORTED_COND(Action,backward_action_tag))
-	{
-		return { -1 };
-	}
-	else
-	{
-		return { i_action.shift() };
 	}
 }
 

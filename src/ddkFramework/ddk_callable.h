@@ -12,6 +12,7 @@ class fixed_return_callable_impl
 {
 public:
 	typedef Return return_type;
+	typedef mpl::aqcuire_callable_args_type<Function> args_type;
 	struct callable_tag;
 
 	fixed_return_callable_impl(Function& i_function);
@@ -27,6 +28,7 @@ class replaced_return_callable_impl
 {
 public:
 	typedef Return return_type;
+	typedef mpl::aqcuire_callable_args_type<Function> args_type;
 	struct callable_tag;
 
 	template<typename ... Args>

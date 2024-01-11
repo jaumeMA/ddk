@@ -11,13 +11,13 @@ any_action<Actions...>::any_action(AAction&& i_action)
 {
 }
 template<typename ... Actions>
-TEMPLATE(typename Adaptor,typename Sink)
+TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-auto any_action<Actions...>::apply(Adaptor&& i_adaptor,Sink&& i_sink) const
+auto any_action<Actions...>::apply(Adaptor&& i_adaptor) const
 {
 	return visit([&](auto&& i_action)
 	{
-		return i_action.apply(std::forward<Adaptor>(i_adaptor),std::forward<Sink>(i_sink));
+		return i_action.apply(std::forward<Adaptor>(i_adaptor));
 	},m_actions);
 }
 

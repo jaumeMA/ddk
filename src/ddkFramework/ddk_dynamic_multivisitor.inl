@@ -184,7 +184,7 @@ auto visit(Callable&& i_callable, const Values& ... i_values)
 	typedef typename detail::resolve_callable_return_type<Callable,typename mpl::make_sequence<0,mpl::num_types<Values...>>::type,inherited_type_pack>::type return_type;
 	auto _visitor = dynamic_callable<return_type,type_interface>(i_callable);
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::empty_type_pack,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
 
 	multiVisitor.visit(detail::resolve_lent(i_values) ...);
 
@@ -205,7 +205,7 @@ auto visit(Callable&& i_callable, const Values& ... i_values)
 
 	auto _visitor = dynamic_callable<Return,type_interface>(i_callable);
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::empty_type_pack,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
 
 	multiVisitor.visit(detail::resolve_lent(i_values) ...);
 
@@ -226,7 +226,7 @@ auto visit(const Values& ... i_values)
 
 	auto _visitor = dynamic_callable<return_type,type_interface>(Callable{});
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::empty_type_pack,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
 
 	multiVisitor.visit(detail::resolve_lent(i_values) ...);
 
@@ -247,7 +247,7 @@ auto visit(const Values& ... i_values)
 
 	auto _visitor = dynamic_callable<Return,type_interface>(Callable{});
 
-	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::type_pack<>,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
+	dynamic_multi_visitor<decltype(_visitor),inherited_type_pack,mpl::empty_type_pack,type_interface,mpl::num_types<Values...>> multiVisitor(_visitor);
 
 	multiVisitor.visit(detail::resolve_lent(i_values) ...);
 

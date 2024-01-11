@@ -21,7 +21,7 @@ struct constructor_visitor : public static_visitor<Storage>
     template<size_t PosType, typename Type>
 	constexpr Storage operator()(Type&& i_value) const
 	{
-		static_assert(mpl::is_among_constructible_types<Type, Types...>, "Not present type!");
+		static_assert(PosType >= 0 && PosType < mpl::get_num_types<Types...>(),"Type out of bounds!");
 
 		typedef typename mpl::nth_type_of<PosType,Types...>::type varType;
 

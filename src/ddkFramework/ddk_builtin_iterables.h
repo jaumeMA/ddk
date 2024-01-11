@@ -36,22 +36,16 @@ class iterable_adaptor<const detail::__numbers_iterable<Generator>>
     typedef typename detail::__numbers_iterable<Generator>::value_type underlying_type;
 
 public:
-    typedef const underlying_type value_type;
-    typedef value_type& reference;
-    typedef value_type& const_reference;
-    typedef long long difference_type;
-    typedef mpl::type_pack<begin_action_tag,forward_action_tag> tags_t;
+    typedef mpl::empty_type_pack tags_t;
+    typedef mpl::type_pack<agnostic_sink_action_tag<const underlying_type&>,begin_action_tag,forward_action_tag> const_tags_t;
+    typedef detail::iterable_by_type_adaptor<const underlying_type,tags_t,const_tags_t> traits;
+    typedef detail::const_iterable_traits<traits> const_traits;
 
     iterable_adaptor(const detail::__numbers_iterable<Generator>& i_generator);
-    inline bool valid() const;
-    inline reference get_value();
-    inline const_reference get_value() const;
     template<typename Sink>
-    inline auto forward_value(Sink&& i_sink);
-    template<typename Sink>
-    inline auto forward_value(Sink&& i_sink) const;
-    inline iterable_action_result<begin_action_tag> perform_action(const begin_action_tag&) const;
-    inline iterable_action_result<forward_action_tag> perform_action(const forward_action_tag&) const;
+    inline iterable_action_tag_result<traits,sink_action_tag<Sink>> perform_action(const sink_action_tag<Sink>& i_sink) const;
+    inline iterable_action_tag_result<traits,begin_action_tag> perform_action(const begin_action_tag&) const;
+    inline iterable_action_tag_result<traits,forward_action_tag> perform_action(const forward_action_tag&) const;
 
 private:
     mutable underlying_type m_currValue = 0;
@@ -62,11 +56,10 @@ template<typename Generator>
 class iterable_adaptor<detail::__numbers_iterable<Generator>> : public iterable_adaptor<const detail::__numbers_iterable<Generator>>
 {
 public:
-    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::value_type;
-    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::reference;
-    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::const_reference;
-    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::difference_type;
+    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits;
+    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::const_traits;
     using iterable_adaptor<const detail::__numbers_iterable<Generator>>::tags_t;
+    using iterable_adaptor<const detail::__numbers_iterable<Generator>>::const_tags_t;
 
     using iterable_adaptor<const detail::__numbers_iterable<Generator>>::iterable_adaptor;
 };

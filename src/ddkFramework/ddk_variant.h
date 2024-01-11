@@ -1,10 +1,9 @@
 #pragma once
 
 #include "ddk_variant_impl.h"
-#include "ddk_type_concepts.h"
-#include "ddk_function_concepts.h"
-#include "ddk_concepts.h"
 #include "ddk_none.h"
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 #include "ddk_class_rules.h"
 
 namespace ddk

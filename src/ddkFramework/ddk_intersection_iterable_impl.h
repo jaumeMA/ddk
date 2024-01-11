@@ -3,6 +3,7 @@
 #include "ddk_tuple.h"
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_iterable_traits.h"
+#include "ddk_intersection_iterable_action.h"
 
 namespace ddk
 {
@@ -10,23 +11,22 @@ namespace detail
 {
 
 template<typename ... Iterables>
-class intersection_iterable_impl : public iterable_impl_interface<intersection_iterable_traits<typename Iterables::traits ...>>, protected iterable_visitor<intersection_iterable_impl<Iterables...>>
+class intersection_iterable_impl : public iterable_impl_interface<intersection_iterable_traits<typename Iterables::traits ...>>, public iterable_visitor<intersection_iterable_impl<Iterables...>>
 {
     static const size_t s_numTypes = tuple<Iterables...>::size();
 
 public:
 	typedef intersection_iterable_traits<typename Iterables::traits ...> traits;
-	typedef typename traits::reference reference;
-	typedef typename traits::const_reference const_reference;
+	typedef const_iterable_traits<traits> const_traits;
 
     intersection_iterable_impl(Iterables& ... i_iterables);
 
-    TEMPLATE(typename Function,typename Action)
-    REQUIRES(IS_CALLABLE_BY(Function,reference))
-    iterable_result iterate_impl(Function&& i_try,const Action& i_initialAction);
-    TEMPLATE(typename Function,typename Action)
-    REQUIRES(IS_CALLABLE_BY(Function,const_reference))
-	iterable_result iterate_impl(Function&& i_try,const Action& i_initialAction) const;
+	TEMPLATE(typename Action)
+	REQUIRES(ACTION_SUPPORTED(traits,Action))
+	iterable_result iterate_impl(Action&& i_initialAction);
+	TEMPLATE(typename Action)
+	REQUIRES(ACTION_SUPPORTED(const_traits,Action))
+	iterable_result iterate_impl(Action&& i_initialAction) const;
 };
 template<typename ... Iterables>
 intersection_iterable_impl(Iterables&...) -> intersection_iterable_impl<Iterables...>;
@@ -41,39 +41,23 @@ class iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>
 
 public:
 	typedef detail::intersection_iterable_traits<typename Iterables::traits...> traits;
-	typedef typename traits::value_type value_type;
-	typedef typename traits::reference reference;
-	typedef typename traits::const_reference const_reference;
+	typedef detail::const_iterable_traits<traits> const_traits;
 	typedef typename traits::tags_t tags_t;
-	typedef long long difference_type;
+	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(Iterables& ... i_iterable);
-	inline auto get_value();
-	inline auto get_value() const;
-	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink);
-	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink) const;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	iterable_action_result<ActionTag> perform_action(const ActionTag& i_actionTag);
+	auto perform_action(ActionTag&& i_actionTag);
 	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	iterable_action_result<ActionTag> perform_action(const ActionTag& i_actionTag) const;
+	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+	auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
-	template<size_t ... Indexs>
-	inline reference get_value(const mpl::sequence<Indexs...>&);
-	template<size_t ... Indexs>
-	inline const_reference get_value(const mpl::sequence<Indexs...>&) const;
-	template<size_t ... Indexs, typename Sink>
-	inline auto forward_value(const mpl::sequence<Indexs...>& , Sink&& i_sink);
-	template<size_t ... Indexs, typename Sink>
-	inline auto forward_value(const mpl::sequence<Indexs...>& , Sink&& i_sink) const;
 	template<size_t ... Indexs,typename ActionTag>
-	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag);
+	auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag);
 	template<size_t ... Indexs,typename ActionTag>
-	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag) const;
+	auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const;
 
 	tuple<deduced_adaptor<Iterables>...> m_adaptors;
 };
@@ -86,34 +70,20 @@ class iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>
 
 public:
 	typedef detail::intersection_iterable_traits<typename Iterables::traits...> traits;
-	typedef typename traits::value_type value_type;
-	typedef typename traits::reference reference;
-	typedef typename traits::const_reference const_reference;
+	typedef detail::const_iterable_traits<traits> const_traits;
 	typedef typename traits::tags_t tags_t;
-	typedef long long difference_type;
+	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(const Iterables& ... i_iterable);
-	inline auto get_value() const;
-	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink) const;
 	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	iterable_action_result<ActionTag> perform_action(const ActionTag& i_actionTag);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	iterable_action_result<ActionTag> perform_action(const ActionTag& i_actionTag) const;
+	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+	auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
-	template<size_t ... Indexs>
-	inline const_reference get_value(const mpl::sequence<Indexs...>&) const;
-	template<size_t ... Indexs,typename Sink>
-	inline auto forward_value(const mpl::sequence<Indexs...>& ,Sink&& i_sink) const;
 	template<size_t ... Indexs,typename ActionTag>
-	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag);
-	template<size_t ... Indexs,typename ActionTag>
-	iterable_action_result<ActionTag> perform_action(const mpl::sequence<Indexs...>&,const ActionTag& i_actionTag) const;
+	auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const;
 
-	tuple<deduced_adaptor<Iterables>...> m_adaptors;
+	const tuple<deduced_adaptor<Iterables>...> m_adaptors;
 };
 
 }

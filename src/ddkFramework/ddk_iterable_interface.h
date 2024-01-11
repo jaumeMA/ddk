@@ -2,6 +2,8 @@
 
 #include "ddk_iterable_supported_action.h"
 #include "ddk_iterable_result.h"
+#include "ddk_type_erasured_iterable_adaptor.h"
+#include "ddk_type_erasure_iterable_impl.h"
 
 namespace ddk
 {
@@ -13,17 +15,20 @@ class iterable_base
 {
 public:
     typedef Traits traits;
-    typedef typename traits::value_type value_type;
-    typedef typename traits::reference reference;
-    typedef typename traits::const_reference const_reference;
+    typedef detail::const_iterable_traits<traits> const_traits;
     typedef supported_action<traits> action;
-    typedef mpl::terse_callable<function<action(reference)>> terse_endpoint;
-    typedef mpl::terse_callable<function<action(const_reference)>> const_terse_endpoint;
+    typedef const_supported_action<traits> const_action;
 
     virtual ~iterable_base() = default;
-    virtual iterable_result iterate(terse_endpoint i_try,const action& i_initialAction) = 0;
-    virtual iterable_result iterate(const_terse_endpoint i_try,const action& i_initialAction) const = 0;
+    virtual iterable_result iterate(const action& i_initialAction) = 0;
+    virtual iterable_result iterate(const const_action& i_initialAction) const = 0;
+    virtual iterable_adaptor<type_erasure_iterable_impl<Traits>> deduce_owned_adaptor() = 0;
 };
+
+template<typename Iterable>
+typename iterable<Iterable>::traits deduce_iterable_traits(const iterable<Iterable>&);
 
 }
 }
+
+#include "ddk_type_erasure_iterable_impl.inl"

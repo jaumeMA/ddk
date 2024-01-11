@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ddk_iterable_adaptor.h"
-#include "ddk_concepts.h"
 #include "ddk_type_concepts.h"
 #include "ddk_container_concepts.h"
 #include "ddk_iterable_concepts.h"
+#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -38,19 +38,17 @@ random_access_iterable_adaptor<const Iterable> iterable_adaptor_resolver(Iterabl
 template<typename Iterable>
 using iterable_adaptor_correspondence = decltype(iterable_adaptor_resolver(std::declval<Iterable&>()));
 
-}
+template<typename Iterable>
+typename iterable_adaptor<Iterable>::traits deduce_iterable_traits(const iterable_adaptor<Iterable>&);
 
+}
+    
 template<typename Iterable>
 struct iterable_adaptor : detail::iterable_adaptor_correspondence<Iterable>
 {
     using detail::iterable_adaptor_correspondence<Iterable>::iterable_adaptor_correspondence;
 };
 
-template<typename Iterable>
-inline iterable_adaptor<Iterable> deduce_adaptor(const Iterable& i_iterable)
-{
-    return { i_iterable };
-}
 template<typename Iterable>
 using deduced_adaptor = decltype(deduce_adaptor(std::declval<Iterable>()));
 

@@ -16,22 +16,18 @@ iterable<Iterable>::iterable(Args&& ... i_args)
 {
 }
 template<typename Iterable>
-TEMPLATE(typename Function, typename Action)
-REQUIRED(IS_CALLABLE_BY(Function,reference),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
-iterable_result iterable<Iterable>::iterate_impl(Function&& i_try, const Action& i_initialAction)
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(traits,Action))
+iterable_result iterable<Iterable>::iterate_impl(Action&& i_initialAction)
 {
-	typedef typename mpl::aqcuire_callable_return_type<Function>::type action_type;
-
-	return m_iterableImpl.iterate_impl(fixed_return_terse_callable<action_type,Function>{ std::forward<Function>(i_try) },i_initialAction);
+	return m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable>
-TEMPLATE(typename Function, typename Action)
-REQUIRED(IS_CALLABLE(Function),ACTION_TAGS_SUPPORTED(traits,typename Action::tags_t))
-iterable_result iterable<Iterable>::iterate_impl(Function&& i_try, const Action& i_initialAction) const
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(const_traits,Action))
+iterable_result iterable<Iterable>::iterate_impl(Action&& i_initialAction) const
 {
-	typedef typename mpl::aqcuire_callable_return_type<Function>::type action_type;
-
-	return m_iterableImpl.iterate_impl(fixed_return_terse_callable<action_type,Function>{ std::forward<Function>(i_try) },i_initialAction);
+	return m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable>
 bool iterable<Iterable>::operator==(const std::nullptr_t&) const
@@ -54,14 +50,19 @@ Iterable&& iterable<Iterable>::extract() &&
 	return std::move(m_iterableImpl);
 }
 template<typename Iterable>
-iterable_result iterable<Iterable>::iterate(terse_endpoint i_try,const action& i_initialAction)
+iterable_result iterable<Iterable>::iterate(const action& i_initialAction)
 {
-	return iterate_impl(std::move(i_try),i_initialAction);
+	return iterate_impl(i_initialAction);
 }
 template<typename Iterable>
-iterable_result iterable<Iterable>::iterate(const_terse_endpoint i_try,const action& i_initialAction) const
+iterable_result iterable<Iterable>::iterate(const const_action& i_initialAction) const
 {
-	return iterate_impl(std::move(i_try),i_initialAction);
+	return iterate_impl(i_initialAction);
+}
+template<typename Iterable>
+iterable_adaptor<type_erasure_iterable_impl<typename iterable<Iterable>::traits>> iterable<Iterable>::deduce_owned_adaptor()
+{
+	return deduce_adaptor(m_iterableImpl);
 }
 
 }

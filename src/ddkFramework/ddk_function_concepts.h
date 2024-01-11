@@ -37,18 +37,6 @@ namespace ddk
 namespace concepts
 {
 
-//template<typename T, typename ... Args>
-//struct is_callable_by
-//{
-//private:
-//	template<typename TT>
-//	static std::true_type resolve(const TT&, const decltype(std::declval<TT>()(std::declval<Args>()...))*);
-//	static std::false_type resolve(...);
-//
-//public:
-//	static const bool value = decltype(resolve(std::declval<T>(),nullptr))::value;
-//};
-
 template<typename T,typename ... Args>
 struct is_callable_by
 {

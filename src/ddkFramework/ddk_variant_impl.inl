@@ -28,7 +28,7 @@ inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<T
 		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
 
-		constructor_visitor<variadic_union<Types...>,TTypes...> ctr;
+		constructor_visitor<variadic_union<Types...>,Types...> ctr;
 
 		return _variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,other);
 	}
@@ -47,7 +47,7 @@ inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<T
 		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type, TTypes...> _variant_visitor_t;
 
-		constructor_visitor<variadic_union<Types...>, TTypes...> ctr;
+		constructor_visitor<variadic_union<Types...>,Types...> ctr;
 
 		return _variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,std::move(other));
 	}
@@ -65,7 +65,7 @@ inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types.
 		typedef typename constructor_inplace_visitor<variadic_union<Types...>,TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
 
-		constructor_inplace_visitor<variadic_union<Types...>,TTypes...> ctr(i_storage);
+		constructor_inplace_visitor<variadic_union<Types...>,Types...> ctr(i_storage);
 
 		_variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,other);
 	}
@@ -81,7 +81,7 @@ inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types.
 		typedef typename constructor_inplace_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
 
-		constructor_inplace_visitor<variadic_union<Types...>, TTypes...> ctr(i_storage);
+		constructor_inplace_visitor<variadic_union<Types...>,Types...> ctr(i_storage);
 
 		_variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,std::move(other));
 	}
@@ -531,13 +531,13 @@ constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>:
 }
 template<typename ... Types>
 template<size_t Pos>
-embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> variant_impl<Types...>::extract() &&
+typename mpl::nth_type_of<Pos,Types...>::type variant_impl<Types...>::extract() &&
 {
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 
 	m_currentType = s_numTypes;
 
-	return embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>{ std::move(m_storage).template extract<embeddedType>() };
+	return std::move(m_storage).template extract<embeddedType>();
 }
 template<typename ... Types>
 template<size_t Pos>

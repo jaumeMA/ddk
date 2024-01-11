@@ -8,95 +8,105 @@ iterable_adaptor<high_order_array<T,ranks...>>::iterable_adaptor(high_order_arra
 {
 }
 template<typename T,size_t ... ranks>
-auto iterable_adaptor<high_order_array<T,ranks...>>::get_value()
+template<typename Sink>
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const sink_action_tag<Sink>& i_actionTag)
 {
-	return m_iterable.at(m_currIndex);
-}
-template<typename T,size_t ... ranks>
-auto iterable_adaptor<high_order_array<T,ranks...>>::get_value() const
-{
-	return m_iterable.at(m_currIndex);
+	if (m_currIndex >= 0 && m_currIndex < s_totalSize)
+	{
+		return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_actionTag(m_iterable.at(m_currIndex)));
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_actionTag);
+	}
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-auto iterable_adaptor<high_order_array<T,ranks...>>::forward_value(Sink&& i_sink)
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const sink_action_tag<Sink>& i_actionTag) const
 {
-	return ddk::eval(std::forward<Sink>(i_sink),m_iterable.at(m_currIndex));
+	if (m_currIndex >= 0 && m_currIndex < s_totalSize)
+	{
+		return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_actionTag(m_iterable.at(m_currIndex)));
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_actionTag);
+	}
 }
 template<typename T,size_t ... ranks>
-template<typename Sink>
-auto iterable_adaptor<high_order_array<T,ranks...>>::forward_value(Sink&& i_sink) const
-{
-	return ddk::eval(std::forward<Sink>(i_sink),m_iterable.at(m_currIndex));
-}
-template<typename T,size_t ... ranks>
-iterable_action_result<begin_action_tag> iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const begin_action_tag&) const
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const begin_action_tag&) const
 {
 	m_currIndex = 0;
 
 	if (m_currIndex < s_totalSize)
 	{
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,begin_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,begin_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<last_action_tag> iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
 {
 	m_currIndex = s_totalSize - 1;
 
 	if (m_currIndex > 0)
 	{
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<forward_action_tag> iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const forward_action_tag&) const
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const forward_action_tag&) const
 {
+	typedef typename traits::difference_type difference_type;
+
 	const difference_type newIndex = m_currIndex + 1;
 
 	if (newIndex < s_totalSize)
 	{
 		m_currIndex = newIndex;
 
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,forward_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,forward_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<backward_action_tag> iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const backward_action_tag&) const
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const backward_action_tag&) const
 {
+	typedef typename traits::difference_type difference_type;
+
 	const difference_type newIndex = m_currIndex - 1;
 
 	if (newIndex >= 0)
 	{
 		m_currIndex = newIndex;
 
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,backward_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,backward_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<displace_action_tag> iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const displace_action_tag& i_action) const
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const displace_action_tag& i_action) const
 {
+	typedef typename traits::difference_type difference_type;
+
 	m_currIndex += i_action.displacement();
 
 	if (m_currIndex >= 0 && m_currIndex < s_totalSize)
 	{
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 	}
 	else if(m_currIndex >= s_totalSize)
 	{
@@ -104,7 +114,7 @@ iterable_action_result<displace_action_tag> iterable_adaptor<high_order_array<T,
 
 		m_currIndex = s_totalSize - 1;
 
-		return { pendingShift };
+		return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(pendingShift);
 	}
 	else
 	{
@@ -112,7 +122,7 @@ iterable_action_result<displace_action_tag> iterable_adaptor<high_order_array<T,
 
 		m_currIndex = 0;
 
-		return { pendingShift };
+		return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(pendingShift);
 	}
 }
 
@@ -123,78 +133,93 @@ iterable_adaptor<const high_order_array<T,ranks...>>::iterable_adaptor(const hig
 }
 template<typename T,size_t ... ranks>
 template<typename Sink>
-auto iterable_adaptor<const high_order_array<T,ranks...>>::forward_value(Sink&& i_sink) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const sink_action_tag<Sink>& i_actionTag) const
 {
-	return ddk::eval(std::forward<Sink>(i_sink),m_iterable.at(m_currIndex));
+	if (m_currIndex >= 0 && m_currIndex < s_totalSize)
+	{
+		i_actionTag(m_iterable.at(m_currIndex));
+
+		return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(success);
+	}
+	else
+	{
+		return make_error<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>();
+	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<begin_action_tag> iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const begin_action_tag&) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const begin_action_tag&) const
 {
 	m_currIndex = 0;
 
 	if (m_currIndex < s_totalSize)
 	{
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,begin_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,begin_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<last_action_tag> iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
 {
 	m_currIndex = s_totalSize - 1;
 
 	if (m_currIndex >= 0)
 	{
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<forward_action_tag> iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const forward_action_tag&) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const forward_action_tag&) const
 {
+	typedef typename traits::difference_type difference_type;
+
 	const difference_type newIndex = m_currIndex + 1;
 
 	if (newIndex < s_totalSize)
 	{
 		m_currIndex = newIndex;
 
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,forward_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,forward_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<backward_action_tag> iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const backward_action_tag&) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const backward_action_tag&) const
 {
+	typedef typename traits::difference_type difference_type;
+
 	const difference_type newIndex = m_currIndex - 1;
 
 	if (newIndex >= 0)
 	{
 		m_currIndex = newIndex;
 
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,backward_action_tag>>(success);
 	}
 	else
 	{
-		return {};
+		return make_error<iterable_action_tag_result<const_traits,backward_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
-iterable_action_result<displace_action_tag> iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const displace_action_tag& i_action) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const displace_action_tag& i_action) const
 {
+	typedef typename traits::difference_type difference_type;
+
 	m_currIndex += i_action.displacement();
 
 	if (m_currIndex >= 0 && m_currIndex < s_totalSize)
 	{
-		return success;
+		return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 	}
 	else if (m_currIndex >= s_totalSize)
 	{
@@ -202,7 +227,7 @@ iterable_action_result<displace_action_tag> iterable_adaptor<const high_order_ar
 
 		m_currIndex = s_totalSize - 1;
 
-		return { pendingShift };
+		return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(pendingShift);
 	}
 	else
 	{
@@ -210,7 +235,7 @@ iterable_action_result<displace_action_tag> iterable_adaptor<const high_order_ar
 
 		m_currIndex = 0;
 
-		return { pendingShift };
+		return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(pendingShift);
 	}
 }
 

@@ -142,7 +142,7 @@ future<iterable_result> iteration<Iterable,Sink>::attach(const detail::this_thre
 template<typename Iterable, typename Sink>
 template<typename Action>
 iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
-{	typedef typename Iterable::traits traits;	return m_iterable.iterate_impl(std::move(m_try),i_action);
+{	return m_iterable.iterate_impl(i_action && sink_action<Sink>{ std::move(m_try) });
 }
 template<typename Iterable, typename Sink>
 template<typename Action>
@@ -150,7 +150,7 @@ iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
 {
 	typedef typename Iterable::traits traits;
 
-	return m_iterable.iterate_impl(std::move(m_try),i_action);
+	return m_iterable.iterate_impl(i_action && sink_action<Sink>{std::move(m_try)});
 }
 
 }

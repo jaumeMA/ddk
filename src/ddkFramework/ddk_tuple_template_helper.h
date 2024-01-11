@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_tuple.h"
+#include "ddk_tuple_impl.h"
 #include "ddk_template_helper.h"
 
 namespace ddk
@@ -39,10 +39,10 @@ struct merge_tuples<tuple<TypesA...>,tuple<TypesB...>,T...>
 };
 
 template<typename ...>
-struct make_tuple;
+struct make_tuple_impl;
 
 template<>
-struct make_tuple<>
+struct make_tuple_impl<>
 {
     template<template<typename> typename Predicate>
     struct such_that
@@ -57,7 +57,7 @@ struct make_tuple<>
 };
 
 template<typename ... Types>
-struct make_tuple
+struct make_tuple_impl
 {
 	static const size_t size = get_num_types<Types...>();
     typedef tuple<Types...> type;
@@ -97,17 +97,38 @@ struct make_tuple
     template<size_t ... Indexs>
     struct order_by<sequence<Indexs...>>
     {
-        typedef typename make_tuple<Types...>::template at<typename inverse_sequence<sequence<Indexs...>>::type>::type type;
+        typedef typename make_tuple_impl<Types...>::template at<typename inverse_sequence<sequence<Indexs...>>::type>::type type;
     };
 };
 
+template<typename ...>
+struct make_tuple;
 template<typename ... Types>
-struct make_tuple<type_pack<Types...>> : make_tuple<Types...>
+struct make_tuple : make_tuple_impl<Types...>
+{
+};
+template<typename ... Types>
+struct make_tuple<type_pack<Types...>> : make_tuple_impl<Types...>
+{
+};
+template<typename ... Types>
+struct make_tuple<tuple<Types...>> : make_tuple_impl<Types...>
 {
 };
 
-template<typename ... Types>
-struct make_tuple<tuple<Types...>> : make_tuple<Types...>
+template<template<typename>typename,typename...>
+struct make_transformed_tuple;
+
+template<template<typename>typename Transform,typename ... Types>
+struct make_transformed_tuple : make_tuple_impl<Transform<Types>...>
+{
+};
+template<template<typename>typename Transform,typename ... Types>
+struct make_transformed_tuple<Transform,type_pack<Types...>> : make_transformed_tuple<Transform,Types...>
+{
+};
+template<template<typename>typename Transform,typename ... Types>
+struct make_transformed_tuple<Transform,tuple<Types...>> : make_transformed_tuple<Transform,Types...>
 {
 };
 

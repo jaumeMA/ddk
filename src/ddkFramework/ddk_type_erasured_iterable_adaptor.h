@@ -1,7 +1,9 @@
 #pragma once
 
-#include "ddk_tuple.h"
+#include "ddk_iterable_interface.h"
 #include "ddk_iterable_action.h"
+#include "ddk_tuple.h"
+#include "ddk_type_erasure_iterable_impl.h"
 #include "ddk_type_concepts.h"
 #include "ddk_iterable_action_tag_concepts.h"
 #include "ddk_concepts.h"
@@ -10,8 +12,25 @@ namespace ddk
 {
 
 template<typename Traits>
-class type_erasure_iterable_adaptor
+class iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>
 {
+public:
+	typedef Traits traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	template<typename Adaptor>
+	iterable_adaptor(Adaptor& i_adaptor);
+
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
+	inline iterable_action_tag_result<traits,ActionTag> perform_action(ActionTag&& i_action);
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+	inline iterable_action_tag_result<const_traits,ActionTag> perform_action(ActionTag&& i_action) const;
+
+private:
 	template<typename>
 	struct acquire_tuple_pointer;
 
@@ -20,50 +39,76 @@ class type_erasure_iterable_adaptor
 	{
 	private:
 		template<typename T>
-		using func_type = iterable_action_result<T>(*)(void*,T);
+		using func_type = iterable_action_tag_result<traits,T>(*)(void*,T);
+		template<typename T>
+		using const_func_type = iterable_action_tag_result<const_traits,T>(*)(const void*,T);
+
+	public:
+		typedef tuple<func_type<Actions>...> type;
+		typedef tuple<const_func_type<Actions>...> const_type;
+	};
+	typedef void* type_erased_adaptor_t;
+	typedef const void* type_erased_const_adaptor_t;
+	template<typename T>
+	using func_action_performer_type = iterable_action_tag_result<traits,T>(*)(type_erased_adaptor_t,T);
+	template<typename T>
+	using const_func_action_performer_type = iterable_action_tag_result<const_traits,T>(*)(type_erased_const_adaptor_t,T);
+	typedef typename acquire_tuple_pointer<tags_t>::type func_action_performer;
+	typedef typename acquire_tuple_pointer<const_tags_t>::const_type const_func_action_performer;
+
+	template<typename Adaptor, size_t ... TagsIndexs, size_t ... ConstTagsIndexs>
+	iterable_adaptor(Adaptor& i_adaptor, const mpl::sequence<TagsIndexs...>&, const mpl::sequence<ConstTagsIndexs...>&);
+	template<typename Adaptor, typename ActionTag>
+	static iterable_action_tag_result<traits,ActionTag> _perform_action(type_erased_adaptor_t i_adaptor, ActionTag i_action);
+	template<typename Adaptor,typename ActionTag>
+	static iterable_action_tag_result<const_traits,ActionTag> _const_perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action);
+
+	type_erased_adaptor_t m_typeErasuredAdaptor = nullptr;
+	const func_action_performer m_actionPerformers;
+	const const_func_action_performer m_constActionPerformers;
+};
+
+template<typename Traits>
+class iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>
+{
+public:
+	typedef Traits traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	template<typename Adaptor>
+	iterable_adaptor(const Adaptor& i_adaptor);
+
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+	inline iterable_action_tag_result<const_traits,ActionTag> perform_action(ActionTag&& i_action) const;
+
+private:
+	template<typename>
+	struct acquire_tuple_pointer;
+
+	template<typename ... Actions>
+	struct acquire_tuple_pointer<mpl::type_pack<Actions...>>
+	{
+	private:
+		template<typename T>
+		using func_type = iterable_action_tag_result<const_traits,T>(*)(const void*,T);
 
 	public:
 		typedef tuple<func_type<Actions>...> type;
 	};
-
-public:
-	typedef typename Traits::value_type value_type;
-	typedef typename Traits::reference reference;
-	typedef typename Traits::const_reference const_reference;
-	typedef long long difference_type;
-	typedef typename Traits::tags_t tags_t;
-
-	template<typename Adaptor>
-	type_erasure_iterable_adaptor(Adaptor& i_adaptor);
-
-	inline reference get_value();
-	inline const_reference get_value() const;
-	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink);
-	template<typename Sink>
-	inline auto forward_value(Sink&& i_sink) const;
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-	inline auto perform_action(ActionTag&& i_action);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-	inline auto perform_action(ActionTag&& i_action) const;
-
-private:
 	typedef const void* type_erased_const_adaptor_t;
-	typedef void* type_erased_adaptor_t;
 	template<typename T>
-	using func_action_performer_type = iterable_action_result<T>(*)(void*,T);
-	typedef typename acquire_tuple_pointer<tags_t>::type func_action_performer;
+	using func_action_performer_type = iterable_action_tag_result<const_traits,T>(*)(type_erased_const_adaptor_t,T);
+	typedef typename acquire_tuple_pointer<const_tags_t>::type func_action_performer;
 
-	template<typename Adaptor, size_t ... Indexs>
-	type_erasure_iterable_adaptor(Adaptor& i_adaptor, const mpl::sequence<Indexs...>&);
-	template<typename Adaptor, typename ActionTag>
-	static iterable_action_result<ActionTag> _perform_action(type_erased_adaptor_t i_adaptor, ActionTag i_action);
+	template<typename Adaptor,size_t ... Indexs>
+	iterable_adaptor(const Adaptor& i_adaptor,const mpl::sequence<Indexs...>&);
 	template<typename Adaptor,typename ActionTag>
-	static iterable_action_result<ActionTag> _perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action);
+	static iterable_action_tag_result<const_traits,ActionTag> _perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action);
 
-	void* m_typeErasuredAdaptor = nullptr;
+	type_erased_const_adaptor_t m_typeErasuredAdaptor = nullptr;
 	const func_action_performer m_actionPerformers;
 };
 

@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
 #include "ddk_variant.h"
-#include <utility>
-#include <string>
-#include "test_utils.h"
 #include "ddk_static_visitor.h"
 #include "ddk_function.h"
+#include <array>
+#include "test_utils.h"
+#include <utility>
+#include <string>
 
 using namespace testing;
 

@@ -75,13 +75,19 @@ inline detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_functi
 //safe version
 template<typename Return, typename Allocator, typename FunctionImpl>
 inline Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 TEMPLATE(typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args)
-REQUIRES_COND(is_function_argument<Args>::value==false ...)
+REQUIRES_COND(mpl::is_function_argument<Args>::value==false ...)
 inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
 inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args>
-inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args);
+inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, function_arguments<Args...>& i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
 inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args);
 TEMPLATE(typename Function, typename ... Args)
@@ -95,14 +101,22 @@ REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args);
 TEMPLATE(typename Function,typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,const function_arguments<Args...>& i_args);
+TEMPLATE(typename Function,typename ... Args)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
 inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
+inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
 inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&);
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 inline auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
+REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+inline auto _terse_eval(Function&& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
 TEMPLATE(typename Function,typename ... Args, size_t ... Indexs)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 inline auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args, const mpl::sequence<Indexs...>&);
@@ -111,8 +125,10 @@ inline auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_ar
 template<typename Return,typename Allocator, typename FunctionImpl>
 inline Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
 TEMPLATE(typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args)
-REQUIRES_COND(is_function_argument<Args>::value==false ...)
+REQUIRES_COND(mpl::is_function_argument<Args>::value==false ...)
 inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
 inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 
@@ -155,7 +171,6 @@ REQUIRES(IS_CALLABLE(Functions)...)
 inline detail::union_function<Functions...> concat(const Functions& ... i_functions);
 
 }
-
 
 template<typename ReturnA, typename ... TypesA, typename ReturnB, typename ... TypesB>
 inline ddk::function<ReturnA(TypesB...)> operator<<=(const ddk::function<ReturnA(TypesA...)>& i_lhs, const ddk::function<ReturnB(TypesB...)>& i_rhs);

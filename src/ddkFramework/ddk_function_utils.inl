@@ -184,7 +184,7 @@ Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_func
     }
 }
 TEMPLATE(typename Return, typename ... Types, typename Allocator,typename FunctionImpl, typename ... Args)
-REQUIRED(is_function_argument<Args>::value==false ...)
+REQUIRED(mpl::is_function_argument<Args>::value==false ...)
 Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args)
 {
     if constexpr (mpl::is_void<Return>)
@@ -195,6 +195,18 @@ Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>
     {
         return i_function.inline_eval(std::forward<Args>(i_args) ...);
     }
+}
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
+{
+	if constexpr (mpl::is_void<Return>)
+	{
+		i_function.inline_eval(i_args);
+	}
+	else
+	{
+		return i_function.inline_eval(i_args);
+	}
 }
 template<typename Return, typename ... Types, typename Allocator,typename FunctionImpl, typename ... Args>
 Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args)
@@ -212,7 +224,7 @@ TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_function,Args&& ... i_args)
 {
-	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
+	if constexpr (mpl::is_void<mpl::aqcuire_callable_return_type_at<Function,Args...>>)
 	{
 		std::forward<Function>(i_function)(std::forward<Args>(i_args) ...);
 	}
@@ -225,7 +237,7 @@ TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, Args&& ... i_args)
 {
-	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
+	if constexpr (mpl::is_void<mpl::aqcuire_callable_return_type_at<Function,Args...>>)
 	{
 		std::forward<Function>(i_function)(std::forward<Args>(i_args) ...);
 	}
@@ -236,11 +248,26 @@ mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_f
 }
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, function_arguments<Args...>& i_args)
+mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
-	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
+	if constexpr (mpl::is_void<mpl::aqcuire_callable_return_type_at<Function,Args...>>)
+	{
+		_terse_eval(std::forward<Function>(i_function),i_args,seq_type{});
+	}
+	else
+	{
+		return _terse_eval(std::forward<Function>(i_function),i_args,seq_type{});
+	}
+}
+TEMPLATE(typename Function,typename ... Args)
+REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, const function_arguments<Args...>& i_args)
+{
+	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
+
+	if constexpr (mpl::is_void<mpl::aqcuire_callable_return_type_at<Function,Args...>>)
 	{
 		_terse_eval(std::forward<Function>(i_function),i_args,seq_type{});
 	}
@@ -289,6 +316,20 @@ Return terse_eval(const detail::function_impl<Return(Types...),Allocator,Functio
 		return _terse_eval(i_function,i_args,seq_type{});
 	}
 }
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args)
+{
+	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
+
+	if constexpr (mpl::is_void<Return>)
+	{
+		_terse_eval(i_function,i_args,seq_type{});
+	}
+	else
+	{
+		return _terse_eval(i_function,i_args,seq_type{});
+	}
+}
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
 mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args)
@@ -317,6 +358,18 @@ Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,Functi
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
+Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+{
+	if constexpr (mpl::is_void<Return>)
+	{
+		i_function.inline_eval(i_args.template get<Indexs>() ...);
+	}
+	else
+	{
+		return i_function.inline_eval(i_args.template get<Indexs>() ...);
+	}
+}
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
 Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<Return>)
@@ -330,7 +383,20 @@ Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,Functi
 }
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-auto _terse_eval(Function&& i_function, function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+{
+	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
+	{
+		std::forward<Function>(i_function)(std::forward<Args>(i_args.template get<Indexs>()) ...);
+	}
+	else
+	{
+		return std::forward<Function>(i_function)(std::forward<Args>(i_args.template get<Indexs>()) ...);
+	}
+}
+TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
+REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
+auto _terse_eval(Function&& i_function, const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
 	{
@@ -368,10 +434,22 @@ Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>&
 	}
 }
 TEMPLATE(typename Return,typename ... Types, typename Allocator,typename FunctionImpl,typename ... Args)
-REQUIRED(is_function_argumenttion_arguments<Arg>::value==false ...)
+REQUIRED(mpl::is_function_argumenttion_arguments<Arg>::value==false ...)
 Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args)
 {
 	if constexpr(mpl::is_void<Return>)
+	{
+		i_function.inline_eval(std::forward<Args>(i_args) ...);
+	}
+	else
+	{
+		return i_function.inline_eval(std::forward<Args>(i_args) ...);
+	}
+}
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
+Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
+{
+	if constexpr (mpl::is_void<Return>)
 	{
 		i_function.inline_eval(std::forward<Args>(i_args) ...);
 	}

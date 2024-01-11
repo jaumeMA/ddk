@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_function_template_helper.h"
-#include "ddk_function_arguments.h"
+#include "ddk_function_arguments_template_helper.h"
 #include "ddk_function_impl.h"
 
 namespace ddk

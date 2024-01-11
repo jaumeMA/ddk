@@ -4,8 +4,8 @@
 #include "ddk_template_helper.h"
 #include "ddk_variadic_union.h"
 #include "ddk_static_visitor.h"
-#include "ddk_type_concepts.h"
 #include "ddk_function_concepts.h"
+#include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
 
 namespace ddk
@@ -105,7 +105,7 @@ public:
     template<size_t Pos>
     constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::pointer_type get_ptr();
     template<size_t Pos>
-	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract() &&;
+	inline typename mpl::nth_type_of<Pos,Types...>::type extract() &&;
     template<size_t Pos>
     constexpr bool is() const;
     constexpr unsigned char which() const;
