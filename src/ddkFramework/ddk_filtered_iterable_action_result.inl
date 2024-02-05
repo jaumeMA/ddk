@@ -28,7 +28,8 @@ filtered_iterable_action_error<Traits,ActionTag,Filter>::operator bool() const
     return m_filteredOut;
 }
 template<typename Traits,typename ActionTag,typename Filter>
-template<typename TTraits>
+TEMPLATE(typename TTraits)
+REQUIRED(ADAPTOR_TAGS_EQUIVALENT(Traits,TTraits))
 filtered_iterable_action_error<Traits,ActionTag,Filter>::operator iterable_action_tag_error<TTraits,ActionTag>() const
 {
     typedef iterable_action_recovery_tag<TTraits,ActionTag> action_recovery_tag;

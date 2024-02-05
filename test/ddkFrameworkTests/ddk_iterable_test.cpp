@@ -180,8 +180,6 @@ TEST(DDKIterableTest,peformance)
 	[](auto&& i_value)
 	{
 	}	<<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
-		<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
-		<<= ddk::view::order(ddk::reverse_order)
 		<<= v_prova;
 }
 

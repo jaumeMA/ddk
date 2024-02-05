@@ -15,6 +15,12 @@
 #define ADAPTOR_TAGS_SUPPORTED(_FROM_ADAPTOR,_TO_ADAPTOR) \
     typename std::enable_if<ADAPTOR_TAGS_SUPPORTED_COND(_FROM_ADAPTOR,_TO_ADAPTOR)>::type
 
+#define ADAPTOR_TAGS_EQUIVALENT_COND(_FROM_ADAPTOR,_TO_ADAPTOR) \
+    ddk::concepts::adaptor_holds_adaptor_actions<_FROM_ADAPTOR,_TO_ADAPTOR> && ddk::concepts::adaptor_holds_adaptor_actions<_TO_ADAPTOR,_FROM_ADAPTOR>
+
+#define ADAPTOR_TAGS_EQUIVALENT(_FROM_ADAPTOR,_TO_ADAPTOR) \
+    typename std::enable_if<ADAPTOR_TAGS_EQUIVALENT_COND(_FROM_ADAPTOR,_TO_ADAPTOR)>::type
+
 #define ACTION_TAGS_SUPPORTED_COND(_ADAPTOR,...) \
     ddk::concepts::adaptor_holds_actions<_ADAPTOR,__VA_ARGS__>
 

@@ -24,7 +24,8 @@ public:
 	filtered_iterable_action_error(const filtered_iterable_action_error<Traits,AActionTag,Filter>& i_error);
 
 	operator bool() const;
-	template<typename TTraits>
+	TEMPLATE(typename TTraits)
+	REQUIRES(ADAPTOR_TAGS_EQUIVALENT(Traits,TTraits))
 	operator iterable_action_tag_error<TTraits,ActionTag>() const;
 	auto recovery() const&;
 	auto recovery()&&;
