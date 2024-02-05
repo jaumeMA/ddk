@@ -23,8 +23,9 @@ class variadic_union<Type,Types...>
 	{
 		constexpr trivial_union_type();
 		constexpr trivial_union_type(const detail::none_t&);
-		template<typename TT>
-		constexpr trivial_union_type(const  mpl::class_holder<Type>& i_holder,TT&& i_value);
+		TEMPLATE(typename T)
+		REQUIRES(IS_CONSTRUCTIBLE(Type,T))
+		constexpr trivial_union_type(const  mpl::class_holder<Type>& i_holder,T&& i_value);
 		template<typename T,typename TT>
 		constexpr trivial_union_type(const mpl::class_holder<T>& i_holder,TT&& i_value);
 
@@ -77,7 +78,7 @@ private:
 	constexpr variadic_union(const std::true_type&);
 	constexpr variadic_union(const std::false_type&);
 
-	typedef typename mpl::static_if<mpl::holds_any_type<std::is_trivially_destructible,Type,Types...>(),trivial_union_type,non_trivial_union_type>::type union_type;
+	typedef typename mpl::which_type<mpl::holds_any_type<std::is_trivially_destructible,Type,Types...>(),trivial_union_type,non_trivial_union_type>::type union_type;
 
 	union_type m_data;
 };

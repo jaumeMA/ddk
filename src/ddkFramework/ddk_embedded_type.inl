@@ -235,9 +235,10 @@ constexpr embedded_type<T>::embedded_type(embedded_type<T>&& other)
 {
 }
 template<typename T>
-template<typename Arg,typename ... Args>
-constexpr embedded_type<T>::embedded_type(Arg&& i_arg,Args&& ... i_args)
-: m_data(std::forward<Arg>(i_arg),std::forward<Args>(i_args) ...)
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
+constexpr embedded_type<T>::embedded_type(Args&& ... i_args)
+: m_data(std::forward<Args>(i_args) ...)
 {
 }
 template<typename T>

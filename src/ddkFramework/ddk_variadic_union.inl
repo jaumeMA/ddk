@@ -11,9 +11,10 @@ constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(
 {
 }
 template<typename Type,typename ... Types>
-template<typename TT>
-constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(const  mpl::class_holder<Type>& i_holder,TT&& i_value)
-: _local(std::forward<TT>(i_value))
+TEMPLATE(typename T)
+REQUIRED(IS_CONSTRUCTIBLE(Type,T))
+constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(const  mpl::class_holder<Type>& i_holder, T&& i_value)
+: _local(std::forward<T>(i_value))
 {
 }
 template<typename Type,typename ... Types>

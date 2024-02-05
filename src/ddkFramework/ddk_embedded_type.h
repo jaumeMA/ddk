@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ddk_type_concepts.h"
+#include "ddk_concepts.h"
 #include <utility>
 #include <type_traits>
 
@@ -113,8 +115,9 @@ public:
 	constexpr embedded_type() = default;
 	constexpr embedded_type(const embedded_type<T>& other);
 	constexpr embedded_type(embedded_type<T>&& other);
-	template<typename Arg, typename ... Args>
-	constexpr embedded_type(Arg&& i_arg, Args&& ... i_args);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+	constexpr embedded_type(Args&& ... i_args);
 	inline embedded_type& operator=(const internal_type& other);
 	inline embedded_type& operator=(internal_type&& other);
 	inline embedded_type& operator=(const embedded_type<T>& other);

@@ -248,21 +248,21 @@ TEMPLATE(typename Result,typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(typename Result::payload_t,Args...))
 Result make_result(Args&& ... i_args)
 {
-    return  typename Result::payload_t(std::forward<Args>(i_args) ...);
+    return  Result{ typename Result::payload_t(std::forward<Args>(i_args) ...) };
 }
 template<typename Result,typename TT,typename EError>
 Result make_error(const result<TT,EError>& i_result)
 {
     typedef typename Result::error_t error_t;
 
-    return error_t{ i_result.error() };
+    return Result{ error_t{ i_result.error() } };
 }
 template<typename Result,typename TT,typename EError>
 Result make_error(result<TT,EError>&& i_result)
 {
     typedef typename Result::error_t error_t;
 
-    return error_t{ std::move(i_result).error() };
+    return Result{ error_t{ std::move(i_result).error() } };
 }
 
 }
