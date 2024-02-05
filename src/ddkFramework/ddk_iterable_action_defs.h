@@ -223,6 +223,24 @@ action_sink(const Action& i_action,const Sink& i_sink,bool i_valid) -> action_si
 template<typename Action,typename Sink>
 action_sink(Action&& i_action, Sink&& i_sink,bool i_valid) -> action_sink<Action,Sink>;
 
+struct size_action : action_base
+{
+public:
+    static const size_t nsize = -1;
+
+    size_action() = default;
+    size_action(bool i_valid);
+
+    size_t operator()() const;
+    operator bool() const;
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    inline no_action apply(Adaptor&& i_adaptor) const;
+
+private:
+    size_t m_size = nsize;
+};
+
 }
 
 #include "ddk_iterable_action_ops.h"

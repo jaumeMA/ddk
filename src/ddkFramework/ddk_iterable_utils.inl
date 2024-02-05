@@ -75,11 +75,10 @@ auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable
 
 	return ddk::detail::iterable(constrained_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_constrain()));
 }
-TEMPLATE(typename Function, typename Iterable)
-REQUIRED(IS_CALLABLE(Function))
-auto operator<<=(Function&& i_lhs,Iterable&& i_rhs)
+template<typename Function, typename Iterable>
+auto operator<<=(const Function& i_lhs,Iterable&& i_rhs)
 {
-	return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),std::forward<Function>(i_lhs) };
+	return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs };
 }
 
 namespace ddk

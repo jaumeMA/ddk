@@ -83,4 +83,17 @@ void displacement_action::set_shift(difference_type i_shift)
 	m_shift = i_shift;
 }
 
+size_action::size_action(bool i_valid)
+: action_base(i_valid)
+{
+}
+size_t size_action::operator()() const
+{
+	return m_size;
+}
+size_action::operator bool() const
+{
+	return m_size != nsize;
+}
+
 }

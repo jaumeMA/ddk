@@ -130,20 +130,13 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 auto sink_action<Sink>::apply(Adaptor&& i_adaptor) const
 {
-	typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
-	typedef typename adaptor_t::traits traits;
-	typedef typename traits::reference reference;
-	typedef decltype(std::declval<Sink>()(std::declval<reference>())) sink_return_action;
-	typedef and_action<sink_return_action,sink_action<Sink>> return_action;
-
-	sink_return_action returnAction;
-	if (auto actionRes = i_adaptor.perform_action(sink_action_tag{ [&](auto&& i_value) mutable { returnAction = ddk::eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }))
+	if (auto actionRes = i_adaptor.perform_action(sink_action_tag{ [this](auto&& i_value) mutable { ddk::eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }))
 	{
-		return return_action(returnAction,*this);
+		return sink_action{ m_sink };
 	}
 	else
 	{
-		return return_action(returnAction,*this,false);
+		return sink_action{ m_sink,false };
 	}
 }
 
@@ -187,6 +180,22 @@ auto action_sink<Action,Sink>::apply(Adaptor&& i_adaptor) const
 	else
 	{
 		return action_sink<decltype(nextAction),Sink>{ nextAction,m_sink,false };
+	}
+}
+
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+no_action size_action::apply(Adaptor&& i_adaptor) const
+{
+	if (auto actionRes = i_adaptor.perform_action(size_action_tag{}))
+	{
+		m_size = actionRes.get();
+
+		return {};
+	}
+	else
+	{
+		return { false };
 	}
 }
 

@@ -49,9 +49,8 @@ inline auto operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& 
 template<typename Function,typename Iterable>
 inline auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs, Iterable&& i_rhs);
 
-TEMPLATE(typename Function,typename Iterable)
-REQUIRES(IS_CALLABLE(Function))
-inline auto operator<<=(Function&& i_lhs, Iterable&&i_rhs);
+template<typename Function,typename Iterable>
+inline auto operator<<=(const Function& i_lhs, Iterable&&i_rhs);
 
 namespace ddk
 {

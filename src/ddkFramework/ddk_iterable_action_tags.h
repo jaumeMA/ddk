@@ -81,15 +81,19 @@ using agnostic_sink_action_tag = sink_action_tag<function<void(T)>>;
 struct begin_action_tag
 {
 };
+
 struct last_action_tag
 {
 };
+
 struct forward_action_tag
 {
 };
+
 struct backward_action_tag
 {
 };
+
 struct displace_action_tag
 {
 public:
@@ -102,6 +106,11 @@ public:
 private:
 	difference_type m_displacement;
 };
+
+struct size_action_tag
+{
+};
+
 template<typename T>
 struct add_action_tag
 {

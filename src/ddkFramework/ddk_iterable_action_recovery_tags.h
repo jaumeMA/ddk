@@ -15,6 +15,13 @@ struct iterable_action_tag_type
 	typedef void return_type;
 };
 
+template<typename Traits>
+struct iterable_action_tag_type<Traits,size_action_tag>
+{
+	typedef size_action_tag recovery_type;
+	typedef size_t return_type;
+};
+
 template<typename Traits,typename Sink>
 struct iterable_action_tag_type<Traits,sink_action_tag<Sink>>
 {
