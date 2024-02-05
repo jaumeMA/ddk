@@ -28,6 +28,12 @@ protected:
 	inline iterable_result loop(const Action& i_action) const;
 
 private:
+	template<typename TypePack, typename Action>
+	inline auto _loop(const Action& i_action);
+	template<typename TypePack,typename Action>
+	inline auto _loop(const Action& i_action) const;
+
+
 	adaptor_t m_adaptor;
 };
 

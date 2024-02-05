@@ -79,16 +79,7 @@ TEMPLATE(typename Function, typename Iterable)
 REQUIRED(IS_CALLABLE(Function))
 auto operator<<=(Function&& i_lhs,Iterable&& i_rhs)
 {
-	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_type;
-
-	if constexpr (ddk::mpl::is_void<return_type>)
-	{
-		return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),ddk::replaced_return_terse_callable<ddk::forward_action,ddk::mpl::remove_qualifiers<Function>>{ i_lhs,ddk::go_next_place } };
-	}
-	else
-	{
-		return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),std::forward<Function>(i_lhs) };
-	}
+	return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),std::forward<Function>(i_lhs) };
 }
 
 namespace ddk
@@ -109,35 +100,35 @@ auto fusion(Iterables&& ... i_iterables)
 
 	return detail::iterable{ detail::intersection_iterable_impl(deduce_iterable(std::forward<Iterables>(i_iterables)) ...)};
 }
-TEMPLATE(typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables)
-{
-	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
-
-	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<iter::one_to_n_enumerate_action_adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(iter::one_to_n_enumerate_action_adapter{std::forward<Iterables>(i_iterables)...},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
-}
-TEMPLATE(typename Adapter,typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables)
-{
-	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
-
-	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(Adapter{},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
-}
-TEMPLATE(typename Adapter,typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter,Iterables&& ... i_iterables)
-{
-	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
-
-	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(i_adapter,deduce_iterable(std::forward<Iterables>(i_iterables))...) };
-}
+//TEMPLATE(typename ... Iterables)
+//REQUIRED(IS_ITERABLE(Iterables)...)
+//detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables)
+//{
+//	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//
+//	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+//
+//	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<iter::one_to_n_enumerate_action_adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(iter::one_to_n_enumerate_action_adapter(std::forward<Iterables>(i_iterables)...),deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+//}
+//TEMPLATE(typename Adapter,typename ... Iterables)
+//REQUIRED(IS_ITERABLE(Iterables)...)
+//detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables)
+//{
+//	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//
+//	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+//
+//	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(Adapter{},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+//}
+//TEMPLATE(typename Adapter,typename ... Iterables)
+//REQUIRED(IS_ITERABLE(Iterables)...)
+//detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter,Iterables&& ... i_iterables)
+//{
+//	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//
+//	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+//
+//	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(i_adapter,deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+//}
 
 }

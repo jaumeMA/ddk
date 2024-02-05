@@ -276,8 +276,27 @@ constexpr size_t get_num_ranks()
 	return sizeof...(ranks);
 };
 
+
 template<size_t ... ranks>
 inline constexpr size_t num_ranks = sizeof...(ranks);
+
+template<size_t ... ranks>
+constexpr size_t get_sum_ranks()
+{
+    return (ranks + ...);
+}
+
+template<size_t ... ranks>
+inline constexpr size_t sum_ranks = (ranks + ...);
+
+template<size_t ... ranks>
+constexpr size_t get_prod_ranks()
+{
+    return (ranks * ...);
+}
+
+template<size_t ... ranks>
+inline constexpr size_t prod_ranks = (ranks * ...);
 
 template<template<size_t,size_t> class cond, size_t ... ranks>
 struct get_cond_rank;
@@ -477,24 +496,6 @@ inline constexpr size_t index_to_index = IIndex;
 
 template<typename T,typename TT>
 using type_to_type = TT;
-
-template<size_t ... ranks>
-constexpr size_t get_sum_ranks()
-{
-    return (ranks + ...);
-}
-
-template<size_t ... ranks>
-inline constexpr size_t sum_ranks = (ranks + ...);
-
-template<size_t ... ranks>
-constexpr size_t get_prod_ranks()
-{
-    return (ranks * ...);
-}
-
-template<size_t ... ranks>
-inline constexpr size_t prod_ranks = (ranks * ...);
 
 template<typename ... Types>
 constexpr size_t get_num_types()
@@ -723,10 +724,10 @@ struct type_pack
         
         typedef type_pack<Types...,TTypes...> type;
 	};
-	template<typename ... TTypes>
+	template<typename TType>
 	struct add_unique
 	{
-		typedef typename merge_type_packs<type_pack<Types...>,typename static_if<is_among_types<TTypes,Types...>,type_pack<>,type_pack<TTypes>>::type ...>::type type;
+        typedef typename which_type<is_among_types<TType,Types...>,type_pack<Types...>,type_pack<Types...,TType>>::type type;
 	};
 	template<typename ... TTypes>
 	struct drop
@@ -751,7 +752,7 @@ struct type_pack
     template<typename ... TTypes>
     static constexpr bool contains()
     {
-        return num_types<TTypes...> > 0 && num_types<TTypes...> < num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
+        return num_types<TTypes...> > 0 && num_types<TTypes...> <= num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
     }
     template<size_t Index>
     struct at
@@ -777,10 +778,25 @@ struct type_pack
 };
 typedef type_pack<> empty_type_pack;
 
+template<typename,typename>
+struct merge_pair_type_packs;
+
+template<typename ... Types>
+struct merge_pair_type_packs<type_pack<Types...>,type_pack<>>
+{
+    typedef type_pack<Types...> type;
+};
+
+template<typename ... Types,typename TType,typename ... TTypes>
+struct merge_pair_type_packs<type_pack<Types...>,type_pack<TType,TTypes...>>
+{
+    typedef typename merge_pair_type_packs<typename type_pack<Types...>::template add_unique<TType>::type,type_pack<TTypes...>>::type type;
+};
+
 template<typename ... Types, typename ... TTypes,typename ... TTTypes>
 struct merge_type_packs<type_pack<Types...>,type_pack<TTypes...>,TTTypes...>
 {
-	typedef typename merge_type_packs<type_pack<Types...,TTypes...>,TTTypes...>::type type;
+    typedef typename merge_type_packs<typename merge_pair_type_packs<type_pack<Types...>,type_pack<TTypes...>>::type,TTTypes...>::type type;
 };
 template<typename ... Types>
 struct merge_type_packs<type_pack<Types...>>

@@ -172,13 +172,13 @@ auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
 		{
 			if constexpr(mpl::is_void<return_type>)
 			{
-				future<Return> nestedFuture = ddk::ddk::async(i_continuation(std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
+				return_type nestedFuture = ddk::async(i_continuation(std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
 
 				nestedFuture.wait();
 			}
 			else
 			{
-				future<Return> nestedFuture = ddk::ddk::async(i_continuation(std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
+				return_type nestedFuture = ddk::async(i_continuation(std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
 
 				return std::move(nestedFuture).extract_value();
 			}

@@ -42,7 +42,7 @@ struct iterable_by_type_traits : type_traits<Value,Reference,ConstReference>
     using typename type_traits<Value,Reference,ConstReference>::value_type;
     using typename type_traits<Value,Reference,ConstReference>::reference;
     using typename type_traits<Value,Reference,ConstReference>::const_reference;
-    typedef Tags tags_t;
+    typedef mpl::type_pack_union<Tags,ConstTags> tags_t;
     typedef ConstTags const_tags_t;
 };
 

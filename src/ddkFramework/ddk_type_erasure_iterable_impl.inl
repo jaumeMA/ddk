@@ -46,14 +46,14 @@ template<typename Traits>
 TEMPLATE(typename TTraits)
 REQUIRED(ARE_TRAITS_COMPATIBLE(TTraits,Traits))
 type_erasure_iterable_impl<Traits>::type_erasure_iterable_impl(const iterable<type_erasure_iterable_impl<TTraits>>& i_iterable)
-: m_iterable(make_distributed_reference<iterable<transformed_iterable_impl<Traits,TTraits,iterable<type_erasure_iterable_impl<TTraits>>,traits_conversion_callable<TTraits,Traits>>>>(iterable(i_iterable.get()),traits_conversion_callable<TTraits,Traits>{}))
+: m_iterable(make_distributed_reference<iterable<transformed_iterable_impl<Traits,TTraits,iterable<type_erasure_iterable_impl<TTraits>>,traits_conversion_callable<TTraits,Traits>>>>(iterable(i_iterable.get()),traits_conversion_callable<TTraits,Traits>()))
 {
 }
 template<typename Traits>
 TEMPLATE(typename TTraits)
 REQUIRED(ARE_TRAITS_COMPATIBLE(TTraits,Traits))
 type_erasure_iterable_impl<Traits>::type_erasure_iterable_impl(iterable<type_erasure_iterable_impl<TTraits>>&& i_iterable)
-: m_iterable(make_distributed_reference<iterable<transformed_iterable_impl<Traits,TTraits,iterable<type_erasure_iterable_impl<TTraits>>,traits_conversion_callable<TTraits,Traits>>>>(iterable(std::move(i_iterable).extract()),traits_conversion_callable<TTraits,Traits>{}))
+: m_iterable(make_distributed_reference<iterable<transformed_iterable_impl<Traits,TTraits,iterable<type_erasure_iterable_impl<TTraits>>,traits_conversion_callable<TTraits,Traits>>>>(iterable(std::move(i_iterable).extract()),traits_conversion_callable<TTraits,Traits>()))
 {
 }
 template<typename Traits>

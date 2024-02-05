@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddk_iterable_defs.h"
+#include "ddk_iterable_interface.h"
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_lend_type_erasure_iterable_impl.h"
@@ -65,3 +65,5 @@ type_erasure_iterable_impl(Iterable&&) -> type_erasure_iterable_impl<typename It
 
 }
 }
+
+#include "ddk_type_erasure_iterable_impl.inl"

@@ -144,7 +144,7 @@ auto union_iterable_const_adaptor<Iterables...>::perform_action(const mpl::seque
 }
 template<typename ... Iterables>
 template<size_t Index,typename Traits,typename ActionTag>
-iterable_action_tag_result<const_iterable_traits<Traits>,ActionTag> union_iterable_const_adaptor<Iterables...>::_perform_action(const deduced_adaptors& i_adaptor,ActionTag&& i_actionTag)
+iterable_action_tag_result<const_iterable_traits<Traits>,ActionTag> union_iterable_const_adaptor<Iterables...>::_perform_action(const deduced_adaptors& i_adaptors,ActionTag&& i_actionTag)
 {
     return i_adaptors.template get<Index>().perform_action(std::forward<ActionTag>(i_actionTag));
 }
@@ -267,10 +267,6 @@ auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_
         {
             return make_error<union_action_result>(recoveryRes.error());
         }
-    }
-    else
-    {
-        return make_error<union_action_result>(actionRes.error());
     }
 }
 

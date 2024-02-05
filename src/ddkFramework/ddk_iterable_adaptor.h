@@ -46,7 +46,6 @@ public:
 
 protected:
 	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
-	typedef typename Iterable::const_iterator const_iterator;
 
 	Iterable& m_iterable;
 	mutable iterator m_currIterator;
@@ -90,6 +89,8 @@ public:
 	inline auto perform_action(const backward_action_tag&) const;
 
 protected:
+	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
+
 	const iterator m_beginIterator;
 };
 

@@ -62,17 +62,17 @@ inline auto concat(Iterables&& ... i_iterables);
 template<typename ... Iterables>
 inline auto fusion(Iterables&& ... i_iterables);
 
-TEMPLATE(typename ... Iterables)
-REQUIRES(IS_ITERABLE(Iterables)...)
-inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables);
+//TEMPLATE(typename ... Iterables)
+//REQUIRES(IS_ITERABLE(Iterables)...)
+//inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables);
 
-TEMPLATE(typename Adapter,typename ... Iterables)
-REQUIRES(IS_ITERABLE(Iterables)...)
-inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables);
-
-TEMPLATE(typename Adapter,typename ... Iterables)
-REQUIRES(IS_ITERABLE(Iterables)...)
-inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter, Iterables&& ... i_iterables);
+//TEMPLATE(typename Adapter,typename ... Iterables)
+//REQUIRES(IS_ITERABLE(Iterables)...)
+//inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables);
+//
+//TEMPLATE(typename Adapter,typename ... Iterables)
+//REQUIRES(IS_ITERABLE(Iterables)...)
+//inline detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter, Iterables&& ... i_iterables);
 
 }
 

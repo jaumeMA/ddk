@@ -5,8 +5,8 @@ namespace ddk
 template<typename ... Actions>
 TEMPLATE(typename AAction)
 REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(AAction,Actions...))
-any_action<Actions...>::any_action(AAction&& i_action)
-: Actions(stop_iteration) ...
+any_action<Actions...>::any_action(AAction&& i_action, bool i_valid)
+: action_base(i_valid)
 , m_actions(std::forward<AAction>(i_action))
 {
 }

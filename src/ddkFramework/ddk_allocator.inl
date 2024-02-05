@@ -50,7 +50,7 @@ template<typename Allocator>
 TEMPLATE(typename AAllocator)
 REQUIRED(IS_CONSTRUCTIBLE(Allocator,AAllocator))
 allocator_proxy<Allocator>::allocator_proxy(const AAllocator& i_allocator)
-: deleter_proxy(std::forward<AAlocator>(i_allocator))
+: deleter_proxy(std::forward<AAllocator>(i_allocator))
 , m_allocator(&i_allocator)
 {
 }

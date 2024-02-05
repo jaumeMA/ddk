@@ -112,7 +112,7 @@ auto iteration<Iterable,Sink>::transform(Callable&& i_callable) &&
 	{
 		typedef function<void(typename Iterable::reference)> SSink;
 
-		return iteration<Iterable,SSink>{ m_iterable,ddk::[payload = m_try, callable = i_callable](typename Iterable::reference i_value)
+		return iteration<Iterable,SSink>{ m_iterable,[payload = this->m_try, callable = i_callable](typename Iterable::reference i_value)
 		{
 			ddk::eval(callable,payload(i_value));
 		} };
@@ -142,7 +142,7 @@ future<iterable_result> iteration<Iterable,Sink>::attach(const detail::this_thre
 template<typename Iterable, typename Sink>
 template<typename Action>
 iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
-{	return m_iterable.iterate_impl(i_action && sink_action<Sink>{ std::move(m_try) });
+{	return m_iterable.iterate_impl(action_sink{ i_action,std::move(this->m_try) });
 }
 template<typename Iterable, typename Sink>
 template<typename Action>
@@ -150,7 +150,7 @@ iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
 {
 	typedef typename Iterable::traits traits;
 
-	return m_iterable.iterate_impl(i_action && sink_action<Sink>{std::move(m_try)});
+	return m_iterable.iterate_impl(action_sink<Action,Sink>{ i_action,std::move(this->m_try) });
 }
 
 }

@@ -296,8 +296,9 @@ template<size_t Index,typename ... Args>
 mpl::nth_type_of_t<Index,Types...>& variant_impl<Types...>::emplace(Args&& ... i_args)
 {
 	static_assert(Index >= 0 && Index < s_numTypes,"Type out of bounds!");
+	typedef mpl::nth_type_of<Index,Types...>::type nth_type;
 
-	if (Index != m_currentType)
+	if constexpr (IS_MOVE_ASSIGNABLE_COND(nth_type) == false)
 	{
 		destroy();
 
@@ -305,14 +306,27 @@ mpl::nth_type_of_t<Index,Types...>& variant_impl<Types...>::emplace(Args&& ... i
 
 		m_currentType = static_cast<unsigned char>(Index);
 
-		return ctr.template operator()<Index>(std::forward<Args>(i_args)...);
+		return ctr.template operator() < Index > (std::forward<Args>(i_args)...);
 	}
 	else
 	{
-		//just an assignment
-		assigner_visitor<data_type,Types...> ass(m_storage);
+		if (Index != m_currentType)
+		{
+			destroy();
 
-		return ass.template operator()<Index>(std::forward<Args>(i_args)...);
+			constructor_inplace_visitor<data_type,Types...> ctr(m_storage);
+
+			m_currentType = static_cast<unsigned char>(Index);
+
+			return ctr.template operator()<Index>(std::forward<Args>(i_args)...);
+		}
+		else
+		{
+			//just an assignment
+			assigner_visitor<data_type,Types...> ass(m_storage);
+
+			return ass.template operator()<Index>(std::forward<Args>(i_args)...);
+		}
 	}
 }
 template<typename ... Types>

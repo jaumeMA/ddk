@@ -79,8 +79,7 @@ template<typename Iterable,typename Filter>
 template<typename ActionTag>
 auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag)
 {
-    typedef iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>> adaptor_t;
-    typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
+    typedef filtered_iterable_action_result<deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
 
 apply_action:
@@ -126,8 +125,7 @@ template<typename Iterable,typename Filter>
 template<typename ActionTag>
 auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
 {
-    typedef iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>> adaptor_t;
-    typedef filtered_iterable_action_result<const adaptor_t,ActionTag,Filter> filtered_action_result;
+    typedef filtered_iterable_action_result<const deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
 
 apply_action:

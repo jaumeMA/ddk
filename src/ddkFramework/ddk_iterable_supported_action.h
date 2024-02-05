@@ -17,8 +17,7 @@ public:
 
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(Traits,Action))
-    supported_action(const Action& i_action);
-    supported_action(const stop_action&);
+    supported_action(const Action& i_action, bool i_valid);
 
     TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
@@ -28,7 +27,7 @@ public:
     inline auto apply(const Adaptor& i_adaptor) const;
 
 private:
-    function<iterable_action_result<action_t>(iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>)> m_action;
+    function<action_t(iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>)> m_action;
 };
 
 template<typename Traits>
@@ -43,15 +42,14 @@ public:
 
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(const_traits,Action))
-    const_supported_action(const Action& i_action);
-    const_supported_action(const stop_action&);
+    const_supported_action(const Action& i_action, bool i_valid);
 
     TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(const Adaptor,const_tags_t))
     inline auto apply(const Adaptor& i_adaptor) const;
 
 private:
-    function<iterable_action_result<action_t>(iterable_adaptor<const detail::type_erasure_iterable_impl<const_traits>>)> m_action;
+    function<action_t(iterable_adaptor<const detail::type_erasure_iterable_impl<const_traits>>)> m_action;
 };
 
 }

@@ -15,12 +15,18 @@ public:
 	typedef mpl::aqcuire_callable_args_type<Function> args_type;
 	struct callable_tag;
 
-	fixed_return_callable_impl(Function& i_function);
+	fixed_return_callable_impl(const Function& i_function);
+	fixed_return_callable_impl(Function&& i_function);
+	fixed_return_callable_impl() = default;
+	fixed_return_callable_impl(const fixed_return_callable_impl&) = default;
+	fixed_return_callable_impl(fixed_return_callable_impl&&) = default;
 	template<typename ... Args>
 	inline Return operator()(Args&& ... i_args) const;
+	fixed_return_callable_impl& operator=(const fixed_return_callable_impl&) = default;
+	fixed_return_callable_impl& operator=(fixed_return_callable_impl&&) = default;
 
 private:
-	Function& m_function;
+	Function m_function;
 };
 
 template<typename Return,typename Function,bool Terse>
@@ -32,13 +38,20 @@ public:
 	struct callable_tag;
 
 	template<typename ... Args>
-	replaced_return_callable_impl(Function& i_function,Args&& ... i_args);
+	replaced_return_callable_impl(const Function& i_function,Args&& ... i_args);
+	template<typename ... Args>
+	replaced_return_callable_impl(Function&& i_function,Args&& ... i_args);
+	replaced_return_callable_impl() = default;
+	replaced_return_callable_impl(const replaced_return_callable_impl&) = default;
+	replaced_return_callable_impl(replaced_return_callable_impl&&) = default;
 	template<typename ... Args>
 	inline Return operator()(Args&& ... i_args) const;
+	replaced_return_callable_impl& operator=(const replaced_return_callable_impl&) = default;
+	replaced_return_callable_impl& operator=(replaced_return_callable_impl&&) = default;
 
 private:
-	mutable Function m_function;
-	mutable Return m_return;
+	Function m_function;
+	Return m_return;
 };
 
 }

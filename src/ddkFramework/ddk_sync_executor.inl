@@ -288,7 +288,7 @@ typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_asy
 {
 	scheduler_base_t::clear_scheduler();
 
-	return { std::move(m_function).extract(),std::move(m_cancelFunc),std::move(m_promise),std::move(m_scheduler),std::move(m_executor)};
+	return { std::move(this->m_function).extract(),std::move(this->m_cancelFunc),std::move(this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor)};
 }
 template<typename Callable,typename CancelOp,typename Promise, typename Scheduler, typename Executor>
 async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type>() &&
@@ -297,12 +297,12 @@ async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<ty
 
 	scheduler_base_t::clear_scheduler();
 
-	return std::move(m_promise).attach<async_executor_t>(std::move(m_function).extract(),std::move(m_cancelFunc),std::move(m_promise),std::move(m_scheduler),std::move(m_executor));
+	return std::move(this->m_promise).attach<async_executor_t>(std::move(this->m_function).extract(),std::move(this->m_cancelFunc),std::move(this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach(detail::private_async_state_shared_ptr<callable_return_type> i_sharedState)
 {
-	m_function.share_ownership(i_sharedState);
+	this->m_function.share_ownership(i_sharedState);
 
 	m_scheduler.subscribe(*this);
 }

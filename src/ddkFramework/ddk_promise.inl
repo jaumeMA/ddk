@@ -23,6 +23,8 @@ promise<T>::promise(promise<T>&& other)
 : m_sharedState(std::move(other.m_sharedState))
 , m_refCounter(this,{})
 {
+	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
+
 	set_reference_counter(tagged_reference_counter{ &m_refCounter,ddk::ReferenceAllocationType::Embedded });
 
 	m_sharedState->attach(this->ref_from_this());
@@ -34,6 +36,8 @@ promise<T>::promise(Args&& ... i_args)
 : m_sharedState(make_shared_reference<detail::private_async_state<T>>(std::forward<Args>(i_args)...))
 , m_refCounter(this,{})
 {
+	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
+
 	set_reference_counter(tagged_reference_counter{ &m_refCounter,ddk::ReferenceAllocationType::Embedded });
 
 	m_sharedState->attach(this->ref_from_this());

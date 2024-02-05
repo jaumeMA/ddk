@@ -3,13 +3,19 @@
 #include "ddk_iterable_interface.h"
 #include "ddk_iterable_action.h"
 #include "ddk_tuple.h"
-#include "ddk_type_erasure_iterable_impl.h"
 #include "ddk_type_concepts.h"
 #include "ddk_iterable_action_tag_concepts.h"
 #include "ddk_concepts.h"
 
 namespace ddk
 {
+namespace detail
+{
+
+template<typename>
+class type_erasure_iterable_impl;
+
+}
 
 template<typename Traits>
 class iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>
@@ -58,6 +64,8 @@ private:
 
 	template<typename Adaptor, size_t ... TagsIndexs, size_t ... ConstTagsIndexs>
 	iterable_adaptor(Adaptor& i_adaptor, const mpl::sequence<TagsIndexs...>&, const mpl::sequence<ConstTagsIndexs...>&);
+	template<typename Adaptor,size_t ... TagsIndexs,size_t ... ConstTagsIndexs>
+	iterable_adaptor(const Adaptor& i_adaptor,const mpl::sequence<TagsIndexs...>&,const mpl::sequence<ConstTagsIndexs...>&);
 	template<typename Adaptor, typename ActionTag>
 	static iterable_action_tag_result<traits,ActionTag> _perform_action(type_erased_adaptor_t i_adaptor, ActionTag i_action);
 	template<typename Adaptor,typename ActionTag>

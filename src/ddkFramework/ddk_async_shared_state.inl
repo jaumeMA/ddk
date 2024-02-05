@@ -234,7 +234,7 @@ embedded_private_async_state<T,TT>::embedded_private_async_state()
 template<typename T,typename TT>
 embedded_private_async_state<T,TT>::~embedded_private_async_state()
 {
-	detach();
+	this->detach();
 
 	DDK_ASSERT(m_refCounter.hasSharedReferences() == false,"Pending shared references while destroying embedded async state");
 }

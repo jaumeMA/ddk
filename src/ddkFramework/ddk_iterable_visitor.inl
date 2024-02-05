@@ -16,79 +16,136 @@ template<typename Iterable>
 template<typename Action>
 iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction)
 {
-	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t&>())) return_result;
+	_loop<mpl::empty_type_pack>(i_initialAction);
 
-	Action currAction = i_initialAction;
-
-apply_action:
-	if (auto actionRes = currAction.apply(m_adaptor))
-	{
-		if constexpr (mpl::is_same_type<Action,typename return_result::payload_t>::value)
-		{
-			if (currAction = std::move(actionRes).extract())
-			{
-				goto apply_action;
-			}
-			else
-			{
-				return success;
-			}
-		}
-		else
-		{
-			if (auto newAction = std::move(actionRes).extract())
-			{
-				return loop(std::move(newAction));
-			}
-			else
-			{
-				return success;
-			}
-		}
-	}
-	else
-	{
-		return actionRes.error();
-	}
+	return make_error<iterable_result>(IterableError::StopError);
 }
 template<typename Iterable>
 template<typename Action>
 iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction) const
 {
-	typedef decltype(std::declval<Action>().apply(std::declval<const adaptor_t&>())) return_result;
+	_loop<mpl::empty_type_pack>(i_initialAction);
 
-	Action currAction = i_initialAction;
+	return make_error<iterable_result>(IterableError::StopError);
+}
+template<typename Iterable>
+template<typename TypePack, typename Action>
+auto iterable_visitor<Iterable>::_loop(const Action& i_action)
+{
+	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>())) return_action;
+	Action currAction = i_action;
 
 apply_action:
-	if (auto actionRes = currAction.apply(m_adaptor))
+	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if constexpr (mpl::is_same_type<Action,typename return_result::payload_t>::value)
+		if (auto newAction = currAction.apply(m_adaptor))
 		{
-			if (currAction = std::move(actionRes).extract())
-			{
-				goto apply_action;
-			}
-			else
-			{
-				return success;
-			}
+			new (&currAction) Action(std::move(newAction));
+
+			goto apply_action;
 		}
 		else
 		{
-			if (auto newAction = std::move(actionRes).extract())
-			{
-				return loop(std::move(newAction));
-			}
-			else
-			{
-				return success;
-			}
+			return newAction;
 		}
 	}
 	else
 	{
-		return actionRes.error();
+		if constexpr (TypePack::template contains<return_action>())
+		{
+			return currAction.apply(m_adaptor);
+		}
+		else
+		{
+			typedef typename TypePack::template add_unique<Action>::type new_type_pack;
+			typedef decltype(_loop<new_type_pack>(std::declval<return_action>())) action_descent;
+
+			if constexpr (mpl::is_same_type<Action,action_descent>::value)
+			{
+				if (auto nextAction = currAction.apply(m_adaptor))
+				{
+					if (auto descentAction = _loop<new_type_pack>(nextAction))
+					{
+						new (&currAction) Action(std::move(descentAction));
+
+						goto apply_action;
+					}
+					else
+					{
+						return descentAction;
+					}
+				}
+				else
+				{
+					return stop_action(currAction);
+				}
+			}
+			else
+			{
+				if (auto nextAction = currAction.apply(m_adaptor))
+				{
+					return _loop<new_type_pack>(nextAction);
+				}
+				else
+				{
+					return nextAction;
+				}
+			}
+		}
 	}
+}
+template<typename Iterable>
+template<typename TypePack,typename Action>
+auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
+{
+	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>())) return_action;
+	Action currAction = i_action;
+
+apply_action:
+	if constexpr (mpl::is_same_type<Action,return_action>::value)
+	{
+		if (auto newAction = currAction.apply(m_adaptor))
+		{
+			new (&currAction) Action(std::move(newAction));
+
+			goto apply_action;
+		}
+		else
+		{
+			return newAction;
+		}
+	}
+	else
+	{
+		if constexpr (TypePack::template contains<return_action>())
+		{
+			return currAction.apply(m_adaptor);
+		}
+		else
+		{
+			typedef typename TypePack::template add_unique<Action>::type new_type_pack;
+			typedef decltype(_loop<new_type_pack>(std::declval<return_action>())) action_descent;
+
+			if constexpr (mpl::is_same_type<Action,action_descent>::value)
+			{
+				if (auto descentAction = _loop<new_type_pack>(currAction.apply(m_adaptor)))
+				{
+					new (&currAction) Action(std::move(descentAction));
+
+					goto apply_action;
+				}
+				else
+				{
+					return descentAction;
+				}
+			}
+			else
+			{
+				return _loop<new_type_pack>(currAction.apply(m_adaptor));
+			}
+		}
+	}
+
 }
 
 }

@@ -51,15 +51,15 @@ struct B : A
 };
 struct C : A
 {
-    using A::A;
+	using A::A;
 };
 struct D : C
 {
-    using C::C;
+	using C::C;
 };
 struct E : C
 {
-    using C::C;
+	using C::C;
 };
 
 namespace ddk
@@ -86,7 +86,7 @@ void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 	{
 		int a = 0;
 		++a;
-	}	<<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
+	} <<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
 		<<= ddk::view::order(ddk::reverse_order)
 		<<= i_iterable;
 }
@@ -102,7 +102,89 @@ ddk::random_access_iterable<int> proveta()
 	return ddk::deduce_iterable(myFoo);
 }
 
-TEST(DDKIterableTest, forwardIterableConstruction)
+std::vector<int> create_prova()
+{
+	std::vector<int> kk;
+
+	kk.reserve(1000000);
+
+	for (size_t i = 0;i < 1000000;i++)
+	{
+		kk.push_back(std::rand());
+	}
+
+	return kk;
+}
+
+std::vector<int> v_prova = create_prova();
+
+struct myBeginAction : ddk::action_base
+{
+	typedef ddk::mpl::type_pack<ddk::begin_action_tag> tags_t;
+
+	myBeginAction(bool i_valid = true)
+		: action_base(i_valid)
+	{
+	}
+	TEMPLATE(typename Adaptor)
+		REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+		inline ddk::no_action apply(Adaptor&& i_adaptor) const
+	{
+		i_adaptor.perform_action(ddk::begin_action_tag{}).dismiss();
+
+		return false;
+	}
+};
+template<typename Sink>
+struct myForwardAction : ddk::action_base
+{
+	typedef ddk::mpl::type_pack<ddk::forward_action_tag> tags_t;
+
+	myForwardAction(const Sink& i_sink, bool i_valid = true)
+	: action_base(i_valid)
+	, m_action(i_valid)
+	, m_sink(i_sink)
+	{
+	}
+	TEMPLATE(typename Adaptor)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+	inline myForwardAction apply(Adaptor&& i_adaptor) const
+	{
+		if (m_action.apply(i_adaptor))
+		{
+			i_adaptor.perform_action(ddk::sink_action_tag{ m_sink }).dismiss();
+
+			return { m_sink,true };
+		}
+		else
+		{
+			return { m_sink,false };
+		}
+	}
+
+	ddk::forward_action m_action;
+	Sink m_sink;
+};
+template<typename Sink>
+myForwardAction(const Sink&,bool i_valid) -> myForwardAction<Sink>;
+
+TEST(DDKIterableTest,peformance)
+{
+	//auto kk = ddk::deduce_iterable(v_prova);
+
+	//kk.iterate_impl(myBeginAction{}).dismiss();
+	//kk.iterate_impl(myForwardAction{ [](const int&)
+	//	{
+	//	} }).dismiss();
+
+	[](const int& i_value)
+	{
+	}	<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
+		<<= ddk::view::order(ddk::reverse_order)
+		<<= v_prova;
+}
+
+TEST(DDKIterableTest,forwardIterableConstruction)
 {
 	//std::map<int,ddk::unique_reference_wrapper<int>> kk;
 	std::map<int,int> _foo;
@@ -114,7 +196,6 @@ TEST(DDKIterableTest, forwardIterableConstruction)
 	std::vector<int> foo;
     foo.push_back(1);
     foo.push_back(2);
-
 
     foo.push_back(3);
     foo.push_back(-4);

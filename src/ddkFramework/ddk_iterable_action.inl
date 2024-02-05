@@ -2,7 +2,6 @@
 namespace ddk
 {
 
-const extern stop_action stop_iteration;
 const extern go_to_begin_action go_to_begin;
 const extern go_to_end_action go_to_end;
 const extern forward_action go_next_place;

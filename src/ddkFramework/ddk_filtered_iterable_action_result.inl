@@ -28,9 +28,10 @@ filtered_iterable_action_error<Traits,ActionTag,Filter>::operator bool() const
     return m_filteredOut;
 }
 template<typename Traits,typename ActionTag,typename Filter>
-filtered_iterable_action_error<Traits,ActionTag,Filter>::operator iterable_action_tag_error<Traits,ActionTag>() const
+template<typename TTraits>
+filtered_iterable_action_error<Traits,ActionTag,Filter>::operator iterable_action_tag_error<TTraits,ActionTag>() const
 {
-    typedef iterable_action_recovery_tag<Traits,ActionTag> action_recovery_tag;
+    typedef iterable_action_recovery_tag<TTraits,ActionTag> action_recovery_tag;
 
     return filtered_iterable_action_cs<action_recovery_tag>(m_error->recovery().action());
 }

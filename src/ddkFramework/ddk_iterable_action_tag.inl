@@ -1,4 +1,6 @@
 
+#include "ddk_function.h"
+
 namespace ddk
 {
 

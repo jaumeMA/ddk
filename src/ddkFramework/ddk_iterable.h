@@ -57,6 +57,9 @@ private:
 template<typename Iterable>
 iterable(Iterable&&)->iterable<Iterable>;
 
+template<typename Iterable>
+typename iterable<Iterable>::traits deduce_iterable_traits(const iterable<Iterable>&);
+
 }
 }
 

@@ -22,7 +22,7 @@ ddk::future<ddk::iterable_result> operator<<=(ddk::task_executor& i_lhs, ddk::it
 		})) : std::move(visitationRes);
 	});
 
-	const ddk::iteration_result iterRes = execute_iteration(newIteration);
+	const ddk::iterable_result iterRes = execute_iteration(newIteration);
 
 	if (res)
 	{

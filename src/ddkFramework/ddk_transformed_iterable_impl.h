@@ -100,6 +100,8 @@ private:
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 class iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
 {
+	typedef PrivateTraits private_traits;
+
 public:
 	typedef typename Iterable::traits traits;
 	typedef detail::const_iterable_traits<traits> const_traits;

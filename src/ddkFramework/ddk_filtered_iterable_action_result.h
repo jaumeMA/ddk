@@ -24,7 +24,8 @@ public:
 	filtered_iterable_action_error(const filtered_iterable_action_error<Traits,AActionTag,Filter>& i_error);
 
 	operator bool() const;
-	operator iterable_action_tag_error<Traits,ActionTag>() const;
+	template<typename TTraits>
+	operator iterable_action_tag_error<TTraits,ActionTag>() const;
 	auto recovery() const&;
 	auto recovery()&&;
 
