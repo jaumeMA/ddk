@@ -89,7 +89,8 @@ auto operator<<=(const Function& i_lhs,Iterable&& i_rhs)
 namespace ddk
 {
 
-template<typename ... Iterables>
+TEMPLATE(typename ... Iterables)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterables)...)
 auto concat(Iterables&& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
@@ -97,7 +98,8 @@ auto concat(Iterables&& ... i_iterables)
 	return detail::iterable{ detail::union_iterable_impl(deduce_iterable(std::forward<Iterables>(i_iterables)) ...) };
 }
 
-template<typename ... Iterables>
+TEMPLATE(typename ... Iterables)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterables)...)
 auto fusion(Iterables&& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");

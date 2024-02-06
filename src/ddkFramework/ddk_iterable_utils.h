@@ -62,10 +62,12 @@ inline auto operator<<=(const Function& i_lhs, Iterable&&i_rhs);
 namespace ddk
 {
 
-template<typename ... Iterables>
+TEMPLATE(typename ... Iterables)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterables)...)
 inline auto concat(Iterables&& ... i_iterables);
 
-template<typename ... Iterables>
+TEMPLATE(typename ... Iterables)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterables)...)
 inline auto fusion(Iterables&& ... i_iterables);
 
 //TEMPLATE(typename ... Iterables)

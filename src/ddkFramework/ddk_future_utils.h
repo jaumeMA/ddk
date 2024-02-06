@@ -8,6 +8,6 @@ namespace ddk
 
 TEMPLATE(typename ... Futures)
 REQUIRES(IS_NUMBER_OF_ARGS_GREATER(0,Futures...),TYPE_CONTAINS_SYMBOL(Futures,future_tag)...)
-inline auto fusion(Futures&& ... i_components);
+inline auto compose(Futures&& ... i_components);
 
 }
