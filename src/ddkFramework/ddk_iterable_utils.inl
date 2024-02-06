@@ -47,7 +47,7 @@ auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterabl
 	typedef typename traits::const_tags_t const_tags_t;
 	typedef typename ddk::mpl::action_tags_retrait<traits,ddk::detail::by_type_traits<const return_t>,ddk::detail::reduce_type_traits,const_tags_t>::type transformed_const_tags;
 
-	typedef ddk::detail::iterable_by_value_adaptor<return_t,ddk::mpl::empty_type_pack,transformed_const_tags> iterable_transformed_traits;
+	typedef ddk::detail::iterable_traits<ddk::detail::iterable_by_value_adaptor<const return_t,ddk::mpl::empty_type_pack,transformed_const_tags>> iterable_transformed_traits;
 	typedef ddk::detail::transformed_iterable_impl<iterable_transformed_traits,traits,iterable_t,Function> transformed_iterable;
 
 	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_transform()));

@@ -79,7 +79,7 @@ struct tuple_visitor
 
 }
 
-static std::vector<int> myFoo;
+static std::list<int> myFoo;
 void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 {
 	[](const int& i_value)
@@ -91,7 +91,7 @@ void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 		<<= i_iterable;
 }
 
-ddk::random_access_iterable<int> proveta()
+ddk::bidirectional_iterable<int> proveta()
 {
 	myFoo.push_back(1);
 	myFoo.push_back(2);
