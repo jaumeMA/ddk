@@ -38,15 +38,13 @@ auto iterable_visitor<Iterable>::_loop(const Action& i_action)
 apply_action:
 	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if (auto newAction = currAction.apply(m_adaptor))
+		if (*new (&currAction) Action(currAction.apply(m_adaptor)))
 		{
-			new (&currAction) Action(std::move(newAction));
-
 			goto apply_action;
 		}
 		else
 		{
-			return newAction;
+			return currAction;
 		}
 	}
 	else
@@ -64,7 +62,7 @@ apply_action:
 			{
 				if (auto nextAction = currAction.apply(m_adaptor))
 				{
-					if (auto descentAction = _loop<new_type_pack>(nextAction))
+					if (auto descentAction = _loop<new_type_pack>(std::move(nextAction)))
 					{
 						new (&currAction) Action(std::move(descentAction));
 
@@ -84,7 +82,7 @@ apply_action:
 			{
 				if (auto nextAction = currAction.apply(m_adaptor))
 				{
-					return _loop<new_type_pack>(nextAction);
+					return _loop<new_type_pack>(std::move(nextAction));
 				}
 				else
 				{
@@ -104,15 +102,13 @@ auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
 apply_action:
 	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if (auto newAction = currAction.apply(m_adaptor))
+		if (*new (&currAction) Action(currAction.apply(m_adaptor)))
 		{
-			new (&currAction) Action(std::move(newAction));
-
 			goto apply_action;
 		}
 		else
 		{
-			return newAction;
+			return currAction;
 		}
 	}
 	else
@@ -128,24 +124,37 @@ apply_action:
 
 			if constexpr (mpl::is_same_type<Action,action_descent>::value)
 			{
-				if (auto descentAction = _loop<new_type_pack>(currAction.apply(m_adaptor)))
+				if (auto nextAction = currAction.apply(m_adaptor))
 				{
-					new (&currAction) Action(std::move(descentAction));
+					if (auto descentAction = _loop<new_type_pack>(std::move(nextAction)))
+					{
+						new (&currAction) Action(std::move(descentAction));
 
-					goto apply_action;
+						goto apply_action;
+					}
+					else
+					{
+						return descentAction;
+					}
 				}
 				else
 				{
-					return descentAction;
+					return stop_action(currAction);
 				}
 			}
 			else
 			{
-				return _loop<new_type_pack>(currAction.apply(m_adaptor));
+				if (auto nextAction = currAction.apply(m_adaptor))
+				{
+					return _loop<new_type_pack>(std::move(nextAction));
+				}
+				else
+				{
+					return nextAction;
+				}
 			}
 		}
 	}
-
 }
 
 }

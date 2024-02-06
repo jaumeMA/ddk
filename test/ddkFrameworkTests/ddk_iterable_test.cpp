@@ -179,8 +179,7 @@ TEST(DDKIterableTest,peformance)
 
 	[](auto&& i_value)
 	{
-	}	<<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
-		<<= v_prova;
+	}	<<= v_prova;
 }
 
 TEST(DDKIterableTest,forwardIterableConstruction)

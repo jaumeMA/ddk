@@ -33,23 +33,30 @@ REQUIRES(IS_NOT_ITERABLE_TYPE(Container))
 inline resolved_iterable<Container> deduce_iterable(Container&& i_iterable);
 
 template<typename T>
-using deduced_iterable = decltype(deduce_iterable(std::declval<const T&>()));
+using deduced_iterable = decltype(deduce_iterable(std::declval<T&&>()));
 
 }
 
-template<typename Function, typename Iterable>
+#include "ddk_iterable_type_concepts.h"
+
+TEMPLATE(typename Function, typename Iterable)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 inline auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterable&& i_rhs);
 
-template<typename Function,typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 inline auto operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs, Iterable&& i_rhs);
 
-template<typename T,typename Iterable>
+TEMPLATE(typename T,typename Iterable)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 inline auto operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs);
 
-template<typename Function,typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 inline auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs, Iterable&& i_rhs);
 
-template<typename Function,typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 inline auto operator<<=(const Function& i_lhs, Iterable&&i_rhs);
 
 namespace ddk

@@ -37,7 +37,8 @@ resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 
 }
 
-template<typename Function, typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterable&& i_rhs)
 {
 	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_t;
@@ -51,7 +52,8 @@ auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterabl
 
 	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_transform()));
 }
-template<typename Function,typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 auto operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Iterable&& i_rhs)
 {
 	typedef ddk::resolved_iterable<Iterable> iterable_t;
@@ -59,7 +61,8 @@ auto operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Iterable&& 
 
 	return ddk::detail::iterable(filtered_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_filter()));
 }
-template<typename T,typename Iterable>
+TEMPLATE(typename T,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 auto operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs)
 {
 	typedef ddk::resolved_iterable<Iterable> iterable_t;
@@ -67,7 +70,8 @@ auto operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs)
 
 	return ddk::detail::iterable(ordered_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.order()));
 }
-template<typename Function,typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable&& i_rhs)
 {
 	typedef ddk::resolved_iterable<Iterable> iterable_t;
@@ -75,7 +79,8 @@ auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable
 
 	return ddk::detail::iterable(constrained_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_constrain()));
 }
-template<typename Function, typename Iterable>
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
 auto operator<<=(const Function& i_lhs,Iterable&& i_rhs)
 {
 	return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs };
