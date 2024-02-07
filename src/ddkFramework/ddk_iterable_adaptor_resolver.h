@@ -35,6 +35,8 @@ TEMPLATE(typename Iterable)
 REQUIRES_COND((IS_TYPE_CONST_COND(Iterable) || (DYNAMIC_SIZE_CONTAINER_COND(Iterable) == false)) && IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE_COND(Iterable))
 random_access_iterable_adaptor<const Iterable> iterable_adaptor_resolver(Iterable&,...);
 
+none_t iterable_adaptor_resolver(...);
+
 template<typename Iterable>
 using iterable_adaptor_correspondence = decltype(iterable_adaptor_resolver(std::declval<Iterable&>()));
 
@@ -42,7 +44,10 @@ template<typename Iterable>
 typename iterable_adaptor<Iterable>::traits deduce_iterable_traits(const iterable_adaptor<Iterable>&);
 
 }
-    
+
+template<typename Iterable>
+using deduced_adaptor = mpl::remove_qualifiers<decltype(deduce_adaptor(std::declval<Iterable>()))>;
+
 template<typename Iterable>
 struct iterable_adaptor : detail::iterable_adaptor_correspondence<Iterable>
 {
@@ -50,6 +55,19 @@ struct iterable_adaptor : detail::iterable_adaptor_correspondence<Iterable>
 };
 
 template<typename Iterable>
-using deduced_adaptor = decltype(deduce_adaptor(std::declval<Iterable>()));
+struct iterable_adaptor<detail::iterable<Iterable>> : deduced_adaptor<Iterable>
+{
+    typedef deduced_adaptor<Iterable> base_t;
+
+    using base_t::base_t;
+};
+
+template<typename Iterable>
+struct iterable_adaptor<const detail::iterable<Iterable>> : deduced_adaptor<Iterable>
+{
+    typedef deduced_adaptor<Iterable> base_t;
+
+    using base_t::base_t;
+};
 
 }

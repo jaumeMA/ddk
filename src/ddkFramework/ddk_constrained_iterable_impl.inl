@@ -52,18 +52,15 @@ TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
 auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag)
 {
-    typedef iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>> adaptor_t;
-    typedef filtered_iterable_action_result<adaptor_t,ActionTag,Constrain> filtered_action_result;
-
     filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
 
-    if (filtered_action_result applyRes = filteredAction.apply(m_adaptor))
+    if (auto actionRes = filteredAction.apply(m_adaptor))
     {
-        return make_result<iterable_action_tag_result<traits,ActionTag>>(applyRes);
+        return make_result<iterable_action_tag_result<traits,ActionTag>>(actionRes);
     }
     else
     {
-        return make_error<iterable_action_tag_result<traits,ActionTag>>(applyRes.error());
+        return make_error<iterable_action_tag_result<traits,ActionTag>>(actionRes.error());
     }
 }
 template<typename Iterable,typename Constrain>

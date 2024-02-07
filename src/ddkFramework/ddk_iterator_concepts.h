@@ -67,7 +67,7 @@ public:
 };
 
 template<typename T>
-inline constexpr bool has_iterator_defined_v = has_iterator_defined<T>::value;
+inline constexpr bool has_iterator_defined_v = has_iterator_defined<mpl::remove_qualifiers<T>>::value;
 
 template<typename T>
 struct is_forward_iterator
@@ -83,7 +83,7 @@ public:
 };
 
 template<typename T>
-inline constexpr bool is_forward_iterator_v = is_forward_iterator<T>::value;
+inline constexpr bool is_forward_iterator_v = is_forward_iterator<mpl::remove_qualifiers<T>>::value;
 
 template<typename T>
 struct is_backward_iterator
@@ -99,7 +99,7 @@ public:
 };
 
 template<typename T>
-inline constexpr bool is_backward_iterator_v = is_backward_iterator<T>::value;
+inline constexpr bool is_backward_iterator_v = is_backward_iterator<mpl::remove_qualifiers<T>>::value;
 
 template<typename T>
 struct is_random_access_iterator
@@ -115,7 +115,7 @@ public:
 };
 
 template<typename T>
-inline constexpr bool is_random_access_iterator_v = is_random_access_iterator<T>::value;
+inline constexpr bool is_random_access_iterator_v = is_random_access_iterator<mpl::remove_qualifiers<T>>::value;
 
 }
 }

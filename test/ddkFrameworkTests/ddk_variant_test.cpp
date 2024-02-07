@@ -2,8 +2,9 @@
 #include "ddk_variant.h"
 #include "ddk_static_visitor.h"
 #include "ddk_function.h"
-#include <array>
 #include "test_utils.h"
+#include "ddk_iterable.h"
+#include <array>
 #include <utility>
 #include <string>
 

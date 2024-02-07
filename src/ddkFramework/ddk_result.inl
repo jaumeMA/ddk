@@ -97,10 +97,10 @@ bool result<void,Error>::operator!=(const Error& i_error) const
 }
 
 template<typename T, typename Error>
-TEMPLATE(typename TT)
-REQUIRED(IS_CONSTRUCTIBLE(T,TT))
-result<T,Error>::result(TT&& i_payload)
-: m_nestedRes(mpl::static_number<0>{},std::forward<TT>(i_payload))
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
+result<T,Error>::result(Args&& ... i_args)
+: m_nestedRes(mpl::static_number<0>{},std::forward<Args>(i_args)...)
 {
 }
 template<typename T, typename Error>
@@ -248,7 +248,7 @@ TEMPLATE(typename Result,typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(typename Result::payload_t,Args...))
 Result make_result(Args&& ... i_args)
 {
-    return  Result{ typename Result::payload_t(std::forward<Args>(i_args) ...) };
+    return  Result{ std::forward<Args>(i_args)... };
 }
 template<typename Result,typename TT,typename EError>
 Result make_error(const result<TT,EError>& i_result)

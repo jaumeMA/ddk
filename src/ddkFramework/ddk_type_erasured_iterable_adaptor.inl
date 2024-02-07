@@ -27,7 +27,7 @@ iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::iterable_adaptor(c
 template<typename Traits>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-iterable_action_tag_result<typename iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::traits,ActionTag> iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action)
+auto iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action)
 {
 	constexpr size_t posInTags = tags_t::template pos_in_type_pack<ActionTag,std::is_constructible>();
 
@@ -38,7 +38,7 @@ iterable_action_tag_result<typename iterable_adaptor<detail::type_erasure_iterab
 template<typename Traits>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-iterable_action_tag_result<typename iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::const_traits,ActionTag> iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action) const
+auto iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action) const
 {
 	constexpr size_t posInTags = const_tags_t::template pos_in_type_pack<ActionTag,std::is_constructible>();
 
@@ -75,7 +75,7 @@ iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::iterable_ada
 template<typename Traits>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-iterable_action_tag_result<typename iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::const_traits,ActionTag> iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action) const
+auto iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action) const
 {
 	constexpr size_t posInTags = const_tags_t::template pos_in_type_pack<ActionTag,std::is_constructible>();
 

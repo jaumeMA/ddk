@@ -31,10 +31,10 @@ public:
 
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	inline iterable_action_tag_result<traits,ActionTag> perform_action(ActionTag&& i_action);
+	inline auto perform_action(ActionTag&& i_action);
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	inline iterable_action_tag_result<const_traits,ActionTag> perform_action(ActionTag&& i_action) const;
+	inline auto perform_action(ActionTag&& i_action) const;
 
 private:
 	template<typename>
@@ -90,7 +90,7 @@ public:
 
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	inline iterable_action_tag_result<const_traits,ActionTag> perform_action(ActionTag&& i_action) const;
+	inline auto perform_action(ActionTag&& i_action) const;
 
 private:
 	template<typename>

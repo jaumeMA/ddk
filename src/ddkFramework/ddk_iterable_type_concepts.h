@@ -12,19 +12,7 @@ namespace concepts
 {
 
 template<typename T>
-struct is_iterable_deducible_type_impl
-{
-private:
-    template<typename TT>
-    static std::true_type resolve(TT&&,const ddk::deduced_iterable<TT&&>* = nullptr);
-    static std::false_type resolve(...);
-
-public:
-    static const bool value = decltype(resolve(std::declval<T&&>()))::value;
-};
-
-template<typename T>
-inline constexpr bool is_iterable_deducible_type = is_iterable_deducible_type_impl<T>::value;
+inline constexpr bool is_iterable_deducible_type = (std::is_base_of<detail::none_t,ddk::iterable_adaptor<T>>::value == false);
 
 }
 }

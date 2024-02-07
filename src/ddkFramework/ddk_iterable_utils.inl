@@ -27,7 +27,7 @@ auto deduce_iterable(Iterable&& i_iterable)
 }
 
 TEMPLATE(typename Container)
-REQUIRED(IS_NOT_ITERABLE_TYPE(Container))
+REQUIRED(IS_NOT_ITERABLE_TYPE(Container),IS_DEDUCIBLE_ITERABLE_TYPE(Container))
 resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 {
 	typedef typename std::remove_reference<Container>::type container_t;

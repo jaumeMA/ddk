@@ -57,7 +57,7 @@ ddk::detail::iterable_constrain<Functor> constrain(Functor&& i_constrain)
 template<typename Iterable>
 auto take_n(Iterable&& i_iterable,size_t i_numItems)
 {
-	return constrain(std::forward<Iterable>(i_iterable),detail::num_items_constrain(i_numItems));
+	return constrain(detail::num_items_constrain(i_numItems)) <<= std::forward<Iterable>(i_iterable);
 }
 
 }

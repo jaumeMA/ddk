@@ -3,6 +3,7 @@
 #include "ddk_fiber_pool.h"
 #include "ddk_async.h"
 #include "ddk_extack_allocator.h"
+#include "ddk_iterable.h"
 #include "test_utils.h"
 #include "ddk_high_order_array.h"
 #include <stdexcept>
@@ -258,13 +259,13 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	//	return "hola";
 	//}));
 
-	auto kk = fusion(std::move(myFuture), std::move(myOtherFuture))
+	auto kk = compose(std::move(myFuture), std::move(myOtherFuture))
 	.then([](std::tuple<char,int> i_data)
 	{
 		return std::get<1>(i_data);
 	});
 
-	fusion(std::move(myOtherOtherFuture),std::move(kk))
+	compose(std::move(myOtherOtherFuture),std::move(kk))
 	.then([](std::array<int, 2> i_data)
 	{
 		return i_data[0] + i_data[1];

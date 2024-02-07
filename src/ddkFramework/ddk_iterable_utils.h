@@ -28,16 +28,21 @@ TEMPLATE(typename Iterable)
 REQUIRES(IS_ITERABLE_TYPE(Iterable))
 inline auto deduce_iterable(Iterable&& i_iterable);
 
+}
+
+#include "ddk_iterable_type_concepts.h"
+
+namespace ddk
+{
+
 TEMPLATE(typename Container)
-REQUIRES(IS_NOT_ITERABLE_TYPE(Container))
+REQUIRES(IS_NOT_ITERABLE_TYPE(Container),IS_DEDUCIBLE_ITERABLE_TYPE(Container))
 inline resolved_iterable<Container> deduce_iterable(Container&& i_iterable);
 
 template<typename T>
 using deduced_iterable = decltype(deduce_iterable(std::declval<T&&>()));
 
 }
-
-#include "ddk_iterable_type_concepts.h"
 
 TEMPLATE(typename Function, typename Iterable)
 REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))

@@ -23,7 +23,9 @@ typename traits_conversion_callable<FromTraits,ToTraits>::to_reference traits_co
 	return i_value;
 }
 template<typename FromTraits,typename ToTraits>
-typename traits_conversion_callable<FromTraits,ToTraits>::to_const_reference traits_conversion_callable<FromTraits,ToTraits>::operator()(from_const_reference i_value, ...) const
+TEMPLATE(typename T)
+REQUIRED(IS_CONVERTIBLE(T,to_const_reference))
+typename traits_conversion_callable<FromTraits,ToTraits>::to_const_reference traits_conversion_callable<FromTraits,ToTraits>::operator()(T&& i_value, ...) const
 {
 	return i_value;
 }

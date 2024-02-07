@@ -17,6 +17,9 @@ public:
 
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(Traits,Action))
+    supported_action(const Action& i_action);
+    TEMPLATE(typename Action)
+    REQUIRES(ACTION_SUPPORTED(Traits,Action))
     supported_action(const Action& i_action, bool i_valid);
 
     TEMPLATE(typename Adaptor)

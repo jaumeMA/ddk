@@ -129,9 +129,9 @@ public:
 	typedef typename embedded_type<T>::pointer_type pointer;
 	typedef typename embedded_type<T>::cpointer_type const_pointer;
 
-	TEMPLATE(typename TT)
-	REQUIRES(IS_CONSTRUCTIBLE(T,TT))
-	result(TT&& i_payload);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
+	result(Args&& ... i_args);
 	result(const Error& i_error);
 	TEMPLATE(typename TT, typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT),IS_CONSTRUCTIBLE(Error,EError))

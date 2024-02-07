@@ -19,7 +19,7 @@ class iterable_adaptor_base;
 template<typename Iterable>
 class iterable_adaptor_base
 {
-	typedef typename Iterable::value_type value_type;
+	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename std::add_const<typename Iterable::value_type>::type,typename Iterable::value_type>::type value_type;
 	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_reference,typename Iterable::reference>::type reference;
 	typedef typename Iterable::const_reference const_reference;
 

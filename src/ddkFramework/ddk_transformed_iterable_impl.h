@@ -34,7 +34,9 @@ public:
     typedef typename ToTraits::const_reference to_const_reference;
 
     inline to_reference operator()(from_reference i_value) const;
-    inline to_const_reference operator()(from_const_reference i_value, ...) const; //added variadic for avoiding clash when from_reference and from_const_reference are the same
+	TEMPLATE(typename T)
+	REQUIRES(IS_CONVERTIBLE(T,to_const_reference))
+	inline to_const_reference operator()(T&& i_value, ...) const; //added variadic for avoiding clash when from_reference and from_const_reference are the same
 };
 
 template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform>
