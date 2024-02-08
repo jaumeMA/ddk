@@ -71,7 +71,7 @@ iteration<Iterable,Sink>::operator iterable_result() &&
 {
 	if(ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		return _execute();
+		return _execute(iterable_default_action<Iterable>::default_action());
 	}
 	else
 	{

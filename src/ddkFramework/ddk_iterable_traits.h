@@ -19,7 +19,7 @@ struct type_traits
 };
 
 template<typename Traits>
-using const_type_traits = type_traits<typename Traits::value_type,typename Traits::const_reference,typename Traits::const_reference>;
+using const_type_traits = type_traits<const typename Traits::value_type,const typename Traits::const_reference,const typename Traits::const_reference>;
 
 template<typename T>
 using by_type_traits = type_traits<T,T&,const T&>;
@@ -56,7 +56,7 @@ template<typename Traits>
 using iterable_traits = iterable_by_type_traits<typename Traits::value_type,typename Traits::reference,typename Traits::const_reference,typename Traits::tags_t,typename Traits::const_tags_t>;
 
 template<typename Traits>
-using const_iterable_traits = iterable_by_type_traits<typename Traits::value_type,typename Traits::const_reference,typename Traits::const_reference,typename Traits::const_tags_t,typename Traits::const_tags_t>;
+using const_iterable_traits = iterable_by_type_traits<const typename Traits::value_type,const typename Traits::const_reference,const typename Traits::const_reference,typename Traits::const_tags_t,typename Traits::const_tags_t>;
 
 template<typename Adaptor, typename Tags = typename Adaptor::tags_t, typename ConstTags = typename Adaptor::const_tags_t>
 using iterable_adaptor_traits = iterable_by_type_traits<typename Adaptor::value_type,typename Adaptor::reference,typename Adaptor::const_reference,Tags,ConstTags>;
