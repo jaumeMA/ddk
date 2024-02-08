@@ -35,7 +35,7 @@ template<typename Error>
 TEMPLATE(typename EError)
 REQUIRED(IS_CONSTRUCTIBLE(Error,EError))
 result<void,Error>::result(result<void,EError>&& i_result)
-: m_nestedRes(i_result.m_nestedRes)
+: m_nestedRes(std::move(i_result.m_nestedRes))
 {
     SET_CHECK_RESULT(i_result)
 }
