@@ -23,7 +23,7 @@ iterable_result execute_iteration(iteration<Iterable,Sink>& i_iteration)
 {
 	if(ddk::atomic_compare_exchange(i_iteration.m_executable,true,false))
 	{
-        return i_iteration._execute();
+        return i_iteration._execute(iterable_default_action<Iterable>::default_action());
 	}
     else
     {
@@ -110,9 +110,7 @@ auto iteration<Iterable,Sink>::transform(Callable&& i_callable) &&
 {
 	if (ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		typedef function<void(typename Iterable::reference)> SSink;
-
-		return iteration<Iterable,SSink>{ m_iterable,[payload = this->m_try, callable = i_callable](typename Iterable::reference i_value)
+		return iteration{ std::move(m_iterable),[payload = this->m_try, callable = i_callable](auto&& i_value)
 		{
 			ddk::eval(callable,payload(i_value));
 		} };

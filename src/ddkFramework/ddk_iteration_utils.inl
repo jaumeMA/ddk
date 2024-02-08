@@ -6,7 +6,7 @@ ddk::future<ddk::iterable_result> operator<<=(ddk::task_executor& i_lhs, ddk::it
 	typedef typename ddk::mpl::which_type<ddk::mpl::is_same_type<ret_type,void>::value,ddk::detail::void_t,ret_type>::type sink_ret_type;
 	ddk::optional<ddk::future<ddk::detail::void_t>> res;
 
-	auto newIteration = std::move(i_rhs).transform([&i_lhs,&i_rhs,&res](const ddk::function<void()>& i_func)
+	auto newIteration = std::move(i_rhs).transform([&i_lhs,&res](const ddk::function<void()>& i_func)
 	{
 		ddk::future<ddk::detail::void_t> visitationRes = i_lhs.enqueue(ddk::make_function([payload = i_func]()
 		{
@@ -15,7 +15,7 @@ ddk::future<ddk::iterable_result> operator<<=(ddk::task_executor& i_lhs, ddk::it
 			return ddk::_void;
 		}));
 
-		res = (res) ? ddk::fusion(std::move(res).extract(),std::move(visitationRes))
+		res = (res) ? ddk::compose(std::move(res).extract(),std::move(visitationRes))
 		.then(ddk::make_function([](std::array<ddk::detail::void_t,2> i_res) -> ddk::detail::void_t
 		{
 			return ddk::_void;
