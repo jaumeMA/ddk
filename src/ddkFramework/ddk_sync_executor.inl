@@ -147,6 +147,8 @@ void async_executor_base<Callable,CancelOp,Promise,Executor>::reset(promised_cal
 {
 	if (i_callable.policy() == SchedulerPolicy::FireAndReuse)
 	{
+		m_function.~promised_callable();
+
 		new (&m_function) promised_callable(std::move(i_callable),SchedulerPolicy::None);
 	}
 }

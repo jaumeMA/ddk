@@ -38,8 +38,12 @@ auto iterable_visitor<Iterable>::_loop(const Action& i_action)
 apply_action:
 	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if (*new (&currAction) Action(currAction.apply(m_adaptor)))
+		if (auto nextAction = Action(currAction.apply(m_adaptor)))
 		{
+			currAction.~Action();
+
+			new (&currAction) Action(std::move(nextAction));
+
 			goto apply_action;
 		}
 		else
@@ -64,6 +68,8 @@ apply_action:
 				{
 					if (auto descentAction = _loop<new_type_pack>(std::move(nextAction)))
 					{
+						currAction.~Action();
+
 						new (&currAction) Action(std::move(descentAction));
 
 						goto apply_action;
@@ -102,8 +108,12 @@ auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
 apply_action:
 	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if (*new (&currAction) Action(currAction.apply(m_adaptor)))
+		if (auto nextAction = currAction.apply(m_adaptor))
 		{
+			currAction.~Action();
+
+			new (&currAction) Action(std::move(nextAction));
+
 			goto apply_action;
 		}
 		else
@@ -128,6 +138,8 @@ apply_action:
 				{
 					if (auto descentAction = _loop<new_type_pack>(std::move(nextAction)))
 					{
+						currAction.~Action();
+
 						new (&currAction) Action(std::move(descentAction));
 
 						goto apply_action;

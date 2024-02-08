@@ -6,7 +6,8 @@ template<typename Traits>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(Traits,Action))
 supported_action<Traits>::supported_action(const Action& i_action)
-: m_action(make_function([i_action](iterable_adaptor<detail::type_erasure_iterable_impl<Traits>> i_adaptorWrapper) -> action_t
+: action_base(static_cast<bool>(i_action))
+, m_action(make_function([i_action](iterable_adaptor<detail::type_erasure_iterable_impl<Traits>> i_adaptorWrapper) -> action_t
 {
 	return i_action.apply(i_adaptorWrapper);
 }))
