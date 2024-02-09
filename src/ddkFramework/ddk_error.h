@@ -30,16 +30,16 @@ class error_impl<Error>
 	}
 
 public:
-    error_impl(const Error& i_error);
-	error_impl(const Error& i_error, const std::string& i_errorDesc);
-	error_impl(const error_impl&) = default;
-	error_impl(error_impl&&) = default;
-	error_impl& operator=(const error_impl&) = default;
-	error_impl& operator=(error_impl&&) = default;
-	Error get_error() const;
-    const std::string& what() const;
-	bool operator==(const error_impl<Error>& i_error) const;
-	bool operator!=(const error_impl<Error>& i_error) const;
+    constexpr error_impl(const Error& i_error);
+	constexpr error_impl(const Error& i_error, const std::string& i_errorDesc);
+	constexpr error_impl(const error_impl&) = default;
+	constexpr error_impl(error_impl&&) = default;
+	constexpr error_impl& operator=(const error_impl&) = default;
+	constexpr error_impl& operator=(error_impl&&) = default;
+	constexpr Error get_error() const;
+	constexpr const std::string& what() const;
+	constexpr bool operator==(const error_impl<Error>& i_error) const;
+	constexpr bool operator!=(const error_impl<Error>& i_error) const;
 
 private:
     Error m_error;
@@ -75,18 +75,18 @@ public:
 	using error_impl<Error>::operator==;
 	using error_impl<Error>::operator!=;
 
-	error_impl(const error_impl&) = default;
-	error_impl(error_impl&&) = default;
-	error_impl& operator=(error_impl&&) = default;
-	error_impl& operator=(const error_impl&) = default;
+	constexpr error_impl(const error_impl&) = default;
+	constexpr error_impl(error_impl&&) = default;
+	constexpr error_impl& operator=(error_impl&&) = default;
+	constexpr error_impl& operator=(const error_impl&) = default;
     template<typename NestedError>
-    error_impl(const Error& i_errorCode, NestedError&& i_nestedError);
+	constexpr error_impl(const Error& i_errorCode, NestedError&& i_nestedError);
 	template<typename NestedError>
-	error_impl(const Error& i_errorCode,const std::string& i_errorDesc,NestedError&& i_nestedError);
+	constexpr error_impl(const Error& i_errorCode,const std::string& i_errorDesc,NestedError&& i_nestedError);
 	template<typename NestedError>
-    const NestedError& get_nested_error() const;
+	constexpr const NestedError& get_nested_error() const;
     template<typename Visitor>
-    typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& i_visitor) const;
+	constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& i_visitor) const;
 
 private:
     variant_impl<NestedErrors...> m_nestedErrors;
@@ -103,13 +103,13 @@ public:
 	using detail::error_impl<Error,NestedErrors...>::operator==;
 	using detail::error_impl<Error,NestedErrors...>::operator!=;
 
-	error(const error&) = default;
-    error& operator=(const error&) = default;
+	constexpr error(const error&) = default;
+    constexpr error& operator=(const error&) = default;
 
 };
 
 template<typename Result, typename ... Args>
-Result make_error(Args&& ... i_args);
+constexpr Result make_error(Args&& ... i_args);
 
 }
 

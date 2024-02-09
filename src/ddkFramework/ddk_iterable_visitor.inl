@@ -16,21 +16,36 @@ template<typename Iterable>
 template<typename Action>
 iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction)
 {
-	_loop<mpl::empty_type_pack>(i_initialAction);
+	try
+	{
+		_loop<mpl::empty_type_pack>(i_initialAction);
 
-	return make_error<iterable_result>(IterableError::StopError);
+		return make_result<iterable_result>(success);
+	}
+	catch(const iterable_exception& i_excp)
+	{
+		return make_error<iterable_result>(i_excp.error());
+	}
+
 }
 template<typename Iterable>
 template<typename Action>
 iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction) const
 {
-	_loop<mpl::empty_type_pack>(i_initialAction);
+	try
+	{
+		_loop<mpl::empty_type_pack>(i_initialAction);
 
-	return make_error<iterable_result>(IterableError::StopError);
+		return make_result<iterable_result>(success);
+	}
+	catch (const iterable_exception& i_excp)
+	{
+		return make_error<iterable_result>(i_excp.error());
+	}
 }
 template<typename Iterable>
 template<typename TypePack, typename Action>
-auto iterable_visitor<Iterable>::_loop(const Action& i_action)
+constexpr auto iterable_visitor<Iterable>::_loop(const Action& i_action)
 {
 	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>())) return_action;
 	Action currAction = i_action;
@@ -38,12 +53,8 @@ auto iterable_visitor<Iterable>::_loop(const Action& i_action)
 apply_action:
 	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if (auto nextAction = Action(currAction.apply(m_adaptor)))
+		if (currAction = Action(currAction.apply(m_adaptor)))
 		{
-			currAction.~Action();
-
-			new (&currAction) Action(std::move(nextAction));
-
 			goto apply_action;
 		}
 		else
@@ -66,17 +77,13 @@ apply_action:
 			{
 				if (auto nextAction = currAction.apply(m_adaptor))
 				{
-					if (auto descentAction = _loop<new_type_pack>(std::move(nextAction)))
+					if (currAction = _loop<new_type_pack>(std::move(nextAction)))
 					{
-						currAction.~Action();
-
-						new (&currAction) Action(std::move(descentAction));
-
 						goto apply_action;
 					}
 					else
 					{
-						return descentAction;
+						return nextAction;
 					}
 				}
 				else
@@ -100,7 +107,7 @@ apply_action:
 }
 template<typename Iterable>
 template<typename TypePack,typename Action>
-auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
+constexpr auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
 {
 	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>())) return_action;
 	Action currAction = i_action;
@@ -108,12 +115,8 @@ auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
 apply_action:
 	if constexpr (mpl::is_same_type<Action,return_action>::value)
 	{
-		if (auto nextAction = currAction.apply(m_adaptor))
+		if (currAction = currAction.apply(m_adaptor))
 		{
-			currAction.~Action();
-
-			new (&currAction) Action(std::move(nextAction));
-
 			goto apply_action;
 		}
 		else
@@ -136,17 +139,13 @@ apply_action:
 			{
 				if (auto nextAction = currAction.apply(m_adaptor))
 				{
-					if (auto descentAction = _loop<new_type_pack>(std::move(nextAction)))
+					if (currAction = _loop<new_type_pack>(std::move(nextAction)))
 					{
-						currAction.~Action();
-
-						new (&currAction) Action(std::move(descentAction));
-
 						goto apply_action;
 					}
 					else
 					{
-						return descentAction;
+						return currAction;
 					}
 				}
 				else

@@ -8,7 +8,7 @@ namespace ddk
 enum IterableError
 {
     InternalError,
-    StopError
+    UserError
 };
 typedef error<IterableError> iterable_error;
 typedef result<void,iterable_error> iterable_result;

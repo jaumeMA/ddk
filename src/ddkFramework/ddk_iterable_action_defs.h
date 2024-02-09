@@ -18,6 +18,7 @@ public:
     constexpr action_base(bool i_valid);
 
     constexpr explicit operator bool() const;
+    constexpr action_base& operator=(const action_base& i_action);
 
 private:
     bool m_valid = true;
@@ -78,6 +79,7 @@ public:
     TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
     constexpr inline forward_action apply(Adaptor && i_adaptor) const;
+    constexpr forward_action& operator=(const forward_action&);
 };
 
 struct backward_action : action_base
@@ -105,6 +107,7 @@ public:
     TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
     constexpr inline forward_action apply(Adaptor&& i_adaptor) const;
+    constexpr go_to_begin_action& operator=(const go_to_begin_action&);
 };
 
 struct go_to_end_action : backward_action
@@ -183,8 +186,8 @@ public:
     constexpr sink_action(const sink_action&) = default;
     constexpr sink_action(sink_action&&) = default;
 
-    constexpr sink_action& operator=(const sink_action&) = default;
-    constexpr sink_action& operator=(sink_action&&) = default;
+    constexpr sink_action& operator=(const sink_action& i_action);
+    constexpr sink_action& operator=(sink_action&& i_action);
 
     TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
@@ -207,8 +210,8 @@ public:
     constexpr action_sink(const action_sink&) = default;
     constexpr action_sink(action_sink&&) = default;
 
-    constexpr action_sink& operator=(const action_sink&) = default;
-    constexpr action_sink& operator=(action_sink&&) = default;
+    constexpr action_sink& operator=(const action_sink&);
+    constexpr action_sink& operator=(action_sink&&);
 
     TEMPLATE(typename Adaptor)
     REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))

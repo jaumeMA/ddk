@@ -1,4 +1,5 @@
 
+#include "ddk_iterable_exceptions.h"
 #include "ddk_iterable_action_result.h"
 
 namespace ddk
@@ -11,6 +12,12 @@ constexpr action_base::action_base(bool i_valid)
 constexpr action_base::operator bool() const
 {
 	return m_valid;
+}
+constexpr action_base& action_base::operator=(const action_base& i_action)
+{
+	m_valid = i_action.m_valid;
+
+	return *this;
 }
 
 constexpr no_action::no_action(bool i_valid)
@@ -65,6 +72,12 @@ constexpr forward_action forward_action::apply(Adaptor&& i_adaptor) const
 {
 	return { static_cast<bool>(i_adaptor.perform_action(forward_action_tag{})) };
 }
+constexpr forward_action& forward_action::operator=(const forward_action& i_action)
+{
+	action_base::operator=(i_action);
+
+	return *this;
+}
 
 constexpr backward_action::backward_action(bool i_valid)
 : action_base(i_valid)
@@ -90,6 +103,12 @@ REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
 constexpr forward_action go_to_begin_action::apply(Adaptor&& i_adaptor) const
 {
 	return { static_cast<bool>(i_adaptor.perform_action(begin_action_tag{})) };
+}
+constexpr go_to_begin_action& go_to_begin_action::operator=(const go_to_begin_action& i_action)
+{
+	action_base::operator=(i_action);
+
+	return *this;
 }
 
 constexpr go_to_end_action::go_to_end_action(bool i_valid)
@@ -198,6 +217,20 @@ constexpr sink_action<Sink>::sink_action(sink_action<SSink>&& i_action)
 {
 }
 template<typename Sink>
+constexpr sink_action<Sink>& sink_action<Sink>::operator=(const sink_action& i_action)
+{
+	action_base::operator==(i_action);
+
+	return *this;
+}
+template<typename Sink>
+constexpr sink_action<Sink>& sink_action<Sink>::operator=(sink_action&& i_action)
+{
+	action_base::operator==(i_action);
+
+	return *this;
+}
+template<typename Sink>
 TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr auto sink_action<Sink>::apply(Adaptor&& i_adaptor) const
@@ -237,6 +270,24 @@ constexpr action_sink<Action,Sink>::action_sink(Action&& i_action,Sink&& i_sink,
 , m_action(std::move(i_action))
 , m_sink(std::move(i_sink))
 {
+}
+template<typename Action,typename Sink>
+constexpr action_sink<Action,Sink>& action_sink<Action,Sink>::operator=(const action_sink& i_action)
+{
+	action_base::operator=(i_action);
+
+	m_action = i_action.m_action;
+
+	return *this;
+}
+template<typename Action,typename Sink>
+constexpr action_sink<Action,Sink>& action_sink<Action,Sink>::operator=(action_sink&& i_action)
+{
+	action_base::operator=(std::move(i_action));
+
+	m_action = std::move(i_action.m_action);
+
+	return *this;
 }
 template<typename Action,typename Sink>
 TEMPLATE(typename Adaptor)

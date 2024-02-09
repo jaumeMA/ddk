@@ -1,26 +1,21 @@
 #pragma once
 
+#include "ddk_iterable_result.h"
 #include <exception>
 #include <string>
 
 namespace ddk
 {
 
-class iterable_filtered_out_exception : public std::exception
+class iterable_exception
 {
 public:
-	iterable_filtered_out_exception() = default;
-};
+	constexpr iterable_exception(const char* i_reason);
 
-class iterable_operation_forbidden_exception : public std::exception
-{
-public:
-	iterable_operation_forbidden_exception(const char* i_reason);
-
-    const char* what() const noexcept;
+	iterable_error error() const noexcept;
 
 private:
-    std::string m_reason;
+	const char* m_reason;
 };
 
 class iteration_exception : public std::exception
@@ -35,4 +30,8 @@ private:
 	const std::string m_reason;
 };
 
+constexpr inline void stop_iteration(const char* i_msg);
+
 }
+
+#include "ddk_iterable_exception.inl"

@@ -176,9 +176,19 @@ TEST(DDKIterableTest,peformance)
 	//	{
 	//	} }).dismiss();
 
-	[](auto&& i_value)
+	if (ddk::iterable_result iterRes = [](auto&& i_value)
+		{
+			ddk::stop_iteration("holaquease");
+		} <<= v_prova)
 	{
-	}	<<= v_prova;
+		int a = 0;
+		++a;
+	}
+	else
+	{
+		auto error = iterRes.error();
+		int a = 0;
+	}
 }
 struct myAdaptor
 {
