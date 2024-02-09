@@ -121,7 +121,7 @@ public:
     template<typename ... Args>
     struct at
     {
-        typedef decltype(std::declval<Functor>()(std::declval<Args>()...)) type;
+        typedef decltype(std::declval<remove_qualifiers<Functor>>()(std::declval<Args>()...)) type;
     };
 };
 

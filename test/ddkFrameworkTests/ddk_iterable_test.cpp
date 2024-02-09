@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include "ddk_iterable.h"
+#include "ddk_unique_pointer_wrapper.h"
 //#include "ddk_high_order_array.h"
 //#include "ddk_tuple.h"
 //#include "ddk_tuple_adaptor.h"
@@ -179,10 +180,15 @@ TEST(DDKIterableTest,peformance)
 	{
 	}	<<= v_prova;
 }
+struct myAdaptor
+{
+	typedef ddk::detail::by_value_traits<ddk::unique_reference_wrapper<int>> traits;
+	typedef traits const_traits;
+};
 
 TEST(DDKIterableTest,forwardIterableConstruction)
 {
-	//std::map<int,ddk::unique_reference_wrapper<int>> kk;
+	std::map<int,ddk::unique_reference_wrapper<int>> kk;
 	std::map<int,int> _foo;
 	_foo.insert(std::make_pair(1,2));
 	_foo.insert(std::make_pair(2,2));
@@ -190,23 +196,27 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	_foo.insert(std::make_pair(4,2));
 	_foo.insert(std::make_pair(5,2));
 	std::vector<int> foo;
-    foo.push_back(1);
-    foo.push_back(2);
+	foo.push_back(1);
+	foo.push_back(2);
 
-    foo.push_back(3);
-    foo.push_back(-4);
-    foo.push_back(-5);
+	foo.push_back(3);
+	foo.push_back(-4);
+	foo.push_back(-5);
 
 	auto cucu = ddk::view::take_n(ddk::deduce_iterable(foo),10);
 
-	[](const int& i_value)
+	[](auto&&)
+	{
+	} <<= ddk::view::filter([](const std::pair<const int,ddk::unique_reference_wrapper<int>>&) { return true; }) <<= kk;
+
+	[](const int& i_value) mutable
 	{
 		int a = 0;
 		++a;
-	}	<<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
+	} <<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
 		<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
 		<<= ddk::view::order(ddk::reverse_order)
-    	<<= foo;
+		<<= foo;
 
 	//ddk::unique_reference_wrapper cucu = ddk::make_unique_reference<int>(10);
 	//ddk::lent_reference_wrapper<int> kkk = ddk::lend(cucu);
@@ -215,8 +225,6 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	////ddk::const_bidirectional_iterable<const ddk::lent_reference_wrapper<const int>> myIterable = ddk::iter::transform([](const std::pair<const int,const ddk::unique_reference_wrapper<int>&>& i_pair) -> ddk::lent_reference_wrapper<const int> { return ddk::lend(i_pair.second); }) <<= ddk::view::filter([](const std::pair<const int,const ddk::unique_reference_wrapper<int>&>& i_pair){ return i_pair.first > 0; }) <<= kk;
 
 	////ddk::task_executor taskExecutor(10,10);
-
-	proveta2(proveta());
 
 	//[](const std::pair<const int,int>& i_value1)
 	//{

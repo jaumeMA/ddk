@@ -58,7 +58,7 @@ auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_
     }
     else
     {
-        return make_error<iterable_action_tag_result<traits,ActionTag>>(actionRes.error());
+        return make_error<iterable_action_tag_result<traits,ActionTag>>(std::move(actionRes).error());
     }
 }
 template<typename Iterable,typename Filter>
@@ -72,7 +72,7 @@ auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_
     }
     else
     {
-        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(actionRes.error());
+        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(std::move(actionRes).error());
     }
 }
 template<typename Iterable,typename Filter>
@@ -92,13 +92,15 @@ apply_action:
         typedef typename filtered_action_error::recovery_tag recovery_tag;
         typedef filtered_iterable_action<ActionTag,Filter> filtered_action_tag;
 
-        filtered_action_error applyError = applyRes.error();
+        filtered_action_error applyError = std::move(applyRes).error();
 
-        if constexpr (IS_SAME_CLASS_COND(recovery_tag,filtered_action_tag) && IS_MOVE_ASSIGNABLE_COND(filtered_action_tag))
+        if constexpr (mpl::is_same_type<recovery_tag,filtered_action_tag>::value)
         {
             if (applyError)
             {
-                i_actionTag = std::move(applyError).recovery();
+                i_actionTag.~filtered_iterable_action<ActionTag,Filter>();
+
+                new (&i_actionTag) filtered_iterable_action<ActionTag,Filter>(std::move(applyError).recovery());
 
                 goto apply_action;
             }
@@ -113,12 +115,12 @@ apply_action:
                 }
                 else
                 {
-                    return make_error<filtered_result<ActionTag>>(recoveryRes.error());
+                    return make_error<filtered_result<ActionTag>>(std::move(recoveryRes).error());
                 }
             }
         }
 
-        return make_error<filtered_result<ActionTag>>(applyError);
+        return make_error<filtered_result<ActionTag>>(std::move(applyError));
     }
 }
 template<typename Iterable,typename Filter>
@@ -140,11 +142,13 @@ apply_action:
 
         filtered_action_error applyError = applyRes.error();
 
-        if constexpr (IS_SAME_CLASS_COND(recovery_tag,filtered_action_tag) && IS_MOVE_ASSIGNABLE_COND(filtered_action_tag))
+        if constexpr (mpl::is_same_type<recovery_tag,filtered_action_tag>::value)
         {
             if (applyError)
             {
-                i_actionTag = std::move(applyError).recovery();
+                i_actionTag.~filtered_iterable_action<ActionTag,Filter>();
+
+                new (&i_actionTag) filtered_iterable_action<ActionTag,Filter>(std::move(applyError).recovery());
 
                 goto apply_action;
             }
@@ -159,12 +163,12 @@ apply_action:
                 }
                 else
                 {
-                    return make_error<const_filtered_result<ActionTag>>(recoveryRes.error());
+                    return make_error<const_filtered_result<ActionTag>>(std::move(recoveryRes).error());
                 }
             }
         }
 
-        return make_error<const_filtered_result<ActionTag>>(applyError);
+        return make_error<const_filtered_result<ActionTag>>(std::move(applyError));
     }
 }
 

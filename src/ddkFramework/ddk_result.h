@@ -50,6 +50,7 @@ public:
 
 	result(const result_success_t&);
 	result(const Error& i_error);
+	result(Error&& i_error);
 	TEMPLATE(typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(Error,EError))
 	result(const result<void,EError>& i_result);
@@ -60,7 +61,8 @@ public:
 	result(result&& other) = default;
 	result& operator=(const result& other) = default;
 	result& operator=(result&& other) = default;
-	const Error& error() const;
+	const Error& error() const&;
+	Error error() &&;
 	explicit operator bool() const;
 	result& dismiss();
 	const result& dismiss() const;
@@ -133,6 +135,7 @@ public:
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
 	result(Args&& ... i_args);
 	result(const Error& i_error);
+	result(Error&& i_error);
 	TEMPLATE(typename TT, typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT),IS_CONSTRUCTIBLE(Error,EError))
 	result(const result<TT,EError>& i_result);
@@ -143,7 +146,8 @@ public:
 	result(result&& other) = default;
 	result& operator=(const result& other) = default;
 	result& operator=(result&& other) = default;
-	const Error& error() const;
+	const Error& error() const&;
+	Error error() &&;
 	const_reference get() const;
 	reference get();
 	const_pointer operator->() const;

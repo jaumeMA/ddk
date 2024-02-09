@@ -40,7 +40,7 @@
     HAS_ITERATOR_DEFINED(_TYPE),IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR(typename _TYPE::iterator)
 
 #define IS_ITERABLE(_TYPE) \
-    typename std::enable_if<IS_CONTAINER_COND(_TYPE) || IS_BASE_OF_ITERABLE_COND(_TYPE)>::type
+    typename std::enable_if<IS_CONTAINER_COND(_TYPE) || IS_ITERABLE_TYPE_COND(_TYPE)>::type
 
 namespace ddk
 {

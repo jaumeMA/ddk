@@ -43,13 +43,18 @@ filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_iterable_acti
     }
     else
     {
-        return make_error<filtered_result>(actionRes.error(),m_filter,false);
+        return make_error<filtered_result>(std::move(actionRes).error(),m_filter,false);
     }
 }
 template<typename ActionTag,typename Filter>
-const ActionTag& filtered_iterable_action<ActionTag,Filter>::action() const
+const ActionTag& filtered_iterable_action<ActionTag,Filter>::action() const &
 {
     return m_actionTag;
+}
+template<typename ActionTag,typename Filter>
+ActionTag filtered_iterable_action<ActionTag,Filter>::action() &&
+{
+    return std::move(m_actionTag);
 }
 template<typename ActionTag,typename Filter>
 const Filter& filtered_iterable_action<ActionTag,Filter>::filter() const

@@ -25,6 +25,11 @@ result<void,Error>::result(const Error& i_error)
 {
 }
 template<typename Error>
+result<void,Error>::result(Error&& i_error)
+: m_nestedRes(std::move(i_error))
+{
+}
+template<typename Error>
 TEMPLATE(typename EError)
 REQUIRED(IS_CONSTRUCTIBLE(Error,EError))
 result<void,Error>::result(const result<void,EError>& i_result)
@@ -40,11 +45,18 @@ result<void,Error>::result(result<void,EError>&& i_result)
     SET_CHECK_RESULT(i_result)
 }
 template<typename Error>
-const Error& result<void,Error>::error() const
+const Error& result<void,Error>::error() const &
 {
     CHECK_RESULT(*this)
 
-    return *m_nestedRes;
+    return m_nestedRes.get();
+}
+template<typename Error>
+Error result<void,Error>::error() &&
+{
+    CHECK_RESULT(*this)
+
+    return std::move(m_nestedRes).extract();
 }
 template<typename Error>
 result<void,Error>::operator bool() const
@@ -109,6 +121,11 @@ result<T,Error>::result(const Error& i_error)
 {
 }
 template<typename T,typename Error>
+result<T,Error>::result(Error&& i_error)
+: m_nestedRes(mpl::static_number<1>{},std::move(i_error))
+{
+}
+template<typename T,typename Error>
 TEMPLATE(typename TT,typename EError)
 REQUIRED(IS_CONSTRUCTIBLE(T,TT),IS_CONSTRUCTIBLE(Error,EError))
 result<T,Error>::result(const result<TT,EError>& i_result)
@@ -124,11 +141,18 @@ result<T,Error>::result(result<TT,EError>&& i_result)
     SET_CHECK_RESULT(i_result)
 }
 template<typename T, typename Error>
-const Error& result<T,Error>::error() const
+const Error& result<T,Error>::error() const &
 {
     CHECK_RESULT(*this)
 
     return m_nestedRes.template get<Error>();
+}
+template<typename T,typename Error>
+Error result<T,Error>::error() &&
+{
+    CHECK_RESULT(*this)
+
+    return std::move(m_nestedRes).template extract<Error>();
 }
 template<typename T,typename Error>
 typename result<T,Error>::const_pointer result<T,Error>::operator->() const

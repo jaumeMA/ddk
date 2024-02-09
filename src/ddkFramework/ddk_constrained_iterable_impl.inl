@@ -60,7 +60,7 @@ auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::pe
     }
     else
     {
-        return make_error<iterable_action_tag_result<traits,ActionTag>>(actionRes.error());
+        return make_error<iterable_action_tag_result<traits,ActionTag>>(std::move(actionRes).error());
     }
 }
 template<typename Iterable,typename Constrain>
@@ -79,7 +79,7 @@ auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::pe
     }
     else
     {
-        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(applyRes.error());
+        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(std::move(applyRes).error());
     }
 }
 
@@ -105,7 +105,7 @@ auto iterable_adaptor<const detail::constrained_iterable_impl<Iterable,Constrain
     }
     else
     {
-        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(applyRes.error());
+        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(std::move(applyRes).error());
     }
 }
 

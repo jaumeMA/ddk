@@ -30,16 +30,6 @@ iterable_result iterable<Iterable>::iterate_impl(Action&& i_initialAction) const
 	return m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable>
-bool iterable<Iterable>::operator==(const std::nullptr_t&) const
-{
-    return m_iterableImpl == nullptr;
-}
-template<typename Iterable>
-bool iterable<Iterable>::operator!=(const std::nullptr_t&) const
-{
-    return m_iterableImpl != nullptr;
-}
-template<typename Iterable>
 const Iterable& iterable<Iterable>::get() const
 {
 	return m_iterableImpl;

@@ -162,7 +162,7 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action
     }
     else
     {
-        auto actionError = actionRes.error();
+        auto actionError = std::move(actionRes).error();
 
         if (auto recoveryRes = perform_action(union_iterable_action{ std::move(actionError).recovery() }))
         {
@@ -170,7 +170,7 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action
         }
         else
         {
-            return make_error<iterable_action_tag_result<traits,ActionTag>>(recoveryRes.error());
+            return make_error<iterable_action_tag_result<traits,ActionTag>>(std::move(recoveryRes).error());
         }
     }
 }
@@ -193,7 +193,7 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action
         }
         else
         {
-            return make_error<iterable_action_tag_result<const_traits,ActionTag>>(recoveryRes.error());
+            return make_error<iterable_action_tag_result<const_traits,ActionTag>>(std::move(recoveryRes).error());
         }
     }
 }
@@ -210,7 +210,7 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action
     }
     else
     {
-        return make_error<union_action_result>(actionRes.error());
+        return make_error<union_action_result>(std::move(actionRes).error());
     }
 }
 template<typename ... Iterables>
@@ -226,7 +226,7 @@ auto iterable_adaptor<detail::union_iterable_impl<Iterables...>>::perform_action
     }
     else
     {
-        return make_error<union_action_result>(actionRes.error());
+        return make_error<union_action_result>(std::move(actionRes).error());
     }
 }
 
@@ -241,7 +241,7 @@ auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_
     }
     else
     {
-        return make_error<iterable_action_tag_result<traits,ActionTag>>(actionRes.error());
+        return make_error<iterable_action_tag_result<traits,ActionTag>>(std::move(actionRes).error());
     }
 }
 template<typename ... Iterables>
@@ -265,7 +265,7 @@ auto iterable_adaptor<const detail::union_iterable_impl<Iterables...>>::perform_
         }
         else
         {
-            return make_error<union_action_result>(recoveryRes.error());
+            return make_error<union_action_result>(std::move(recoveryRes).error());
         }
     }
 }

@@ -26,7 +26,8 @@ public:
 	filtered_iterable_action& operator=(const filtered_iterable_action&) = default;
 	filtered_iterable_action& operator=(filtered_iterable_action&&) = default;
 
-	const ActionTag& action() const;
+	const ActionTag& action() const &;
+	ActionTag action() &&;
 	const Filter& filter() const;
 
 private:

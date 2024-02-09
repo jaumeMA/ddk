@@ -42,8 +42,6 @@ public:
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(const_traits,Action))
     iterable_result iterate_impl(Action&& i_initialAction) const;
-    bool inline operator==(const std::nullptr_t&) const;
-    bool inline operator!=(const std::nullptr_t&) const;
     inline const Iterable& get() const;
     inline Iterable&& extract() &&;
 
