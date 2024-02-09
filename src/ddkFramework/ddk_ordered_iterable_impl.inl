@@ -6,7 +6,7 @@ namespace detail
 
 template<typename T>
 iterable_order<T>::iterable_order(const T& i_order)
-	: m_order(i_order)
+: m_order(i_order)
 {
 }
 template<typename T>
@@ -52,14 +52,14 @@ iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::iterab
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag)
+constexpr auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag)
 {
 	return m_actionResolver(m_adaptor,std::forward<ActionTag>(i_actionTag));
 }
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag) const
 {
 	return m_actionResolver(m_adaptor,std::forward<ActionTag>(i_actionTag));
 }
@@ -73,7 +73,7 @@ iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag) const
 {
 	return m_actionResolver(m_adaptor,std::forward<ActionTag>(i_actionTag));
 }

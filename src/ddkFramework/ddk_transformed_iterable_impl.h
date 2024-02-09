@@ -77,22 +77,22 @@ public:
 
 	TEMPLATE(typename Sink)
 	REQUIRES(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-	auto perform_action(const sink_action_tag<Sink>& i_actionTag);
+	constexpr auto perform_action(const sink_action_tag<Sink>& i_actionTag);
 	TEMPLATE(typename Sink)
 	REQUIRES(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-	auto perform_action(const sink_action_tag<Sink>& i_actionTag) const;
+	constexpr auto perform_action(const sink_action_tag<Sink>& i_actionTag) const;
 	TEMPLATE(typename Sink)
 	REQUIRES(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-	auto perform_action(sink_action_tag<Sink>&& i_actionTag);
+	constexpr auto perform_action(sink_action_tag<Sink>&& i_actionTag);
 	TEMPLATE(typename Sink)
 	REQUIRES(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-	auto perform_action(sink_action_tag<Sink>&& i_actionTag) const;
+	constexpr auto perform_action(sink_action_tag<Sink>&& i_actionTag) const;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag);
+	constexpr auto perform_action(ActionTag&& i_actionTag);
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	constexpr auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	deduced_adaptor<Iterable> m_adaptor;
@@ -114,10 +114,10 @@ public:
 
 	TEMPLATE(typename Sink)
 	REQUIRES(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-	auto perform_action(sink_action_tag<Sink>&& i_actionTag) const;
+	constexpr auto perform_action(sink_action_tag<Sink>&& i_actionTag) const;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	constexpr auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	deduced_adaptor<const Iterable> m_adaptor;

@@ -36,13 +36,13 @@ public:
 	iterable_adaptor_base(Iterable& i_iterable);
 
 	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>& i_sink);
+	constexpr inline auto perform_action(const sink_action_tag<Sink>& i_sink);
 	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>& i_sink) const;
-	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const last_action_tag&) const;
-	inline auto perform_action(const remove_action_tag&);
-	inline auto perform_action(add_action_tag<value_type>);
+	constexpr inline auto perform_action(const sink_action_tag<Sink>& i_sink) const;
+	constexpr inline auto perform_action(const begin_action_tag&) const;
+	constexpr inline auto perform_action(const last_action_tag&) const;
+	constexpr inline auto perform_action(const remove_action_tag&);
+	constexpr inline auto perform_action(add_action_tag<value_type>);
 
 protected:
 	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
@@ -67,7 +67,7 @@ public:
 	using base_t::base_t;
 	using base_t::perform_action;
 
-	inline auto perform_action(const forward_action_tag&) const;
+	constexpr inline auto perform_action(const forward_action_tag&) const;
 };
 
 template<typename Iterable>
@@ -86,7 +86,7 @@ public:
 
 	bidirectional_iterable_adaptor(Iterable& i_iterable);
 
-	inline auto perform_action(const backward_action_tag&) const;
+	constexpr inline auto perform_action(const backward_action_tag&) const;
 
 protected:
 	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
@@ -112,7 +112,7 @@ public:
 	using base_t::base_t;
 	using base_t::perform_action;
 
-	inline auto perform_action(const displace_action_tag&) const;
+	constexpr inline auto perform_action(const displace_action_tag&) const;
 };
 
 }

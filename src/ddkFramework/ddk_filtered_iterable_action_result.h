@@ -15,25 +15,25 @@ struct filtered_iterable_action_error
 public:
 	typedef typename iterable_action_error::recovery_tag recovery_tag;
 
-	filtered_iterable_action_error() = default;
+	constexpr filtered_iterable_action_error() = default;
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(iterable_action_error,Args...))
-	filtered_iterable_action_error(Args&& ... i_args);
-	filtered_iterable_action_error(const iterable_action_tag_error<Traits,ActionTag>& i_error,const Filter& i_filter, bool i_filteredOut);
-	filtered_iterable_action_error(iterable_action_tag_error<Traits,ActionTag>&& i_error,const Filter& i_filter,bool i_filteredOut);
+	constexpr filtered_iterable_action_error(Args&& ... i_args);
+	constexpr filtered_iterable_action_error(const iterable_action_tag_error<Traits,ActionTag>& i_error,const Filter& i_filter, bool i_filteredOut);
+	constexpr filtered_iterable_action_error(iterable_action_tag_error<Traits,ActionTag>&& i_error,const Filter& i_filter,bool i_filteredOut);
 	template<typename AActionTag>
-	filtered_iterable_action_error(const filtered_iterable_action_error<Traits,AActionTag,Filter>& i_error);
+	constexpr filtered_iterable_action_error(const filtered_iterable_action_error<Traits,AActionTag,Filter>& i_error);
 	template<typename AActionTag>
-	filtered_iterable_action_error(filtered_iterable_action_error<Traits,AActionTag,Filter>&& i_error);
+	constexpr filtered_iterable_action_error(filtered_iterable_action_error<Traits,AActionTag,Filter>&& i_error);
 
-	operator bool() const;
+	constexpr operator bool() const;
 	TEMPLATE(typename TTraits)
 	REQUIRES(ADAPTOR_TAGS_EQUIVALENT(Traits,TTraits))
-	operator iterable_action_tag_error<TTraits,ActionTag>() const &;
+	constexpr operator iterable_action_tag_error<TTraits,ActionTag>() const &;
 	template<typename TTraits>
-	operator iterable_action_tag_error<TTraits,ActionTag>() &&;
-	auto recovery() const&;
-	auto recovery()&&;
+	constexpr operator iterable_action_tag_error<TTraits,ActionTag>() &&;
+	constexpr auto recovery() const&;
+	constexpr auto recovery()&&;
 
 private:
 	optional<iterable_action_error> m_error;

@@ -13,7 +13,7 @@ iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable)
 }
 template<typename Iterable>
 template<typename Sink>
-auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>& i_sink)
+constexpr auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>& i_sink)
 {
 	if (m_currIterator != m_endIterator)
 	{
@@ -26,7 +26,7 @@ auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>
 }
 template<typename Iterable>
 template<typename Sink>
-auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>& i_sink) const
+constexpr auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>& i_sink) const
 {
 	if (m_currIterator != m_endIterator)
 	{
@@ -38,7 +38,7 @@ auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>
 	}
 }
 template<typename Iterable>
-auto iterable_adaptor_base<Iterable>::perform_action(const begin_action_tag&) const
+constexpr auto iterable_adaptor_base<Iterable>::perform_action(const begin_action_tag&) const
 {
 	m_currIterator = std::begin(m_iterable);
 
@@ -52,7 +52,7 @@ auto iterable_adaptor_base<Iterable>::perform_action(const begin_action_tag&) co
 	}
 }
 template<typename Iterable>
-auto iterable_adaptor_base<Iterable>::perform_action(const last_action_tag&) const
+constexpr auto iterable_adaptor_base<Iterable>::perform_action(const last_action_tag&) const
 {
 	m_currIterator = std::prev(std::end(m_iterable));
 
@@ -66,7 +66,7 @@ auto iterable_adaptor_base<Iterable>::perform_action(const last_action_tag&) con
 	}
 }
 template<typename Iterable>
-auto iterable_adaptor_base<Iterable>::perform_action(const remove_action_tag&)
+constexpr auto iterable_adaptor_base<Iterable>::perform_action(const remove_action_tag&)
 {
 	m_currIterator = m_iterable.erase(m_currIterator);
 
@@ -80,7 +80,7 @@ auto iterable_adaptor_base<Iterable>::perform_action(const remove_action_tag&)
 	}
 }
 template<typename Iterable>
-auto iterable_adaptor_base<Iterable>::perform_action(add_action_tag<value_type> i_action)
+constexpr auto iterable_adaptor_base<Iterable>::perform_action(add_action_tag<value_type> i_action)
 {
 	typedef typename Iterable::value_type value_type;
 
@@ -91,7 +91,7 @@ auto iterable_adaptor_base<Iterable>::perform_action(add_action_tag<value_type> 
 }
 
 template<typename Iterable>
-auto forward_iterable_adaptor<Iterable>::perform_action(const forward_action_tag&) const
+constexpr auto forward_iterable_adaptor<Iterable>::perform_action(const forward_action_tag&) const
 {
 	if (std::distance(this->m_currIterator,this->m_endIterator) > 1)
 	{
@@ -112,7 +112,7 @@ bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterabl
 {
 }
 template<typename Iterable>
-auto bidirectional_iterable_adaptor<Iterable>::perform_action(const backward_action_tag&) const
+constexpr auto bidirectional_iterable_adaptor<Iterable>::perform_action(const backward_action_tag&) const
 {
 	if (std::distance(m_beginIterator,this->m_currIterator) > 0)
 	{
@@ -127,7 +127,7 @@ auto bidirectional_iterable_adaptor<Iterable>::perform_action(const backward_act
 }
 
 template<typename Iterable>
-auto random_access_iterable_adaptor<Iterable>::perform_action(const displace_action_tag& i_action) const
+constexpr auto random_access_iterable_adaptor<Iterable>::perform_action(const displace_action_tag& i_action) const
 {
 	typedef typename traits::difference_type difference_type;
 

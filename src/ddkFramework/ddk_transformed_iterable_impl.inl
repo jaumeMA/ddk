@@ -63,7 +63,7 @@ iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,It
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(const sink_action_tag<Sink>& i_actionTag)
+constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(const sink_action_tag<Sink>& i_actionTag)
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
@@ -80,7 +80,7 @@ auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTrai
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(const sink_action_tag<Sink>& i_actionTag) const
+constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(const sink_action_tag<Sink>& i_actionTag) const
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
@@ -97,7 +97,7 @@ auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTrai
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag)
+constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag)
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
@@ -114,7 +114,7 @@ auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTrai
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag) const
+constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag) const
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
@@ -131,14 +131,14 @@ auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTrai
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(ActionTag&& i_actionTag)
+constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(ActionTag&& i_actionTag)
 {
 	return m_adaptor.perform_action(std::forward<ActionTag>(i_actionTag));
 }
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(ActionTag&& i_actionTag) const
 {
 	return m_adaptor.perform_action(std::forward<ActionTag>(i_actionTag));
 }
@@ -152,7 +152,7 @@ iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTra
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
-auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag) const
+constexpr auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag) const
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
@@ -169,7 +169,7 @@ auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,Priva
 template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(ActionTag&& i_actionTag) const
 {
 	return m_adaptor.perform_action(std::forward<ActionTag>(i_actionTag));
 }

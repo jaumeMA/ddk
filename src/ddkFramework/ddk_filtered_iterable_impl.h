@@ -58,10 +58,10 @@ public:
 
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag);
+	constexpr auto perform_action(ActionTag&& i_actionTag);
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	constexpr auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	template<typename ActionTag>
@@ -70,9 +70,9 @@ private:
 	using const_filtered_result = filtered_iterable_action_result<const deduced_adaptor<Iterable>,ActionTag,Filter>;
 
 	template<typename ActionTag>
-	auto perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag);
+	constexpr auto perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag);
 	template<typename ActionTag>
-	auto perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const;
+	constexpr auto perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const;
 
 	deduced_adaptor<Iterable> m_adaptor;
 	const filter m_filter;
@@ -92,14 +92,14 @@ public:
 
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	constexpr auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	template<typename ActionTag>
 	using filtered_result = filtered_iterable_action_result<deduced_adaptor<const Iterable>,ActionTag,Filter>;
 
 	template<typename ActionTag>
-	auto perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const;
+	constexpr auto perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const;
 
 	deduced_adaptor<const Iterable> m_adaptor;
 	const filter m_filter;

@@ -50,7 +50,7 @@ iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::iterable_adap
 template<typename Iterable,typename Filter>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag)
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag)
 {
     if (auto actionRes = perform_action(filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),m_filter }))
     {
@@ -64,7 +64,7 @@ auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_
 template<typename Iterable,typename Filter>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag) const
 {
     if (auto actionRes = perform_action(filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),m_filter }))
     {
@@ -77,7 +77,7 @@ auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_
 }
 template<typename Iterable,typename Filter>
 template<typename ActionTag>
-auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag)
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag)
 {
     typedef filtered_iterable_action_result<deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
@@ -125,7 +125,7 @@ apply_action:
 }
 template<typename Iterable,typename Filter>
 template<typename ActionTag>
-auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
 {
     typedef filtered_iterable_action_result<const deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
@@ -181,7 +181,7 @@ iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::iterabl
 template<typename Iterable,typename Filter>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag) const
 {
     if (auto actionRes = perform_action(filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),m_filter }))
     {
@@ -194,7 +194,7 @@ auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::pe
 }
 template<typename Iterable,typename Filter>
 template<typename ActionTag>
-auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
+constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
 {
     typedef iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>> adaptor_t;
     typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
