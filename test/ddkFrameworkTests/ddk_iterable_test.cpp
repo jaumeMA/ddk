@@ -80,7 +80,7 @@ struct tuple_visitor
 
 }
 
-static std::vector<int> myFoo;
+static const std::list<int> myFoo;
 void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 {
 	[](const int& i_value)
@@ -92,13 +92,16 @@ void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 
 auto proveta()
 {
-	myFoo.push_back(1);
-	myFoo.push_back(2);
-	myFoo.push_back(3);
-	myFoo.push_back(-4);
-	myFoo.push_back(5);
+	//myFoo.push_back(1);
+	//myFoo.push_back(2);
+	//myFoo.push_back(3);
+	//myFoo.push_back(-4);
+	//myFoo.push_back(5);
 
-	return ddk::deduce_iterable(myFoo);
+	auto kk = ddk::deduce_iterable(myFoo);
+
+	return ddk::view::order(ddk::reverse_order)
+			<<= ddk::deduce_iterable(myFoo);
 }
 
 std::vector<int> create_prova()

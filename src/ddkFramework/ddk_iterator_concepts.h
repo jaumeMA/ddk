@@ -12,8 +12,11 @@
 #define IS_CONST_ITERATOR(_TYPE) \
     typename std::enable_if<IS_CONST_ITERATOR_COND(_TYPE)>::type
 
+#define IS_NON_CONST_ITERATOR_COND(_TYPE) \
+    (ddk::concepts::is_const_iterator_defined_v<_TYPE> == false)
+
 #define IS_NON_CONST_ITERATOR(_TYPE) \
-    typename std::enable_if<(IS_CONST_ITERATOR_COND(_TYPE) == false)>::type
+    typename std::enable_if<IS_NON_CONST_ITERATOR_COND(_TYPE)>::type
 
 #define IS_FORWARD_ITERATOR_COND(_TYPE) \
     ddk::concepts::is_forward_iterator_v<_TYPE>
@@ -79,7 +82,7 @@ template<typename T>
 inline constexpr bool has_iterator_defined_v = has_iterator_defined<mpl::remove_qualifiers<T>>::value;
 
 template<typename T>
-inline constexpr bool is_const_iterator_defined_v = mpl::is_const<decltype(*std::declval<T>())>;
+inline constexpr bool is_const_iterator_defined_v = mpl::is_const<decltype(std::declval<T>().operator*())>;
 
 template<typename T>
 struct is_forward_iterator
