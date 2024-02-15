@@ -24,14 +24,8 @@ struct iterable_action_tag_type<Iterable,union_iterable_action<forward_action_ta
 template<typename Iterable>
 struct iterable_action_tag_type<Iterable,union_iterable_action<backward_action_tag>>
 {
-	typedef union_iterable_action<last_prev_iterable> recovery_type;
+	typedef union_iterable_action<end_prev_iterable> recovery_type;
 	typedef iterable_action_return_type<Iterable,backward_action_tag> return_type;
-};
-template<typename Iterable>
-struct iterable_action_tag_type<Iterable,union_iterable_action<last_action_tag>>
-{
-	typedef union_iterable_action<last_prev_iterable> recovery_type;
-	typedef iterable_action_return_type<Iterable,last_action_tag> return_type;
 };
 
 }

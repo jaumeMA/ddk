@@ -18,10 +18,10 @@ constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> 
 	return i_adaptor.perform_action(std::forward<ActionTag>(i_action));
 }
 TEMPLATE(typename Adaptor)
-REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,last_action_tag))
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,end_action_tag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,begin_action_tag&& i_action) const
 {
-	if (const auto actionRes = i_adaptor.perform_action(last_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(end_action_tag{}))
 	{
 		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(success);
 	}
@@ -32,15 +32,15 @@ constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_actio
 }
 TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,begin_action_tag))
-constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,last_action_tag&& i_action) const
+constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,end_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,end_action_tag&& i_action) const
 {
 	if (const auto actionRes = i_adaptor.perform_action(begin_action_tag{}))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag>>(success);
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,end_action_tag>>(success);
 	}
 	else
 	{
-		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag>>();
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,end_action_tag>>();
 	}
 }
 TEMPLATE(typename Adaptor)

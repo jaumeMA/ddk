@@ -113,7 +113,7 @@ public:
 struct go_to_end_action : backward_action
 {
 public:
-    typedef mpl::type_pack<last_action_tag,backward_action_tag> tags_t;
+    typedef mpl::type_pack<end_action_tag,backward_action_tag> tags_t;
 
     constexpr go_to_end_action() = default;
     constexpr go_to_end_action(bool i_valud);

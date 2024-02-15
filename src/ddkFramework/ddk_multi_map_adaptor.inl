@@ -37,7 +37,7 @@ bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const 
     return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const last_action_tag&) const
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const end_action_tag&) const
 {
     return false;
 }
@@ -84,7 +84,7 @@ bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(
     return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const last_action_tag&) const
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const end_action_tag&) const
 {
     return false;
 }

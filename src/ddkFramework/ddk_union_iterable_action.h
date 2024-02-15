@@ -39,33 +39,33 @@ public:
 };
 
 template<>
-class union_iterable_action<last_action_tag>
+class union_iterable_action<end_action_tag>
 {
 public:
-	typedef mpl::type_pack<last_action_tag> tags_t;
-	typedef last_action_tag action_tag;
+	typedef mpl::type_pack<end_action_tag> tags_t;
+	typedef end_action_tag action_tag;
 
 	union_iterable_action() = default;
-	union_iterable_action(last_action_tag&&);
+	union_iterable_action(end_action_tag&&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,last_action_tag> apply(Adaptor&& i_adaptor);
-	last_action_tag action() const;
+	inline union_iterable_action_result<Adaptor,end_action_tag> apply(Adaptor&& i_adaptor);
+	end_action_tag action() const;
 };
 
 template<>
-class union_iterable_action<last_prev_iterable>
+class union_iterable_action<end_prev_iterable>
 {
 public:
-	typedef mpl::type_pack<last_action_tag> tags_t;
-	typedef last_prev_iterable action_tag;
+	typedef mpl::type_pack<end_action_tag> tags_t;
+	typedef end_prev_iterable action_tag;
 
 	union_iterable_action() = default;
-	union_iterable_action(last_prev_iterable&&);
+	union_iterable_action(end_prev_iterable&&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,last_prev_iterable> apply(Adaptor&& i_adaptor);
-	last_prev_iterable action() const;
+	inline union_iterable_action_result<Adaptor,end_prev_iterable> apply(Adaptor&& i_adaptor);
+	end_prev_iterable action() const;
 };
 
 template<typename ActionTag>

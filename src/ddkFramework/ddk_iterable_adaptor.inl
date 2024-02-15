@@ -4,169 +4,255 @@ namespace ddk
 namespace detail
 {
 
+template<typename Adaptor>
 template<typename Iterable>
-iterable_adaptor_base<Iterable>::iterable_adaptor_base(Iterable& i_iterable)
-: m_iterable(i_iterable)
-, m_currIterator(std::end(m_iterable))
-, m_endIterator(std::end(i_iterable))
+iterable_adaptor_action<Adaptor,begin_action_tag>::iterable_adaptor_action(Iterable&& i_iterable)
+: m_beginIterator(std::begin(std::forward<Iterable>(i_iterable)))
 {
 }
-template<typename Iterable>
-template<typename Sink>
-constexpr auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>& i_sink)
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,begin_action_tag>::perform_action(const begin_action_tag&) const
 {
-	if (m_currIterator != m_endIterator)
-	{
-		return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*this->m_currIterator));
-	}
-	else
-	{
-		return make_error<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink);
-	}
-}
-template<typename Iterable>
-template<typename Sink>
-constexpr auto iterable_adaptor_base<Iterable>::perform_action(const sink_action_tag<Sink>& i_sink) const
-{
-	if (m_currIterator != m_endIterator)
-	{
-		return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*this->m_currIterator));
-	}
-	else
-	{
-		return make_error<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink);
-	}
-}
-template<typename Iterable>
-constexpr auto iterable_adaptor_base<Iterable>::perform_action(const begin_action_tag&) const
-{
-	m_currIterator = std::begin(m_iterable);
+	typedef typename Adaptor::const_traits const_traits;
 
-	if (m_currIterator != m_endIterator)
+	static_cast<const Adaptor&>(*this).m_currIterator = m_beginIterator;
+
+	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
+	{
+		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		{
+			return ddk::make_result<iterable_action_tag_result<const_traits,begin_action_tag>>(success);
+		}
+		else
+		{
+			return ddk::make_error<iterable_action_tag_result<const_traits,begin_action_tag>>();
+		}
+	}
+	else
 	{
 		return ddk::make_result<iterable_action_tag_result<const_traits,begin_action_tag>>(success);
 	}
+}
+
+template<typename Adaptor>
+template<typename Iterable>
+iterable_adaptor_action<Adaptor,end_action_tag>::iterable_adaptor_action(Iterable&& i_iterable)
+: m_endIterator(std::end(std::forward<Iterable>(i_iterable)))
+{
+}
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,end_action_tag>::perform_action(const end_action_tag&) const
+{
+	typedef typename Adaptor::const_traits const_traits;
+
+	static_cast<const Adaptor&>(*this).m_currIterator = m_endIterator;
+
+	return ddk::make_result<iterable_action_tag_result<const_traits,end_action_tag>>(success);
+}
+
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,forward_action_tag>::perform_action(const forward_action_tag&) const
+{
+	typedef typename Adaptor::const_traits const_traits;
+
+	++static_cast<const Adaptor&>(*this).m_currIterator;
+	
+	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
+	{
+		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		{
+			return make_result<iterable_action_tag_result<const_traits,forward_action_tag>>(success);
+		}
+		else
+		{
+			return make_error<iterable_action_tag_result<const_traits,forward_action_tag>>();
+		}
+	}
 	else
 	{
-		return ddk::make_error<iterable_action_tag_result<const_traits,begin_action_tag>>();
-	}
-}
-template<typename Iterable>
-constexpr auto iterable_adaptor_base<Iterable>::perform_action(const last_action_tag&) const
-{
-	m_currIterator = std::prev(std::end(m_iterable));
-
-	if (m_currIterator != m_endIterator)
-	{
-		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
-	}
-	else
-	{
-		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
-	}
-}
-template<typename Iterable>
-constexpr auto iterable_adaptor_base<Iterable>::perform_action(const remove_action_tag&)
-{
-	m_currIterator = m_iterable.erase(m_currIterator);
-
-	if (m_currIterator != m_endIterator)
-	{
-		return make_result<iterable_action_tag_result<traits,remove_action_tag>>(success);
-	}
-	else
-	{
-		return make_error<iterable_action_tag_result<traits,remove_action_tag>>();
-	}
-}
-template<typename Iterable>
-constexpr auto iterable_adaptor_base<Iterable>::perform_action(add_action_tag<value_type> i_action)
-{
-	typedef typename Iterable::value_type value_type;
-
-	m_iterable.insert(m_currIterator,std::move(i_action).extract());
-
-	//here some check would be nice
-	return make_result<iterable_action_tag_result<traits,add_action_tag<value_type>>>(success);
-}
-
-template<typename Iterable>
-constexpr auto forward_iterable_adaptor<Iterable>::perform_action(const forward_action_tag&) const
-{
-	if (std::distance(this->m_currIterator,this->m_endIterator) > 1)
-	{
-		++this->m_currIterator;
-
 		return make_result<iterable_action_tag_result<const_traits,forward_action_tag>>(success);
 	}
-	else
-	{
-		return make_error<iterable_action_tag_result<const_traits,forward_action_tag>>();
-	}
 }
 
-template<typename Iterable>
-bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor(Iterable& i_iterable)
-: forward_iterable_adaptor<Iterable>(i_iterable)
-, m_beginIterator(std::begin(i_iterable))
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,backward_action_tag>::perform_action(const backward_action_tag&) const
 {
-}
-template<typename Iterable>
-constexpr auto bidirectional_iterable_adaptor<Iterable>::perform_action(const backward_action_tag&) const
-{
-	if (std::distance(m_beginIterator,this->m_currIterator) > 0)
+	typedef typename Adaptor::const_traits const_traits;
+
+	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,begin_action_tag>,Adaptor>::value)
 	{
-		--this->m_currIterator;
+		if (static_cast<const Adaptor&>(*this).m_currIterator == static_cast<const Adaptor&>(*this).m_beginIterator)
+		{
+			return make_error<iterable_action_tag_result<const_traits,backward_action_tag>>();
+		}
+		else
+		{
+			--static_cast<const Adaptor&>(*this).m_currIterator;
+
+			return make_result<iterable_action_tag_result<const_traits,backward_action_tag>>(success);
+		}
+	}
+	else
+	{
+		--static_cast<const Adaptor&>(*this).m_currIterator;
 
 		return make_result<iterable_action_tag_result<const_traits,backward_action_tag>>(success);
 	}
-	else
-	{
-		return make_error<iterable_action_tag_result<const_traits,backward_action_tag>>();
-	}
 }
 
-template<typename Iterable>
-constexpr auto random_access_iterable_adaptor<Iterable>::perform_action(const displace_action_tag& i_action) const
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,displace_action_tag>::perform_action(const displace_action_tag& i_action) const
 {
-	typedef typename traits::difference_type difference_type;
+	typedef typename Adaptor::const_traits const_traits;
+	typedef typename const_traits::difference_type difference_type;
 
 	const difference_type shift = i_action.displacement();
 
 	if (shift > 0)
 	{
-		const difference_type maxDist = std::distance(this->m_currIterator,this->m_endIterator);
-
-		if (shift < maxDist)
+		if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 		{
-			this->m_currIterator += shift;
+			const difference_type maxDist = std::distance(static_cast<const Adaptor&>(*this).m_currIterator,static_cast<const Adaptor&>(*this).m_endIterator);
 
-			return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
+			if (shift < maxDist)
+			{
+				static_cast<const Adaptor&>(*this).m_currIterator += shift;
+
+				return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
+			}
+			else
+			{
+				return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(shift - maxDist);
+			}
 		}
 		else
 		{
-			this->m_currIterator += maxDist;
+			static_cast<const Adaptor&>(*this).m_currIterator += shift;
 
-			return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(shift - maxDist);
+			return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 		}
 	}
 	else
 	{
-		const difference_type maxDist = std::distance(this->m_beginIterator,this->m_currIterator);
+		difference_type maxDist = shift + 1;
 
-		if (maxDist >= -shift)
+		if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,begin_action_tag>,Adaptor>::value)
 		{
-			this->m_currIterator -= shift;
+			const difference_type maxDist = std::distance(static_cast<const Adaptor&>(*this).m_beginIterator,static_cast<const Adaptor&>(*this).m_currIterator);
 
-			return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
+			if (maxDist >= -shift)
+			{
+				static_cast<const Adaptor&>(*this).m_currIterator -= shift;
+
+				return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
+			}
+			else
+			{
+				return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(shift - maxDist);
+			}
 		}
 		else
 		{
-			this->m_currIterator -= maxDist;
+			static_cast<const Adaptor&>(*this).m_currIterator -= shift;
 
-			return make_error<iterable_action_tag_result<const_traits,displace_action_tag>>(shift - maxDist);
+			return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 		}
 	}
+}
+
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,remove_action_tag>::perform_action(const remove_action_tag&) const
+{
+	typedef typename Adaptor::traits traits;
+
+	static_cast<const Adaptor&>(*this).m_currIterator = static_cast<const Adaptor&>(*this).m_iterable.erase(static_cast<const Adaptor&>(*this).m_currIterator);
+
+	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
+	{
+		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		{
+			return make_result<iterable_action_tag_result<traits,remove_action_tag>>(success);
+		}
+		else
+		{
+			return make_error<iterable_action_tag_result<traits,remove_action_tag>>();
+		}
+	}
+	else
+	{
+		return make_result<iterable_action_tag_result<traits,remove_action_tag>>(success);
+	}
+}
+
+template<typename Adaptor, typename T>
+constexpr auto iterable_adaptor_action<Adaptor,add_action_tag<T>>::perform_action(add_action_tag<T> i_action) const
+{
+	typedef typename Adaptor::traits traits;
+
+	static_cast<const Adaptor&>(*this).m_currIterator = static_cast<const Adaptor&>(*this).m_iterable.insert(static_cast<const Adaptor&>(*this).m_currIterator,std::move(i_action).extract());
+
+	//here some check would be nice
+	return make_result<iterable_action_tag_result<traits,add_action_tag<T>>>(success);
+}
+
+template<typename Adaptor,typename T>
+template<typename Sink>
+constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::perform_action(const sink_action_tag<Sink>& i_sink)
+{
+	typedef typename Adaptor::traits traits;
+
+	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
+	{
+		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		{
+			return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+		}
+		else
+		{
+			return make_error<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink);
+		}
+	}
+	else
+	{
+		return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+	}
+}
+template<typename Adaptor,typename T>
+template<typename Sink>
+constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::perform_action(const sink_action_tag<Sink>& i_sink) const
+{
+	typedef typename Adaptor::const_traits const_traits;
+
+	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
+	{
+		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		{
+			return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+		}
+		else
+		{
+			return make_error<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink);
+		}
+	}
+	else
+	{
+		return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+	}
+}
+
+template<typename Adaptor>
+constexpr auto iterable_adaptor_action<Adaptor,size_action_tag>::perform_action(const size_action_tag&) const
+{
+	typedef typename Adaptor::traits traits;
+
+	return make_result<iterable_action_tag_result<traits,size_action_tag>(std::size(static_cast<const Adaptor&>(*this).m_iterable));
+}
+
+template<typename Iterable,typename ... IterableActions>
+iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>::iterable_adaptor_actions(Iterable& i_iterable)
+: iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>(i_iterable) ...
+, m_iterable(i_iterable)
+{
 }
 
 }

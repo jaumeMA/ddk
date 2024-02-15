@@ -39,18 +39,18 @@ union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(union
 {
 }
 template<typename Traits,typename ActionTag>
-template<typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<Traits,AActionTag>() const &
+template<typename TTraits, typename AActionTag>
+union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<TTraits,AActionTag>() const &
 {
-    typedef iterable_action_recovery_tag<Traits,AActionTag> action_recovery_tag;
+    typedef iterable_action_recovery_tag<TTraits,AActionTag> action_recovery_tag;
 
     return union_iterable_action_cs<action_recovery_tag>(recovery().action());
 }
 template<typename Traits,typename ActionTag>
-template<typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<Traits,AActionTag>() &&
+template<typename TTraits, typename AActionTag>
+union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<TTraits,AActionTag>() &&
 {
-    typedef iterable_action_recovery_tag<Traits,AActionTag> action_recovery_tag;
+    typedef iterable_action_recovery_tag<TTraits,AActionTag> action_recovery_tag;
 
     return union_iterable_action_cs<action_recovery_tag>(std::move(*this).recovery().action());
 }

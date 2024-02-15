@@ -19,7 +19,7 @@ public:
 											variant<T&...>,
 											variant<const T&...>,
 											mpl::type_pack<agnostic_sink_action_tag<variant<T&...>>>,
-											mpl::type_pack<agnostic_sink_action_tag<variant<const T&...>>,begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
+											mpl::type_pack<agnostic_sink_action_tag<variant<const T&...>>,begin_action_tag,end_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
 	typedef detail::const_iterable_traits<traits> const_traits;
 	typedef typename traits::tags_t tags_t;
 	typedef typename traits::const_tags_t const_tags_t;
@@ -31,7 +31,7 @@ public:
 	template<typename Sink>
 	inline auto perform_action(const sink_action_tag<Sink>&) const;
 	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const last_action_tag&) const;
+	inline auto perform_action(const end_action_tag&) const;
 	inline auto perform_action(const forward_action_tag&) const;
 	inline auto perform_action(const backward_action_tag&) const;
 	inline auto perform_action(const displace_action_tag&) const;
@@ -59,7 +59,7 @@ public:
 											variant<const T&...>,
 											variant<const T&...>,
 											mpl::type_pack<>,
-											mpl::type_pack<agnostic_sink_action_tag<variant<const T&...>>,begin_action_tag,last_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
+											mpl::type_pack<agnostic_sink_action_tag<variant<const T&...>>,begin_action_tag,end_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
 	typedef detail::const_iterable_traits<traits> const_traits;
 	typedef typename traits::tags_t tags_t;
 	typedef typename traits::const_tags_t const_tags_t;
@@ -68,7 +68,7 @@ public:
 	template<typename Sink>
 	inline auto perform_action(const sink_action_tag<Sink>&) const;
 	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const last_action_tag&) const;
+	inline auto perform_action(const end_action_tag&) const;
 	inline auto perform_action(const forward_action_tag&) const;
 	inline auto perform_action(const backward_action_tag&) const;
 	inline auto perform_action(const displace_action_tag&) const;

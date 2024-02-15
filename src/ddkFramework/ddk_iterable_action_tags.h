@@ -84,9 +84,9 @@ struct begin_action_tag
 	constexpr begin_action_tag() = default;
 };
 
-struct last_action_tag
+struct end_action_tag
 {
-	constexpr last_action_tag() = default;
+	constexpr end_action_tag() = default;
 };
 
 struct forward_action_tag

@@ -37,36 +37,28 @@ apply_begin_next_iterable:
 }
 
 template<typename Adaptor>
-union_iterable_action_result<Adaptor,last_action_tag> union_iterable_action<last_action_tag>::apply(Adaptor&& i_adaptor)
+union_iterable_action_result<Adaptor,end_action_tag> union_iterable_action<end_action_tag>::apply(Adaptor&& i_adaptor)
 {
 	if (i_adaptor.set_current_iterable_index(i_adaptor.s_numTypes - 1))
 	{
-		return i_adaptor.adaptor_base::perform_action(last_action_tag{});
+		return i_adaptor.adaptor_base::perform_action(end_action_tag{});
 	}
 	else
 	{
-		return make_error<union_iterable_action_result<Adaptor,last_action_tag>>();
+		return make_error<union_iterable_action_result<Adaptor,end_action_tag>>();
 	}
 }
 
 template<typename Adaptor>
-union_iterable_action_result<Adaptor,last_prev_iterable> union_iterable_action<last_prev_iterable>::apply(Adaptor&& i_adaptor)
+union_iterable_action_result<Adaptor,end_prev_iterable> union_iterable_action<end_prev_iterable>::apply(Adaptor&& i_adaptor)
 {
-apply_last_prev_iterable:
 	if (i_adaptor.set_current_iterable_index(i_adaptor.get_current_iterable_index() - 1))
 	{
-		if (auto lastRes = i_adaptor.adaptor_base::perform_action(last_action_tag{}))
-		{
-			return lastRes;
-		}
-		else
-		{
-			goto apply_last_prev_iterable;
-		}
+		return i_adaptor.adaptor_base::perform_action(end_action_tag{});
 	}
 	else
 	{
-		return make_error<union_iterable_action_result<Adaptor,last_prev_iterable>>();
+		return make_error<union_iterable_action_result<Adaptor,end_prev_iterable>>();
 	}
 }
 

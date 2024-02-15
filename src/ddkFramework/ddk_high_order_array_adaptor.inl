@@ -48,17 +48,17 @@ auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const begin_
 	}
 }
 template<typename T,size_t ... ranks>
-auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
+auto iterable_adaptor<high_order_array<T,ranks...>>::perform_action(const end_action_tag&) const
 {
-	m_currIndex = s_totalSize - 1;
+	m_currIndex = s_totalSize;
 
 	if (m_currIndex > 0)
 	{
-		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
+		return make_result<iterable_action_tag_result<const_traits,end_action_tag>>(success);
 	}
 	else
 	{
-		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
+		return make_error<iterable_action_tag_result<const_traits,end_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>
@@ -161,17 +161,17 @@ auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const 
 	}
 }
 template<typename T,size_t ... ranks>
-auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const last_action_tag&) const
+auto iterable_adaptor<const high_order_array<T,ranks...>>::perform_action(const end_action_tag&) const
 {
-	m_currIndex = s_totalSize - 1;
+	m_currIndex = s_totalSize;
 
 	if (m_currIndex >= 0)
 	{
-		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
+		return make_result<iterable_action_tag_result<const_traits,end_action_tag>>(success);
 	}
 	else
 	{
-		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
+		return make_error<iterable_action_tag_result<const_traits,end_action_tag>>();
 	}
 }
 template<typename T,size_t ... ranks>

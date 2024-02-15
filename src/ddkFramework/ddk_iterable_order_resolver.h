@@ -29,11 +29,11 @@ public:
 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
 	constexpr inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> operator()(Adaptor&& i_adaptor, ActionTag&& i_action) const;
 	TEMPLATE(typename Adaptor)
-	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,last_action_tag))
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,end_action_tag))
 	constexpr inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag> operator()(Adaptor&& i_adaptor,begin_action_tag&& i_action) const;
 	TEMPLATE(typename Adaptor)
 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,begin_action_tag))
-	constexpr inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,last_action_tag> operator()(Adaptor&& i_adaptor,last_action_tag&& i_action) const;
+	constexpr inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,end_action_tag> operator()(Adaptor&& i_adaptor,end_action_tag&& i_action) const;
 	TEMPLATE(typename Adaptor)
 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
 	constexpr inline iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag> operator()(Adaptor&& i_adaptor, forward_action_tag&& i_action) const;

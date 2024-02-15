@@ -14,7 +14,7 @@ REQUIRES(ACTION_TAGS_SUPPORTED(const Traits,begin_action_tag,forward_action_tag)
 go_to_begin_action _resolve_default_action(const Traits&);
 
 TEMPLATE(typename Traits)
-REQUIRES(ACTION_TAGS_NOT_SUPPORTED(const Traits,begin_action_tag,forward_action_tag),ACTION_TAGS_SUPPORTED(const Traits,last_action_tag,backward_action_tag))
+REQUIRES(ACTION_TAGS_NOT_SUPPORTED(const Traits,begin_action_tag,forward_action_tag),ACTION_TAGS_SUPPORTED(const Traits,end_action_tag,backward_action_tag))
 go_to_end_action _resolve_default_action(const Traits&,...);
 
 template<typename Traits>

@@ -12,7 +12,8 @@ namespace concepts
 {
 
 template<typename T>
-inline constexpr bool is_iterable_deducible_type = (std::is_base_of<detail::none_t,ddk::iterable_adaptor<T>>::value == false);
+inline constexpr bool is_iterable_deducible_type = (typename ddk::iterable_adaptor<T>::tags_t::empty() == false ||
+                                                    typename ddk::iterable_adaptor<T>::const_tags_t::empty() == false);
 
 }
 }

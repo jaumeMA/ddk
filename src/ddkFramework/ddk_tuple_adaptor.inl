@@ -58,17 +58,17 @@ auto iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perfor
 	}
 }
 template<size_t ... Indexs,typename ... T>
-auto iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const last_action_tag&) const
+auto iterable_adaptor<detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const end_action_tag&) const
 {
-	m_currIndex = s_numTypes - 1;
+	m_currIndex = s_numTypes;
 
 	if (m_currIndex >= 0)
 	{
-		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
+		return make_result<iterable_action_tag_result<const_traits,end_action_tag>>(success);
 	}
 	else
 	{
-		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
+		return make_error<iterable_action_tag_result<const_traits,end_action_tag>>();
 	}
 }
 template<size_t ... Indexs,typename ... T>
@@ -178,17 +178,17 @@ auto iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::
 	}
 }
 template<size_t ... Indexs,typename ... T>
-auto iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const last_action_tag&) const
+auto iterable_adaptor<const detail::tuple_impl<mpl::sequence<Indexs...>,T...>>::perform_action(const end_action_tag&) const
 {
-	m_currIndex = s_numTypes - 1;
+	m_currIndex = s_numTypes;
 
 	if (m_currIndex >= 0)
 	{
-		return make_result<iterable_action_tag_result<const_traits,last_action_tag>>(success);
+		return make_result<iterable_action_tag_result<const_traits,end_action_tag>>(success);
 	}
 	else
 	{
-		return make_error<iterable_action_tag_result<const_traits,last_action_tag>>();
+		return make_error<iterable_action_tag_result<const_traits,end_action_tag>>();
 	}
 }
 template<size_t ... Indexs,typename ... T>

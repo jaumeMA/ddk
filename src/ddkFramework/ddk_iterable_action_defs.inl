@@ -123,7 +123,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
 constexpr backward_action go_to_end_action::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(last_action_tag{})) };
+	return { static_cast<bool>(i_adaptor.perform_action(end_action_tag{})) && static_cast<bool>(i_adaptor.perform_action(backward_action_tag{})) };
 }
 
 constexpr bidirectional_action::bidirectional_action(bool i_forward)

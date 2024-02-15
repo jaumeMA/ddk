@@ -49,7 +49,10 @@ auto intersection_action<sink_action_tag<Sink>>::apply(Adaptor&& ... i_adaptors)
 
 	adaptors_result actionRes = { std::forward<Adaptor>(i_adaptors).perform_action(k_agnosticIterableEmptySink) ...};
 
-	if ((actionRes.template get<Indexs>() && ...))
+	//in order to avoid unchecked result asserts, ensure we check all of them
+	const bool actionResBool[mpl::num_ranks<Indexs...>] = { static_cast<bool>(actionRes.template get<Indexs>()) ... };
+
+	if ((actionResBool[Indexs] && ...))
 	{
 		typedef typename intersection_traits::reference reference;
 

@@ -11,10 +11,10 @@ begin_action_tag union_iterable_action<begin_action_tag>::action() const
 	return {};
 }
 
-union_iterable_action<last_action_tag>::union_iterable_action(last_action_tag&&)
+union_iterable_action<end_action_tag>::union_iterable_action(end_action_tag&&)
 {
 }
-last_action_tag union_iterable_action<last_action_tag>::action() const
+end_action_tag union_iterable_action<end_action_tag>::action() const
 {
 	return {};
 }
@@ -27,10 +27,10 @@ begin_next_iterable union_iterable_action<begin_next_iterable>::action() const
 	return {};
 }
 
-union_iterable_action<last_prev_iterable>::union_iterable_action(last_prev_iterable&&)
+union_iterable_action<end_prev_iterable>::union_iterable_action(end_prev_iterable&&)
 {
 }
-last_prev_iterable union_iterable_action<last_prev_iterable>::action() const
+end_prev_iterable union_iterable_action<end_prev_iterable>::action() const
 {
 	return {};
 }

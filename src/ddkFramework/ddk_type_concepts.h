@@ -195,6 +195,12 @@
 #define IS_POINTER(_TYPE) \
 	typename std::enable_if<IS_POINTER_COND(_TYPE)>::type
 
+#define IS_SIZED_TYPE_COND(_TYPE) \
+	ddk::concepts::is_sized_type<_TYPE>
+
+#define IS_SIZED_TYPE(_TYPE) \
+	typename std::enable_if<IS_SIZED_TYPE_COND(_TYPE)>::type
+
 namespace ddk
 {
 namespace concepts
@@ -204,15 +210,49 @@ template<typename T, typename TT>
 struct is_bindable_by_impl
 {
 private:
-	static std::true_type checker(const TT*);
-	static std::false_type checker(...);
+	static std::true_type resolve(const TT*);
+	static std::false_type resolve(...);
 
 public:
-	static const bool value = decltype(checker(std::declval<const T*>()))::value;
+	static const bool value = decltype(resolve(std::declval<const T*>()))::value;
 };
 
 template<typename T, typename TT>
 inline constexpr bool is_bindable_by = is_bindable_by_impl<T,TT>::value;
+
+template<typename T>
+struct is_sized_type_impl
+{
+private:
+	template<typename TT>
+	static std::true_type sized_type(TT&,const decltype(std::declval<T>().size())* = nullptr);
+	template<typename TT>
+	static std::false_type sized_type(const TT&,...);
+
+public:
+	static const bool value = decltype(sized_type(std::declval<T&>(),nullptr))::value;
+};
+
+template<typename T>
+inline constexpr bool is_sized_type = is_sized_type_impl<T>::value;
+
+template<typename T>
+struct is_dimensioned_type_impl
+{
+private:
+	template<typename TT>
+	static std::true_type resolve(T&,decltype(std::declval<TT>().dimension())* = nullptr);
+	template<template<typename,size_t...> typename TT,typename R,size_t ... Dims>
+	static std::true_type resolve(const TT<R,Dims...>&);
+	template<typename TT>
+	static std::false_type resolve(const TT&,...);
+
+public:
+	static const bool value = decltype(resolve(std::declval<T&>()))::value;
+};
+
+template<typename T>
+inline constexpr bool is_dimensioned_type = is_dimensioned_type_impl<T>::value;
 
 }
 }

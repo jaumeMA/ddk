@@ -14,12 +14,6 @@ struct iterable_action_tag_type<Traits,filtered_iterable_action<begin_action_tag
 	typedef filtered_iterable_action<forward_action_tag,Filter> recovery_type;
 	typedef iterable_action_return_type<Traits,forward_action_tag> return_type;
 };
-template<typename Traits,typename Filter>
-struct iterable_action_tag_type<Traits,filtered_iterable_action<last_action_tag,Filter>>
-{
-	typedef filtered_iterable_action<backward_action_tag,Filter> recovery_type;
-	typedef iterable_action_return_type<Traits,backward_action_tag> return_type;
-};
 template<typename Traits,typename ActionTag,typename Filter>
 struct iterable_action_tag_type<Traits,filtered_iterable_action<ActionTag,Filter>>
 {

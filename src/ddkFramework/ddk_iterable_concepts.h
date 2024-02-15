@@ -12,6 +12,18 @@
 #define IS_NOT_ITERABLE_TYPE(_TYPE) \
     typename std::enable_if<IS_ITERABLE_TYPE_COND(_TYPE) == false>::type
 
+#define IS_CONST_ITERABLE_COND(_TYPE) \
+    HAS_ITERATOR_DEFINED(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) || IS_CONST_ITERATOR_COND(typename _TYPE::iterator))
+
+#define IS_CONST_ITERABLE(_TYPE) \
+    typename std::enable_if<IS_CONST_ITERABLE_COND(_TYPE)>::type
+
+#define IS_NON_CONST_ITERABLE_COND(_TYPE) \
+    HAS_ITERATOR_DEFINED_COND(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) == false && IS_CONST_ITERATOR_COND(typename _TYPE::iterator) == false)
+
+#define IS_NON_CONST_ITERABLE(_TYPE) \
+    typename std::enable_if<IS_NON_CONST_ITERABLE_COND(_TYPE)>::type
+
 #define IS_FORWARD_ITERABLE(_TYPE) \
     HAS_ITERATOR_DEFINED(_TYPE),IS_FORWARD_ITERATOR(typename _TYPE::iterator)
 

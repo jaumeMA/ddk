@@ -28,7 +28,7 @@ public:
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
 	inline bool perform_action(const begin_action_tag&) const;
-	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const end_action_tag&) const;
 	inline bool perform_action(const forward_action_tag&) const;
 	inline bool perform_action(const backward_action_tag&) const;
 	inline bool perform_action(const displace_action_tag&) const;
@@ -55,7 +55,7 @@ public:
 	template<typename Sink>
 	inline auto forward_value(Sink&& i_sink) const;
 	inline bool perform_action(const begin_action_tag&) const;
-	inline bool perform_action(const last_action_tag&) const;
+	inline bool perform_action(const end_action_tag&) const;
 	inline bool perform_action(const forward_action_tag&) const;
 	inline bool perform_action(const backward_action_tag&) const;
 	inline bool perform_action(const displace_action_tag&) const;

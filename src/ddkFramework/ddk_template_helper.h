@@ -142,6 +142,23 @@ struct size_of_qualified_type<T*>
 	static const size_t value = sizeof(decltype(reinterpret_cast<T*>(NULL)));
 };
 
+template<typename>
+struct add_const_impl;
+    
+template<typename T>
+struct add_const_impl<T&>
+{
+    typedef const T& type;
+};
+template<typename T>
+struct add_const_impl
+{
+    typedef const T type;
+};
+
+template<typename T>
+using add_const = typename add_const_impl<T>::type;
+
 template<typename T>
 inline constexpr bool is_const = std::is_const<typename std::remove_reference<T>::type>::value;
 
@@ -775,10 +792,14 @@ struct type_pack
     {
         return num_types<Types...>;
     }
+    static constexpr bool empty()
+    {
+        return num_types<Types...> == 0;
+    }
 };
 typedef type_pack<> empty_type_pack;
 
-template<typename,typename>
+template<typename...>
 struct merge_pair_type_packs;
 
 template<typename ... Types>
@@ -793,15 +814,20 @@ struct merge_pair_type_packs<type_pack<Types...>,type_pack<TType,TTypes...>>
     typedef typename merge_pair_type_packs<typename type_pack<Types...>::template add_unique<TType>::type,type_pack<TTypes...>>::type type;
 };
 
-template<typename ... Types, typename ... TTypes,typename ... TTTypes>
-struct merge_type_packs<type_pack<Types...>,type_pack<TTypes...>,TTTypes...>
+template<>
+struct merge_type_packs<>
 {
-    typedef typename merge_type_packs<typename merge_pair_type_packs<type_pack<Types...>,type_pack<TTypes...>>::type,TTTypes...>::type type;
+    typedef empty_type_pack type;
 };
 template<typename ... Types>
 struct merge_type_packs<type_pack<Types...>>
 {
     typedef type_pack<Types...> type;
+};
+template<typename ... Types, typename ... TTypes,typename ... TTTypes>
+struct merge_type_packs<type_pack<Types...>,type_pack<TTypes...>,TTTypes...>
+{
+    typedef typename merge_type_packs<typename merge_pair_type_packs<type_pack<Types...>,type_pack<TTypes...>>::type,TTTypes...>::type type;
 };
 
 template<typename ... Types>

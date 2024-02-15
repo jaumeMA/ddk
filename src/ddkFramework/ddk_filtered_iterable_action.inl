@@ -38,7 +38,7 @@ constexpr filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_ite
         }
         else
         {
-            throw;
+            return make_result<filtered_result>(actionRes);
         }
     }
     else
@@ -88,19 +88,15 @@ constexpr filtered_iterable_action_result<Adaptor,displace_action_tag,Filter> fi
             {
                 postShift--;
             }
+        }
 
-            if (postShift == 0)
-            {
-                return make_result<filtered_result>(success);
-            }
-            else
-            {
-                return make_error<filtered_result>(postShift,m_filter,true);
-            }
+        if (postShift == 0)
+        {
+            return make_result<filtered_result>(success);
         }
         else
         {
-            throw;
+            return make_error<filtered_result>(postShift,m_filter,true);
         }
     }
 
@@ -153,7 +149,7 @@ constexpr filtered_iterable_action_result<Adaptor,sink_action_tag<Sink>,Filter> 
     }
     else
     {
-        return make_error<filtered_result>(m_actionTag,m_filter);
+        return make_error<filtered_result>(m_actionTag,m_filter,false);
     }
 }
 template<typename Sink,typename Filter>

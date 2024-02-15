@@ -6,113 +6,208 @@
 
 namespace ddk
 {
-
-template<typename>
-struct iterable_adaptor;
-
 namespace detail
 {
 
+template<typename,typename>
+class iterable_adaptor_actions;
+
 template<typename>
-class iterable_adaptor_base;
+struct adaptor_iterable_impl;
 
-template<typename Iterable>
-class iterable_adaptor_base
+template<typename Iterable, typename Actions>
+struct adaptor_iterable_impl<iterable_adaptor_actions<Iterable,Actions>>
 {
-	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename std::add_const<typename Iterable::value_type>::type,typename Iterable::value_type>::type value_type;
-	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_reference,typename Iterable::reference>::type reference;
-	typedef typename Iterable::const_reference const_reference;
+	typedef Iterable type;
+};
 
+template<typename Adaptor>
+using adaptor_iterable = typename adaptor_iterable_impl<Adaptor>::type;
+template<typename Iterable>
+using iterable_value_type = typename mpl::which_type<std::is_const<Iterable>::value,typename std::add_const<typename Iterable::value_type>::type,typename Iterable::value_type>::type;
+template<typename Iterable>
+using iterable_reference = typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_reference,typename Iterable::reference>::type;
+template<typename Iterable>
+using iterable_const_reference = typename Iterable::const_reference;
+template<typename Iterable>
+using iterable_iterator = typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type;
+
+template<typename,typename>
+class iterable_adaptor_action;
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,begin_action_tag>
+{
 public:
-	typedef iterable_by_type_traits<value_type,
-									reference,
-									const_reference,
-									typename mpl::which_type<mpl::is_const<Iterable>,mpl::type_pack<sink_action_tag<function<void(reference)>>>,mpl::type_pack<sink_action_tag<function<void(reference)>>,add_action_tag<typename Iterable::value_type>,remove_action_tag>>::type,
-									mpl::type_pack<sink_action_tag<function<void(const_reference)>>,begin_action_tag,last_action_tag>> traits;
-	typedef detail::const_iterable_traits<traits> const_traits;
-	typedef typename traits::tags_t tags_t;
-	typedef typename traits::const_tags_t const_tags_t;
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<begin_action_tag> const_tags_t;
 
-	iterable_adaptor_base(Iterable& i_iterable);
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable);
+
+	constexpr inline auto perform_action(const begin_action_tag&) const;
+
+protected:
+	typedef iterable_iterator<adaptor_iterable<Adaptor>> iterator;
+
+	iterator m_beginIterator;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,end_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<end_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable);
+
+	constexpr inline auto perform_action(const end_action_tag&) const;
+
+protected:
+	typedef iterable_iterator<adaptor_iterable<Adaptor>> iterator;
+
+	iterator m_endIterator;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,forward_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<forward_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	constexpr inline auto perform_action(const forward_action_tag&) const;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,backward_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<backward_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	constexpr inline auto perform_action(const backward_action_tag&) const;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,displace_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<displace_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	constexpr inline auto perform_action(const displace_action_tag&) const;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,remove_action_tag>
+{
+public:
+	typedef mpl::type_pack<remove_action_tag> tags_t;
+	typedef mpl::empty_type_pack const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	constexpr inline auto perform_action(const remove_action_tag&) const;
+};
+
+template<typename Adaptor,typename T>
+class iterable_adaptor_action<Adaptor,add_action_tag<T>>
+{
+public:
+	typedef mpl::type_pack<add_action_tag<T>> tags_t;
+	typedef mpl::empty_type_pack const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	constexpr inline auto perform_action(add_action_tag<T>) const;
+};
+
+template<typename Adaptor,typename T>
+class iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>
+{
+public:
+	typedef typename mpl::which_type<mpl::is_const<T>,mpl::empty_type_pack,mpl::type_pack<agnostic_sink_action_tag<T>>>::type tags_t;
+	typedef mpl::type_pack<agnostic_sink_action_tag<mpl::add_const<T>>> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
 
 	template<typename Sink>
 	constexpr inline auto perform_action(const sink_action_tag<Sink>& i_sink);
 	template<typename Sink>
 	constexpr inline auto perform_action(const sink_action_tag<Sink>& i_sink) const;
-	constexpr inline auto perform_action(const begin_action_tag&) const;
-	constexpr inline auto perform_action(const last_action_tag&) const;
-	constexpr inline auto perform_action(const remove_action_tag&);
-	constexpr inline auto perform_action(add_action_tag<value_type>);
+};
 
-protected:
-	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,size_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<size_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	constexpr inline auto perform_action(const size_action_tag&) const;
+};
+
+template<typename Iterable,typename ... IterableActions>
+class iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>> : public iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions> ...
+{
+	template<typename,typename>
+	friend class detail::iterable_adaptor_action;
+
+	typedef iterable_value_type<Iterable> value_type;
+	typedef iterable_reference<Iterable> reference;
+	typedef iterable_const_reference<Iterable> const_reference;
+
+public:
+	typedef detail::iterable_by_type_traits<value_type,
+		reference,
+		const_reference,
+		typename mpl::merge_type_packs<typename detail::iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>::tags_t ...>::type,
+		typename mpl::merge_type_packs<typename detail::iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>::const_tags_t ...>::type> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	using detail::iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>::perform_action ...;
+
+	iterable_adaptor_actions(Iterable& i_iterable);
+
+private:
+	typedef detail::iterable_iterator<Iterable> iterator;
 
 	Iterable& m_iterable;
 	mutable iterator m_currIterator;
-	const iterator m_endIterator;
 };
 
 template<typename Iterable>
-class forward_iterable_adaptor : public iterable_adaptor_base<Iterable>
+class iterable_adaptor_actions<Iterable,mpl::type_pack<>>
 {
-	typedef iterable_adaptor_base<Iterable> base_t;
-	typedef typename base_t::traits base_traits;
-
 public:
-	typedef iterable_adaptor_traits<base_traits,typename base_traits::tags_t,typename base_traits::const_tags_t::template add_unique<forward_action_tag>::type> traits;
-	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef detail::iterable_by_type_traits<void,void,void,mpl::empty_type_pack,mpl::empty_type_pack> traits;
+	typedef traits const_traits;
 	typedef typename traits::tags_t tags_t;
 	typedef typename traits::const_tags_t const_tags_t;
 
-	using base_t::base_t;
-	using base_t::perform_action;
-
-	constexpr inline auto perform_action(const forward_action_tag&) const;
-};
-
-template<typename Iterable>
-class bidirectional_iterable_adaptor : public forward_iterable_adaptor<Iterable>
-{
-	typedef forward_iterable_adaptor<Iterable> base_t;
-	typedef typename base_t::traits base_traits;
-
-public:
-	typedef iterable_adaptor_traits<base_traits,typename base_traits::tags_t,typename base_traits::const_tags_t::template add_unique<backward_action_tag>::type> traits;
-	typedef detail::const_iterable_traits<traits> const_traits;
-	typedef typename traits::tags_t tags_t;
-	typedef typename traits::const_tags_t const_tags_t;
-
-	using base_t::perform_action;
-
-	bidirectional_iterable_adaptor(Iterable& i_iterable);
-
-	constexpr inline auto perform_action(const backward_action_tag&) const;
-
-protected:
-	typedef typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type iterator;
-
-	const iterator m_beginIterator;
-};
-
-template<typename>
-class random_access_iterable_adaptor;
-
-template<typename Iterable>
-class random_access_iterable_adaptor : public bidirectional_iterable_adaptor<Iterable>
-{
-	typedef bidirectional_iterable_adaptor<Iterable> base_t;
-	typedef typename base_t::traits base_traits;
-
-public:
-	typedef iterable_adaptor_traits<base_traits,typename base_traits::tags_t,typename base_traits::const_tags_t::template add_unique<displace_action_tag>::type> traits;
-	typedef detail::const_iterable_traits<traits> const_traits;
-	typedef typename traits::tags_t tags_t;
-	typedef typename traits::const_tags_t const_tags_t;
-
-	using base_t::base_t;
-	using base_t::perform_action;
-
-	constexpr inline auto perform_action(const displace_action_tag&) const;
+	iterable_adaptor_actions(Iterable& i_iterable)
+	{
+	}
 };
 
 }

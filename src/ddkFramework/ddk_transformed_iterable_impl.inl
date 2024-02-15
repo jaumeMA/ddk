@@ -87,7 +87,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 
 	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_const_reference>))
 	{
-		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,std::forward<private_const_reference>(actionRes.get()))));
+		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
 	else
 	{
@@ -121,7 +121,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 
 	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_const_reference>))
 	{
-		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,std::forward<private_const_reference>(actionRes.get()))));
+		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
 	else
 	{

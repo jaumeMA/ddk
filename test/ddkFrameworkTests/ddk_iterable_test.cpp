@@ -80,7 +80,7 @@ struct tuple_visitor
 
 }
 
-static std::list<int> myFoo;
+static std::vector<int> myFoo;
 void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 {
 	[](const int& i_value)
@@ -90,7 +90,7 @@ void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 	}   <<= i_iterable;
 }
 
-ddk::bidirectional_iterable<int> proveta()
+ddk::random_access_iterable<int> proveta()
 {
 	myFoo.push_back(1);
 	myFoo.push_back(2);
@@ -176,19 +176,9 @@ TEST(DDKIterableTest,peformance)
 	//	{
 	//	} }).dismiss();
 
-	if (ddk::iterable_result iterRes = [](auto&& i_value)
-		{
-			ddk::stop_iteration("holaquease");
-		} <<= v_prova)
+	[](auto&& i_value)
 	{
-		int a = 0;
-		++a;
-	}
-	else
-	{
-		auto error = iterRes.error();
-		int a = 0;
-	}
+	} <<= v_prova;
 }
 struct myAdaptor
 {
@@ -378,22 +368,23 @@ TEST(DDKIterableTest, iterableUnion)
     foo3.push_back(-46);
     foo3.push_back(-189);
 
-	//[](const A& i_value)
-	//{
-	//	int a = 0;
-	//	++a;
-	//}	<<= ddk::view::filter([](const A& i_value) { return i_value > 0; })
-	//	<<= ddk::iter::transform([](const A& i_value) { return i_value + i_value; })
-	//	<<= ddk::concat(ddk::deduce_iterable(foo1),ddk::deduce_iterable(foo2),ddk::deduce_iterable(foo3));
+	[](const A& i_value)
+	{
+		int a = 0;
+		++a;
+	}	<<= ddk::view::filter([](const A& i_value) { return i_value > 0; })
+		<<= ddk::iter::transform([](const A& i_value) { return i_value + i_value; })
+		<<= ddk::view::order(ddk::reverse_order)
+		<<= ddk::concat(ddk::deduce_iterable(foo1),ddk::deduce_iterable(foo2),ddk::deduce_iterable(foo3));
 
-	//[](const A& i_value)
-	//{
-	//	int a = 0;
-	//	++a;
-	//}	<<= ddk::iter::transform([](const A& i_val1,const D& i_val2,const E& i_val3) -> A { return i_val1 + i_val2 + i_val3; })
-	//	<<= ddk::view::filter([](const A& i_val1,const D& i_val2,const E& i_val3) { return i_val1 > i_val2; })
-	//	<<= ddk::view::order(ddk::reverse_order)
-	//	<<= ddk::fusion(ddk::deduce_iterable(foo1),ddk::deduce_iterable(foo2),ddk::deduce_iterable(foo3));
+	[](const A& i_value)
+	{
+		int a = 0;
+		++a;
+	}	<<= ddk::iter::transform([](const A& i_val1,const D& i_val2,const E& i_val3) -> A { return i_val1 + i_val2 + i_val3; })
+		<<= ddk::view::filter([](const A& i_val1,const D& i_val2,const E& i_val3) { return i_val1 > i_val2; })
+		<<= ddk::view::order(ddk::reverse_order)
+		<<= ddk::fusion(ddk::deduce_iterable(foo1),ddk::deduce_iterable(foo2),ddk::deduce_iterable(foo3));
 
 	//ddk::tuple<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> fooIterable4(fooIterable1,fooIterable2);
 	//ddk::detail::union_iterable_impl<ddk::const_random_access_iterable<A>,ddk::const_random_access_iterable<D>> unionIterable(fooIterable1,fooIterable2);

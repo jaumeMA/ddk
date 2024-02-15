@@ -16,13 +16,9 @@ constexpr forward_action_tag filtered_iterable_action_cs(const begin_action_tag&
 template<>
 constexpr forward_action_tag filtered_iterable_action_cs(begin_action_tag&&);
 template<>
-constexpr last_action_tag filtered_iterable_action_cs(const backward_action_tag&);
+constexpr end_action_tag filtered_iterable_action_cs(const backward_action_tag&);
 template<>
-constexpr last_action_tag filtered_iterable_action_cs(backward_action_tag&&);
-template<>
-constexpr backward_action_tag filtered_iterable_action_cs(const last_action_tag&);
-template<>
-constexpr backward_action_tag filtered_iterable_action_cs(last_action_tag&&);
+constexpr end_action_tag filtered_iterable_action_cs(backward_action_tag&&);
 
 }
 
