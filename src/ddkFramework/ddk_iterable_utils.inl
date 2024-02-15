@@ -7,16 +7,32 @@
 #include "ddk_forwarding_iterable_value_callable.h"
 #include "ddk_one_to_n_action_adapter.h"
 #include "ddk_callable.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
 
-template<typename Iterable, typename IIterable>
-Iterable make_iterable(IIterable&& i_iterable)
+template<typename Traits,typename Iterable,typename Allocator>
+auto make_iterable(Iterable&& i_iterable,const Allocator& i_allocator)
 {
-    typedef typename Iterable::traits traits;
+	typedef typename Iterable::traits from_traits;
+	typedef typename Traits to_traits;
 
-    return Iterable{ make_distributed_reference<detail::iterable_impl<traits,IIterable>>(std::forward<IIterable>(i_iterable)) };
+	if constexpr (mpl::is_same_type<from_traits,to_traits>::value)
+	{
+		return make_distributed_reference<detail::iterable<Iterable>>(i_allocator,std::forward<Iterable>(i_iterable));
+	}
+	else
+	{
+		typedef detail::transformed_iterable_impl<to_traits,from_traits,detail::iterable<Iterable>,detail::traits_conversion_callable<from_traits,to_traits>> transformed_iterable;
+
+		return make_distributed_reference<detail::iterable<transformed_iterable>>(i_allocator,detail::iterable(std::forward<Iterable>(i_iterable)),detail::traits_conversion_callable<from_traits,to_traits>());
+	}
+}
+template<typename Traits,typename Iterable>
+auto make_iterable(Iterable&& i_iterable)
+{
+	return make_iterable<Traits>(std::forward<Iterable>(i_iterable),g_system_allocator);
 }
 
 TEMPLATE(typename Iterable)

@@ -5,7 +5,6 @@
 #include "ddk_filtered_iterable_impl.h"
 #include "ddk_ordered_iterable_impl.h"
 #include "ddk_constrained_iterable_impl.h"
-#include "ddk_type_erasure_iterable_impl.h"
 #include "ddk_iterable_concepts.h"
 #include "ddk_container_concepts.h"
 #include "ddk_type_concepts.h"
@@ -21,8 +20,10 @@ using resolved_iterable_traits = typename resolved_iterable<Iterable>::traits;
 template<typename Iterable, typename T>
 using resolved_iterable_traits_as = typename resolved_iterable_traits<Iterable>::template as<T>;
 
-template<typename Iterable, typename IIterable>
-inline Iterable make_iterable(IIterable&& i_iterable);
+template<typename Traits,typename Iterable, typename Allocator>
+inline auto make_iterable(Iterable&& i_iterable, const Allocator& i_allocator);
+template<typename Traits,typename Iterable>
+inline auto make_iterable(Iterable&& i_iterable);
 
 TEMPLATE(typename Iterable)
 REQUIRES(IS_ITERABLE_TYPE(Iterable))

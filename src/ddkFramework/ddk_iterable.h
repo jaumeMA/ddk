@@ -61,12 +61,12 @@ typename iterable<Iterable>::traits deduce_iterable_traits(const iterable<Iterab
 }
 }
 
-#include "ddk_agnostic_iterable.h"
 #include "ddk_iterable_resolver.h"
 #include "ddk_iterable_action_resolver.h"
 #include "ddk_iterable_order_resolver.h"
 #include "ddk_view_utils.h"
 #include "ddk_iterable_utils.h"
+#include "ddk_agnostic_iterable.h"
 #include "ddk_builtin_iterables.h"
 #include "ddk_iterable_action_defs_ext.h"
 

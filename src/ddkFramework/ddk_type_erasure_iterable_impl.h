@@ -30,16 +30,16 @@ public:
     typedef detail::const_iterable_traits<traits> const_traits;
 
     TEMPLATE(typename Iterable)
-    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable))
+    REQUIRES(ARE_TRAITS_COMPATIBLE(typename Iterable::traits,Traits))
     type_erasure_iterable_impl(const iterable<Iterable>& i_iterable);
     TEMPLATE(typename Iterable)
-    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable))
+    REQUIRES(ARE_TRAITS_COMPATIBLE(typename Iterable::traits,Traits))
     type_erasure_iterable_impl(iterable<Iterable>&& i_iterable);
     TEMPLATE(typename Iterable, typename Allocator)
-    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable),IS_ALLOCATOR(Allocator))
+    REQUIRES(ARE_TRAITS_COMPATIBLE(typename Iterable::traits,Traits),IS_ALLOCATOR(Allocator))
     type_erasure_iterable_impl(const iterable<Iterable>& i_iterable,const Allocator& i_allocator);
     TEMPLATE(typename Iterable, typename Allocator)
-    REQUIRES(IS_BASE_OF(iterable_impl_interface<Traits>,Iterable),IS_ALLOCATOR(Allocator))
+    REQUIRES(ARE_TRAITS_COMPATIBLE(typename Iterable::traits,Traits),IS_ALLOCATOR(Allocator))
     type_erasure_iterable_impl(iterable<Iterable>&& i_iterable,const Allocator& i_allocator);
     type_erasure_iterable_impl(const iterable<type_erasure_iterable_impl<Traits>>& i_iterable);
     type_erasure_iterable_impl(iterable<type_erasure_iterable_impl<Traits>>&& i_iterable);
@@ -49,6 +49,12 @@ public:
     TEMPLATE(typename TTraits)
     REQUIRES(ARE_TRAITS_COMPATIBLE(TTraits,Traits))
     type_erasure_iterable_impl(iterable<type_erasure_iterable_impl<TTraits>>&& i_iterable);
+    TEMPLATE(typename TTraits,typename Allocator)
+    REQUIRES(ARE_TRAITS_COMPATIBLE(TTraits,Traits),IS_ALLOCATOR(Allocator))
+    type_erasure_iterable_impl(const iterable<type_erasure_iterable_impl<TTraits>>& i_iterable,const Allocator& i_allocator);
+    TEMPLATE(typename TTraits,typename Allocator)
+    REQUIRES(ARE_TRAITS_COMPATIBLE(TTraits,Traits),IS_ALLOCATOR(Allocator))
+    type_erasure_iterable_impl(iterable<type_erasure_iterable_impl<TTraits>>&& i_iterable,const Allocator& i_allocator);
     type_erasure_iterable_impl(type_erasure_iterable_impl&&) = default;
 
     template<typename Action>

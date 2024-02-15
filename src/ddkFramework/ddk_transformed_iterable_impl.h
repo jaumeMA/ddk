@@ -8,6 +8,9 @@ namespace ddk
 namespace detail
 {
 
+template<typename Traits,typename Iterable>
+inline auto transform_iterable(Iterable&& i_iterable);
+
 template<typename Transform>
 class iterable_transform
 {

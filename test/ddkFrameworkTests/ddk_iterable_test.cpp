@@ -90,7 +90,7 @@ void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
 	}   <<= i_iterable;
 }
 
-ddk::random_access_iterable<int> proveta()
+auto proveta()
 {
 	myFoo.push_back(1);
 	myFoo.push_back(2);
@@ -217,6 +217,8 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 		<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
 		<<= ddk::view::order(ddk::reverse_order)
 		<<= foo;
+
+	proveta2(proveta());
 
 	//ddk::unique_reference_wrapper cucu = ddk::make_unique_reference<int>(10);
 	//ddk::lent_reference_wrapper<int> kkk = ddk::lend(cucu);
