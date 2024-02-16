@@ -243,9 +243,9 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 template<typename Adaptor>
 constexpr auto iterable_adaptor_action<Adaptor,size_action_tag>::perform_action(const size_action_tag&) const
 {
-	typedef typename Adaptor::traits traits;
+	typedef typename Adaptor::const_traits const_traits;
 
-	return make_result<iterable_action_tag_result<traits,size_action_tag>(std::size(static_cast<const Adaptor&>(*this).m_iterable));
+	return make_result<iterable_action_tag_result<const_traits,size_action_tag>>(std::size(static_cast<const Adaptor&>(*this).m_iterable));
 }
 
 template<typename Iterable,typename ... IterableActions>

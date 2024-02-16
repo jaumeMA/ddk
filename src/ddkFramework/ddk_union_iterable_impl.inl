@@ -52,6 +52,18 @@ size_t union_iterable_adaptor<Iterables...>::get_current_iterable_index() const
     return m_currIndex;
 }
 template<typename ... Iterables>
+template<size_t Index>
+auto union_iterable_adaptor<Iterables...>::get_adaptor()
+{
+    return m_adaptors.template get<Index>();
+}
+template<typename ... Iterables>
+template<size_t Index>
+auto union_iterable_adaptor<Iterables...>::get_adaptor() const
+{
+    return m_adaptors.template get<Index>();
+}
+template<typename ... Iterables>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
 auto union_iterable_adaptor<Iterables...>::perform_action(ActionTag&& i_actionTag)
@@ -123,6 +135,12 @@ template<typename ... Iterables>
 size_t union_iterable_const_adaptor<Iterables...>::get_current_iterable_index() const
 {
     return m_currIndex;
+}
+template<typename ... Iterables>
+template<size_t Index>
+auto union_iterable_const_adaptor<Iterables...>::get_adaptor() const
+{
+    return m_adaptors.template get<Index>();
 }
 template<typename ... Iterables>
 TEMPLATE(typename ActionTag)

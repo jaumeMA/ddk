@@ -68,6 +68,25 @@ public:
 	end_prev_iterable action() const;
 };
 
+template<>
+class union_iterable_action<size_action_tag>
+{
+public:
+	typedef mpl::type_pack<size_action_tag> tags_t;
+	typedef size_action_tag action_tag;
+
+	union_iterable_action() = default;
+	union_iterable_action(const size_action_tag&);
+
+	template<typename Adaptor>
+	inline union_iterable_action_result<Adaptor,size_action_tag> apply(Adaptor&& i_adaptor);
+	size_action_tag action() const;
+
+private:
+	template<typename Adaptor, size_t ... Indexs>
+	inline union_iterable_action_result<Adaptor,size_action_tag> _apply(Adaptor&& i_adaptor, const mpl::sequence<Indexs...>&);
+};
+
 template<typename ActionTag>
 class union_iterable_action
 {

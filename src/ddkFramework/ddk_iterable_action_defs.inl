@@ -27,7 +27,7 @@ constexpr no_action::no_action(bool i_valid)
 template<typename Adaptor>
 constexpr no_action no_action::apply(Adaptor&& i_adaptor) const
 {
-	return {};
+	return { false };
 }
 
 constexpr remove_action::remove_action(bool i_valid)

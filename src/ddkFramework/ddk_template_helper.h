@@ -293,6 +293,21 @@ constexpr size_t get_num_ranks()
 	return sizeof...(ranks);
 };
 
+template<typename T, typename ... TT>
+constexpr inline auto get_min(T&& i_value, TT&& ... i_values)
+{
+    typedef typename std::common_type<T,TT...>::type res_type;
+
+    res_type res = i_value;
+    const res_type tail[] = { i_values... };
+
+    for (auto&& value : tail)
+    {
+        res = (res > value) ? value : res;
+    }
+
+    return res;
+};
 
 template<size_t ... ranks>
 inline constexpr size_t num_ranks = sizeof...(ranks);

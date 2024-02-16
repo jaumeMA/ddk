@@ -9,7 +9,7 @@ namespace detail
 {
 
 template<typename Iterable>
-using iterable_adaptor_resolver = detail::iterable_adaptor_actions<Iterable,decltype(detail::iterable_action_tag_resolver(std::declval<Iterable&>()))>;
+using iterable_adaptor_resolver = detail::iterable_adaptor_actions<Iterable,detail::iterable_action_tag_resolver<Iterable>>;
 
 template<typename Iterable>
 typename iterable_adaptor<Iterable>::traits deduce_iterable_traits(const iterable_adaptor<Iterable>&);

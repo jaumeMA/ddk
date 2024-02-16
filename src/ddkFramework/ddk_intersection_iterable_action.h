@@ -50,6 +50,17 @@ intersection_action(const sink_action_tag<Sink>&) -> intersection_action<sink_ac
 template<typename Sink>
 intersection_action(sink_action_tag<Sink>&&) -> intersection_action<sink_action_tag<Sink>>;
 
+template<>
+class intersection_action<size_action_tag>
+{
+public:
+	typedef mpl::type_pack<size_action_tag> tags_t;
+
+	intersection_action(const size_action_tag&);
+	template<size_t ... Indexs,typename ... Adaptor>
+	inline auto apply(Adaptor&& ... i_adaptors);
+};
+
 template<typename ActionTag>
 class intersection_action
 {

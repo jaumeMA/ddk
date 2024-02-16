@@ -229,6 +229,8 @@ action_sink(Action&& i_action, Sink&& i_sink,bool i_valid) -> action_sink<Action
 struct size_action : action_base
 {
 public:
+    typedef mpl::type_pack<size_action_tag> tags_t;
+
     static const size_t nsize = -1;
 
     constexpr size_action() = default;
@@ -241,7 +243,7 @@ public:
     constexpr inline no_action apply(Adaptor&& i_adaptor) const;
 
 private:
-    size_t m_size = nsize;
+    mutable size_t m_size = nsize;
 };
 
 }

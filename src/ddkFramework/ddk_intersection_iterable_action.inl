@@ -64,6 +64,30 @@ auto intersection_action<sink_action_tag<Sink>>::apply(Adaptor&& ... i_adaptors)
 	}
 }
 
+template<size_t ... Indexs,typename ... Adaptor>
+auto intersection_action<size_action_tag>::apply(Adaptor&& ... i_adaptors)
+{
+	typedef tuple<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,size_action_tag>...> adaptors_result;
+	typedef detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...> intersection_traits;
+	typedef iterable_action_tag_result<intersection_traits,size_action_tag> intersection_result;
+
+	adaptors_result actionRes = { std::forward<Adaptor>(i_adaptors).perform_action(size_action_tag{}) ... };
+
+	//in order to avoid unchecked result asserts, ensure we check all of them
+	const bool actionResBool[mpl::num_ranks<Indexs...>] = { static_cast<bool>(actionRes.template get<Indexs>()) ... };
+
+	if ((actionResBool[Indexs] && ...))
+	{
+		typedef typename intersection_traits::reference reference;
+
+		return make_result<intersection_result>(mpl::get_min(actionRes.template get<Indexs>().get() ... ));
+	}
+	else
+	{
+		return make_error<intersection_result>(size_action_tag{});
+	}
+}
+
 template<typename ActionTag>
 intersection_action<ActionTag>::intersection_action(const ActionTag& i_action)
 : m_action(i_action)

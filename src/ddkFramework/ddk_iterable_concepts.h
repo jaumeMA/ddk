@@ -24,54 +24,6 @@
 #define IS_NON_CONST_ITERABLE(_TYPE) \
     typename std::enable_if<IS_NON_CONST_ITERABLE_COND(_TYPE)>::type
 
-#define IS_FORWARD_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE),IS_FORWARD_ITERATOR(typename _TYPE::iterator)
-
-#define IS_BIDIRECTIONAL_ITERABLE(_TYPE) \
-    IS_FORWARD_ITERABLE(_TYPE),IS_BIDIRECTIONAL_ITERATOR(typename _TYPE::iterator)
-
-#define IS_RANDOM_ACCESS_ITERABLE(_TYPE) \
-    IS_BIDIRECTIONAL_ITERABLE(_TYPE),IS_RANDOM_ACCESS_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_FORWARD_ITERABLE_COND(_TYPE) \
-    HAS_ITERATOR_DEFINED_COND(_TYPE) && IS_EXCLUSIVE_FORWARD_ITERATOR_COND(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_FORWARD_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE),IS_EXCLUSIVE_FORWARD_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_FORWARD_NON_CONST_ITERABLE(_TYPE) \
-    IS_TYPE_NON_CONST(_TYPE),IS_EXCLUSIVE_FORWARD_ITERABLE(_TYPE),IS_NON_CONST_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_FORWARD_CONST_ITERABLE(_TYPE) \
-    typename std::enable_if<IS_EXCLUSIVE_FORWARD_ITERABLE(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) || IS_CONST_ITERATOR_COND(typename _TYPE::iterator))>::type
-
-#define IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE_COND(_TYPE) \
-    HAS_ITERATOR_DEFINED_COND(_TYPE) && IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR_COND(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE), IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_BIDIRECTIONAL_NON_CONST_ITERABLE(_TYPE) \
-    IS_TYPE_NON_CONST(_TYPE),IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(_TYPE),IS_NON_CONST_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_BIDIRECTIONAL_CONST_ITERABLE(_TYPE) \
-    typename std::enable_if<IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE_COND(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) || IS_CONST_ITERATOR_COND(typename _TYPE::iterator))>::type
-
-#define IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE_COND(_TYPE) \
-    HAS_ITERATOR_DEFINED_COND(_TYPE) && IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR_COND(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE),IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_RANDOM_ACCESS_NON_CONST_ITERABLE(_TYPE) \
-    IS_TYPE_NON_CONST(_TYPE),IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(_TYPE),IS_NON_CONST_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_RANDOM_ACCESS_CONST_ITERABLE(_TYPE) \
-    typename std::enable_if<IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) || IS_CONST_ITERATOR_COND(typename _TYPE::iterator))>::type
-
-#define IS_ITERABLE(_TYPE) \
-    typename std::enable_if<IS_CONTAINER_COND(_TYPE) || IS_ITERABLE_TYPE_COND(_TYPE)>::type
-
 namespace ddk
 {
 namespace concepts
@@ -102,6 +54,83 @@ struct is_iterable_type
 {
     static const bool value = false;
 };
+
+template<typename,typename>
+struct iterable_action_support_impl;
+
+template<typename Iterable>
+struct iterable_action_support_impl<Iterable,begin_action_tag>
+{
+private:
+    template<typename T,typename = typename std::enable_if<has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<begin_action_tag> resolve(T&,const decltype(std::declval<T>().begin())*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Iterable&>(),nullptr)) type;
+};
+
+template<typename Iterable>
+struct iterable_action_support_impl<Iterable,end_action_tag>
+{
+private:
+    template<typename T,typename = typename std::enable_if<has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<end_action_tag> resolve(T&,const decltype(std::declval<T>().end())*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Iterable&>(),nullptr)) type;
+};
+
+template<typename Iterable>
+struct iterable_action_support_impl<Iterable,remove_action_tag>
+{
+private:
+    template<typename T,typename = typename std::enable_if<has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<remove_action_tag> resolve(T&,const decltype(std::declval<T>().erase(std::declval<typename Iterable::const_iterator>()))*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Iterable&>(),nullptr)) type;
+};
+
+template<typename Iterable>
+struct iterable_action_support_impl<Iterable,mpl::template_class_holder<add_action_tag>>
+{
+private:
+    template<typename T,typename = typename std::enable_if<has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<add_action_tag<typename T::value_type>> resolve(T&,const decltype(std::declval<T>().insert(std::declval<typename T::const_iterator>(),std::declval<typename T::value_type&&>()))*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Iterable&>(),nullptr)) type;
+};
+
+template<typename Iterable>
+struct iterable_action_support_impl<Iterable,size_action_tag>
+{
+private:
+    template<typename T,typename = typename std::enable_if<has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<size_action_tag> resolve(T&,const decltype(std::declval<T>().size())*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Iterable&>(),nullptr)) type;
+};
+
+template<typename Iterable, typename Action>
+struct iterable_action_support_impl
+{
+    template<typename T,typename = typename std::enable_if<has_iterator_defined_v<T>>::type>
+    static iterator_action_support<typename mpl::which_type<mpl::is_const<T>,typename T::const_iterator,typename T::iterator>::type,Action> resolve(T&);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    typedef decltype(resolve(std::declval<Iterable&>())) type;
+};
+
+template<typename Iterable, typename ... Actions>
+using iterable_action_support = typename mpl::merge_type_packs<typename iterable_action_support_impl<Iterable,Actions>::type...>::type;
 
 }
 }

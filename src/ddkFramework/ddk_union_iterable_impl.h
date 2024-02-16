@@ -37,6 +37,8 @@ class union_iterable_adaptor
 {
 public:
 	static const size_t s_numTypes = mpl::num_types<Iterables...>;
+	template<size_t Index>
+	using nth_adaptor = typename mpl::nth_type_of<Index,Iterables...>::type;
 	typedef detail::union_iterable_traits<typename Iterables::traits...> traits;
 	typedef detail::const_iterable_traits<traits> const_traits;
 	typedef typename traits::tags_t tags_t;
@@ -46,6 +48,10 @@ public:
 
 	inline bool set_current_iterable_index(size_t i_currIndex) const;
 	inline size_t get_current_iterable_index() const;
+	template<size_t Index>
+	inline auto get_adaptor();
+	template<size_t Index>
+	inline auto get_adaptor() const;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
 	inline auto perform_action(ActionTag&& i_actionTag);
@@ -74,6 +80,8 @@ class union_iterable_const_adaptor
 {
 public:
 	static const size_t s_numTypes = mpl::num_types<Iterables...>;
+	template<size_t Index>
+	using nth_adaptor = typename mpl::nth_type_of<Index,const Iterables...>::type;
 	typedef detail::union_iterable_traits<const typename Iterables::traits...> traits;
 	typedef detail::const_iterable_traits<traits> const_traits;
 	typedef typename traits::tags_t tags_t;
@@ -83,6 +91,8 @@ public:
 
 	inline bool set_current_iterable_index(size_t i_currIndex) const;
 	inline size_t get_current_iterable_index() const;
+	template<size_t Index>
+	inline auto get_adaptor() const;
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
 	inline auto perform_action(ActionTag&& i_actionTag) const;
@@ -107,6 +117,7 @@ class iterable_adaptor<detail::union_iterable_impl<Iterables...>> : public detai
 public:
 	typedef detail::union_iterable_adaptor<Iterables...> adaptor_base;
 	using adaptor_base::s_numTypes;
+	using adaptor_base::nth_adaptor;
 	using adaptor_base::traits;
 	using adaptor_base::const_traits;
 	using adaptor_base::tags_t;
@@ -135,6 +146,7 @@ class iterable_adaptor<const detail::union_iterable_impl<Iterables...>> : public
 public:
 	typedef detail::union_iterable_const_adaptor<Iterables...> adaptor_base;
 	using adaptor_base::s_numTypes;
+	using adaptor_base::nth_adaptor;
 	using adaptor_base::traits;
 	using adaptor_base::const_traits;
 	using adaptor_base::tags_t;

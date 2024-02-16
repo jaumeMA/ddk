@@ -62,6 +62,30 @@ union_iterable_action_result<Adaptor,end_prev_iterable> union_iterable_action<en
 	}
 }
 
+template<typename Adaptor>
+union_iterable_action_result<Adaptor,size_action_tag> union_iterable_action<size_action_tag>::apply(Adaptor&& i_adaptor)
+{
+	typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
+
+	return _apply(std::forward<Adaptor>(i_adaptor),typename mpl::make_sequence<0,adaptor_t::s_numTypes>::type{});
+}
+template<typename Adaptor,size_t ... Indexs>
+union_iterable_action_result<Adaptor,size_action_tag> union_iterable_action<size_action_tag>::_apply(Adaptor&& i_adaptor,const mpl::sequence<Indexs...>&)
+{
+	typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
+	const tuple<iterable_action_tag_result<typename adaptor_t::template nth_adaptor<Indexs>::const_traits,size_action_tag>...> adaptorResults = { i_adaptor.adaptor_base::template get_adaptor<Indexs>().perform_action(size_action_tag{}) ... };
+	const bool adaptorBools[mpl::num_ranks<Indexs...>] = { static_cast<bool>(adaptorResults.template get<Indexs>()) ... };
+
+	if ((adaptorBools[Indexs] && ...))
+	{
+		return make_result<union_iterable_action_result<Adaptor,size_action_tag>>((adaptorResults.template get<Indexs>().get() + ...));
+	}
+	else
+	{
+		return make_error<union_iterable_action_result<Adaptor,size_action_tag>>();
+	}
+}
+
 template<typename ActionTag>
 TEMPLATE(typename AActionTag)
 REQUIRED(IS_CONSTRUCTIBLE(ActionTag,AActionTag))

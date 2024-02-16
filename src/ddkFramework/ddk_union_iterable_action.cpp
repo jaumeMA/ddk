@@ -35,4 +35,12 @@ end_prev_iterable union_iterable_action<end_prev_iterable>::action() const
 	return {};
 }
 
+union_iterable_action<size_action_tag>::union_iterable_action(const size_action_tag&)
+{
+}
+size_action_tag union_iterable_action<size_action_tag>::action() const
+{
+	return {};
+}
+
 }

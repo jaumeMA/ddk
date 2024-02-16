@@ -3,6 +3,10 @@
 #include "ddk_template_helper.h"
 #include "ddk_function_arguments_template_helper.h"
 
+#define PUBLISH_ACTION_TAG(_ACTION,_TAG) \
+    typename decltype(__get_action_tag_list(std::declval<ddk::rtti::detail::static_typed_number<_TAG,ddk::static_counter<_TAG>::get_curr_count()>>()))::add<decltype(ddk::mpl::resolve_holder<_ACTION>())>::type __get_action_tag_list(const ddk::rtti::detail::static_typed_number<_TAG,ddk::static_counter<decltype(ddk::mpl::resolve_holder<_TAG>())>::get_next_count()>&);
+
+
 namespace ddk
 {
 namespace mpl
