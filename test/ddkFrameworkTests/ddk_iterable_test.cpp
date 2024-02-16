@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <vector>
 #include <map>
-#include "ddk_iterable.h"
 #include "ddk_unique_pointer_wrapper.h"
+#include "ddk_iterable.h"
 //#include "ddk_high_order_array.h"
 //#include "ddk_tuple.h"
 //#include "ddk_tuple_adaptor.h"
@@ -379,6 +379,10 @@ TEST(DDKIterableTest, iterableUnion)
 		<<= ddk::iter::transform([](const A& i_value) { return i_value + i_value; })
 		<<= ddk::view::order(ddk::reverse_order)
 		<<= ddk::concat(ddk::deduce_iterable(foo1),ddk::deduce_iterable(foo2),ddk::deduce_iterable(foo3));
+
+	auto kk = ddk::concat(ddk::deduce_iterable(foo1),ddk::deduce_iterable(foo2),ddk::deduce_iterable(foo3));
+
+	kk.iterate_impl(ddk::size_action{});
 
 	[](const A& i_value)
 	{
