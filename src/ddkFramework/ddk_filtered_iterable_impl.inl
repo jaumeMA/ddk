@@ -27,16 +27,16 @@ filtered_iterable_impl<Iterable,Filter>::filtered_iterable_impl(IIterable&& i_it
 template<typename Iterable,typename Filter>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-ddk::iterable_result filtered_iterable_impl<Iterable,Filter>::iterate_impl(Action&& i_initialAction)
+void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Action&& i_initialAction)
 {
-    return loop(std::forward<Action>(i_initialAction));
+    loop(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable,typename Filter>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(const_traits,Action))
-ddk::iterable_result filtered_iterable_impl<Iterable,Filter>::iterate_impl(Action&& i_initialAction) const
+void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Action&& i_initialAction) const
 {
-    return loop(std::forward<Action>(i_initialAction));
+    loop(std::forward<Action>(i_initialAction));
 }
 
 }

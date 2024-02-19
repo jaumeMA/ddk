@@ -25,16 +25,16 @@ ordered_iterable_impl<Iterable,ActionResolver>::ordered_iterable_impl(IIterable&
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Action&& i_initialAction)
+void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Action&& i_initialAction)
 {
-	return loop(std::forward<Action>(i_initialAction));
+	loop(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable,typename ActionResolver>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Action&& i_initialAction) const
+void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Action&& i_initialAction) const
 {
-	return loop(std::forward<Action>(i_initialAction));
+	loop(std::forward<Action>(i_initialAction));
 }
 
 }

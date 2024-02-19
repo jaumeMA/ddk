@@ -40,16 +40,16 @@ transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::transf
 template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Action&& i_initialAction)
+void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Action&& i_initialAction)
 {
-	return loop(std::forward<Action>(i_initialAction));
+	loop(std::forward<Action>(i_initialAction));
 }
 template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(const_traits,Action))
-iterable_result transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Action&& i_initialAction) const
+void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Action&& i_initialAction) const
 {
-	return loop(std::forward<Action>(i_initialAction));
+	loop(std::forward<Action>(i_initialAction));
 }
 
 }

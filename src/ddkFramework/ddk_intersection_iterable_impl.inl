@@ -14,16 +14,16 @@ intersection_iterable_impl<Iterables...>::intersection_iterable_impl(Iterables& 
 template<typename ... Iterables>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result intersection_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction)
+void intersection_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction)
 {
-    return loop(std::forward<Action>(i_initialAction));
+    loop(std::forward<Action>(i_initialAction));
 }
 template<typename ... Iterables>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(const_traits,Action))
-iterable_result intersection_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction) const
+void intersection_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction) const
 {
-    return loop(std::forward<Action>(i_initialAction));
+    loop(std::forward<Action>(i_initialAction));
 }
 
 }

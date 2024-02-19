@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ddk_iterable_adaptor_resolver.h"
-#include "ddk_iterable_result.h"
 
 namespace ddk
 {
@@ -23,9 +22,9 @@ protected:
 	iterable_visitor(Args&& ... i_args);
 
 	template<typename Action>
-	inline iterable_result loop(const Action& i_action);
+	inline void loop(const Action& i_action);
 	template<typename Action>
-	inline iterable_result loop(const Action& i_action) const;
+	inline void loop(const Action& i_action) const;
 
 private:
 	template<typename TypePack, typename Action>

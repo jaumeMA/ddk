@@ -177,7 +177,7 @@ TEST(DDKIterableTest,peformance)
 	//	{
 	//	} }).dismiss();
 
-	[](auto&& i_value)
+	[](const int& i_value) noexcept
 	{
 	} <<= v_prova;
 }
@@ -210,7 +210,7 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	{
 	} <<= ddk::view::filter([](const std::pair<const int,ddk::unique_reference_wrapper<int>>&) { return true; }) <<= kk;
 
-	ddk::bidirectional_iterable<std::pair<const int,int>> _ = ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
+	ddk::forward_iterable<const std::pair<const int,int>> _ = ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	proveta2(proveta());
 

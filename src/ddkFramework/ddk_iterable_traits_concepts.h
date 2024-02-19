@@ -33,8 +33,8 @@ private:
 public:
 	static const bool value = IS_CONVERTIBLE_COND(from_reference,to_reference) &&
 								IS_CONVERTIBLE_COND(from_const_reference,to_const_reference) &&
-								from_tags_t::template contains(to_tags_t{}) &&
-								from_const_tags_t::template contains(to_const_tags_t{});
+								from_tags_t::template projects(to_tags_t{}) &&
+								from_const_tags_t::template projects(to_const_tags_t{});
 };
 
 template<typename Traits1, typename Traits2>

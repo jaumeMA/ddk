@@ -58,9 +58,9 @@ public:
     type_erasure_iterable_impl(type_erasure_iterable_impl&&) = default;
 
     template<typename Action>
-    iterable_result iterate_impl(const Action& i_initialAction);
+    void iterate_impl(const Action& i_initialAction);
     template<typename Action>
-    iterable_result iterate_impl(const Action& i_initialAction) const;
+    void iterate_impl(const Action& i_initialAction) const;
     distributed_reference_wrapper<iterable_base<Traits>> get_iterable() const;
 
 private:

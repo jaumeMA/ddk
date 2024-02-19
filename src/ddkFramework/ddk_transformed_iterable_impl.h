@@ -57,10 +57,10 @@ public:
 
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(traits,Action))
-    iterable_result iterate_impl(Action&& i_initialAction);
+    void iterate_impl(Action&& i_initialAction);
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(const_traits,Action))
-    iterable_result iterate_impl(Action&& i_initialAction) const;
+    void iterate_impl(Action&& i_initialAction) const;
 };
 
 }
