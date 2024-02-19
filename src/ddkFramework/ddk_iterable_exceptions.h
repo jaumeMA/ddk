@@ -10,11 +10,19 @@ namespace ddk
 class iterable_exception
 {
 public:
-	constexpr iterable_exception(const char* i_reason);
+	enum Type
+	{
+		Terminated,
+		Aborted
+	};
 
+	constexpr iterable_exception(Type i_type, const char* i_reason = nullptr);
+
+	Type reason() const noexcept;
 	iterable_error error() const noexcept;
 
 private:
+	const Type m_type;
 	const char* m_reason;
 };
 
@@ -30,8 +38,15 @@ private:
 	const std::string m_reason;
 };
 
-constexpr inline void stop_iteration(const char* i_msg);
+constexpr inline void terminate_iteration();
+constexpr inline void abort_iteration(const char* i_msg);
 
+namespace detail
+{
+
+constexpr inline void ___terminate_iteration(const char*);
+
+}
 }
 
 #include "ddk_iterable_exception.inl"

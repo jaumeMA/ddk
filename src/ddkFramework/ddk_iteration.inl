@@ -134,7 +134,7 @@ constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_act
 	}	else	{		try		{			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
 
 			return make_result<iterable_result>(success);
-		}		catch (const iterable_exception& i_excp)		{			return make_error<iterable_result>(i_excp.error());		}	}}
+		}		catch (const iterable_exception& i_excp)		{			return (i_excp.reason() == iterable_exception::Terminated)  ? make_result<iterable_result>(success)																		: make_error<iterable_result>(i_excp.error());		}	}}
 template<typename Iterable, typename Sink>
 template<typename Action>
 constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
@@ -145,6 +145,6 @@ constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_act
 	}	else	{		try		{			m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
 			return make_result<iterable_result>(success);
-		}		catch (const iterable_exception& i_excp)		{			return make_error<iterable_result>(i_excp.error());		}	}}
+		}		catch (const iterable_exception& i_excp)		{			return (i_excp.reason() == iterable_exception::Terminated)  ? make_result<iterable_result>(success)																		: make_error<iterable_result>(i_excp.error());		}	}}
 
 }

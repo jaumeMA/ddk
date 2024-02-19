@@ -3,6 +3,10 @@
 namespace ddk
 {
 
+iterable_exception::Type iterable_exception::reason() const noexcept
+{
+	return m_type;
+}
 iterable_error iterable_exception::error() const noexcept
 {
 	return { IterableError::UserError,m_reason };
