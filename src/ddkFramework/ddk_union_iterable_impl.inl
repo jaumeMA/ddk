@@ -15,16 +15,16 @@ union_iterable_impl<Iterables...>::union_iterable_impl(Iterables& ... i_iterable
 template<typename ... Iterables>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result union_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction)
+void union_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction)
 {
-    return loop(std::forward<Action>(i_initialAction));
+    loop(std::forward<Action>(i_initialAction));
 }
 template<typename ... Iterables>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result union_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction) const
+void union_iterable_impl<Iterables...>::iterate_impl(Action&& i_initialAction) const
 {
-    return loop(std::forward<Action>(i_initialAction));
+    loop(std::forward<Action>(i_initialAction));
 }
 
 template<typename ... Iterables>

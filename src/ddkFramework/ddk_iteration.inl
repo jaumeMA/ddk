@@ -5,18 +5,6 @@
 
 namespace ddk
 {
-namespace detail
-{
-
-template<typename Sink>
-TEMPLATE(typename SSink)
-REQUIRED(IS_CONSTRUCTIBLE(Sink,SSink))
-iteration_sink<Sink>::iteration_sink(SSink&& i_try)
-: m_try(std::forward<SSink>(i_try))
-{
-}
-
-}
 
 template<typename Iterable, typename Sink>
 iterable_result execute_iteration(iteration<Iterable,Sink>& i_iteration)
@@ -33,17 +21,17 @@ iterable_result execute_iteration(iteration<Iterable,Sink>& i_iteration)
 
 template<typename Iterable, typename Sink>
 TEMPLATE(typename IIterable, typename SSink)
-REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable))
-iteration<Iterable,Sink>::iteration(IIterable&& i_iterable, SSink&& i_try)
-: sink_type(std::forward<SSink>(i_try))
-, m_iterable(std::forward<IIterable>(i_iterable))
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Sink,SSink))
+constexpr iteration<Iterable,Sink>::iteration(IIterable&& i_iterable, SSink&& i_sink)
+: m_iterable(std::forward<IIterable>(i_iterable))
+, m_sink(std::forward<SSink>(i_sink))
 , m_executable(true)
 {
 }
 template<typename Iterable, typename Sink>
-iteration<Iterable,Sink>::iteration(iteration&& other)
-: sink_type(std::move(other))
-, m_iterable(std::move(other.m_iterable))
+constexpr iteration<Iterable,Sink>::iteration(iteration&& other)
+: m_iterable(std::move(other.m_iterable))
+, m_sink(std::move(other.m_sink))
 , m_executable(true)
 {
 	other.m_executable = false;
@@ -110,7 +98,7 @@ auto iteration<Iterable,Sink>::transform(Callable&& i_callable) &&
 {
 	if (ddk::atomic_compare_exchange(m_executable,true,false))
 	{
-		return iteration{ std::move(m_iterable),[payload = this->m_try, callable = i_callable](auto&& i_value)
+		return iteration{ std::move(m_iterable),[payload = m_sink, callable = i_callable](auto&& i_value)
 		{
 			ddk::eval(callable,payload(i_value));
 		} };
@@ -139,16 +127,24 @@ future<iterable_result> iteration<Iterable,Sink>::attach(const detail::this_thre
 }
 template<typename Iterable, typename Sink>
 template<typename Action>
-iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
-{	return m_iterable.iterate_impl(action_sink{ i_action,std::move(this->m_try) });
-}
+constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
+{	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::reference reference;	if constexpr (noexcept(m_sink(std::declval<reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
+
+		return make_result<iterable_result>(success);
+	}	else	{		try		{			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
+
+			return make_result<iterable_result>(success);
+		}		catch (const iterable_exception& i_excp)		{			return make_error<iterable_result>(i_excp.error());		}	}}
 template<typename Iterable, typename Sink>
 template<typename Action>
-iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
+constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
 {
-	typedef typename Iterable::traits traits;
+	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::const_reference const_reference;	if constexpr (noexcept(m_sink(std::declval<const_reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
-	return m_iterable.iterate_impl(action_sink<Action,Sink>{ i_action,std::move(this->m_try) });
-}
+		return make_result<iterable_result>(success);
+	}	else	{		try		{			m_iterable.iterate_impl(action_sink{ i_action,m_sink });
+
+			return make_result<iterable_result>(success);
+		}		catch (const iterable_exception& i_excp)		{			return make_error<iterable_result>(i_excp.error());		}	}}
 
 }

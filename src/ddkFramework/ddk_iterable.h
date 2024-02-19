@@ -38,16 +38,16 @@ public:
 
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(traits,Action))
-    iterable_result iterate_impl(Action&& i_initialAction);
+    void iterate_impl(Action&& i_initialAction);
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(const_traits,Action))
-    iterable_result iterate_impl(Action&& i_initialAction) const;
+    void iterate_impl(Action&& i_initialAction) const;
     inline const Iterable& get() const;
     inline Iterable&& extract() &&;
 
 private:
-    iterable_result iterate(const action& i_initialAction) override;
-    iterable_result iterate(const const_action& i_initialAction) const override;
+    void iterate(const action& i_initialAction) override;
+    void iterate(const const_action& i_initialAction) const override;
     iterable_adaptor<type_erasure_iterable_impl<traits>> deduce_owned_adaptor() override;
 
     iterable_t m_iterableImpl;

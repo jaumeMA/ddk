@@ -24,10 +24,10 @@ public:
 
 	TEMPLATE(typename Action)
 	REQUIRES(ACTION_SUPPORTED(traits,Action))
-	inline iterable_result iterate_impl(Action&& i_initialAction);
+	inline void iterate_impl(Action&& i_initialAction);
 	TEMPLATE(typename Action)
 	REQUIRES(ACTION_SUPPORTED(const_traits,Action))
-	inline iterable_result iterate_impl(Action&& i_initialAction) const;
+	inline void iterate_impl(Action&& i_initialAction) const;
 };
 template<typename ... Iterables>
 union_iterable_impl(Iterables& ...)->union_iterable_impl<Iterables...>;

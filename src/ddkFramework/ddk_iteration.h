@@ -9,41 +9,23 @@
 
 namespace ddk
 {
-namespace detail
-{
-
-template<typename Sink>
-class iteration_sink
-{
-protected:
-	TEMPLATE(typename SSink)
-	REQUIRES(IS_CONSTRUCTIBLE(Sink,SSink))
-	iteration_sink(SSink&& i_try);
-    iteration_sink(const iteration_sink&) = default;
-    iteration_sink(iteration_sink&&) = default;
-
-    Sink m_try;
-};
-
-}
 
 template<typename Iterable, typename Sink>
-class iteration : protected detail::iteration_sink<Sink>
+class iteration
 {
 	template<typename IIterable, typename SSink>
 	friend iterable_result execute_iteration(iteration<IIterable,SSink>& i_co_iteration);
 
-	typedef detail::iteration_sink<Sink> sink_type;
 	typedef typename Iterable::traits traits;
 	typedef typename Iterable::const_traits const_traits;
 
 public:
 
 	TEMPLATE(typename IIterable, typename SSink)
-	REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable))
-	iteration(IIterable&& i_iterable, SSink&& i_try);
+	REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Sink,SSink))
+	constexpr iteration(IIterable&& i_iterable, SSink&& i_sink);
 	iteration(const iteration&) = delete;
-	iteration(iteration&& other);
+	constexpr iteration(iteration&& other);
 	~iteration();
 
 	iteration* operator->();
@@ -61,11 +43,12 @@ public:
 
 private:
 	template<typename Action>
-	iterable_result _execute(const Action& i_action);
+	constexpr iterable_result _execute(const Action& i_action);
 	template<typename Action>
-	iterable_result _execute(const Action& i_action) const;
+	constexpr iterable_result _execute(const Action& i_action) const;
 
 	Iterable m_iterable;
+	Sink m_sink;
 	mutable atomic_bool m_executable;
 };
 template<typename Iterable, typename Sink>

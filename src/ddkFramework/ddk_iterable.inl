@@ -18,16 +18,16 @@ iterable<Iterable>::iterable(Args&& ... i_args)
 template<typename Iterable>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result iterable<Iterable>::iterate_impl(Action&& i_initialAction)
+void iterable<Iterable>::iterate_impl(Action&& i_initialAction)
 {
-	return m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
+	m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(const_traits,Action))
-iterable_result iterable<Iterable>::iterate_impl(Action&& i_initialAction) const
+void iterable<Iterable>::iterate_impl(Action&& i_initialAction) const
 {
-	return m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
+	m_iterableImpl.iterate_impl(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable>
 const Iterable& iterable<Iterable>::get() const
@@ -40,14 +40,14 @@ Iterable&& iterable<Iterable>::extract() &&
 	return std::move(m_iterableImpl);
 }
 template<typename Iterable>
-iterable_result iterable<Iterable>::iterate(const action& i_initialAction)
+void iterable<Iterable>::iterate(const action& i_initialAction)
 {
-	return iterate_impl(i_initialAction);
+	iterate_impl(i_initialAction);
 }
 template<typename Iterable>
-iterable_result iterable<Iterable>::iterate(const const_action& i_initialAction) const
+void iterable<Iterable>::iterate(const const_action& i_initialAction) const
 {
-	return iterate_impl(i_initialAction);
+	iterate_impl(i_initialAction);
 }
 template<typename Iterable>
 iterable_adaptor<type_erasure_iterable_impl<typename iterable<Iterable>::traits>> iterable<Iterable>::deduce_owned_adaptor()

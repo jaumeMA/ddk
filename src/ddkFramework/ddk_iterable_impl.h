@@ -20,9 +20,9 @@ public:
     iterable_impl(Iterable& i_iterable);
 
     template<typename Action>
-    iterable_result iterate_impl(const Action& i_initialAction);
+    void iterate_impl(const Action& i_initialAction);
     template<typename Action>
-    iterable_result iterate_impl(const Action& i_initialAction) const;
+    void iterate_impl(const Action& i_initialAction) const;
 };
 
 }

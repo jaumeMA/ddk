@@ -27,16 +27,16 @@ constrained_iterable_impl<Iterable,Constrain>::constrained_iterable_impl(IIterab
 template<typename Iterable,typename Constrain>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(traits,Action))
-iterable_result constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Action&& i_initialAction)
+void constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Action&& i_initialAction)
 {
-	return loop(std::forward<Action>(i_initialAction));
+	loop(std::forward<Action>(i_initialAction));
 }
 template<typename Iterable,typename Constrain>
 TEMPLATE(typename Action)
 REQUIRED(ACTION_SUPPORTED(const_traits,Action))
-iterable_result constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Action&& i_initialAction) const
+void constrained_iterable_impl<Iterable,Constrain>::iterate_impl(Action&& i_initialAction) const
 {
-	return loop(std::forward<Action>(i_initialAction));
+	loop(std::forward<Action>(i_initialAction));
 }
 
 }

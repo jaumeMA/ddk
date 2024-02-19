@@ -14,34 +14,15 @@ iterable_visitor<Iterable>::iterable_visitor(Args&& ... i_args)
 }
 template<typename Iterable>
 template<typename Action>
-iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction)
+void iterable_visitor<Iterable>::loop(const Action& i_initialAction)
 {
-	try
-	{
-		_loop<mpl::empty_type_pack>(i_initialAction);
-
-		return make_result<iterable_result>(success);
-	}
-	catch(const iterable_exception& i_excp)
-	{
-		return make_error<iterable_result>(i_excp.error());
-	}
-
+	_loop<mpl::empty_type_pack>(i_initialAction);
 }
 template<typename Iterable>
 template<typename Action>
-iterable_result iterable_visitor<Iterable>::loop(const Action& i_initialAction) const
+void iterable_visitor<Iterable>::loop(const Action& i_initialAction) const
 {
-	try
-	{
-		_loop<mpl::empty_type_pack>(i_initialAction);
-
-		return make_result<iterable_result>(success);
-	}
-	catch (const iterable_exception& i_excp)
-	{
-		return make_error<iterable_result>(i_excp.error());
-	}
+	_loop<mpl::empty_type_pack>(i_initialAction);
 }
 template<typename Iterable>
 template<typename TypePack, typename Action>

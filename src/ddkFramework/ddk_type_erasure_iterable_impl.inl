@@ -72,15 +72,15 @@ type_erasure_iterable_impl<Traits>::type_erasure_iterable_impl(iterable<type_era
 }
 template<typename Traits>
 template<typename Action>
-iterable_result type_erasure_iterable_impl<Traits>::iterate_impl(const Action& i_initialAction)
+void type_erasure_iterable_impl<Traits>::iterate_impl(const Action& i_initialAction)
 {
-	return m_iterable->iterate(i_initialAction);
+	m_iterable->iterate(i_initialAction);
 }
 template<typename Traits>
 template<typename Action>
-iterable_result type_erasure_iterable_impl<Traits>::iterate_impl(const Action& i_initialAction) const
+void type_erasure_iterable_impl<Traits>::iterate_impl(const Action& i_initialAction) const
 {
-	return m_iterable->iterate(i_initialAction);
+	m_iterable->iterate(i_initialAction);
 }
 template<typename Traits>
 distributed_reference_wrapper<iterable_base<Traits>> type_erasure_iterable_impl<Traits>::get_iterable() const
