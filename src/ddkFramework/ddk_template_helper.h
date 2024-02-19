@@ -784,7 +784,17 @@ struct type_pack
     template<typename ... TTypes>
     static constexpr bool contains()
     {
-        return num_types<TTypes...> > 0 && num_types<TTypes...> <= num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
+        return (num_types<TTypes...> == 0) || (is_among_types<TTypes,Types...> && ...);
+    }
+    template<typename ... TTypes>
+    static constexpr bool projects(const type_pack<TTypes...>&)
+    {
+        return (num_types<TTypes...> == 0) || (is_among_constructible_types<TTypes,Types...> && ...);
+    }
+    template<typename ... TTypes>
+    static constexpr bool projects()
+    {
+        return (num_types<TTypes...> == 0) || (is_among_constructible_types<TTypes,Types...> && ...);
     }
     template<size_t Index>
     struct at

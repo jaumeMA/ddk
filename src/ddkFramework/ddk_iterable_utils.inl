@@ -15,16 +15,17 @@ namespace ddk
 template<typename Traits,typename Iterable,typename Allocator>
 auto make_iterable(Iterable&& i_iterable,const Allocator& i_allocator)
 {
-	typedef typename Iterable::traits from_traits;
+	typedef mpl::remove_qualifiers<Iterable> iterable_t;
+	typedef typename iterable_t::traits from_traits;
 	typedef typename Traits to_traits;
 
 	if constexpr (mpl::is_same_type<from_traits,to_traits>::value)
 	{
-		return make_distributed_reference<detail::iterable<Iterable>>(i_allocator,std::forward<Iterable>(i_iterable));
+		return make_distributed_reference<detail::iterable<iterable_t>>(i_allocator,std::forward<Iterable>(i_iterable));
 	}
 	else
 	{
-		typedef detail::transformed_iterable_impl<to_traits,from_traits,detail::iterable<Iterable>,detail::traits_conversion_callable<from_traits,to_traits>> transformed_iterable;
+		typedef detail::transformed_iterable_impl<to_traits,from_traits,detail::iterable<iterable_t>,detail::traits_conversion_callable<from_traits,to_traits>> transformed_iterable;
 
 		return make_distributed_reference<detail::iterable<transformed_iterable>>(i_allocator,detail::iterable(std::forward<Iterable>(i_iterable)),detail::traits_conversion_callable<from_traits,to_traits>());
 	}

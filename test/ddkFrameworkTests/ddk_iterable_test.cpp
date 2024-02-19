@@ -210,14 +210,7 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	{
 	} <<= ddk::view::filter([](const std::pair<const int,ddk::unique_reference_wrapper<int>>&) { return true; }) <<= kk;
 
-	[](const int& i_value) mutable
-	{
-		int a = 0;
-		++a;
-	} <<= ddk::view::filter([](const int& i_value) { return i_value > 0; })
-		<<= ddk::iter::transform([](const int& i_value) { return 2 * i_value; })
-		<<= ddk::view::order(ddk::reverse_order)
-		<<= foo;
+	ddk::bidirectional_iterable<std::pair<const int,int>> _ = ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	proveta2(proveta());
 

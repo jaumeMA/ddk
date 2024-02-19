@@ -2,10 +2,11 @@
 
 #include "ddk_template_helper.h"
 #include "ddk_function_arguments_template_helper.h"
+#include "ddk_iterator_concepts.h"
+#include "ddk_static_type_list.h"
 
 #define PUBLISH_ACTION_TAG(_ACTION,_TAG) \
-    typename decltype(__get_action_tag_list(std::declval<ddk::rtti::detail::static_typed_number<_TAG,ddk::static_counter<_TAG>::get_curr_count()>>()))::add<decltype(ddk::mpl::resolve_holder<_ACTION>())>::type __get_action_tag_list(const ddk::rtti::detail::static_typed_number<_TAG,ddk::static_counter<decltype(ddk::mpl::resolve_holder<_TAG>())>::get_next_count()>&);
-
+    ADD_STATIC_TYPE(_ACTION,_TAG)
 
 namespace ddk
 {
@@ -66,6 +67,158 @@ struct is_sink_action_tag_impl : public std::true_type
 
 template<typename T>
 constexpr inline bool is_sink_action_tag = is_sink_action_tag_impl<T>::value;
+
+struct iterable_action_tag;
+
+template<typename>
+struct iterator_action_support_impl;
+
+template<>
+struct iterator_action_support_impl<forward_action_tag>
+{
+    PUBLISH_ACTION_TAG(forward_action_tag,iterable_action_tag)
+private:
+    template<typename T>
+    static std::true_type resolve(T&,const decltype(std::declval<T>()++)*);
+    static std::false_type resolve(...);
+
+public:
+    template<typename Iterator>
+    using type = typename mpl::which_type<decltype(resolve(std::declval<Iterator&>(),nullptr))::value,mpl::type_pack<forward_action_tag>,mpl::empty_type_pack>::type;
+};
+
+template<>
+struct iterator_action_support_impl<backward_action_tag>
+{
+    PUBLISH_ACTION_TAG(backward_action_tag,iterable_action_tag)
+private:
+    template<typename T>
+    static std::true_type resolve(T&,const decltype(std::declval<T>()--)*);
+    static std::false_type resolve(...);
+
+public:
+    template<typename Iterator>
+    using type = typename mpl::which_type<decltype(resolve(std::declval<Iterator&>(),nullptr))::value,mpl::type_pack<backward_action_tag>,mpl::empty_type_pack>::type;
+};
+
+template<>
+struct iterator_action_support_impl<displace_action_tag>
+{
+    PUBLISH_ACTION_TAG(displace_action_tag,iterable_action_tag)
+private:
+    template<typename T>
+    static std::true_type resolve(T&,const decltype(std::declval<T>() + 0)*);
+    static std::false_type resolve(...);
+
+public:
+    template<typename Iterator>
+    using type = typename mpl::which_type<decltype(resolve(std::declval<Iterator&>(),nullptr))::value,mpl::type_pack<displace_action_tag>,mpl::empty_type_pack>::type;
+};
+
+template<>
+struct iterator_action_support_impl<mpl::template_class_holder<agnostic_sink_action_tag>>
+{
+    PUBLISH_ACTION_TAG(mpl::template_class_holder<agnostic_sink_action_tag>,iterable_action_tag)
+private:
+    template<typename T>
+    static std::true_type resolve(T&,const decltype(&*std::declval<T>())*);
+    static std::false_type resolve(...);
+
+public:
+    template<typename Iterator>
+    using type = typename mpl::which_type<decltype(resolve(std::declval<Iterator&>(),nullptr))::value,mpl::type_pack<agnostic_sink_action_tag<typename Iterator::reference>>,mpl::empty_type_pack>::type;
+};
+
+template<typename Iterator,typename Action>
+using iterator_action_support = typename iterator_action_support_impl<Action>::template type<Iterator>;
+
+template<typename>
+struct iterable_action_support_impl;
+
+template<>
+struct iterable_action_support_impl<begin_action_tag>
+{
+    PUBLISH_ACTION_TAG(begin_action_tag,iterable_action_tag)
+private:
+    template<typename T,typename = typename std::enable_if<concepts::has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<begin_action_tag> resolve(T&,const decltype(std::declval<T>().begin())*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    template<typename Iterable>
+    using type = decltype(resolve(std::declval<Iterable&>(),nullptr));
+};
+
+template<>
+struct iterable_action_support_impl<end_action_tag>
+{
+    PUBLISH_ACTION_TAG(end_action_tag,iterable_action_tag)
+private:
+    template<typename T,typename = typename std::enable_if<concepts::has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<end_action_tag> resolve(T&,const decltype(std::declval<T>().end())*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    template<typename Iterable>
+    using type = decltype(resolve(std::declval<Iterable&>(),nullptr));
+};
+
+template<>
+struct iterable_action_support_impl<remove_action_tag>
+{
+    PUBLISH_ACTION_TAG(remove_action_tag,iterable_action_tag)
+private:
+    template<typename T,typename = typename std::enable_if<concepts::has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<remove_action_tag> resolve(T&,const decltype(std::declval<T&>().erase(std::declval<typename T::const_iterator>()))*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    template<typename Iterable>
+    using type = decltype(resolve(std::declval<Iterable&>(),nullptr));
+};
+
+template<>
+struct iterable_action_support_impl<mpl::template_class_holder<add_action_tag>>
+{
+    PUBLISH_ACTION_TAG(mpl::template_class_holder<add_action_tag>,iterable_action_tag)
+private:
+    template<typename T,typename = typename std::enable_if<concepts::has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<add_action_tag<typename T::value_type>> resolve(T&,const decltype(std::declval<T&>().insert(std::declval<typename T::const_iterator>(),std::declval<typename T::value_type>()))*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    template<typename Iterable>
+    using type = decltype(resolve(std::declval<Iterable&>(),nullptr));
+};
+
+template<>
+struct iterable_action_support_impl<size_action_tag>
+{
+    PUBLISH_ACTION_TAG(size_action_tag,iterable_action_tag)
+private:
+    template<typename T,typename = typename std::enable_if<concepts::has_iterator_defined_v<T>>::type>
+    static mpl::type_pack<size_action_tag> resolve(T&,const decltype(std::declval<T>().size())*);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    template<typename Iterable>
+    using type = decltype(resolve(std::declval<Iterable&>(),nullptr));
+};
+
+template<typename Action>
+struct iterable_action_support_impl
+{
+    template<typename T,typename = typename std::enable_if<concepts::has_iterator_defined_v<T>>::type>
+    static iterator_action_support<typename mpl::which_type<mpl::is_const<T>,typename T::const_iterator,typename T::iterator>::type,Action> resolve(T&);
+    static mpl::empty_type_pack resolve(...);
+
+public:
+    template<typename Iterable>
+    using type = decltype(resolve(std::declval<Iterable&>()));
+};
+
+template<typename Iterable,typename ... Actions>
+using iterable_action_support = typename mpl::merge_type_packs<typename iterable_action_support_impl<Actions>::template type<Iterable> ...>::type;
 
 }
 }

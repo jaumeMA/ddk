@@ -15,11 +15,13 @@ constexpr auto iterable_adaptor_action<Adaptor,begin_action_tag>::perform_action
 {
 	typedef typename Adaptor::const_traits const_traits;
 
-	static_cast<const Adaptor&>(*this).m_currIterator = m_beginIterator;
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+	
+	thisAdaptor.m_currIterator = m_beginIterator;
 
 	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 	{
-		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
 			return ddk::make_result<iterable_action_tag_result<const_traits,begin_action_tag>>(success);
 		}
@@ -55,11 +57,13 @@ constexpr auto iterable_adaptor_action<Adaptor,forward_action_tag>::perform_acti
 {
 	typedef typename Adaptor::const_traits const_traits;
 
-	++static_cast<const Adaptor&>(*this).m_currIterator;
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+
+	++thisAdaptor.m_currIterator;
 	
 	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 	{
-		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
 			return make_result<iterable_action_tag_result<const_traits,forward_action_tag>>(success);
 		}
@@ -79,22 +83,24 @@ constexpr auto iterable_adaptor_action<Adaptor,backward_action_tag>::perform_act
 {
 	typedef typename Adaptor::const_traits const_traits;
 
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+
 	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,begin_action_tag>,Adaptor>::value)
 	{
-		if (static_cast<const Adaptor&>(*this).m_currIterator == static_cast<const Adaptor&>(*this).m_beginIterator)
+		if (thisAdaptor.m_currIterator == thisAdaptor.m_beginIterator)
 		{
 			return make_error<iterable_action_tag_result<const_traits,backward_action_tag>>();
 		}
 		else
 		{
-			--static_cast<const Adaptor&>(*this).m_currIterator;
+			--thisAdaptor.m_currIterator;
 
 			return make_result<iterable_action_tag_result<const_traits,backward_action_tag>>(success);
 		}
 	}
 	else
 	{
-		--static_cast<const Adaptor&>(*this).m_currIterator;
+		--thisAdaptor.m_currIterator;
 
 		return make_result<iterable_action_tag_result<const_traits,backward_action_tag>>(success);
 	}
@@ -106,17 +112,18 @@ constexpr auto iterable_adaptor_action<Adaptor,displace_action_tag>::perform_act
 	typedef typename Adaptor::const_traits const_traits;
 	typedef typename const_traits::difference_type difference_type;
 
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
 	const difference_type shift = i_action.displacement();
 
 	if (shift > 0)
 	{
 		if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 		{
-			const difference_type maxDist = std::distance(static_cast<const Adaptor&>(*this).m_currIterator,static_cast<const Adaptor&>(*this).m_endIterator);
+			const difference_type maxDist = std::distance(thisAdaptor.m_currIterator,thisAdaptor.m_endIterator);
 
 			if (shift < maxDist)
 			{
-				static_cast<const Adaptor&>(*this).m_currIterator += shift;
+				thisAdaptor.m_currIterator += shift;
 
 				return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 			}
@@ -127,7 +134,7 @@ constexpr auto iterable_adaptor_action<Adaptor,displace_action_tag>::perform_act
 		}
 		else
 		{
-			static_cast<const Adaptor&>(*this).m_currIterator += shift;
+			thisAdaptor.m_currIterator += shift;
 
 			return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 		}
@@ -138,11 +145,11 @@ constexpr auto iterable_adaptor_action<Adaptor,displace_action_tag>::perform_act
 
 		if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,begin_action_tag>,Adaptor>::value)
 		{
-			const difference_type maxDist = std::distance(static_cast<const Adaptor&>(*this).m_beginIterator,static_cast<const Adaptor&>(*this).m_currIterator);
+			const difference_type maxDist = std::distance(thisAdaptor.m_beginIterator,thisAdaptor.m_currIterator);
 
 			if (maxDist >= -shift)
 			{
-				static_cast<const Adaptor&>(*this).m_currIterator -= shift;
+				thisAdaptor.m_currIterator -= shift;
 
 				return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 			}
@@ -153,7 +160,7 @@ constexpr auto iterable_adaptor_action<Adaptor,displace_action_tag>::perform_act
 		}
 		else
 		{
-			static_cast<const Adaptor&>(*this).m_currIterator -= shift;
+			thisAdaptor.m_currIterator -= shift;
 
 			return make_result<iterable_action_tag_result<const_traits,displace_action_tag>>(success);
 		}
@@ -165,11 +172,13 @@ constexpr auto iterable_adaptor_action<Adaptor,remove_action_tag>::perform_actio
 {
 	typedef typename Adaptor::traits traits;
 
-	static_cast<const Adaptor&>(*this).m_currIterator = static_cast<const Adaptor&>(*this).m_iterable.erase(static_cast<const Adaptor&>(*this).m_currIterator);
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+
+	thisAdaptor.m_currIterator = thisAdaptor.m_iterable.erase(thisAdaptor.m_currIterator);
 
 	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 	{
-		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
 			return make_result<iterable_action_tag_result<traits,remove_action_tag>>(success);
 		}
@@ -189,7 +198,9 @@ constexpr auto iterable_adaptor_action<Adaptor,add_action_tag<T>>::perform_actio
 {
 	typedef typename Adaptor::traits traits;
 
-	static_cast<const Adaptor&>(*this).m_currIterator = static_cast<const Adaptor&>(*this).m_iterable.insert(static_cast<const Adaptor&>(*this).m_currIterator,std::move(i_action).extract());
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+
+	thisAdaptor.m_currIterator = thisAdaptor.m_iterable.insert(thisAdaptor.m_currIterator,std::move(i_action).extract());
 
 	//here some check would be nice
 	return make_result<iterable_action_tag_result<traits,add_action_tag<T>>>(success);
@@ -201,9 +212,11 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 {
 	typedef typename Adaptor::traits traits;
 
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+
 	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 	{
-		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
 			return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
 		}
@@ -223,9 +236,11 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 {
 	typedef typename Adaptor::const_traits const_traits;
 
+	const Adaptor& thisAdaptor = static_cast<const Adaptor&>(*this);
+
 	if constexpr (std::is_base_of<iterable_adaptor_action<Adaptor,end_action_tag>,Adaptor>::value)
 	{
-		if (static_cast<const Adaptor&>(*this).m_currIterator != static_cast<const Adaptor&>(*this).m_endIterator)
+		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
 			return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
 		}

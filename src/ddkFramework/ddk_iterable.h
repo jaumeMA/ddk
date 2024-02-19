@@ -53,6 +53,8 @@ private:
     iterable_t m_iterableImpl;
 };
 template<typename Iterable>
+iterable(const Iterable&)->iterable<Iterable>;
+template<typename Iterable>
 iterable(Iterable&&)->iterable<Iterable>;
 
 template<typename Iterable>
