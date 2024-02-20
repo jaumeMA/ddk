@@ -98,7 +98,7 @@ public:
 	constexpr auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
-	deduced_adaptor<Iterable> m_adaptor;
+	mutable deduced_adaptor<Iterable> m_adaptor;
 	const Transform m_transform;
 };
 

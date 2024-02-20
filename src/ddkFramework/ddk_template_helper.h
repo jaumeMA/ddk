@@ -547,21 +547,44 @@ constexpr size_t get_num_of_types_of()
 template<template<typename> class predicate, typename ... Types>
 inline constexpr size_t num_types_of = get_num_of_types_of<predicate,Types...>();
 
-template<typename A, typename B>
+template<typename,typename>
 struct is_same_type;
-
-template<typename A, typename B>
+template<typename A,typename B>
 struct is_same_type : std::false_type
 {};
-
 template<typename A>
 struct is_same_type<A,A> : std::true_type
 {};
 
 template<typename T>
-inline constexpr bool is_void = is_same_type<T,void>::value;
+struct is_type
+{
+    template<typename TT>
+    using type = is_same_type<T,TT>;
+};
+
+template<typename,typename>
+struct is_not_same_type;
+template<typename A,typename B>
+struct is_not_same_type : std::true_type
+{};
+template<typename A>
+struct is_not_same_type<A,A> : std::false_type
+{};
+
 template<typename T>
-inline constexpr bool is_void_t = is_same_type<T,detail::void_t>::value;
+struct is_not_type
+{
+    template<typename TT>
+    using type = is_not_same_type<T,TT>;
+    template<typename TT>
+    constexpr static bool value = is_not_same_type<T,TT>::value;
+};
+
+template<typename T>
+inline constexpr bool is_void = is_type<T>::template type<void>::value;
+template<typename T>
+inline constexpr bool is_void_t = is_type<T>::template type<detail::void_t>::value;
 
 template<typename T, typename ... Types>
 constexpr bool are_same_type()

@@ -25,7 +25,7 @@ template<typename T>
 using by_type_traits = type_traits<T,T&,const T&>;
 
 template<typename T>
-using by_value_traits = type_traits<T,T,T>;
+using by_value_traits = typename mpl::which_type<std::is_reference<T>::value,type_traits<T,T,T>,type_traits<const T,const T,const T>>::type;
 
 template<typename Adaptor>
 using by_adaptor_traits = type_traits<typename Adaptor::value_type,typename Adaptor::reference,typename Adaptor::const_reference>;

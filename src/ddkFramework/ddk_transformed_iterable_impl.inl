@@ -66,11 +66,11 @@ REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
 constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(const sink_action_tag<Sink>& i_actionTag)
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
-	typedef typename private_traits::const_reference private_const_reference;
+	typedef typename private_traits::reference private_reference;
 
-	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_const_reference>))
+	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_reference>))
 	{
-		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,std::forward<private_const_reference>(actionRes.get()))));
+		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
 	else
 	{
@@ -100,11 +100,11 @@ REQUIRED(IS_CALLABLE_BY(Sink,typename traits::const_reference))
 constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(sink_action_tag<Sink>&& i_actionTag)
 {
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
-	typedef typename private_traits::const_reference private_const_reference;
+	typedef typename private_traits::reference private_reference;
 
-	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_const_reference>))
+	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_reference>))
 	{
-		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,std::forward<private_const_reference>(actionRes.get()))));
+		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
 	else
 	{

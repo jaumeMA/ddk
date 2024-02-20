@@ -40,14 +40,20 @@ template<typename T>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,T))
 constexpr sink_action_tag<function<void(T)>>::sink_action_tag(const sink_action_tag<Sink>& i_sink)
-: m_sink(i_sink.m_sink)
+: m_sink([sink = i_sink.m_sink](T i_value) mutable
+{
+	ddk::eval(sink,std::forward<T>(i_value));
+})
 {
 }
 template<typename T>
 TEMPLATE(typename Sink)
 REQUIRED(IS_CALLABLE_BY(Sink,T))
 constexpr sink_action_tag<function<void(T)>>::sink_action_tag(sink_action_tag<Sink>&& i_sink)
-: m_sink(std::move(i_sink.m_sink))
+: m_sink([sink = std::move(i_sink.m_sink)](T i_value) mutable
+{
+	ddk::eval(sink,std::forward<T>(i_value));
+})
 {
 }
 template<typename T>
