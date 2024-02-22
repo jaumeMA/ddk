@@ -21,13 +21,27 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,end_action_tag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,begin_action_tag&& i_action) const
 {
-	if (const auto actionRes = i_adaptor.perform_action(end_action_tag{}))
+	if constexpr (ACTION_TAGS_SUPPORTED_COND(Adaptor,backward_action_tag))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(success);
+		if (i_adaptor.perform_action(end_action_tag{}) && i_adaptor.perform_action(backward_action_tag{}))
+		{
+			return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(success);
+		}
+		else
+		{
+			return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>();
+		}
 	}
 	else
 	{
-		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>();
+		if (i_adaptor.perform_action(end_action_tag{}))
+		{
+			return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(success);
+		}
+		else
+		{
+			return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>();
+		}
 	}
 }
 TEMPLATE(typename Adaptor)

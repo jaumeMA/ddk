@@ -191,11 +191,11 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 {
 	std::map<int,ddk::unique_reference_wrapper<int>> kk;
 	std::map<int,int> _foo;
-	_foo.insert(std::make_pair(1,2));
+	_foo.insert(std::make_pair(1,1));
 	_foo.insert(std::make_pair(2,2));
-	_foo.insert(std::make_pair(3,2));
-	_foo.insert(std::make_pair(4,2));
-	_foo.insert(std::make_pair(5,2));
+	_foo.insert(std::make_pair(3,3));
+	_foo.insert(std::make_pair(4,4));
+	_foo.insert(std::make_pair(5,5));
 	std::vector<int> foo;
 	foo.push_back(1);
 	foo.push_back(2);
@@ -206,11 +206,13 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 
 	auto cucu = ddk::view::take_n(ddk::deduce_iterable(foo),10);
 
+	ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
+
 	[](auto&&)
 	{
 	} <<= ddk::view::filter([](const std::pair<const int,ddk::unique_reference_wrapper<int>>&) { return true; }) <<= kk;
 
-	ddk::const_bidirectional_value_iterable<int> _ = ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
+	ddk::const_bidirectional_value_iterable<const int> _ = ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	[](const int&)
 	{

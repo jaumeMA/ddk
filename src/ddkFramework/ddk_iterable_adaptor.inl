@@ -218,7 +218,7 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 	{
 		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
-			return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+			return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*thisAdaptor.m_currIterator));
 		}
 		else
 		{
@@ -227,7 +227,7 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 	}
 	else
 	{
-		return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+		return make_result<iterable_action_tag_result<traits,sink_action_tag<Sink>>>(i_sink(*thisAdaptor.m_currIterator));
 	}
 }
 template<typename Adaptor,typename T>
@@ -242,7 +242,7 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 	{
 		if (thisAdaptor.m_currIterator != thisAdaptor.m_endIterator)
 		{
-			return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+			return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*thisAdaptor.m_currIterator));
 		}
 		else
 		{
@@ -251,7 +251,7 @@ constexpr auto iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>::per
 	}
 	else
 	{
-		return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*static_cast<const Adaptor&>(*this).m_currIterator));
+		return make_result<iterable_action_tag_result<const_traits,sink_action_tag<Sink>>>(i_sink(*thisAdaptor.m_currIterator));
 	}
 }
 

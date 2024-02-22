@@ -38,7 +38,7 @@ auto make_iterable(Iterable&& i_iterable)
 
 TEMPLATE(typename Iterable)
 REQUIRED(IS_ITERABLE_TYPE(Iterable))
-auto deduce_iterable(Iterable&& i_iterable)
+Iterable&& deduce_iterable(Iterable&& i_iterable)
 {
 	return std::forward<Iterable>(i_iterable);
 }

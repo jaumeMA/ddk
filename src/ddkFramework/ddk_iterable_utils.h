@@ -27,7 +27,7 @@ inline auto make_iterable(Iterable&& i_iterable);
 
 TEMPLATE(typename Iterable)
 REQUIRES(IS_ITERABLE_TYPE(Iterable))
-inline auto deduce_iterable(Iterable&& i_iterable);
+inline Iterable&& deduce_iterable(Iterable&& i_iterable);
 
 }
 

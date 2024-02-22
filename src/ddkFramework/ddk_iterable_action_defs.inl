@@ -235,7 +235,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr auto sink_action<Sink>::apply(Adaptor&& i_adaptor) const
 {
-	if (auto actionRes = i_adaptor.perform_action(sink_action_tag{ [this](auto&& i_value) mutable { ddk::eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }))
+	if (auto actionRes = i_adaptor.perform_action(sink_action_tag{ [this](auto&& i_value) mutable { ddk::terse_eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }))
 	{
 		return sink_action{ m_sink };
 	}
@@ -296,7 +296,11 @@ constexpr auto action_sink<Action,Sink>::apply(Adaptor&& i_adaptor) const
 {
 	if (auto nextAction = m_action.apply(std::forward<Adaptor>(i_adaptor)))
 	{
-		i_adaptor.perform_action(sink_action_tag{ [this](auto&& i_value) mutable { ddk::eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }).dismiss();
+		typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
+		typedef detail::adaptor_traits<adaptor_t> traits;
+		typedef typename traits::reference reference;
+
+		i_adaptor.perform_action(sink_action_tag{ [this](reference i_value) mutable { ddk::terse_eval(m_sink,std::forward<reference>(i_value)); } }).dismiss();
 
 		return action_sink<decltype(nextAction),Sink>{ nextAction,m_sink };
 	}

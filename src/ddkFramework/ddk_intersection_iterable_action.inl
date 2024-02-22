@@ -105,7 +105,7 @@ auto intersection_action<ActionTag>::apply(Adaptor&& ... i_adaptors)
 {
 	typedef iterable_action_tag_result<detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...>,ActionTag> intersection_result;
 
-	if(( std::forward<Adaptor>(i_adaptors).perform_action(m_action) && ...))
+	if(( std::forward<Adaptor>(i_adaptors).perform_action(std::move(m_action)) && ...))
 	{
 		return make_result<intersection_result>(success);
 	}

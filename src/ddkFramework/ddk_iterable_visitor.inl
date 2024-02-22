@@ -28,7 +28,7 @@ template<typename Iterable>
 template<typename TypePack, typename Action>
 constexpr auto iterable_visitor<Iterable>::_loop(const Action& i_action)
 {
-	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>())) return_action;
+	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t&>())) return_action;
 	Action currAction = i_action;
 
 apply_action:
@@ -90,7 +90,7 @@ template<typename Iterable>
 template<typename TypePack,typename Action>
 constexpr auto iterable_visitor<Iterable>::_loop(const Action& i_action) const
 {
-	typedef decltype(std::declval<Action>().apply(std::declval<adaptor_t>())) return_action;
+	typedef decltype(std::declval<Action>().apply(std::declval<const adaptor_t&>())) return_action;
 	Action currAction = i_action;
 
 apply_action:

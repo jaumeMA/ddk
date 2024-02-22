@@ -218,7 +218,7 @@ public:
     constexpr inline auto apply(Adaptor && i_adaptor) const;
 
 private:
-    Action m_action;
+    mutable Action m_action;
     mutable Sink m_sink;
 };
 template<typename Action, typename Sink>
