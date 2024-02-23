@@ -26,7 +26,7 @@ constexpr bool embedded_type<T&>::operator==(const embedded_type<T&>& other) con
 	return m_data == other.m_data;
 }
 template<typename T>
-typename embedded_type<T&>::rref_type embedded_type<T&>::extract() &&
+constexpr typename embedded_type<T&>::rref_type embedded_type<T&>::extract() &&
 {
 	return m_data;
 }
@@ -91,7 +91,7 @@ typename embedded_type<T&>::ref_type embedded_type<T&>::inplace_assign(T& val)
 	return m_data;
 }
 template<typename T>
-void embedded_type<T&>::inplace_destroy()
+constexpr void embedded_type<T&>::inplace_destroy()
 {
 	//in references nothing needs to be done
 }
@@ -107,7 +107,7 @@ bool embedded_type<T&>::assign(void* address,T& val)
 	return new(address)embedded_type(val) != nullptr;
 }
 template<typename T>
-bool embedded_type<T&>::destroy(void* address)
+constexpr bool embedded_type<T&>::destroy(void* address)
 {
 	//in references nothing needs to be done
 	return true;
@@ -144,7 +144,7 @@ constexpr typename embedded_type<T&&>::pointer_type embedded_type<T&&>::get_ptr(
 	return &m_data;
 }
 template<typename T>
-typename embedded_type<T&&>::rref_type embedded_type<T&&>::extract() &&
+constexpr typename embedded_type<T&&>::rref_type embedded_type<T&&>::extract() &&
 {
 	return std::move(m_data);
 }
@@ -194,7 +194,7 @@ typename embedded_type<T&&>::ref_type embedded_type<T&&>::inplace_assign(T&& val
 	return std::move(m_data);
 }
 template<typename T>
-void embedded_type<T&&>::inplace_destroy()
+constexpr void embedded_type<T&&>::inplace_destroy()
 {
 	//in references nothing needs to be done
 }
@@ -204,17 +204,17 @@ bool embedded_type<T&&>::construct(void* address,T&& val)
 	return new(address) embedded_type(std::move(val)) != nullptr;
 }
 template<typename T>
-bool embedded_type<T&&>::destroy(void* address)
-{
-	//in references nothing needs to be done
-	return true;
-}
-template<typename T>
 bool embedded_type<T&&>::assign(void* address,T&& val)
 {
 	//references must be reconstructed every time
 
 	return construct(address,std::move(val));
+}
+template<typename T>
+constexpr bool embedded_type<T&&>::destroy(void* address)
+{
+	//in references nothing needs to be done
+	return true;
 }
 template<typename T>
 bool embedded_type<T&&>::swap(void* addressA,internal_type&& valA,void* addressB,internal_type&& valB)
@@ -242,28 +242,28 @@ constexpr embedded_type<T>::embedded_type(Args&& ... i_args)
 {
 }
 template<typename T>
-embedded_type<T>& embedded_type<T>::operator=(const internal_type& other)
+constexpr embedded_type<T>& embedded_type<T>::operator=(const internal_type& other)
 {
 	m_data = other;
 
 	return *this;
 }
 template<typename T>
-embedded_type<T>& embedded_type<T>::operator=(internal_type&& other)
+constexpr embedded_type<T>& embedded_type<T>::operator=(internal_type&& other)
 {
 	m_data = std::move(other);
 
 	return *this;
 }
 template<typename T>
-embedded_type<T>& embedded_type<T>::operator=(const embedded_type<T>& other)
+constexpr embedded_type<T>& embedded_type<T>::operator=(const embedded_type<T>& other)
 {
 	m_data = other.m_data;
 
 	return *this;
 }
 template<typename T>
-embedded_type<T>& embedded_type<T>::operator=(embedded_type<T>&& other)
+constexpr embedded_type<T>& embedded_type<T>::operator=(embedded_type<T>&& other)
 {
 	m_data = std::move(other.m_data);
 
@@ -295,7 +295,7 @@ constexpr typename embedded_type<T>::pointer_type embedded_type<T>::get_ptr()
 	return &m_data;
 }
 template<typename T>
-inline typename embedded_type<T>::rref_type embedded_type<T>::extract() &&
+constexpr inline typename embedded_type<T>::rref_type embedded_type<T>::extract() &&
 {
 	return std::forward<embedded_type<T>::rref_type>(m_data);
 }
@@ -320,7 +320,7 @@ constexpr typename embedded_type<T>::cpointer_type embedded_type<T>::operator->(
 	return &m_data;
 }
 template<typename T>
-embedded_type<T>::operator rref_type() &&
+constexpr embedded_type<T>::operator rref_type() &&
 {
 	return std::move(m_data);
 }
@@ -350,7 +350,7 @@ constexpr T& embedded_type<T>::inplace_assign(Args&& ... i_args)
 	return m_data;
 }
 template<typename T>
-void embedded_type<T>::inplace_destroy()
+constexpr void embedded_type<T>::inplace_destroy()
 {
 	m_data.~T();
 }
@@ -361,19 +361,19 @@ bool embedded_type<T>::construct(void* address,Args&& ... i_args)
 	return new(address) embedded_type(std::forward<Args>(i_args) ...) != nullptr;
 }
 template<typename T>
-bool embedded_type<T>::destroy(void* address)
+template<typename Type>
+constexpr bool embedded_type<T>::assign(void* address,Type&& val)
 {
-	embedded_type<T>* _data = reinterpret_cast<embedded_type<T>*>(address);
-
-	_data->m_data.~T();
+	reinterpret_cast<embedded_type<T>*>(address)->m_data = std::forward<Type>(val);
 
 	return true;
 }
 template<typename T>
-template<typename Type>
-bool embedded_type<T>::assign(void* address,Type&& val)
+constexpr bool embedded_type<T>::destroy(void* address)
 {
-	reinterpret_cast<embedded_type<T>*>(address)->m_data = std::forward<Type>(val);
+	embedded_type<T>* _data = reinterpret_cast<embedded_type<T>*>(address);
+
+	_data->m_data.~T();
 
 	return true;
 }

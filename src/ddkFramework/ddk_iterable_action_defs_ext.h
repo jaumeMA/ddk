@@ -34,7 +34,7 @@ struct swap_action : action_base
 {
 	TEMPLATE(typename Iterable)
 	REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
-	friend inline auto operator>>=(const swap_action&,Iterable&& i_iterable)
+	friend inline auto operator>>=(swap_action&&,Iterable&& i_iterable)
 	{
 		typedef resolved_iterable_traits<Iterable> traits;
 		typedef typename traits::value_type value_type;
@@ -71,3 +71,4 @@ public:
 }
 
 #include "ddk_iterable_action_defs_ext.inl"
+#include "ddk_iterable_action_utils.h"

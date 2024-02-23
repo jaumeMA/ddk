@@ -110,7 +110,7 @@ std::vector<int> create_prova()
 
 	for (size_t i = 0;i < 1000000;i++)
 	{
-		kk.push_back(std::rand());
+		kk.push_back(i);
 	}
 
 	return kk;
@@ -177,9 +177,7 @@ TEST(DDKIterableTest,peformance)
 	//	{
 	//	} }).dismiss();
 
-	[](const int& i_value) noexcept
-	{
-	} <<= v_prova;
+	ddk::swap_action{} >>= v_prova;
 }
 struct myAdaptor
 {
@@ -206,7 +204,7 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 
 	auto cucu = ddk::view::take_n(ddk::deduce_iterable(foo),10);
 
-	ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
+	//ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	[](auto&&)
 	{

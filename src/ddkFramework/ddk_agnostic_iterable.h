@@ -1,7 +1,6 @@
 #pragma once
 
-#include "ddk_function_template_helper.h"
-#include "ddk_type_erasure_iterable_impl.h"
+#include "ddk_view_iterable.h"
 
 namespace ddk
 {

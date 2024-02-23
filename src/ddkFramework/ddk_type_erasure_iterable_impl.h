@@ -61,10 +61,10 @@ public:
     void iterate_impl(const Action& i_initialAction);
     template<typename Action>
     void iterate_impl(const Action& i_initialAction) const;
-    distributed_reference_wrapper<iterable_base<Traits>> get_iterable() const;
+    distributed_reference_wrapper<iterable_interface<Traits>> get_iterable() const;
 
 private:
-    distributed_reference_wrapper<iterable_base<Traits>> m_iterable;
+    distributed_reference_wrapper<iterable_interface<Traits>> m_iterable;
 };
 template<typename Iterable>
 type_erasure_iterable_impl(Iterable&&) -> type_erasure_iterable_impl<typename Iterable::traits>;

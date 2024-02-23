@@ -8,7 +8,7 @@ namespace detail
 {
 
 template<typename Traits>
-class iterable_base
+class iterable_interface
 {
 public:
     typedef Traits traits;
@@ -16,7 +16,7 @@ public:
     typedef supported_action<traits> action;
     typedef const_supported_action<traits> const_action;
 
-    virtual ~iterable_base() = default;
+    virtual ~iterable_interface() = default;
     virtual void iterate(const action& i_initialAction) = 0;
     virtual void iterate(const const_action& i_initialAction) const = 0;
     virtual iterable_adaptor<type_erasure_iterable_impl<Traits>> deduce_owned_adaptor() = 0;

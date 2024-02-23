@@ -24,11 +24,11 @@ public:
     REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
     constexpr explicit tuple_base(Args&& ... i_args);
     constexpr reference get();
-    rreference extract()&&;
+    constexpr rreference extract()&&;
     constexpr const_reference get() const;
     TEMPLATE(typename ... Args)
     REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-    bool set(Args&& ... i_args);
+    constexpr bool set(Args&& ... i_args);
 
 private:
     embedded_type<T> m_value;
@@ -67,10 +67,10 @@ public:
     template<size_t IIndex>
     constexpr typename embedded_type<Type>::ref_type get();
     template<size_t IIndex>
-    typename embedded_type<Type>::rref_type extract()&&;
+    constexpr typename embedded_type<Type>::rref_type extract()&&;
     template<size_t IIndex,typename Arg>
-    typename embedded_type<Type>::ref_type set(Arg&& i_arg);
-    tuple_impl<mpl::sequence<0>,Type>* operator->();
+    constexpr typename embedded_type<Type>::ref_type set(Arg&& i_arg);
+    constexpr tuple_impl<mpl::sequence<0>,Type>* operator->();
     constexpr const tuple_impl<mpl::sequence<0>,Type>* operator->() const;
     static constexpr size_t size();
     constexpr bool empty() const;
@@ -104,24 +104,24 @@ public:
     constexpr tuple_impl(const tuple_impl<mpl::sequence<Indexs...>,TTypes...>& other);
     template<typename ... TTypes>
     constexpr tuple_impl(tuple_impl<mpl::sequence<Indexs...>,TTypes...>&& other);
-    tuple_impl& operator=(const tuple_impl& other) = default;
-    tuple_impl& operator=(tuple_impl&& other) = default;
+    constexpr tuple_impl& operator=(const tuple_impl& other) = default;
+    constexpr tuple_impl& operator=(tuple_impl&& other) = default;
     template<size_t IIndex>
     constexpr typename tuple_base_by_index<IIndex,Types...>::const_reference get() const;
     template<size_t IIndex>
     constexpr typename tuple_base_by_index<IIndex,Types...>::reference get();
     template<size_t IIndex>
-    typename tuple_base_by_index<IIndex,Types...>::rreference extract()&&;
+    constexpr typename tuple_base_by_index<IIndex,Types...>::rreference extract()&&;
     template<size_t ... IIndexs,typename ... Args>
-    void set(const mpl::sequence<IIndexs...>&,Args&& ... i_args);
+    constexpr void set(const mpl::sequence<IIndexs...>&,Args&& ... i_args);
     template<typename ... Args>
-    auto prepend(Args&& ... i_args) const;
+    constexpr auto prepend(Args&& ... i_args) const;
     template<typename ... Args>
-    auto append(Args&& ... i_args) const;
+    constexpr auto append(Args&& ... i_args) const;
     template<size_t IIndex,typename Arg>
-    typename tuple_base_by_index<IIndex,Types...>::reference set(Arg&& i_val);
+    constexpr typename tuple_base_by_index<IIndex,Types...>::reference set(Arg&& i_val);
     tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->();
-    const tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->() const;
+    constexpr const tuple_impl<mpl::sequence<Indexs...>,Types...>* operator->() const;
     static constexpr size_t size();
     constexpr bool empty() const;
 };

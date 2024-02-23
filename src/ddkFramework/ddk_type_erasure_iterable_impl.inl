@@ -83,7 +83,7 @@ void type_erasure_iterable_impl<Traits>::iterate_impl(const Action& i_initialAct
 	m_iterable->iterate(i_initialAction);
 }
 template<typename Traits>
-distributed_reference_wrapper<iterable_base<Traits>> type_erasure_iterable_impl<Traits>::get_iterable() const
+distributed_reference_wrapper<iterable_interface<Traits>> type_erasure_iterable_impl<Traits>::get_iterable() const
 {
 	return m_iterable;
 }

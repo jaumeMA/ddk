@@ -15,7 +15,7 @@ class lend_type_erasure_iterable_impl : public iterable_impl_interface<Traits>
 public:
     typedef typename Traits traits;
 
-    lend_type_erasure_iterable_impl(const lent_reference_wrapper<iterable_base<Traits>>& i_iterable);
+    lend_type_erasure_iterable_impl(const lent_reference_wrapper<iterable_interface<Traits>>& i_iterable);
 
     template<typename Action>
     void iterate_impl(const Action& i_initialAction);
@@ -23,10 +23,10 @@ public:
     void iterate_impl(const Action& i_initialAction) const;
 
 private:
-    lent_reference_wrapper<iterable_base<Traits>> m_iterable;
+    lent_reference_wrapper<iterable_interface<Traits>> m_iterable;
 };
 template<typename Traits>
-lend_type_erasure_iterable_impl(const lent_reference_wrapper<iterable_base<Traits>>&) -> lend_type_erasure_iterable_impl<Traits>;
+lend_type_erasure_iterable_impl(const lent_reference_wrapper<iterable_interface<Traits>>&) -> lend_type_erasure_iterable_impl<Traits>;
 
 }
 }

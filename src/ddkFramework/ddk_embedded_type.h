@@ -34,7 +34,7 @@ public:
 	template<typename Type>
 	inline embedded_type& operator=(Type&& val);
 	constexpr bool operator==(const embedded_type<T&>& other) const;
-	inline rref_type extract() &&;
+	constexpr inline rref_type extract() &&;
 	constexpr cref_type get() const;
 	constexpr ref_type get();
 	constexpr pointer_type get_ptr();
@@ -46,10 +46,10 @@ public:
 	constexpr operator cref_type() const;
 	inline ref_type inplace_construct(T& val);
 	inline ref_type inplace_assign(T& val);
-	inline void inplace_destroy();
+	constexpr inline void inplace_destroy();
 	inline static bool construct(void* address,T& val);
 	inline static bool assign(void* address,T& val);
-	inline static bool destroy(void* address);
+	constexpr inline static bool destroy(void* address);
 
 private:
 	internal_type& m_data;
@@ -80,7 +80,7 @@ public:
 	constexpr cref_type get() const;
 	constexpr ref_type get();
 	constexpr pointer_type get_ptr();
-	inline rref_type extract() &&;
+	constexpr inline rref_type extract() &&;
 	constexpr cref_type operator*() const;
 	constexpr ref_type operator*();
 	constexpr pointer_type operator->();
@@ -89,10 +89,10 @@ public:
 	constexpr operator cref_type() const;
 	inline ref_type inplace_construct(T&& val);
 	inline ref_type inplace_assign(T&& val);
-	inline void inplace_destroy();
+	constexpr inline void inplace_destroy();
 	inline static bool construct(void* address,T&& val);
-	inline static bool destroy(void* address);
 	inline static bool assign(void* address,T&& val);
+	constexpr inline static bool destroy(void* address);
 	inline static bool swap(void* addressA,internal_type&& valA,void* addressB,internal_type&& valB);
 
 private:
@@ -118,31 +118,31 @@ public:
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
 	constexpr embedded_type(Args&& ... i_args);
-	inline embedded_type& operator=(const internal_type& other);
-	inline embedded_type& operator=(internal_type&& other);
-	inline embedded_type& operator=(const embedded_type<T>& other);
-	inline embedded_type& operator=(embedded_type<T>&& other);
+	constexpr inline embedded_type& operator=(const internal_type& other);
+	constexpr inline embedded_type& operator=(internal_type&& other);
+	constexpr inline embedded_type& operator=(const embedded_type<T>& other);
+	constexpr inline embedded_type& operator=(embedded_type<T>&& other);
 	constexpr bool operator==(const embedded_type<T>& other) const;
 	constexpr cref_type get() const;
 	constexpr ref_type get();
 	constexpr cpointer_type get_ptr() const;
 	constexpr pointer_type get_ptr();
-	inline rref_type extract() &&;
+	constexpr inline rref_type extract() &&;
 	constexpr cref_type operator*() const;
 	constexpr ref_type operator*();
 	constexpr pointer_type operator->();
 	constexpr cpointer_type operator->() const;
-	inline operator rref_type() &&;
+	constexpr inline operator rref_type() &&;
 	template<typename ... Args>
 	inline T& inplace_construct(Args&& ... i_args);
 	template<typename ... Args>
 	constexpr T& inplace_assign(Args&& ... i_args);
-	inline void inplace_destroy();
+	constexpr inline void inplace_destroy();
 	template<typename ... Args>
 	inline static bool construct(void* address,Args&& ... i_args);
-	inline static bool destroy(void* address);
 	template<typename Type>
-	inline static bool assign(void* address,Type&& val);
+	constexpr inline static bool assign(void* address,Type&& val);
+	constexpr inline static bool destroy(void* address);
 
 private:
 	internal_type  m_data;

@@ -21,13 +21,13 @@ auto make_iterable(Iterable&& i_iterable,const Allocator& i_allocator)
 
 	if constexpr (mpl::is_same_type<from_traits,to_traits>::value)
 	{
-		return make_distributed_reference<detail::iterable<iterable_t>>(i_allocator,std::forward<Iterable>(i_iterable));
+		return make_distributed_reference<detail::view_iterable<iterable_t>>(i_allocator,std::forward<Iterable>(i_iterable));
 	}
 	else
 	{
 		typedef detail::transformed_iterable_impl<to_traits,from_traits,detail::iterable<iterable_t>,detail::traits_conversion_callable<from_traits,to_traits>> transformed_iterable;
 
-		return make_distributed_reference<detail::iterable<transformed_iterable>>(i_allocator,detail::iterable(std::forward<Iterable>(i_iterable)),detail::traits_conversion_callable<from_traits,to_traits>());
+		return make_distributed_reference<detail::view_iterable<transformed_iterable>>(i_allocator,detail::view_iterable(std::forward<Iterable>(i_iterable)),detail::traits_conversion_callable<from_traits,to_traits>());
 	}
 }
 template<typename Traits,typename Iterable>

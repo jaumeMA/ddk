@@ -17,11 +17,11 @@ class intersection_action<Action<function_arguments<T...>>>
 public:
 	typedef mpl::type_pack<Action<T>...> tags_t;
 
-	intersection_action(const Action<function_arguments<T...>>& i_action);
-	intersection_action(Action<function_arguments<T...>>&& i_action);
+	constexpr intersection_action(const Action<function_arguments<T...>>& i_action);
+	constexpr intersection_action(Action<function_arguments<T...>>&& i_action);
 	TEMPLATE(size_t ... Indexs,typename ... Adaptor)
 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t::template nth_type<Indexs>)...)
-	inline auto apply(Adaptor&& ... i_adaptors);
+	constexpr inline auto apply(Adaptor&& ... i_adaptors);
 
 private:
 	Action<function_arguments<T...>> m_action;
@@ -36,10 +36,10 @@ class intersection_action<sink_action_tag<Sink>>
 public:
 	typedef mpl::type_pack<sink_action_tag<Sink>> tags_t;
 
-	intersection_action(const sink_action_tag<Sink>& i_action);
-	intersection_action(sink_action_tag<Sink>&& i_action);
+	constexpr intersection_action(const sink_action_tag<Sink>& i_action);
+	constexpr intersection_action(sink_action_tag<Sink>&& i_action);
 	template<size_t ... Indexs, typename ... Adaptor>
-	inline auto apply(Adaptor&& ... i_adaptors);
+	constexpr inline auto apply(Adaptor&& ... i_adaptors);
 
 private:
 	sink_action_tag<Sink> m_action;
@@ -56,9 +56,9 @@ class intersection_action<size_action_tag>
 public:
 	typedef mpl::type_pack<size_action_tag> tags_t;
 
-	intersection_action(const size_action_tag&);
+	constexpr intersection_action(const size_action_tag&);
 	template<size_t ... Indexs,typename ... Adaptor>
-	inline auto apply(Adaptor&& ... i_adaptors);
+	constexpr inline auto apply(Adaptor&& ... i_adaptors);
 };
 
 template<typename ActionTag>
@@ -67,11 +67,11 @@ class intersection_action
 public:
 	typedef mpl::type_pack<ActionTag> tags_t;
 
-	intersection_action(const ActionTag& i_action);
-	intersection_action(ActionTag&& i_action);
+	constexpr intersection_action(const ActionTag& i_action);
+	constexpr intersection_action(ActionTag&& i_action);
 	TEMPLATE(size_t ... Indexs,typename ... Adaptor)
 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t)...)
-	inline auto apply(Adaptor&& ... i_adaptors);
+	constexpr inline auto apply(Adaptor&& ... i_adaptors);
 
 private:
 	ActionTag m_action;

@@ -11,7 +11,7 @@ namespace detail
 {
 
 template<typename Iterable>
-class iterable : public iterable_base<typename Iterable::traits>
+class iterable
 {
     template<typename TTraits>
     friend class iterable;
@@ -21,13 +21,9 @@ class iterable : public iterable_base<typename Iterable::traits>
         return deduce_adaptor(i_iterable.m_iterableImpl);
     }
 
-    typedef iterable_base<typename Iterable::traits> base_t;
-    using typename base_t::action;
-    using typename base_t::const_action;
-
 public:
-    using typename base_t::traits;
-    using typename base_t::const_traits;
+    typedef typename Iterable::traits traits;
+    typedef detail::const_iterable_traits<traits> const_traits;
     typedef Iterable iterable_t;
 
     TEMPLATE(typename ... Args)
@@ -42,14 +38,11 @@ public:
     TEMPLATE(typename Action)
     REQUIRES(ACTION_SUPPORTED(const_traits,Action))
     void iterate_impl(Action&& i_initialAction) const;
+    inline Iterable& get();
     inline const Iterable& get() const;
     inline Iterable&& extract() &&;
 
 private:
-    void iterate(const action& i_initialAction) override;
-    void iterate(const const_action& i_initialAction) const override;
-    iterable_adaptor<type_erasure_iterable_impl<traits>> deduce_owned_adaptor() override;
-
     iterable_t m_iterableImpl;
 };
 template<typename Iterable>
