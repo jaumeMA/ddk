@@ -9,7 +9,7 @@ namespace ddk
 
 template<typename T>
 promise<T>::promise()
-: m_sharedState(make_shared_reference<detail::private_async_state<T>>())
+: m_sharedState(make_shared_reference<detail::context_private_async_state<T>>())
 , m_refCounter(this,{})
 {
 	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
@@ -33,7 +33,7 @@ template<typename T>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(value_type,Args...))
 promise<T>::promise(Args&& ... i_args)
-: m_sharedState(make_shared_reference<detail::private_async_state<T>>(std::forward<Args>(i_args)...))
+: m_sharedState(make_shared_reference<detail::context_private_async_state<T>>(std::forward<Args>(i_args)...))
 , m_refCounter(this,{})
 {
 	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
@@ -72,14 +72,14 @@ void promise<T>::set_value(sink_type i_value)
 {
 	m_sharedState->set_value(i_value);
 
-	m_execContext.notify_recipients(false);
+	m_sharedState->notify_recipients(false);
 }
 template<typename T>
 void promise<T>::set_exception(const async_exception& i_exception)
 {
 	m_sharedState->set_exception(i_exception);
 
-	m_execContext.notify_recipients(false);
+	m_sharedState->notify_recipients(false);
 }
 template<typename T>
 void promise<T>::clear()
@@ -135,12 +135,12 @@ typename promise<T>::cancel_result promise<T>::cancel()
 template<typename T>
 executor_context_lent_ptr promise<T>::get_execution_context()
 {
-	return lend(m_execContext);
+	return lend(m_sharedState);
 }
 template<typename T>
 executor_context_const_lent_ptr promise<T>::get_execution_context() const
 {
-	return lend(m_execContext);
+	return lend(m_sharedState);
 }
 
 }

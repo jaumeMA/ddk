@@ -77,11 +77,11 @@ public:
 	iterable_adaptor(const Iterables& ... i_iterable);
 	TEMPLATE(typename ActionTag)
 	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	constexpr auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
 	template<size_t ... Indexs,typename ActionTag>
-	auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const;
+	constexpr auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const;
 
 	const tuple<deduced_adaptor<Iterables>...> m_adaptors;
 };

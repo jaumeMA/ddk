@@ -42,6 +42,9 @@ public:
 	constexpr inline auto apply(Adaptor&& ... i_adaptors);
 
 private:
+	template<typename Reference, typename ... Result>
+	static constexpr inline optional<Reference> create_reference(Result&& ... i_result);
+
 	sink_action_tag<Sink> m_action;
 	opt_args_t m_args;
 };

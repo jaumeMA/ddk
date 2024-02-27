@@ -72,7 +72,7 @@ iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::iterab
 template<typename ... Iterables>
 TEMPLATE(typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
+constexpr auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
@@ -80,7 +80,7 @@ auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::p
 }
 template<typename ... Iterables>
 template<size_t ... Indexs,typename ActionTag>
-auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const
+constexpr auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const
 {
     return i_actionTag.template apply<Indexs...>(m_adaptors.template get<Indexs>()...);
 }

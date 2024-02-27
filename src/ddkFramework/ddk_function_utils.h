@@ -21,116 +21,116 @@ constexpr inline detail::resolved_functor_impl<Functor> make_functor_function(Fu
 
 //no allocator specified, no args specified
 template<typename Object, typename Return, typename ... Types>
-inline function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...));
+constexpr inline function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...));
 template<typename Object, typename Return, typename ... Types>
-inline function<Return(Types...)> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const);
+constexpr inline function<Return(Types...)> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const);
 template<typename Return, typename ... Types>
-inline function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...));
+constexpr inline function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...));
 TEMPLATE(typename Functor)
 REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>))
-inline detail::resolved_callable<Functor> make_function(Functor&&);
+constexpr inline detail::resolved_callable<Functor> make_function(Functor&&);
 
 //allocator specified, no args specified
 TEMPLATE(typename Object,typename Return,typename ... Types,typename Allocator)
 REQUIRES(IS_ALLOCATOR(Allocator))
-inline function<Return(Types...),Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator);
+constexpr inline function<Return(Types...),Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator);
 TEMPLATE(typename Object,typename Return,typename ... Types,typename Allocator)
 REQUIRES(IS_ALLOCATOR(Allocator))
-inline function<Return(Types...),Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator);
+constexpr inline function<Return(Types...),Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator);
 TEMPLATE(typename Return, typename ... Types, typename Allocator)
 REQUIRES(IS_ALLOCATOR(Allocator))
-inline function<Return(Types...),Allocator> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator);
+constexpr inline function<Return(Types...),Allocator> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator);
 TEMPLATE(typename Functor, typename Allocator)
 REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>),IS_ALLOCATOR(Allocator))
-inline detail::resolved_callable<Functor,Allocator> make_function(Functor&&, const Allocator& i_allocator);
+constexpr inline detail::resolved_callable<Functor,Allocator> make_function(Functor&&, const Allocator& i_allocator);
 
 //no allocator specified, args specified
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRES(IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Arg, typename ... Args)
 REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_NOT_FUNCTION(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>),IS_NOT_ALLOCATOR(Arg))
-inline detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&&, Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&&, Arg&& i_arg, Args&& ... i_args);
 
 //allocator specified, args specified
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
 REQUIRES(IS_ALLOCATOR(Allocator))
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
 REQUIRES(IS_ALLOCATOR(Allocator))
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
 REQUIRES(IS_ALLOCATOR(Allocator))
-inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args);
 TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
 REQUIRES(IS_CLASS(mpl::remove_qualifiers<Functor>),IS_NOT_FUNCTION(mpl::remove_qualifiers<Functor>),IS_CALLABLE(mpl::remove_qualifiers<Functor>))
-inline detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
+constexpr inline detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&&, const Allocator&, Arg&& i_arg, Args&& ... i_args);
 
 //safe version
 template<typename Return, typename Allocator, typename FunctionImpl>
-inline Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
+constexpr inline Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args);
+constexpr inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
+constexpr inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 TEMPLATE(typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args)
 REQUIRES_COND(mpl::is_function_argument<Args>::value==false ...)
-inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args);
+constexpr inline Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
+constexpr inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl, typename ... Args>
-inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, function_arguments<Args...>& i_args);
+constexpr inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, function_arguments<Args...>& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
+constexpr inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args);
+constexpr inline Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args);
 TEMPLATE(typename Function, typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_function, Args&& ... i_args);
+constexpr inline mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_function, Args&& ... i_args);
 TEMPLATE(typename Function,typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, Args&& ... i_args);
+constexpr inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, Args&& ... i_args);
 TEMPLATE(typename Function,typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args);
+constexpr inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args);
 TEMPLATE(typename Function,typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,const function_arguments<Args...>& i_args);
+constexpr inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,const function_arguments<Args...>& i_args);
 TEMPLATE(typename Function,typename ... Args)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args);
+constexpr inline mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
-inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+constexpr inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
-inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+constexpr inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
-inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&);
+constexpr inline Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&);
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+constexpr inline auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline auto _terse_eval(Function&& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
+constexpr inline auto _terse_eval(Function&& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&);
 TEMPLATE(typename Function,typename ... Args, size_t ... Indexs)
 REQUIRES(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-inline auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args, const mpl::sequence<Indexs...>&);
+constexpr inline auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args, const mpl::sequence<Indexs...>&);
 
 //unsafe version
 template<typename Return,typename Allocator, typename FunctionImpl>
-inline Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
+constexpr inline Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function);
 TEMPLATE(typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args)
 REQUIRES_COND(mpl::is_function_argument<Args>::value==false ...)
-inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
+constexpr inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args);
+constexpr inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args);
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
+constexpr inline Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args);
 
 }
 

@@ -45,19 +45,29 @@ constexpr auto intersection_action<sink_action_tag<Sink>>::apply(Adaptor&& ... i
 {
 	typedef tuple<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,k_agnostic_iterable_empty_sink>...> adaptors_result;
 	typedef detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...> intersection_traits;
+	typedef typename intersection_traits::reference reference;
 	typedef iterable_action_tag_result<intersection_traits,sink_action_tag<Sink>> intersection_result;
 
-	adaptors_result actionRes = { std::forward<Adaptor>(i_adaptors).perform_action(k_agnosticIterableEmptySink).dismiss() ...};
-
-	if ((actionRes.template get<Indexs>() && ...))
+	if (auto actionRes = create_reference<reference>(std::forward<Adaptor>(i_adaptors).perform_action(k_agnosticIterableEmptySink).dismiss() ...))
 	{
-		typedef typename intersection_traits::reference reference;
-
-		return make_result<intersection_result>(m_action(reference{ actionRes.template get<Indexs>().get() ... }));
+		return make_result<intersection_result>(m_action(*actionRes));
 	}
 	else
 	{
 		return make_error<intersection_result>(std::move(m_action));
+	}
+}
+template<typename Sink>
+template<typename Reference, typename ... Result>
+constexpr inline optional<Reference> intersection_action<sink_action_tag<Sink>>::create_reference(Result&& ... i_results)
+{
+	if ((static_cast<bool>(i_results) && ...))
+	{
+		return Reference{ i_results.get() ... };
+	}
+	else
+	{
+		return none;
 	}
 }
 

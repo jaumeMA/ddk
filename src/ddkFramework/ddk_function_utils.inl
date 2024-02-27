@@ -38,23 +38,23 @@ constexpr detail::resolved_functor_impl<Functor> make_functor_function(Functor&&
 }
 
 template<typename Object, typename Return, typename ... Types>
-function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...))
+constexpr function<Return(Types...)> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...))
 {
     return function<Return(Types...)>(i_object, i_funcPtr);
 }
 template<typename Object, typename Return, typename ... Types>
-function<Return(Types...)> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const)
+constexpr function<Return(Types...)> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const)
 {
     return function<Return(Types...)>(i_object,i_funcPtr);
 }
 template<typename Return, typename ... Types>
-function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...))
+constexpr function<Return(Types...)> make_function(Return(*i_funcPtr)(Types...))
 {
     return function<Return(Types...)>(i_funcPtr);
 }
 TEMPLATE(typename Functor)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
-detail::resolved_callable<Functor> make_function(Functor&& i_functor)
+constexpr detail::resolved_callable<Functor> make_function(Functor&& i_functor)
 {
     typedef detail::resolved_callable<Functor> function_type;
 
@@ -62,25 +62,25 @@ detail::resolved_callable<Functor> make_function(Functor&& i_functor)
 }
 TEMPLATE(typename Object, typename Return, typename ... Types, typename Allocator)
 REQUIRED(IS_ALLOCATOR(Allocator))
-function<Return(Types...),Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
+constexpr function<Return(Types...),Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_object, i_funcPtr);
 }
 TEMPLATE(typename Object, typename Return, typename ... Types, typename Allocator)
 REQUIRED(IS_ALLOCATOR(Allocator))
-function<Return(Types...),Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator)
+constexpr function<Return(Types...),Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Types...)const, const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_object,i_funcPtr);
 }
 TEMPLATE(typename Return, typename ... Types, typename Allocator)
 REQUIRED(IS_ALLOCATOR(Allocator))
-function<Return(Types...),Allocator> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
+constexpr function<Return(Types...),Allocator> make_function(Return(*i_funcPtr)(Types...), const Allocator& i_allocator)
 {
     return function<Return(Types...),Allocator>(i_funcPtr);
 }
 TEMPLATE(typename Functor, typename Allocator)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_ALLOCATOR(Allocator))
-detail::resolved_callable<Functor,Allocator> make_function(Functor&& i_functor, const Allocator& i_allocator)
+constexpr detail::resolved_callable<Functor,Allocator> make_function(Functor&& i_functor, const Allocator& i_allocator)
 {
     typedef detail::resolved_callable<Functor,Allocator> function_type;
 
@@ -88,7 +88,7 @@ detail::resolved_callable<Functor,Allocator> make_function(Functor&& i_functor, 
 }
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
-detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
@@ -98,7 +98,7 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 }
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
-detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::get_num_types<Types...>() == mpl::get_num_types<Args...>(), "Unconsistent number of arguments with number of types");
 
@@ -108,7 +108,7 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 }
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Arg, typename ... Args)
 REQUIRED(IS_NOT_ALLOCATOR(Arg))
-detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>> make_function(Return(*i_funcPtr)(Type,Types...), Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
 
@@ -118,7 +118,7 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 }
 TEMPLATE(typename Functor, typename Arg, typename ... Args)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor),IS_NOT_ALLOCATOR(Arg))
-detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&& i_functor, Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_function(Functor&& i_functor, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::aqcuire_callable_args_type<Functor>::type::size() == mpl::num_types<Arg,Args...>, "Unconsistent number of arguments with number of types");
 
@@ -130,7 +130,7 @@ detail::resolved_spec_callable<Functor,system_allocator,Arg,Args...> make_functi
 }
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
 REQUIRED(IS_ALLOCATOR(Allocator))
-detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Object* i_object, Return(Object::*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
 
@@ -140,7 +140,7 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 }
 TEMPLATE(typename Object, typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
 REQUIRED(IS_ALLOCATOR(Allocator))
-detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(const Object* i_object, Return(Object::*i_funcPtr)(Type,Types...)const, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
 
@@ -150,7 +150,7 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 }
 TEMPLATE(typename Return, typename Type, typename ... Types, typename Allocator, typename Arg, typename ... Args)
 REQUIRED(IS_ALLOCATOR(Allocator))
-detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Args...>,Type,Types...>,Allocator> make_function(Return(*i_funcPtr)(Type,Types...), const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::num_types<Types...> == mpl::num_types<Args...>, "Unconsistent number of arguments with number of types");
 
@@ -160,7 +160,7 @@ detail::resolved_function<Return,detail::unresolved_types<mpl::type_pack<Arg,Arg
 }
 TEMPLATE(typename Functor, typename Allocator, typename Arg, typename ... Args)
 REQUIRED(IS_CLASS(Functor),IS_CALLABLE(Functor))
-detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
+constexpr detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Functor&& i_functor, const Allocator& i_allocator, Arg&& i_arg, Args&& ... i_args)
 {
 	static_assert(mpl::aqcuire_callable_args_type<Functor>::type::size() == mpl::get_num_types<Arg,Args...>(), "Unconsistent number of arguments with number of types");
 
@@ -172,7 +172,7 @@ detail::resolved_spec_callable<Functor,Allocator,Arg,Args...> make_function(Func
 }
 
 template<typename Return, typename Allocator, typename FunctionImpl>
-Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function)
+constexpr Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function)
 {
     if constexpr (mpl::is_void<Return>)
     {
@@ -185,7 +185,7 @@ Return eval(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_func
 }
 TEMPLATE(typename Return, typename ... Types, typename Allocator,typename FunctionImpl, typename ... Args)
 REQUIRED(mpl::is_function_argument<Args>::value==false ...)
-Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args)
+constexpr Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, Args&& ... i_args)
 {
     if constexpr (mpl::is_void<Return>)
     {
@@ -197,7 +197,7 @@ Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>
     }
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
+constexpr Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
 {
 	if constexpr (mpl::is_void<Return>)
 	{
@@ -209,7 +209,7 @@ Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>
 	}
 }
 template<typename Return, typename ... Types, typename Allocator,typename FunctionImpl, typename ... Args>
-Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args)
+constexpr Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function, const function_arguments<Args...>& i_args)
 {
     if constexpr (mpl::is_void<Return>)
     {
@@ -222,7 +222,7 @@ Return eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>
 }
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_function,Args&& ... i_args)
+constexpr mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_function,Args&& ... i_args)
 {
 	if constexpr (mpl::is_void<mpl::aqcuire_callable_return_type_at<Function,Args...>>)
 	{
@@ -235,7 +235,7 @@ mpl::aqcuire_callable_return_type_at<Function,Args...> eval(Function&& i_functio
 }
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, Args&& ... i_args)
+constexpr mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, Args&& ... i_args)
 {
 	if constexpr (mpl::is_void<mpl::aqcuire_callable_return_type_at<Function,Args...>>)
 	{
@@ -248,7 +248,7 @@ mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_f
 }
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args)
+constexpr mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
@@ -263,7 +263,7 @@ mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_f
 }
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, const function_arguments<Args...>& i_args)
+constexpr mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function, const function_arguments<Args...>& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
@@ -277,7 +277,7 @@ mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_f
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args)
+constexpr Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args)
 {
 	if constexpr (mpl::is_void<Return>)
 	{
@@ -289,7 +289,7 @@ Return terse_eval(const detail::function_impl<Return(Types...),Allocator,Functio
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args)
+constexpr Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
@@ -303,7 +303,7 @@ Return terse_eval(const detail::function_impl<Return(Types...),Allocator,Functio
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
+constexpr Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
@@ -317,7 +317,7 @@ Return terse_eval(const detail::function_impl<Return(Types...),Allocator,Functio
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args)
+constexpr Return terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
@@ -332,7 +332,7 @@ Return terse_eval(const detail::function_impl<Return(Types...),Allocator,Functio
 }
 TEMPLATE(typename Function,typename ... Args)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args)
+constexpr mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_function,function_arguments<Args...>&& i_args)
 {
 	typedef typename mpl::make_sequence<0,mpl::num_types<Args...>>::type seq_type;
 
@@ -346,7 +346,7 @@ mpl::aqcuire_callable_return_type_at<Function,Args...> terse_eval(Function&& i_f
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
-Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+constexpr Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<Return>)
 	{
@@ -358,7 +358,7 @@ Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,Functi
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
-Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+constexpr Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<Return>)
 	{
@@ -370,7 +370,7 @@ Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,Functi
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args,size_t ... Indexs>
-Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&)
+constexpr Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<Return>)
 	{
@@ -383,7 +383,7 @@ Return _terse_eval(const detail::function_impl<Return(Types...),Allocator,Functi
 }
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+constexpr auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
 	{
@@ -396,7 +396,7 @@ auto _terse_eval(Function&& i_function,function_arguments<Args...>& i_args,const
 }
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-auto _terse_eval(Function&& i_function, const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
+constexpr auto _terse_eval(Function&& i_function, const function_arguments<Args...>& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
 	{
@@ -409,7 +409,7 @@ auto _terse_eval(Function&& i_function, const function_arguments<Args...>& i_arg
 }
 TEMPLATE(typename Function,typename ... Args,size_t ... Indexs)
 REQUIRED(IS_NOT_FUNCTION(Function),IS_CALLABLE_BY(Function,Args...))
-auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&)
+constexpr auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args,const mpl::sequence<Indexs...>&)
 {
 	if constexpr (mpl::is_void<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Function>>::type>)
 	{
@@ -422,7 +422,7 @@ auto _terse_eval(Function&& i_function,function_arguments<Args...>&& i_args,cons
 }
 
 template<typename Return,typename Allocator,typename FunctionImpl>
-Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function)
+constexpr Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>& i_function)
 {
 	if constexpr(mpl::is_void<Return>)
 	{
@@ -435,7 +435,7 @@ Return eval_unsafe(const detail::function_impl<Return(),Allocator,FunctionImpl>&
 }
 TEMPLATE(typename Return,typename ... Types, typename Allocator,typename FunctionImpl,typename ... Args)
 REQUIRED(mpl::is_function_argumenttion_arguments<Arg>::value==false ...)
-Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args)
+constexpr Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,Args&& ... i_args)
 {
 	if constexpr(mpl::is_void<Return>)
 	{
@@ -447,7 +447,7 @@ Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,Functi
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
+constexpr Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,function_arguments<Args...>& i_args)
 {
 	if constexpr (mpl::is_void<Return>)
 	{
@@ -459,7 +459,7 @@ Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,Functi
 	}
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl,typename ... Args>
-Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args)
+constexpr Return eval_unsafe(const detail::function_impl<Return(Types...),Allocator,FunctionImpl>& i_function,const function_arguments<Args...>& i_args)
 {
 	if constexpr(mpl::is_void<Return>)
 	{

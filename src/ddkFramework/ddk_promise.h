@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ddk_future.h"
-#include "ddk_async_shared_state.h"
-#include "ddk_sync_executor_context.h"
+#include "ddk_context_async_shared_state.h"
 #include "ddk_distribute_from_this.h"
 
 namespace ddk
@@ -47,8 +46,7 @@ protected:
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 
-	detail::private_async_state_shared_ptr<T> m_sharedState;
-	immediate_execution_context m_execContext;
+	detail::context_private_async_state_shared_ptr<T> m_sharedState;
 	distributed_async_control_block m_refCounter;
 
 };
