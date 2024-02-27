@@ -165,10 +165,6 @@ bool execution_context_base::dismiss(unsigned char i_depth,continuation_token i_
 {
 	return m_recipientsRef->dismiss(i_depth,std::move(i_token));
 }
-void execution_context_base::clear()
-{
-	m_recipientsRef->clear();
-}
 void execution_context_base::admission_predicate(const function<bool(bool)>& i_callable)
 {
 	m_recipientsRef->call_admissionPredicate = i_callable;

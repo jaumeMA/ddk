@@ -79,7 +79,6 @@ public:
 	continuation_token enqueue(Callable&& i_callable, unsigned char i_depth);
 	void transfer(execution_context_base&& other);
 	bool dismiss(unsigned char i_depth,continuation_token i_token);
-	void clear();
 
 	execution_context_base& operator=(execution_context_base&&) = default;
 
