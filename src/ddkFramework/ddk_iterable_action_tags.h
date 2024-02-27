@@ -72,7 +72,7 @@ const sink_action_tag k_agnosticIterableEmptySink = sink_action_tag{ [](auto&& i
 typedef decltype(k_agnosticIterableEmptySink) k_agnostic_iterable_empty_sink;
 
 template<typename T>
-inline const sink_action_tag k_iterableEmptySink = sink_action_tag{ [](T) noexcept {} };
+inline const sink_action_tag k_iterableEmptySink = sink_action_tag{ [](const T&) noexcept {} };
 template<typename T>
 using k_iterable_empty_sink = decltype(k_iterableEmptySink<T>);
 
