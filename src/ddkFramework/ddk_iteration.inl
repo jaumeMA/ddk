@@ -2,6 +2,7 @@
 #include "ddk_reference_wrapper.h"
 #include "ddk_iterable_exceptions.h"
 #include "ddk_forwarding_iterable_value_callable.h"
+#include "ddk_iterable_exception_handler.h"
 
 namespace ddk
 {
@@ -128,13 +129,14 @@ future<iterable_result> iteration<Iterable,Sink>::attach(const detail::this_thre
 template<typename Iterable, typename Sink>
 template<typename Action>
 constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
-{	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::reference reference;	if constexpr (noexcept(ddk::terse_eval(m_sink,std::declval<reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
+{	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::reference reference;	if constexpr (noexcept(m_sink(std::declval<reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
 		return make_result<iterable_result>(success);
-	}	else	{		try		{			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
-
-			return make_result<iterable_result>(success);
-		}		catch (const iterable_exception& i_excp)		{			return (i_excp.reason() == iterable_exception::Terminated)  ? make_result<iterable_result>(success)																		: make_error<iterable_result>(i_excp.error());		}	}}
+	}	else	{		return detail::iterable_exception_handler::create_context([&]()
+		{
+			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
+		});
+	}}
 template<typename Iterable, typename Sink>
 template<typename Action>
 constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action) const
@@ -142,9 +144,10 @@ constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_act
 	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::const_reference const_reference;	if constexpr (noexcept(m_sink(std::declval<const_reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
 		return make_result<iterable_result>(success);
-	}	else	{		try		{			m_iterable.iterate_impl(action_sink{ i_action,m_sink });
-
-			return make_result<iterable_result>(success);
-		}		catch (const iterable_exception& i_excp)		{			return (i_excp.reason() == iterable_exception::Terminated)  ? make_result<iterable_result>(success)																		: make_error<iterable_result>(i_excp.error());		}	}}
+	}	else	{		return detail::s_iterable_context.create_context([&]()
+		{
+			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
+		});
+	}}
 
 }

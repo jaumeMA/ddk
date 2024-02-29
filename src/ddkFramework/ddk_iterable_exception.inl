@@ -1,4 +1,6 @@
 
+#include "ddk_iterable_exception_handler.h"
+
 namespace ddk
 {
 
@@ -19,7 +21,7 @@ constexpr inline void abort_iteration(const char* i_msg)
 		return;
 	}
 
-	throw iterable_exception{ iterable_exception::Aborted,i_msg };
+	detail::iterable_exception_handler::raise_exception(detail::iterable_exception_handler::Aborted,i_msg);
 }
 
 namespace detail
@@ -32,7 +34,7 @@ constexpr inline void ___terminate_iteration(const char* i_msg)
 		return;
 	}
 
-	throw iterable_exception{ iterable_exception::Terminated };
+	detail::iterable_exception_handler::raise_exception(detail::iterable_exception_handler::Terminated);
 }
 
 }

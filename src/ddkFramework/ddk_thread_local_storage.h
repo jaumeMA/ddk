@@ -17,8 +17,8 @@ public:
 	inline void destroy();
 	template<typename ... Args>
 	inline T* assign(Args&& ... i_args);
-	T& get();
-	const T& get() const;
+	auto get();
+	auto get() const;
 	T* get_address();
 	const T* get_address() const;
 	T extract() &&;

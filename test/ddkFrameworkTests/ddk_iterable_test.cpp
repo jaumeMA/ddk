@@ -170,14 +170,7 @@ myForwardAction(const Sink&,bool i_valid) -> myForwardAction<Sink>;
 
 TEST(DDKIterableTest,peformance)
 {
-	//auto kk = ddk::deduce_iterable(v_prova);
-
-	//kk.iterate_impl(myBeginAction{}).dismiss();
-	//kk.iterate_impl(myForwardAction{ [](const int&)
-	//	{
-	//	} }).dismiss();
-
-	ddk::swap_action{} >>= v_prova;
+	ddk::go_to_begin >>= ddk::concat(v_prova,v_prova);
 }
 struct myAdaptor
 {

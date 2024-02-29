@@ -19,18 +19,18 @@ public:
 	~threadlocal() = default;
 
 	template<typename ... Args>
-	T& acquire(Args&& ... i_args);
+	auto acquire(Args&& ... i_args);
 	template<typename ... Args>
-	T& set(Args&& ... i_args);
-	T& get();
-	const T& get() const;
-	T* get_ptr();
-	const T* get_ptr() const;
-	T extract() &&;
-	T& operator*();
-	const T& operator*() const;
-	T* operator->();
-	const T* operator->() const;
+	auto set(Args&& ... i_args);
+	auto get();
+	auto get() const;
+	auto get_ptr();
+	auto get_ptr() const;
+	auto extract() &&;
+	auto operator*();
+	auto operator*() const;
+	auto operator->();
+	auto operator->() const;
 	bool empty() const;
 	void clear();
 

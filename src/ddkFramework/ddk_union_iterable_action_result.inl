@@ -5,42 +5,42 @@ namespace ddk
 {
 
 template<typename Traits,typename ActionTag>
-union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(const iterable_action_tag_error<Traits,ActionTag>& i_error)
+constexpr union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(const iterable_action_tag_error<Traits,ActionTag>& i_error)
 : base_t(union_iterable_action_cs<typename recovery_tag::action_tag>(i_error.recovery()))
 {
 }
 template<typename Traits,typename ActionTag>
-union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(iterable_action_tag_error<Traits,ActionTag>&& i_error)
+constexpr union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(iterable_action_tag_error<Traits,ActionTag>&& i_error)
 : base_t(union_iterable_action_cs<typename recovery_tag::action_tag>(std::move(i_error).recovery()))
 {
 }
 template<typename Traits,typename ActionTag>
 template<typename TTraits,typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(const iterable_action_tag_error<TTraits,AActionTag>& i_error)
+constexpr union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(const iterable_action_tag_error<TTraits,AActionTag>& i_error)
 : base_t({ union_iterable_action_cs<typename recovery_tag::action_tag>(i_error.recovery()) })
 {
 }
 template<typename Traits,typename ActionTag>
 template<typename TTraits,typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(iterable_action_tag_error<TTraits,AActionTag>&& i_error)
+constexpr union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(iterable_action_tag_error<TTraits,AActionTag>&& i_error)
 : base_t({ union_iterable_action_cs<typename recovery_tag::action_tag>(std::move(i_error).recovery()) })
 {
 }
 template<typename Traits,typename ActionTag>
 template<typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(const union_iterable_action_error<Traits,AActionTag>& i_error)
+constexpr union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(const union_iterable_action_error<Traits,AActionTag>& i_error)
 : base_t({ union_iterable_action_cs<typename recovery_tag::action_tag>(i_error.recovery().action()) })
 {
 }
 template<typename Traits,typename ActionTag>
 template<typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(union_iterable_action_error<Traits,AActionTag>&& i_error)
+constexpr union_iterable_action_error<Traits,ActionTag>::union_iterable_action_error(union_iterable_action_error<Traits,AActionTag>&& i_error)
 : base_t({ union_iterable_action_cs<typename recovery_tag::action_tag>(std::move(i_error).recovery().action()) })
 {
 }
 template<typename Traits,typename ActionTag>
 template<typename TTraits, typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<TTraits,AActionTag>() const &
+constexpr union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<TTraits,AActionTag>() const &
 {
     typedef iterable_action_recovery_tag<TTraits,AActionTag> action_recovery_tag;
 
@@ -48,7 +48,7 @@ union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_erro
 }
 template<typename Traits,typename ActionTag>
 template<typename TTraits, typename AActionTag>
-union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<TTraits,AActionTag>() &&
+constexpr union_iterable_action_error<Traits,ActionTag>::operator iterable_action_tag_error<TTraits,AActionTag>() &&
 {
     typedef iterable_action_recovery_tag<TTraits,AActionTag> action_recovery_tag;
 

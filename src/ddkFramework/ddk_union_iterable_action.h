@@ -19,7 +19,7 @@ public:
 	union_iterable_action(begin_action_tag&&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,begin_action_tag> apply(Adaptor&& i_adaptor);
+	constexpr inline union_iterable_action_result<Adaptor,begin_action_tag> apply(Adaptor&& i_adaptor);
 	begin_action_tag action() const;
 };
 
@@ -34,7 +34,7 @@ public:
 	union_iterable_action(begin_next_iterable&&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,begin_next_iterable> apply(Adaptor&& i_adaptor);
+	constexpr inline union_iterable_action_result<Adaptor,begin_next_iterable> apply(Adaptor&& i_adaptor);
 	begin_next_iterable action() const;
 };
 
@@ -49,7 +49,7 @@ public:
 	union_iterable_action(end_action_tag&&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,end_action_tag> apply(Adaptor&& i_adaptor);
+	constexpr inline union_iterable_action_result<Adaptor,end_action_tag> apply(Adaptor&& i_adaptor);
 	end_action_tag action() const;
 };
 
@@ -64,7 +64,7 @@ public:
 	union_iterable_action(end_prev_iterable&&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,end_prev_iterable> apply(Adaptor&& i_adaptor);
+	constexpr inline union_iterable_action_result<Adaptor,end_prev_iterable> apply(Adaptor&& i_adaptor);
 	end_prev_iterable action() const;
 };
 
@@ -79,7 +79,7 @@ public:
 	union_iterable_action(const size_action_tag&);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,size_action_tag> apply(Adaptor&& i_adaptor);
+	constexpr inline union_iterable_action_result<Adaptor,size_action_tag> apply(Adaptor&& i_adaptor);
 	size_action_tag action() const;
 
 private:
@@ -101,7 +101,7 @@ public:
 	union_iterable_action(ActionTag&& i_actionTag);
 
 	template<typename Adaptor>
-	inline union_iterable_action_result<Adaptor,ActionTag> apply(Adaptor&& i_adaptor);
+	constexpr inline union_iterable_action_result<Adaptor,ActionTag> apply(Adaptor&& i_adaptor);
 	const ActionTag& action() const;
 
 private:
