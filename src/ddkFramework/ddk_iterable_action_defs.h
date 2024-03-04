@@ -218,8 +218,8 @@ public:
     constexpr inline auto apply(Adaptor && i_adaptor) const;
 
 private:
-    mutable Action m_action;
-    mutable Sink m_sink;
+    Action m_action;
+    Sink m_sink;
 };
 template<typename Action, typename Sink>
 action_sink(const Action& i_action,const Sink& i_sink,bool i_valid) -> action_sink<Action,Sink>;

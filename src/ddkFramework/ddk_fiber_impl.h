@@ -35,6 +35,9 @@ private:
 
 struct fiber_impl
 {
+	template<typename Return>
+	friend inline void launch_fiber(const ddk::function<Return()>* i_function,fiber_impl* i_fiber);
+
 public:
 	enum StartErrorCode
 	{

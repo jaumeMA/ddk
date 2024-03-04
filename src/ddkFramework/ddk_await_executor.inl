@@ -1,4 +1,6 @@
 
+#include "ddk_fiber_exception_handler.h"
+
 namespace ddk
 {
 namespace detail
@@ -113,7 +115,7 @@ bool await_executor<Return>::resume(const sink_type& i_sink)
 			}
 			else
 			{
-				throw async_exception{ "No yielded value when retorning from secondary context" };
+				DDK_FAIL("No yielded value when retorning from secondary context");
 			}
 		}
 
@@ -144,14 +146,11 @@ void await_executor<Return>::yield(yielder_context* i_context)
 	}
 }
 template<typename Return>
-void await_executor<Return>::suspend(yielder_context*)
+bool await_executor<Return>::suspend()
 {
 	const ExecutorState prevState = ddk::atomic_compare_exchange_val(m_state,ExecutorState::Executing,ExecutorState::Cancelling);
 
-	if(prevState == ExecutorState::Executing || prevState == ExecutorState::Cancelling)
-	{
-		throw suspend_exception(m_callee.get_id());
-	}
+	return prevState == ExecutorState::Executing || prevState == ExecutorState::Cancelling;
 }
 template<typename Return>
 bool await_executor<Return>::activate(fiber_id i_id,const ddk::function<void()>& i_callable)

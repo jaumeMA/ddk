@@ -60,7 +60,7 @@ public:
 
 private:
 	fiber_sheaf_execution_context m_execContext;
-	atomic8<unsigned char> m_state = ExecutorState::Idle;
+	atomic8<unsigned char> m_state;
 };
 
 class thread_executor

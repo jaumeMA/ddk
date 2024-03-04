@@ -29,6 +29,10 @@ bool yielder_context::is_running(fiber_id i_id) const
 {
     return m_state.first == i_id && m_state.second == Running;
 }
+fiber_id yielder_context::get_id() const
+{
+    return m_state.first;
+}
 
 }
 }

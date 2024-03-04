@@ -97,7 +97,7 @@ public:
 
 private:
 	void yield(detail::yielder_context*) override;
-	void suspend(detail::yielder_context*) override;
+	bool suspend() override;
 	bool activate(fiber_id i_id, const ddk::function<void()>& i_function) override;
 	bool deactivate(fiber_id i_id) override;
 	void unregister(fiber_id i_id) override;

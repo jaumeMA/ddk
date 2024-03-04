@@ -37,17 +37,17 @@ constexpr bool error_impl<Error>::operator!=(const error_impl<Error>& i_error) c
 }
 
 template<typename Error, typename ... NestedErrors>
-template<typename NestedError>
-constexpr error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode, NestedError&& i_nestedError)
+template<typename ... Args>
+constexpr error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode, Args&& ... i_args)
 : error_impl<Error>(i_errorCode)
-, m_nestedErrors(i_nestedError)
+, m_nestedErrors(std::forward<Args>(i_args)...)
 {
 }
 template<typename Error,typename ... NestedErrors>
-template<typename NestedError>
-constexpr error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode,const std::string& i_errorDesc,NestedError&& i_nestedError)
+template<typename ... Args>
+constexpr error_impl<Error,NestedErrors...>::error_impl(const Error& i_errorCode,const std::string& i_errorDesc, Args&& ... i_args)
 : error_impl<Error>(i_errorCode,i_errorDesc)
-, m_nestedErrors(i_nestedError)
+, m_nestedErrors(std::forward<Args>(i_args)...)
 {
 }
 template<typename Error, typename ... NestedErrors>
@@ -70,7 +70,7 @@ constexpr Result make_error(Args&& ... i_args)
 {
     typedef typename Result::error_t error_t;
 
-    return error_t{ std::forward<Args>(i_args) ... };
+    return error_t(std::forward<Args>(i_args) ...);
 }
 
 }

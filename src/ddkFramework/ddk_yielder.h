@@ -13,7 +13,7 @@ struct yielder
 public:
 	explicit yielder(yielder_interface& i_executor);
 	void yield(yielder_context* i_context);
-	void suspend(yielder_context* i_context);
+	void suspend();
 
 private:
 	yielder_interface& m_executor;

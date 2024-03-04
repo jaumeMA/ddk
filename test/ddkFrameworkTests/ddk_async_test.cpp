@@ -53,7 +53,7 @@ void light_func()
 		}
 		else
 		{
-			break;
+			ddk::suspend();
 		}
 	}
 }

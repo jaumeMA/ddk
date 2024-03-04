@@ -310,7 +310,7 @@ bool thread_sheaf_execution_context::has_failures() const
 
 fiber_sheaf_execution_context::fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf)
 : m_fiberSheaf(std::move(i_fiberSheaf))
-, m_failedFibers(0)
+, m_successFibers(0)
 , m_pendingFibers(m_fiberSheaf.size())
 {
 }
@@ -342,9 +342,9 @@ void fiber_sheaf_execution_context::clear_fibers()
 {
 	m_fiberSheaf.clear();
 }
-size_t fiber_sheaf_execution_context::add_failure()
+size_t fiber_sheaf_execution_context::add_success()
 {
-	return atomic_post_increment(m_failedFibers);
+	return atomic_post_increment(m_successFibers);
 }
 size_t fiber_sheaf_execution_context::remove_pending_thread()
 {
@@ -354,9 +354,9 @@ bool fiber_sheaf_execution_context::has_pending_fibers() const
 {
 	return m_pendingFibers.get() > 0;
 }
-bool fiber_sheaf_execution_context::has_failures() const
+bool fiber_sheaf_execution_context::has_succeed() const
 {
-	return m_failedFibers.get() > 0;
+	return m_successFibers.get() == m_fiberSheaf.size();
 }
 
 }

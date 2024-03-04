@@ -14,21 +14,6 @@ class error_impl;
 template<typename Error>
 class error_impl<Error>
 {
-	friend inline std::ostringstream& operator<<(std::ostringstream& i_lhs, const error_impl& i_rhs)
-	{
-		i_lhs << i_rhs.m_errorDesc;
-
-		return i_lhs;
-	}
-	friend inline std::string operator<<(const std::string& i_lhs,const error_impl& i_rhs)
-	{
-		std::ostringstream res(i_lhs);
-
-		res << i_rhs.m_errorDesc;
-
-		return res.str();
-	}
-
 public:
     constexpr error_impl(const Error& i_error);
 	constexpr error_impl(const Error& i_error, const std::string& i_errorDesc);
@@ -49,26 +34,7 @@ private:
 template<typename Error, typename ... NestedErrors>
 class error_impl : public error_impl<Error>
 {
-	friend inline std::ostringstream& operator<<(std::ostringstream& i_lhs,const error_impl& i_rhs)
-	{
-		visit([&i_lhs](auto&& i_error)
-		{
-			i_lhs << i_error;
-		},i_rhs.m_nestedErrors);
-
-		return i_lhs;
-	}
-	friend inline std::string operator<<(const std::string& i_lhs,const error_impl& i_rhs)
-	{
-		std::ostringstream res(i_lhs);
-
-		visit([&res](auto&& i_error)
-		{
-			res << i_error;
-		},i_rhs.m_nestedErrors);
-
-		return res.str();
-	}
+	typedef variant<NestedErrors...> nested_error;
 
 public:
 	using error_impl<Error>::error_impl;
@@ -79,17 +45,17 @@ public:
 	constexpr error_impl(error_impl&&) = default;
 	constexpr error_impl& operator=(error_impl&&) = default;
 	constexpr error_impl& operator=(const error_impl&) = default;
-    template<typename NestedError>
-	constexpr error_impl(const Error& i_errorCode, NestedError&& i_nestedError);
-	template<typename NestedError>
-	constexpr error_impl(const Error& i_errorCode,const std::string& i_errorDesc,NestedError&& i_nestedError);
+	template<typename ... Args>
+	constexpr error_impl(const Error& i_errorCode, Args&& ... i_args);
+	template<typename ... Args>
+	constexpr error_impl(const Error& i_errorCode,const std::string& i_errorDesc,Args&& ... i_args);
 	template<typename NestedError>
 	constexpr const NestedError& get_nested_error() const;
     template<typename Visitor>
 	constexpr typename mpl::remove_qualifiers<Visitor>::return_type visit(Visitor&& i_visitor) const;
 
 private:
-    variant_impl<NestedErrors...> m_nestedErrors;
+	nested_error m_nestedErrors;
 };
 
 }

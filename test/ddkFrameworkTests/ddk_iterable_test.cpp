@@ -108,7 +108,7 @@ std::vector<int> create_prova()
 
 	kk.reserve(1000000);
 
-	for (size_t i = 0;i < 1000000;i++)
+	for (int i = 0;i < 1000000;i++)
 	{
 		kk.push_back(i);
 	}

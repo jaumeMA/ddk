@@ -21,7 +21,7 @@ constexpr inline void abort_iteration(const char* i_msg)
 		return;
 	}
 
-	detail::iterable_exception_handler::raise_exception(detail::iterable_exception_handler::Aborted,i_msg);
+	detail::iterable_exception_handler::close_scope(ddk::IterableError::UserError,i_msg);
 }
 
 namespace detail
@@ -34,7 +34,7 @@ constexpr inline void ___terminate_iteration(const char* i_msg)
 		return;
 	}
 
-	detail::iterable_exception_handler::raise_exception(detail::iterable_exception_handler::Terminated);
+	detail::iterable_exception_handler::close_scope();
 }
 
 }

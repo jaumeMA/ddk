@@ -2,38 +2,26 @@
 
 #include "ddk_iterable_result.h"
 #include "ddk_exception.h"
-#include <setjmp.h>
 
 namespace ddk
 {
 namespace detail
 {
 
-struct iterable_exception_handler_t;
-template<>
-struct exception_handler<iterable_exception_handler_t>
+struct iterable_exception_handler
 {
 public:
-	enum Type
-	{
-		None,
-		Terminated,
-		Aborted
-	};
+	iterable_exception_handler() = default;
 
 	template<typename Callable>
-	static constexpr inline iterable_result create_context(Callable&& i_callable);
-	static void raise_exception(Type i_excp, const char* i_reason = "");
+	static inline result<void,iterable_error> open_scope(Callable&& i_callable);
+	template<typename ... Args>
+	static inline void close_scope(Args&& ... i_args);
+	static void close_scope();
 
 private:
-	exception_handler() = default;
-	static exception_handler<iterable_exception_handler_t>& get();
-
-	jmp_buf m_context;
-	Type m_type = None;
-	const char* m_reason = nullptr;
+	static thread_local exception_handler<iterable_error> s_iterable_exception_handler;
 };
-typedef exception_handler<iterable_exception_handler_t> iterable_exception_handler;
 
 }
 }

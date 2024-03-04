@@ -300,13 +300,13 @@ constexpr auto action_sink<Action,Sink>::apply(Adaptor&& i_adaptor) const
 		typedef detail::adaptor_traits<adaptor_t> traits;
 		typedef typename traits::reference reference;
 
-		i_adaptor.perform_action(sink_action_tag{ [this](reference i_value) mutable { ddk::terse_eval(m_sink,std::forward<reference>(i_value)); } }).dismiss();
+		std::forward<Adaptor>(i_adaptor).perform_action(sink_action_tag{ [this](reference i_value) mutable { ddk::terse_eval(m_sink,std::forward<reference>(i_value)); } }).dismiss();
 
-		return action_sink<decltype(nextAction),Sink>{ nextAction,m_sink };
+		return action_sink<decltype(nextAction),Sink>{ std::move(nextAction),m_sink };
 	}
 	else
 	{
-		return action_sink<decltype(nextAction),Sink>{ nextAction,m_sink,false };
+		return action_sink<decltype(nextAction),Sink>{ std::move(nextAction),m_sink,false };
 	}
 }
 

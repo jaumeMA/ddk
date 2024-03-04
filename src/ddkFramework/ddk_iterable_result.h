@@ -5,7 +5,7 @@
 namespace ddk
 {
 
-enum IterableError
+enum class IterableError
 {
     InternalError,
     UserError

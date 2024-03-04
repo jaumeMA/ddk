@@ -154,17 +154,17 @@ public:
 
 	bool cancel();
 	void clear_fibers();
-	size_t add_failure();
+	size_t add_success();
 	size_t remove_pending_thread();
 	bool has_pending_fibers() const;
-	bool has_failures() const;
+	bool has_succeed() const;
 	continuation_token enqueue(const function<void()>&);
 
 	void start(const function<void()>&);
 
 private:
 	fiber_sheaf m_fiberSheaf;
-	atomic_size_t m_failedFibers;
+	atomic_size_t m_successFibers;
 	atomic_size_t m_pendingFibers;
 };
 

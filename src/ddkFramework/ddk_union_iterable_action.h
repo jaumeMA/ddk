@@ -16,11 +16,11 @@ public:
 	typedef mpl::type_pack<begin_action_tag> tags_t;
 	typedef begin_action_tag action_tag;
 
-	union_iterable_action(begin_action_tag&&);
+	constexpr union_iterable_action(begin_action_tag&&);
 
 	template<typename Adaptor>
 	constexpr inline union_iterable_action_result<Adaptor,begin_action_tag> apply(Adaptor&& i_adaptor);
-	begin_action_tag action() const;
+	constexpr begin_action_tag action() const;
 };
 
 template<>
@@ -30,12 +30,12 @@ public:
 	typedef mpl::type_pack<begin_action_tag> tags_t;
 	typedef begin_next_iterable action_tag;
 
-	union_iterable_action() = default;
-	union_iterable_action(begin_next_iterable&&);
+	constexpr union_iterable_action() = default;
+	constexpr union_iterable_action(begin_next_iterable&&);
 
 	template<typename Adaptor>
 	constexpr inline union_iterable_action_result<Adaptor,begin_next_iterable> apply(Adaptor&& i_adaptor);
-	begin_next_iterable action() const;
+	constexpr begin_next_iterable action() const;
 };
 
 template<>
@@ -45,12 +45,12 @@ public:
 	typedef mpl::type_pack<end_action_tag> tags_t;
 	typedef end_action_tag action_tag;
 
-	union_iterable_action() = default;
-	union_iterable_action(end_action_tag&&);
+	constexpr union_iterable_action() = default;
+	constexpr union_iterable_action(end_action_tag&&);
 
 	template<typename Adaptor>
 	constexpr inline union_iterable_action_result<Adaptor,end_action_tag> apply(Adaptor&& i_adaptor);
-	end_action_tag action() const;
+	constexpr end_action_tag action() const;
 };
 
 template<>
@@ -60,12 +60,12 @@ public:
 	typedef mpl::type_pack<end_action_tag> tags_t;
 	typedef end_prev_iterable action_tag;
 
-	union_iterable_action() = default;
-	union_iterable_action(end_prev_iterable&&);
+	constexpr union_iterable_action() = default;
+	constexpr union_iterable_action(end_prev_iterable&&);
 
 	template<typename Adaptor>
 	constexpr inline union_iterable_action_result<Adaptor,end_prev_iterable> apply(Adaptor&& i_adaptor);
-	end_prev_iterable action() const;
+	constexpr end_prev_iterable action() const;
 };
 
 template<>
@@ -75,16 +75,16 @@ public:
 	typedef mpl::type_pack<size_action_tag> tags_t;
 	typedef size_action_tag action_tag;
 
-	union_iterable_action() = default;
-	union_iterable_action(const size_action_tag&);
+	constexpr union_iterable_action() = default;
+	constexpr union_iterable_action(const size_action_tag&);
 
 	template<typename Adaptor>
 	constexpr inline union_iterable_action_result<Adaptor,size_action_tag> apply(Adaptor&& i_adaptor);
-	size_action_tag action() const;
+	constexpr size_action_tag action() const;
 
 private:
 	template<typename Adaptor, size_t ... Indexs>
-	inline union_iterable_action_result<Adaptor,size_action_tag> _apply(Adaptor&& i_adaptor, const mpl::sequence<Indexs...>&);
+	constexpr inline union_iterable_action_result<Adaptor,size_action_tag> _apply(Adaptor&& i_adaptor, const mpl::sequence<Indexs...>&);
 };
 
 template<typename ActionTag>
@@ -94,15 +94,15 @@ public:
 	typedef mpl::type_pack<ActionTag> tags_t;
 	typedef ActionTag action_tag;
 
-	union_iterable_action() = default;
+	constexpr union_iterable_action() = default;
 	TEMPLATE(typename AActionTag)
 	REQUIRES(IS_CONSTRUCTIBLE(ActionTag,AActionTag))
-	union_iterable_action(AActionTag&& i_actionTag);
-	union_iterable_action(ActionTag&& i_actionTag);
+	constexpr union_iterable_action(AActionTag&& i_actionTag);
+	constexpr union_iterable_action(ActionTag&& i_actionTag);
 
 	template<typename Adaptor>
 	constexpr inline union_iterable_action_result<Adaptor,ActionTag> apply(Adaptor&& i_adaptor);
-	const ActionTag& action() const;
+	constexpr const ActionTag& action() const;
 
 private:
 	ActionTag m_actionTag;

@@ -35,8 +35,6 @@ private:
 	detail::fiber_impl_unique_ref m_impl;
 };
 
-//extern const thread_local detail::this_fiber_t this_fiber;
-
 template<typename Allocator, typename ... Args>
 fiber make_fiber(Args&& ... i_args);
 

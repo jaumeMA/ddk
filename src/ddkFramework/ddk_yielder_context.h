@@ -23,6 +23,7 @@ struct yielder_context
 	void pause(fiber_id i_id);
 	bool is_paused(fiber_id i_id) const;
 	bool is_running(fiber_id i_id) const;
+	fiber_id get_id() const;
 
 private:
 	std::pair<fiber_id,State> m_state;

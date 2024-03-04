@@ -25,22 +25,22 @@ void suspend()
 {
     if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
     {
-        throw suspend_exception{ currFiberContext->get_id() };
+        currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
     }
     else
     {
-        throw suspend_exception{ k_invalidFiberId };
+        DDK_FAIL("Invalid current fiber context");
     }
 }
 void suspend(int i_code,const std::string& i_reason)
 {
     if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
     {
-        throw suspend_exception{ currFiberContext->get_id(),i_code,i_reason };
+        currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id(),i_code,i_reason });
     }
     else
     {
-        throw suspend_exception{ k_invalidFiberId };
+        DDK_FAIL("Invalid current fiber context");
     }
 }
 void yield()
@@ -55,7 +55,7 @@ void yield()
 
             if(currFiberContext->is_stopped())
             {
-                throw suspend_exception{ currFiberContext->get_id() };
+                currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
             }
         }
         else
@@ -81,7 +81,7 @@ void pause()
 
             if(currFiberContext->is_stopped())
             {
-                throw suspend_exception{ currFiberContext->get_id() };
+                currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
             }
         }
         else

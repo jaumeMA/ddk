@@ -1,7 +1,7 @@
 #pragma once
 
-#include <exception>
 #include "ddk_fiber_defs.h"
+#include <exception>
 #include <string>
 
 namespace ddk
@@ -9,7 +9,7 @@ namespace ddk
 
 struct suspend_exception : public std::exception
 {
-	const int s_valid_code = 0xFFFF;
+	static const int s_valid_code = 0xFFFF;
 
 public:
 	suspend_exception(fiber_id i_id);
@@ -22,8 +22,8 @@ public:
 
 private:
 	fiber_id m_id;
-	const int m_code = s_valid_code;
-	const std::string m_reason;
+	int m_code = s_valid_code;
+	std::string m_reason;
 };
 
 struct cancel_exception : public std::exception
@@ -32,8 +32,8 @@ struct cancel_exception : public std::exception
 
 SCOPED_ENUM_DECL(AsyncExceptionCode,
 				 None,
-				 Pause,
-				 Cancel);
+				 Suspended,
+				 Cancelled);
 
 struct async_error
 {

@@ -14,7 +14,7 @@ protected:
 
 public:
 	virtual void yield(yielder_context*) = 0;
-	virtual void suspend(yielder_context*) = 0;
+	virtual bool suspend() = 0;
 };
 
 }

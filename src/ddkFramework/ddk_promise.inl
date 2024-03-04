@@ -122,7 +122,7 @@ typename promise<T>::cancel_result promise<T>::cancel()
 		}
 		else
 		{
-			m_sharedState->set_exception(async_exception{"Promise has been cancelled by user",AsyncExceptionCode::Cancel});
+			m_sharedState->set_exception(async_exception{"Promise has been cancelled by user",AsyncExceptionCode::Cancelled});
 
 			return success;
 		}

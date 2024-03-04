@@ -37,7 +37,7 @@ public:
 private:
 	await_executor(const await_executor& other,const stack_allocator&);
 	void yield(yielder_context* i_context) override;
-	void suspend(yielder_context* = nullptr) override;
+	bool suspend() override;
 
 	bool activate(fiber_id,const ddk::function<void()>&) override;
 	bool deactivate(fiber_id) override;

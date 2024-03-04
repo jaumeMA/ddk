@@ -1,9 +1,12 @@
 #pragma once
 
 #include "ddk_fiber_defs.h"
+#include "ddk_fiber_result.h"
 #include "ddk_yielder_interface.h"
 #include "ddk_execution_stack.h"
 #include "ddk_ucontext.h"
+#include "ddk_exception.h"
+#include "ddk_async_exceptions.h"
 
 #define load_switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
@@ -11,7 +14,7 @@
 	\
 	load_switch_execution_stack(i_oldCtxt.m_stack,i_newCtxt.m_stack) \
 	\
-	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
+	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context); \
 
 #define switch_execution_context(i_oldCtxt,i_newCtxt) \
 	\
@@ -19,7 +22,7 @@
 	\
 	switch_execution_stack(i_newCtxt.m_stack) \
 	\
-	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context);
+	ddk::swap_context(&i_oldCtxt.m_context,&i_newCtxt.m_context); \
 
 #define switch_execution(i_newCtxt) \
 	\
@@ -91,6 +94,7 @@ public:
 	yielder_interface* m_yielder;
 	execution_stack m_stack;
 	mutable ucontext_t m_context;
+	exception_handler<fiber_error> m_excpHandler;
 	bool m_stopped = false;
 };
 
