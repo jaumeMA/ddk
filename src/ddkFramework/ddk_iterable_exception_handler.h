@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_result.h"
-#include "ddk_exception.h"
+#include "ddk_exception_handler.h"
 
 namespace ddk
 {

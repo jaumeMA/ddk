@@ -209,8 +209,6 @@ start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 						}
 					}
 
-					//m_execContext.clear_fibers();
-
 					m_execContext.notify_recipients(callable.policy() == SchedulerPolicy::FireAndReuse);
 				}
 			} };
