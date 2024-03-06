@@ -8,7 +8,18 @@ namespace ddk
 namespace detail
 {
 
-typedef exception_handler<fiber_result> fiber_exception_handler;
+class fiber_exception_handler
+{
+	typedef exception_handler<fiber_error>::handler handler;
+
+public:
+	template<typename Callable>
+	static constexpr inline auto open_scope(Callable&& i_callable);
+	template<typename ... Args>
+	static constexpr inline void close_scope(Args&& ... i_args);
+};
 
 }
 }
+
+#include "ddk_fiber_exception_handler.inl"

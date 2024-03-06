@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_result.h"
+#include <stack>
 #include <setjmp.h>
 
 namespace ddk
@@ -21,32 +22,37 @@ struct exception_handler
 	}
 
 public:
-	template<typename Checker>
-	struct scope_handler
+	typedef result<void,Exception> result_t;
+
+	struct handler
 	{
-	public:
-		template<typename CChecker>
-		scope_handler(CChecker&& i_checker);
-		~scope_handler();
+		handler(result_t i_result);
 
-	private:
-		Checker m_checker;
+		template<typename Callable>
+		constexpr inline auto on_success(Callable&& i_callable) const;
+		template<typename Callable>
+		constexpr inline auto on_error(Callable&& i_callable) const;
+		constexpr inline operator result_t();
+		constexpr inline void dismiss();
+
+		result_t m_innerResult;
 	};
-	template<typename Checker>
-	scope_handler(const Checker&) -> scope_handler<Checker>;
-	template<typename Checker>
-	scope_handler(Checker&&) -> scope_handler<Checker>;
 
-	exception_handler();
+	constexpr exception_handler();
 	template<typename Callable>
-	NO_DISCARD_RETURN constexpr inline result<void,Exception> open_scope(Callable&& i_callable);
+	NO_DISCARD_RETURN constexpr inline handler open_scope(Callable&& i_callable);
 	template<typename ... Args>
-	void close_scope(Args&& ... i_args);
-	void close_scope();
+	constexpr inline void close_scope(Args&& ... i_args);
+	constexpr inline void close_scope();
 
 private:
-	jmp_buf m_context;
-	result<void,Exception> m_innerResult;
+	struct jmpBuf
+	{
+		jmp_buf m_buf;
+	};
+
+	std::stack<jmpBuf> m_contextStack;
+	result_t m_innerResult;
 };
 
 }

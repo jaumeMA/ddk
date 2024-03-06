@@ -190,32 +190,32 @@ start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	{
 		m_execContext.start([callable = std::forward<Callable>(i_callable),sink = i_sink,this]() mutable
 		{
-			fiber_exception_handler::scope_handler execChecker{ [&]()
+			fiber_exception_handler::open_scope([&]()
 			{
-				if (m_execContext.remove_pending_thread() == 0)
+				ddk::eval(std::forward<Callable>(callable));
+
+				m_execContext.add_success();
+			}).dismiss();
+
+			if (m_execContext.remove_pending_thread() == 0)
+			{
+				while (m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
+
+				if (ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					while (m_state.get() == ExecutorState::Cancelling) std::this_thread::yield();
-
-					if (ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
+					if (m_execContext.has_succeed())
 					{
-						if (m_execContext.has_succeed())
-						{
-							ddk::eval(std::forward<Sink>(sink),_void);
-						}
-						else
-						{
-							//improve exception report
-							ddk::eval(std::forward<Sink>(sink),async_exception{ "Some fibers triggered exception" });
-						}
+						ddk::eval(std::forward<Sink>(sink),_void);
 					}
-
-					m_execContext.notify_recipients(callable.policy() == SchedulerPolicy::FireAndReuse);
+					else
+					{
+						//improve exception report
+						ddk::eval(std::forward<Sink>(sink),async_exception{ "Some fibers triggered exception" });
+					}
 				}
-			} };
 
-			ddk::eval(std::forward<Callable>(callable));
-
-			m_execContext.add_success();
+				m_execContext.notify_recipients(callable.policy() == SchedulerPolicy::FireAndReuse);
+			}
 		});
 
 		return make_result<start_result>(ExecutorState::Executing);

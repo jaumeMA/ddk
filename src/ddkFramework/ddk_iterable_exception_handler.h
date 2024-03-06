@@ -14,10 +14,9 @@ public:
 	iterable_exception_handler() = default;
 
 	template<typename Callable>
-	static inline result<void,iterable_error> open_scope(Callable&& i_callable);
+	static constexpr inline auto open_scope(Callable&& i_callable);
 	template<typename ... Args>
-	static inline void close_scope(Args&& ... i_args);
-	static void close_scope();
+	static constexpr inline void close_scope(Args&& ... i_args);
 
 private:
 	static thread_local exception_handler<iterable_error> s_iterable_exception_handler;

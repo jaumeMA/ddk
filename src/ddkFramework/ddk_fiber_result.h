@@ -9,7 +9,8 @@ namespace ddk
 enum class FiberErrorCode
 {
 	Suspended,
-	AsyncExecption
+	AsyncExecption,
+	InvalidFiberContext
 };
 
 typedef error<FiberErrorCode,suspend_exception,async_exception> fiber_error;

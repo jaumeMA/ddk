@@ -30,41 +30,35 @@ void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber
 	{
 		const ddk::function<Return()> localCallable = *i_function;
 
-		if (fiber_result res = i_fiber->m_fiberContext.m_excpHandler.open_scope([callable = localCallable]()
+		i_fiber->m_fiberContext.m_excpHandler.open_scope([callable = localCallable]()
+		{
+			if constexpr (std::is_same<Return,void>::value)
 			{
-				if constexpr (std::is_same<Return,void>::value)
-				{
-					eval(callable);
-				}
-				else
-				{
-					yield(eval(callable));
-				}
-			}))
+				eval(callable);
+			}
+			else
+			{
+				yield(eval(callable));
+			}
+		}).on_error([](const fiber_error& i_error)
 		{
-			//do nothing
-		}
-		else
-		{
-			const fiber_error err = res.error();
-
-			switch (err.get_error())
+			switch (i_error.get_error())
 			{
 				case FiberErrorCode::Suspended:
 				{
-					yield(async_exception{ err.what(),AsyncExceptionCode::Suspended });
+					yield(async_exception{ i_error.what(),AsyncExceptionCode::Suspended });
 
 					break;
 				}
 				case FiberErrorCode::AsyncExecption:
 				default:
 				{
-					yield(async_exception{ err.what(),AsyncExceptionCode::Cancelled });
+					yield(async_exception{ i_error.what(),AsyncExceptionCode::Cancelled });
 
 					break;
 				}
 			}
-		}
+		});
 	}
 
 	i_fiber->m_state = FiberExecutionState::Done;
