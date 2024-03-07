@@ -19,6 +19,8 @@ constexpr auto exception_handler<Exception>::handler::on_success(Callable&& i_ca
 	{
 		eval(std::forward<Callable>(i_callable));
 	}
+
+	return *this;
 }
 template<typename Exception>
 template<typename Callable>
@@ -28,6 +30,8 @@ constexpr inline auto exception_handler<Exception>::handler::on_error(Callable&&
 	{
 		eval(std::forward<Callable>(i_callable),m_innerResult.error());
 	}
+
+	return *this;
 }
 template<typename Exception>
 constexpr exception_handler<Exception>::handler::operator typename exception_handler<Exception>::result_t()

@@ -3,7 +3,7 @@
 #include "ddk_thread_impl.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_async_exceptions.h"
-#include "ddk_execution_context.h"
+#include "ddk_fiber_exception_handler.h"
 
 namespace ddk
 {
@@ -23,25 +23,11 @@ fiber_id get_current_fiber_id()
 
 void suspend()
 {
-    if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
-    {
-        currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
-    }
-    else
-    {
-        DDK_FAIL("Invalid current fiber context");
-    }
+    detail::fiber_exception_handler::close_scope(FiberErrorCode::Suspended,suspend_exception{ get_current_fiber_id() });
 }
 void suspend(int i_code,const std::string& i_reason)
 {
-    if(ddk::detail::execution_context* currFiberContext = get_current_execution_context())
-    {
-        currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id(),i_code,i_reason });
-    }
-    else
-    {
-        DDK_FAIL("Invalid current fiber context");
-    }
+    detail::fiber_exception_handler::close_scope(FiberErrorCode::Suspended,suspend_exception{ get_current_fiber_id(),i_code,i_reason});
 }
 void yield()
 {
