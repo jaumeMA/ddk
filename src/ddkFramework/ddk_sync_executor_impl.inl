@@ -190,12 +190,12 @@ start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	{
 		m_execContext.start([callable = std::forward<Callable>(i_callable),sink = i_sink,this]() mutable
 		{
-			fiber_exception_handler::open_scope([&]()
+			exception_handler::open_scope([&]()
 			{
 				ddk::eval(std::forward<Callable>(callable));
 
 				m_execContext.add_success();
-			}).dismiss();
+			});
 
 			if (m_execContext.remove_pending_thread() == 0)
 			{

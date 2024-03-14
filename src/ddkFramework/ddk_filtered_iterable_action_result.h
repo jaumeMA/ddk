@@ -16,6 +16,7 @@ public:
 	typedef typename iterable_action_error::recovery_tag recovery_tag;
 
 	constexpr filtered_iterable_action_error() = default;
+	constexpr filtered_iterable_action_error(const Filter& i_filter);
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(iterable_action_error,Args...))
 	constexpr filtered_iterable_action_error(Args&& ... i_args);

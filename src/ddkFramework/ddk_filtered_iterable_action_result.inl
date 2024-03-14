@@ -3,6 +3,11 @@ namespace ddk
 {
 
 template<typename Traits,typename ActionTag,typename Filter>
+constexpr filtered_iterable_action_error<Traits,ActionTag,Filter>::filtered_iterable_action_error(const Filter& i_filter)
+: m_error(iterable_action_error{ recovery_tag{{},i_filter} })
+{
+}
+template<typename Traits,typename ActionTag,typename Filter>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(iterable_action_error,Args...))
 constexpr filtered_iterable_action_error<Traits,ActionTag,Filter>::filtered_iterable_action_error(Args&& ... i_args)
@@ -38,7 +43,7 @@ constexpr filtered_iterable_action_error<Traits,ActionTag,Filter>::filtered_iter
 template<typename Traits,typename ActionTag,typename Filter>
 constexpr filtered_iterable_action_error<Traits,ActionTag,Filter>::operator bool() const
 {
-    return m_filteredOut;
+    return m_filteredOut && m_error.empty() == false;
 }
 template<typename Traits,typename ActionTag,typename Filter>
 TEMPLATE(typename TTraits)

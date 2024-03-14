@@ -72,12 +72,12 @@ public:
 	execution_context_base();
 	execution_context_base(execution_context_base&& other);
 	void notify_recipients(bool i_useAndKeep);
-	size_t transfer_recipients(execution_context_base&& other);
+	bool transfer_recipients(execution_context_base&& other);
 	void admission_predicate(const function<bool(bool)>& i_callable);
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE(Callable))
 	continuation_token enqueue(Callable&& i_callable, unsigned char i_depth);
-	void transfer(execution_context_base&& other);
+	bool transfer(execution_context_base&& other);
 	bool dismiss(unsigned char i_depth,continuation_token i_token);
 
 	execution_context_base& operator=(execution_context_base&&) = default;

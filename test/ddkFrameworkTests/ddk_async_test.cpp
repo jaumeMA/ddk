@@ -163,7 +163,7 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	ddk::thread myThread;
 	int step = 0;
 
-	ddk::async([]() {}) -> attach(std::move(myThread));
+	//ddk::async([]() {}) -> attach(std::move(myThread));
 
 	//ddk::async([&]() -> my_result 
 	//{ 
@@ -187,35 +187,28 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	//});
 
 	ddk::thread _myThread;
+	int res = 0;
 
-	ddk::async([]() -> ddk::future<my_result> 
+	ddk::async([&]() -> my_result
 	{ 
-		return ddk::async([]() -> my_result 
-		{ 
-			std::this_thread::sleep_for(std::chrono::seconds(2));
-
- 			return ddk::make_unique_reference<int>(10); 
-		});
-	}) -> attach(std::move(_myThread))
-	.then([](my_result i_value) -> ddk::future<std::string>
+	 	return ddk::make_unique_reference<int>(10); 
+	})->attach(std::move(_myThread))
+	.then([_myThread = std::move(myThread)](my_result i_value) mutable -> ddk::future<std::string>
 	{
 		if (i_value)
 		{
 			ddk::unique_reference_wrapper<int> nestedRes = std::move(i_value).extract();
 
-			return ddk::async([]() -> std::string { return "success"; });
+			return ddk::async([]() -> std::string { return "success"; })->attach(std::move(_myThread));
 		}
 		else
 		{
-			return ddk::async([]() -> std::string { return "error"; });
+			return ddk::async([]() -> std::string { return "error"; })->attach(std::move(_myThread));
 		}
 	})
 	.then([](std::string i_value)
 	{
-		int a = 0;
-		++a;
-
-		return a;
+		return 10;
 	});
 }
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)

@@ -39,15 +39,13 @@ async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::prom
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::~promised_callable()
 {
-	if (async_executor_base* _executor = get_raw_ptr(m_executor))
+	if (async_executor_base* _executor = extract_raw_ptr(m_executor))
 	{
-		m_executor = nullptr;
-
 		_executor->reset(static_cast<promised_callable&&>(*this));
 	}
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-void async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::share_ownership(detail::private_async_state_const_shared_ptr<callable_return_type> i_sharedState)
+void async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::share_ownership(detail::private_async_state_base_const_shared_ptr i_sharedState)
 {
 	m_sharedState = i_sharedState;
 }
@@ -153,6 +151,11 @@ void async_executor_base<Callable,CancelOp,Promise,Executor>::reset(promised_cal
 	}
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+void async_executor_base<Callable,CancelOp,Promise,Executor>::share_ownership(detail::private_async_state_base_const_shared_ref i_sharedState)
+{
+	m_function.share_ownership(i_sharedState);
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 executor_context_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_execution_context()
 {
 	return m_executor.get_execution_context();
@@ -184,7 +187,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::immediate_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(*this));
+	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(thread i_thread)
@@ -217,6 +220,49 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
 	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_fiberSheaf));
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
+template<typename T>
+future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(detail::private_async_state_shared_ref<T> i_sharedState, unsigned char i_depth)
+{
+	typedef future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> return_type;
+
+	if (async_base_dist_ptr asyncExecutor = i_sharedState->get_async_execution())
+	{
+		class chained_async_scheduler
+		{
+		public:
+			chained_async_scheduler(detail::private_async_state_base_const_shared_ref i_sharedState)
+			: m_sharedState(i_sharedState)
+			{
+			}
+			void subscribe(async_executor_base<Callable,CancelOp,Promise,detail::execution_context_executor>& i_executor)
+			{
+				if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
+				{
+					throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
+				}
+
+				i_executor.share_ownership(std::move(m_sharedState));
+			}
+
+		private:
+			detail::private_async_state_base_const_shared_ref m_sharedState;
+		};
+
+		return_type res = std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),chained_async_scheduler{ i_sharedState },asyncExecutor->get_execution_context(),i_depth);
+
+		return res;
+	}
+	else
+	{
+		typedef detail::immediate_executor attached_executor_t;
+		typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
+
+		return_type res = std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)));
+
+		return res;
+	}
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth)
@@ -302,9 +348,9 @@ async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<ty
 	return std::move(this->m_promise).attach<async_executor_t>(std::move(this->m_function).extract(),std::move(this->m_cancelFunc),std::move(this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
-void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach(detail::private_async_state_shared_ptr<callable_return_type> i_sharedState)
+void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach(detail::private_async_state_base_const_shared_ref i_sharedState)
 {
-	this->m_function.share_ownership(i_sharedState);
+	async_executor_base<Callable,CancelOp,Promise,Executor>::share_ownership(i_sharedState);
 
 	m_scheduler.subscribe(*this);
 }

@@ -29,14 +29,14 @@ class async_executor_base : public async_cancellable_interface,public lend_from_
 		promised_callable(promised_callable&& other);
 		~promised_callable();
 
-		void share_ownership(detail::private_async_state_const_shared_ptr<callable_return_type> i_sharedState);
+		void share_ownership(detail::private_async_state_base_const_shared_ptr i_sharedState);
 		callable_return_type operator()();
 		Callable extract()&&;
 		SchedulerPolicy policy() const;
 
 	private:
 		Callable m_function;
-		detail::private_async_state_const_shared_ptr<callable_return_type> m_sharedState;
+		detail::private_async_state_base_const_shared_ptr m_sharedState;
 		lent_pointer_wrapper<async_executor_base> m_executor;
 		SchedulerPolicy m_schedulerPolicy = SchedulerPolicy::None;
 	};
@@ -63,6 +63,7 @@ public:
 	template<typename ... Args>
 	start_result execute(SchedulerPolicy i_policy, Args&& ... i_args);
 	void reset(promised_callable i_callable);
+	void share_ownership(detail::private_async_state_base_const_shared_ref i_sharedState);
 
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
@@ -100,6 +101,8 @@ public:
 		future<callable_return_type> attach(fiber i_fiber);
 		future<callable_return_type> attach(thread_sheaf i_threadSheaf);
 		future<callable_return_type> attach(fiber_sheaf i_fiberSheaf);
+		template<typename T>
+		future<callable_return_type> attach(detail::private_async_state_shared_ref<T> i_sharedState, unsigned char i_depth);
 		future<callable_return_type> attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth);
 		template<typename EExecutor,typename ... Args>
 		future<callable_return_type> attach(Args&& ... i_args);
@@ -130,7 +133,7 @@ public:
 	async_executor& operator=(const async_executor&) = delete;
 	moved_async_executor operator->() &&;
 	operator future<callable_return_type>() &&;
-	void attach(detail::private_async_state_shared_ptr<callable_return_type> i_sharedState);
+	void attach(detail::private_async_state_base_const_shared_ref i_sharedState);
 
 private:
 	Scheduler m_scheduler;

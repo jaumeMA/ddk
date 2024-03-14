@@ -2,7 +2,7 @@
 #include "ddk_reference_wrapper.h"
 #include "ddk_iterable_exceptions.h"
 #include "ddk_forwarding_iterable_value_callable.h"
-#include "ddk_iterable_exception_handler.h"
+#include "ddk_exception_handler.h"
 
 namespace ddk
 {
@@ -132,7 +132,7 @@ constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_act
 {	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::reference reference;	if constexpr (noexcept(m_sink(std::declval<reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
 		return make_result<iterable_result>(success);
-	}	else	{		return detail::iterable_exception_handler::open_scope([&]()
+	}	else	{		return exception_handler::open_scope([&]()
 		{
 			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
 		});
@@ -144,7 +144,7 @@ constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_act
 	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::const_reference const_reference;	if constexpr (noexcept(m_sink(std::declval<const_reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
 		return make_result<iterable_result>(success);
-	}	else	{		return detail::iterable_exception_handler::open_scope([&]()
+	}	else	{		return exception_handler::open_scope([&]()
 		{
 			m_iterable.iterate_impl(action_sink{ i_action,std::move(m_sink) });
 		});

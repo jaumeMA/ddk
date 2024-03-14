@@ -55,10 +55,10 @@ public:
 protected:
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto _then(Callable&& i_continuation) &&;
+	auto _then(Callable && i_continuation) &&;
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto _async(Callable&& i_continuation, executor_context_lent_ptr i_execContext) &&;
+	auto _async(Callable&& i_continuation, detail::private_async_state_shared_ptr<future<T>> i_execContext) &&;
 
 	detail::private_async_state_shared_ptr<future<T>> m_sharedState;
 	unsigned char m_depth = 0;

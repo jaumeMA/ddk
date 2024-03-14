@@ -44,7 +44,7 @@ template<typename T, typename Allocator>
 template<typename Executor,typename ... Args>
 future<T> executor_promise<T,Allocator>::attach(Args&& ... i_args) &&
 {
-	detail::embedded_private_async_state_shared_ptr<T,Executor> _sharedState = make_shared_reference<detail::embedded_private_async_state<T,Executor>>(m_allocator);
+	detail::embedded_private_async_state_shared_ref<T,Executor> _sharedState = make_shared_reference<detail::embedded_private_async_state<T,Executor>>(m_allocator);
 
 	m_sharedState = _sharedState;
 

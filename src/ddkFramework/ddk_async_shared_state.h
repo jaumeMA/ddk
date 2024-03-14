@@ -22,8 +22,27 @@ class executor_promise;
 namespace detail
 {
 
+struct private_async_state_base
+{
+public:
+	virtual ~private_async_state_base() = default;
+};
+
+using private_async_state_base_shared_ref = shared_reference_wrapper<private_async_state_base>;
+using private_async_state_base_const_shared_ref = shared_reference_wrapper<const private_async_state_base>;
+using private_async_state_base_shared_ptr = shared_pointer_wrapper<private_async_state_base>;
+using private_async_state_base_const_shared_ptr = shared_pointer_wrapper<const private_async_state_base>;
+
+using private_async_state_base_weak_ptr = weak_pointer_wrapper<private_async_state_base>;
+using private_async_state_base_const_weak_ptr = weak_pointer_wrapper<const private_async_state_base>;
+
+using private_async_state_base_lent_ref = lent_reference_wrapper<private_async_state_base>;
+using private_async_state_base_const_lent_ref = lent_reference_wrapper<const private_async_state_base>;
+using private_async_state_base_lent_ptr = lent_pointer_wrapper<private_async_state_base>;
+using private_async_state_base_const_lent_ptr = lent_pointer_wrapper<const private_async_state_base>;
+
 template<typename T>
-struct private_async_state
+struct private_async_state : public private_async_state_base
 {
 	template<typename>
 	friend struct private_async_state;
@@ -63,7 +82,6 @@ public:
 	void wait() const;
 	void wait_for(const std::chrono::milliseconds& i_period) const;
 	bool ready() const;
-
 	async_cancellable_dist_ptr get_async_execution() const;
 
 private:
@@ -73,7 +91,6 @@ private:
 	function<bool()> m_valuePredicate;
 	mutable async_cancellable_dist_ptr m_asyncExecutor;
 };
-
 
 template<typename T>
 using private_async_state_shared_ref = shared_reference_wrapper<private_async_state<T>>;

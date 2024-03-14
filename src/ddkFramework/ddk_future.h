@@ -56,12 +56,9 @@ public:
 	TEMPLATE(typename Callable, typename Context)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
 	auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
-	TEMPLATE(typename Callable, typename Context)
+	TEMPLATE(typename Callable, typename ... Args)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto async(Callable&& i_continuation, Context&& i_execContext) &&;
-	TEMPLATE(typename Callable)
-	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto async(Callable&& i_continuation, executor_context_lent_ptr i_execContext)&&;
+	auto async(Callable&& i_continuation, Args&& ... i_args) &&;
 	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
 	future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
@@ -87,11 +84,12 @@ public:
 	future(future<detail::void_t>&& other);
 	future& operator=(future&& other);
 	void extract_value()&&;
-	future<void> then(const function<void()>& i_continuation)&&;
-	template<typename TT>
-	future<void> then_on(const function<void()>& i_continuation,TT&& i_execContext)&&;
-	template<typename TT>
-	future<void> async(const function<void()>& i_continuation,TT&& i_execContext)&&;
+	template<typename Callable>
+	future<void> then(Callable&& i_continuation)&&;
+	template<typename Callable, typename ... Args>
+	future<void> then_on(Callable&& i_continuation, Args&& ... i_args)&&;
+	template<typename Callable, typename ... Args>
+	future<void> async(Callable&& i_continuation, Args&& ... i_args)&&;
 	future<void> on_error(const function<void(const async_error&)>& i_onError)&&;
 	future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 };

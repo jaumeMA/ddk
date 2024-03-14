@@ -2,7 +2,7 @@
 #include <thread>
 #include "ddk_reference_wrapper.h"
 #include "ddk_thread_impl.h"
-#include "ddk_fiber_exception_handler.h"
+#include "ddk_exception_handler.h"
 #include "ddk_async_exceptions.h"
 
 extern "C"
@@ -30,7 +30,7 @@ void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber
 	{
 		const ddk::function<Return()> localCallable = *i_function;
 
-		i_fiber->m_fiberContext.m_excpHandler.open_scope([callable = localCallable]()
+		exception_handler::open_scope([callable = localCallable]()
 		{
 			if constexpr (std::is_same<Return,void>::value)
 			{
@@ -46,8 +46,7 @@ void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber
 			{
 				case FiberErrorCode::Suspended:
 				{
-					yield(async_exception{ i_error.what(),AsyncExceptionCode::Suspended });
-
+					//do nothing, just exit
 					break;
 				}
 				case FiberErrorCode::AsyncExecption:

@@ -160,15 +160,17 @@ public:
     typedef decltype(resolve(std::declval<Functor&>())) type;
 };
 
+template<typename Functor>
+using functor_args_type = typename aqcuire_callable_args_type<Functor>::type;
+
 template<typename Functor, size_t Position>
 struct aqcuire_callable_arg_type
 {
-private:
-    typedef typename aqcuire_callable_args_type<Functor>::type args_type;
-
-public:
-    typedef typename args_type::template nth_type<Position>::type type;
+    typedef typename functor_args_type<Functor>::template nth_type<Position> type;
 };
+
+template<size_t Position, typename Functor>
+using nth_functor_arg_type = typename aqcuire_callable_arg_type<Functor,Position>::type;
 
 std::false_type _is_function(...);
 template<typename T>

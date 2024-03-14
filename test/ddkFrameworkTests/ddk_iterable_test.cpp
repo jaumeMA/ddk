@@ -188,14 +188,16 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	_foo.insert(std::make_pair(4,4));
 	_foo.insert(std::make_pair(5,5));
 	std::vector<int> foo;
-	foo.push_back(1);
-	foo.push_back(2);
+	//foo.push_back(1);
+	//foo.push_back(2);
 
-	foo.push_back(3);
-	foo.push_back(-4);
-	foo.push_back(-5);
+	//foo.push_back(3);
+	//foo.push_back(-4);
+	//foo.push_back(-5);
 
-	auto cucu = ddk::view::take_n(ddk::deduce_iterable(foo),10);
+	[](const int&)
+	{
+	} <<= ddk::view::filter([](const int& i_value) { return i_value == 0; }) <<= foo;
 
 	//ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 

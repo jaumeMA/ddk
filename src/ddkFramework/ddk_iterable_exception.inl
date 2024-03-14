@@ -1,5 +1,5 @@
 
-#include "ddk_iterable_exception_handler.h"
+#include "ddk_exception_handler.h"
 
 namespace ddk
 {
@@ -21,7 +21,7 @@ constexpr inline void abort_iteration(const char* i_msg)
 		return;
 	}
 
-	detail::iterable_exception_handler::close_scope(ddk::IterableError::UserError,i_msg);
+	exception_handler::close_scope<iterable_error>(ddk::IterableError::UserError,i_msg);
 }
 
 namespace detail
@@ -34,7 +34,7 @@ constexpr inline void ___terminate_iteration(const char* i_msg)
 		return;
 	}
 
-	detail::iterable_exception_handler::close_scope();
+	exception_handler::close_scope();
 }
 
 }

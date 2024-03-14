@@ -22,10 +22,6 @@ void future<void>::extract_value() &&
 {
 	static_cast<future<detail::void_t>&&>(std::move(*this)).extract_value();
 }
-future<void> future<void>::then(const function<void()>& i_continuation) &&
-{
-	return static_cast<future<detail::void_t>&&>(*this).then(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); }));
-}
 future<void> future<void>::on_error(const function<void(const async_error&)>& i_onError)&&
 {
 	return static_cast<future<detail::void_t>&&>(*this).on_error(i_onError);

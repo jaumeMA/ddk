@@ -33,7 +33,7 @@ constexpr filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_ite
             }
             else
             {
-                return make_error<filtered_result>();
+                return make_error<filtered_result>(m_filter);
             }
         }
         else

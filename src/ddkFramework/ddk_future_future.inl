@@ -124,13 +124,12 @@ auto future<future<T>>::then(Callable&& i_continuation) &&
 		{
 			if (executor_context_lent_ptr context = asyncExecutor->get_execution_context())
 			{
-				//here we capture as well asyncExecutor so we ensure original future lifetime exceeds the one of i_future
-				auto continuation = [context,asyncExecutor,i_continuation](future<T> i_future) mutable
+				auto continuation = [context,_continuation=std::forward<Callable>(i_continuation)](future<T> i_future) mutable
 				{
-					return std::move(i_future).chain(i_continuation,promote_to_ref(context));
+					return std::move(i_future).chain(std::forward<Callable>(_continuation),promote_to_ref(context));
 				};
 
-				return contraction(std::move(*this)._async(continuation,context));
+				return contraction(std::move(*this)._async(continuation,promote_to_ref(sharedState)));
 			}
 		}
 
@@ -173,18 +172,11 @@ future<T> future<future<T>>::on_error(const function<void(const async_error&)>& 
 			}
 		});
 
-		if(async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
-		{
-			future<T> res = executor -> attach(asyncExecutor->get_execution_context(),currDepth);
+		future<T> res = executor -> attach(promote_to_ref(sharedState),currDepth);
 
-			res.m_depth = currDepth + 1;
+		res.m_depth = currDepth + 1;
 
-			return std::move(res);
-		}
-		else
-		{
-			return std::move(executor);
-		}
+		return std::move(res);
 	}
 
 	throw future_exception("Accessing empty future");
@@ -230,38 +222,31 @@ future<T> future<future<T>>::on_error(const function<void(const async_error&)>& 
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<future<T>>::_then(Callable&& i_continuation) &&
+auto future<future<T>>::_then(Callable && i_continuation) &&
 {
 	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
 
 	if (detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
-		auto executor = ddk::async([acquiredFuture = std::move(*this),i_continuation]() mutable
+		auto executor = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
 		{
 			if constexpr (mpl::is_void<return_type>)
 			{
-				eval(i_continuation,std::move(acquiredFuture).extract_value());
+				eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation,std::move(acquiredFuture).extract_value());
+				return eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
 		});
 
-		if (async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
-		{
-			const unsigned char currDepth = m_depth;
+		const unsigned char currDepth = m_depth;
 
-			return_type res = std::move(executor)->attach(asyncExecutor->get_execution_context(),currDepth);
+		return_type res = std::move(executor) -> attach(promote_to_ref(sharedState),currDepth);
 
-			res.m_depth = currDepth + 1;
+		res.m_depth = currDepth + 1;
 
-			return std::move(res);
-		}
-		else
-		{
-			return return_type{ std::move(executor) };
-		}
+		return std::move(res);
 	}
 
 	throw future_exception("Accessing empty future");
@@ -269,7 +254,7 @@ auto future<future<T>>::_then(Callable&& i_continuation) &&
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<future<T>>::_async(Callable&& i_continuation, executor_context_lent_ptr i_execContext) &&
+auto future<future<T>>::_async(Callable&& i_continuation, detail::private_async_state_shared_ptr<future<T>> i_sharedState) &&
 {
 	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
 
@@ -277,17 +262,17 @@ auto future<future<T>>::_async(Callable&& i_continuation, executor_context_lent_
 	{
 		const unsigned char currDepth = m_depth;
 
-		return_type res = ddk::async([acquiredFuture = std::move(*this),i_continuation]() mutable
+		return_type res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
 		{
 			if constexpr (mpl::is_void<return_type>)
 			{
-				eval(i_continuation,std::move(acquiredFuture).extract_value());
+				eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation,std::move(acquiredFuture).extract_value());
+				return eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
-		}) -> attach(i_execContext,currDepth);
+		}) -> attach(promote_to_ref(sharedState),currDepth);
 
 		res.m_depth = currDepth + 1;
 

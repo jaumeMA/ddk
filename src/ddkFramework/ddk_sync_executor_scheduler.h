@@ -6,6 +6,7 @@
 #include "ddk_mutex.h"
 #include "ddk_cond_var.h"
 #include "ddk_atomics.h"
+#include "ddk_async_shared_state.h"
 
 namespace ddk
 {

@@ -3,7 +3,7 @@
 #include "ddk_thread_impl.h"
 #include "ddk_reference_wrapper.h"
 #include "ddk_async_exceptions.h"
-#include "ddk_fiber_exception_handler.h"
+#include "ddk_exception_handler.h"
 
 namespace ddk
 {
@@ -23,11 +23,11 @@ fiber_id get_current_fiber_id()
 
 void suspend()
 {
-    detail::fiber_exception_handler::close_scope(FiberErrorCode::Suspended,suspend_exception{ get_current_fiber_id() });
+    exception_handler::close_scope<fiber_error>(FiberErrorCode::Suspended,suspend_exception{ get_current_fiber_id() });
 }
 void suspend(int i_code,const std::string& i_reason)
 {
-    detail::fiber_exception_handler::close_scope(FiberErrorCode::Suspended,suspend_exception{ get_current_fiber_id(),i_code,i_reason});
+    exception_handler::close_scope<fiber_error>(FiberErrorCode::Suspended,suspend_exception{ get_current_fiber_id(),i_code,i_reason});
 }
 void yield()
 {
@@ -41,7 +41,7 @@ void yield()
 
             if(currFiberContext->is_stopped())
             {
-                currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
+                exception_handler::close_scope<fiber_error>(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
             }
         }
         else
@@ -67,7 +67,7 @@ void pause()
 
             if(currFiberContext->is_stopped())
             {
-                currFiberContext->m_excpHandler.close_scope(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
+                exception_handler::close_scope<fiber_error>(FiberErrorCode::Suspended,suspend_exception{ currFiberContext->get_id() });
             }
         }
         else

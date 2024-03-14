@@ -22,8 +22,6 @@ public:
 	shared_future<TT> then_on(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const;
 	template<typename TT,typename TTT>
 	shared_future<TT> async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const;
-	template<typename TT>
-	shared_future<TT> async(const function<TT(const_reference)>& i_continuation,executor_context_lent_ptr i_execContext) const;
 	shared_future<T> on_error(const function<void(const async_error&)>& i_onError) const;
 	shared_future<T> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext) const;
 };

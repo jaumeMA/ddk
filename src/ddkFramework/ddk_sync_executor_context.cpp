@@ -40,6 +40,8 @@ void async_executor_recipients::notify(bool i_useAndKeep)
 {
 	mutex_guard mg(m_mutex);
 
+	m_admissible = false;
+
 	if (i_useAndKeep)
 	{
 		callable_container pendingCallables = m_pendingCallables;
@@ -50,8 +52,6 @@ void async_executor_recipients::notify(bool i_useAndKeep)
 	{
 		resolve(m_pendingCallables);
 	}
-
-	m_admissible = false;
 }
 bool async_executor_recipients::dismiss(unsigned char i_depth, continuation_token i_token)
 {
@@ -73,10 +73,10 @@ bool async_executor_recipients::dismiss(unsigned char i_depth, continuation_toke
 }
 bool async_executor_recipients::move(async_executor_recipients&& i_recipients)
 {
+	mutex_guard mg(m_mutex);
+
 	if (is_admissible())
 	{
-		mutex_guard mg(m_mutex);
-
 		callable_container pendingCallables = std::move(i_recipients.m_pendingCallables);
 
 		for (auto&& valuePair : pendingCallables)
@@ -144,11 +144,11 @@ void execution_context_base::notify_recipients(bool i_useAndKeep)
 {
 	m_recipientsRef->notify(i_useAndKeep);
 }
-size_t execution_context_base::transfer_recipients(execution_context_base&& other)
+bool execution_context_base::transfer_recipients(execution_context_base&& other)
 {
 	return m_recipientsRef->move(std::move(other.m_recipients));
 }
-void execution_context_base::transfer(execution_context_base&& other)
+bool execution_context_base::transfer(execution_context_base&& other)
 {
 	other.enqueue(make_function([&]()
 	{
@@ -159,6 +159,12 @@ void execution_context_base::transfer(execution_context_base&& other)
 	if (transfer_recipients(std::move(other)))
 	{
 		other.m_recipientsRef = lend(m_recipients);
+
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 bool execution_context_base::dismiss(unsigned char i_depth,continuation_token i_token)

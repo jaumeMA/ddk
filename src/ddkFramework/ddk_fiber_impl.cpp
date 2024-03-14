@@ -152,7 +152,7 @@ void fiber_impl::resume_to(this_fiber_t& other, yielder_context* i_context)
 		{
 			if (currYielder->suspend())
 			{
-				m_fiberContext.m_excpHandler.close_scope(FiberErrorCode::Suspended,m_id);
+				exception_handler::close_scope<fiber_error>(FiberErrorCode::Suspended,m_id);
 			}
 		}
 	}
