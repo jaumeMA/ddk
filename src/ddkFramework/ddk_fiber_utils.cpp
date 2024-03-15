@@ -16,9 +16,14 @@ thread_local execution_context* __s_current_execution_context = nullptr;
 
 fiber_id get_current_fiber_id()
 {
-	detail::execution_context* currFiberContext = detail::__s_current_execution_context;
-
-	return currFiberContext->get_id();
+    if (detail::execution_context* currFiberContext = detail::__s_current_execution_context)
+    {
+	    return currFiberContext->get_id();
+    }
+    else
+    {
+        return k_invalidFiberId;
+    }
 }
 
 void suspend()

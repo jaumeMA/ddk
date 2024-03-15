@@ -67,7 +67,7 @@ void exception_handler_impl::close_scope(Args&& ... i_args)
 
 	jmpBuf& currStack = m_contextStack.top();
 
-	currStack.m_transport = &_;
+	currStack.m_transport = _;
 
 	longjmp(currStack.m_buf,1);
 }

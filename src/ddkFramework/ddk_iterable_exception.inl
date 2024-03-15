@@ -10,32 +10,4 @@ constexpr iterable_exception::iterable_exception(Type i_type, const char* i_reas
 {
 }
 
-constexpr inline void terminate_iteration()
-{
-	detail::___terminate_iteration(nullptr);
-}
-constexpr inline void abort_iteration(const char* i_msg)
-{
-	if (i_msg == nullptr)
-	{
-		return;
-	}
-
-	exception_handler::close_scope<iterable_error>(ddk::IterableError::UserError,i_msg);
-}
-
-namespace detail
-{
-
-constexpr inline void ___terminate_iteration(const char* i_msg)
-{
-	if (i_msg != nullptr)
-	{
-		return;
-	}
-
-	exception_handler::close_scope();
-}
-
-}
 }

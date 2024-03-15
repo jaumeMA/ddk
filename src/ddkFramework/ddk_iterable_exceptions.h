@@ -38,15 +38,9 @@ private:
 	const std::string m_reason;
 };
 
-constexpr inline void terminate_iteration();
-constexpr inline void abort_iteration(const char* i_msg);
+void terminate_iteration();
+void abort_iteration(const std::string& i_msg);
 
-namespace detail
-{
-
-constexpr inline void ___terminate_iteration(const char*);
-
-}
 }
 
 #include "ddk_iterable_exception.inl"
