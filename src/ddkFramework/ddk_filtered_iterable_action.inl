@@ -25,7 +25,7 @@ constexpr filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_ite
 
     if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(std::move(m_actionTag)))
     {
-        if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink<const_reference>))
+        if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink))
         {
             if (ddk::terse_eval(m_filter,sinkRes.get()))
             {
@@ -82,7 +82,7 @@ constexpr filtered_iterable_action_result<Adaptor,displace_action_tag,Filter> fi
 
     if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(displace_action_tag{(prevShift > 0) ? 1 : -1}))
     {
-        if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink<const_reference>))
+        if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink))
         {
             if (ddk::terse_eval(m_filter,sinkRes.get()))
             {
@@ -134,7 +134,7 @@ constexpr filtered_iterable_action_result<Adaptor,sink_action_tag<Sink>,Filter> 
     typedef typename mpl::remove_qualifiers<Adaptor>::traits traits;
     typedef typename traits::const_reference const_reference;
 
-    if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink<const_reference>))
+    if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink))
     {
         if (ddk::terse_eval(m_filter,sinkRes.get()))
         {

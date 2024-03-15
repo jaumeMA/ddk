@@ -68,13 +68,8 @@ public:
 private:
 	sink_t m_sink;
 };
-const sink_action_tag k_agnosticIterableEmptySink = sink_action_tag{ [](auto&& i_value) noexcept {} };
-typedef decltype(k_agnosticIterableEmptySink) k_agnostic_iterable_empty_sink;
-
-template<typename T>
-inline const sink_action_tag k_iterableEmptySink = sink_action_tag{ [](const T&) noexcept {} };
-template<typename T>
-using k_iterable_empty_sink = decltype(k_iterableEmptySink<T>);
+const sink_action_tag k_iterableEmptySink = sink_action_tag{ [](auto&& i_value) noexcept {} };
+typedef decltype(k_iterableEmptySink) k_iterable_empty_sink;
 
 template<typename T>
 using agnostic_sink_action_tag = sink_action_tag<function<void(T)>>;

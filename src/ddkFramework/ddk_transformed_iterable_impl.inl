@@ -68,7 +68,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::reference private_reference;
 
-	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_reference>))
+	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink))
 	{
 		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
@@ -85,7 +85,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
 
-	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_const_reference>))
+	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink))
 	{
 		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
@@ -102,7 +102,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::reference private_reference;
 
-	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_reference>))
+	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink))
 	{
 		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}
@@ -119,7 +119,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 	typedef iterable_action_tag_result<traits,sink_action_tag<Sink>> transformed_result;
 	typedef typename private_traits::const_reference private_const_reference;
 
-	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink<private_const_reference>))
+	if (auto actionRes = m_adaptor.perform_action(k_iterableEmptySink))
 	{
 		return make_result<transformed_result>(i_actionTag(ddk::terse_eval(m_transform,actionRes.get())));
 	}

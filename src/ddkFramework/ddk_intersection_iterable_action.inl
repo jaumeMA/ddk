@@ -43,12 +43,12 @@ template<typename Sink>
 template<size_t ... Indexs,typename ... Adaptor>
 constexpr auto intersection_action<sink_action_tag<Sink>>::apply(Adaptor&& ... i_adaptors)
 {
-	typedef tuple<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,k_agnostic_iterable_empty_sink>...> adaptors_result;
+	typedef tuple<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,k_iterable_empty_sink>...> adaptors_result;
 	typedef detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...> intersection_traits;
 	typedef typename intersection_traits::reference reference;
 	typedef iterable_action_tag_result<intersection_traits,sink_action_tag<Sink>> intersection_result;
 
-	if (auto actionRes = create_reference<reference>(std::forward<Adaptor>(i_adaptors).perform_action(k_agnosticIterableEmptySink).dismiss() ...))
+	if (auto actionRes = create_reference<reference>(std::forward<Adaptor>(i_adaptors).perform_action(k_iterableEmptySink).dismiss() ...))
 	{
 		return make_result<intersection_result>(m_action(*actionRes));
 	}
