@@ -1,9 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_action.h"
-#include "ddk_iterable_action_tag_concepts.h"
 #include "ddk_iterable_adaptor_concepts.h"
-#include "ddk_concepts.h"
 
 namespace ddk
 {

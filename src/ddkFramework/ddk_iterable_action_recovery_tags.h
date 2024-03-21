@@ -14,14 +14,42 @@ struct iterable_action_tag_type
 	typedef ActionTag recovery_type;
 	typedef void return_type;
 };
-
+template<typename Traits>
+struct iterable_action_tag_type<Traits,begin_action_tag>
+{
+	typedef begin_action_tag recovery_type;
+	typedef typename Traits::reference return_type;
+};
+template<typename Traits>
+struct iterable_action_tag_type<Traits,forward_action_tag>
+{
+	typedef forward_action_tag recovery_type;
+	typedef typename Traits::reference return_type;
+};
+template<typename Traits>
+struct iterable_action_tag_type<Traits,backward_action_tag>
+{
+	typedef backward_action_tag recovery_type;
+	typedef typename Traits::reference return_type;
+};
+template<typename Traits>
+struct iterable_action_tag_type<Traits,displace_action_tag>
+{
+	typedef displace_action_tag recovery_type;
+	typedef typename Traits::reference return_type;
+};
+template<typename Traits, typename T>
+struct iterable_action_tag_type<Traits,add_action_tag<T>>
+{
+	typedef add_action_tag<T> recovery_type;
+	typedef typename Traits::reference return_type;
+};
 template<typename Traits>
 struct iterable_action_tag_type<Traits,size_action_tag>
 {
 	typedef size_action_tag recovery_type;
 	typedef size_t return_type;
 };
-
 template<typename Traits,typename Sink>
 struct iterable_action_tag_type<Traits,sink_action_tag<Sink>>
 {

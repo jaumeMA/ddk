@@ -48,28 +48,28 @@ public:
 	typedef void payload_t;
 	typedef Error error_t;
 
-	result(const result_success_t&);
-	result(const Error& i_error);
-	result(Error&& i_error);
+	constexpr result(const result_success_t&);
+	constexpr result(const Error& i_error);
+	constexpr result(Error&& i_error);
 	TEMPLATE(typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(Error,EError))
-	result(const result<void,EError>& i_result);
+	constexpr result(const result<void,EError>& i_result);
 	TEMPLATE(typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(Error,EError))
-	result(result<void,EError>&& i_result);
-	result(const result& other) = default;
-	result(result&& other) = default;
-	result& operator=(const result& other) = default;
-	result& operator=(result&& other) = default;
-	const Error& error() const&;
-	Error error() &&;
-	explicit operator bool() const;
-	result& dismiss();
-	const result& dismiss() const;
-	bool operator==(const result_success_t&) const;
-	bool operator!=(const result_success_t&) const;
-	bool operator==(const Error& i_error) const;
-	bool operator!=(const Error& i_error) const;
+	constexpr result(result<void,EError>&& i_result);
+	constexpr result(const result& other) = default;
+	constexpr result(result&& other) = default;
+	constexpr result& operator=(const result& other) = default;
+	constexpr result& operator=(result&& other) = default;
+	constexpr const Error& error() const&;
+	constexpr Error error() &&;
+	constexpr explicit operator bool() const;
+	constexpr result& dismiss();
+	constexpr const result& dismiss() const;
+	constexpr bool operator==(const result_success_t&) const;
+	constexpr bool operator!=(const result_success_t&) const;
+	constexpr bool operator==(const Error& i_error) const;
+	constexpr bool operator!=(const Error& i_error) const;
 
 private:
 	optional<Error> m_nestedRes;
@@ -133,33 +133,33 @@ public:
 
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-	result(Args&& ... i_args);
-	result(const Error& i_error);
-	result(Error&& i_error);
+	constexpr result(Args&& ... i_args);
+	constexpr result(const Error& i_error);
+	constexpr result(Error&& i_error);
 	TEMPLATE(typename TT, typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT),IS_CONSTRUCTIBLE(Error,EError))
-	result(const result<TT,EError>& i_result);
+	constexpr result(const result<TT,EError>& i_result);
 	TEMPLATE(typename TT, typename EError)
 	REQUIRES(IS_CONSTRUCTIBLE(T,TT),IS_CONSTRUCTIBLE(Error,EError))
-	result(result<TT,EError>&& i_result);
-	result(const result& other) = default;
-	result(result&& other) = default;
-	result& operator=(const result& other) = default;
-	result& operator=(result&& other) = default;
-	const Error& error() const&;
-	Error error() &&;
-	const_reference get() const;
-	reference get();
-	const_pointer operator->() const;
-	pointer operator->();
-	value extract() &&;
-	explicit operator bool() const;
-	result& dismiss();
-	const result& dismiss() const;
-	bool operator==(const result_success_t&) const;
-	bool operator!=(const result_success_t&) const;
-	bool operator==(const Error& i_error) const;
-	bool operator!=(const Error& i_error) const;
+	constexpr result(result<TT,EError>&& i_result);
+	constexpr result(const result& other) = default;
+	constexpr result(result&& other) = default;
+	constexpr result& operator=(const result& other) = default;
+	constexpr result& operator=(result&& other) = default;
+	constexpr const Error& error() const&;
+	constexpr Error error() &&;
+	constexpr const_reference get() const;
+	constexpr reference get();
+	constexpr const_pointer operator->() const;
+	constexpr pointer operator->();
+	constexpr value extract() &&;
+	constexpr explicit operator bool() const;
+	constexpr result& dismiss();
+	constexpr const result& dismiss() const;
+	constexpr bool operator==(const result_success_t&) const;
+	constexpr bool operator!=(const result_success_t&) const;
+	constexpr bool operator==(const Error& i_error) const;
+	constexpr bool operator!=(const Error& i_error) const;
 
 private:
 	detail::variant_impl<T,Error> m_nestedRes;
@@ -170,18 +170,18 @@ private:
 };
 
 template<typename Result, typename TT,typename EError>
-inline Result make_result(const result<TT,EError>& i_result);
+constexpr inline Result make_result(const result<TT,EError>& i_result);
 template<typename Result,typename TT,typename EError>
-inline Result make_result(result<TT,EError>&& i_result);
+constexpr inline Result make_result(result<TT,EError>&& i_result);
 template<typename Result>
-inline Result make_result(const result_success_t& i_success);
+constexpr inline Result make_result(const result_success_t& i_success);
 TEMPLATE(typename Result, typename ... Args)
 REQUIRES(IS_CONSTRUCTIBLE(typename Result::payload_t,Args...))
-inline Result make_result(Args&& ... i_args);
+constexpr inline Result make_result(Args&& ... i_args);
 template<typename Result,typename TT,typename EError>
-inline Result make_error(const result<TT,EError>& i_result);
+constexpr inline Result make_error(const result<TT,EError>& i_result);
 template<typename Result,typename TT,typename EError>
-inline Result make_error(result<TT,EError>&& i_result);
+constexpr inline Result make_error(result<TT,EError>&& i_result);
 
 }
 

@@ -53,12 +53,9 @@ public:
 	iterable_adaptor(Iterable& i_iterable,const ActionResolver& i_actionResolver);
 	iterable_adaptor(detail::ordered_iterable_impl<Iterable,ActionResolver>& i_iterable);
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	constexpr auto perform_action(ActionTag&& i_actionTag);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	constexpr auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
 	deduced_adaptor<Iterable> m_adaptor;
@@ -76,9 +73,9 @@ public:
 
 	iterable_adaptor(const Iterable& i_iterable,const ActionResolver& i_actionResolver);
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	constexpr auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
 	deduced_adaptor<const Iterable> m_adaptor;

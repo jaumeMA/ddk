@@ -29,24 +29,26 @@ iterable_adaptor<const detail::__numbers_iterable<Generator>>::iterable_adaptor(
 {
 }
 template<typename Generator>
-template<typename Sink>
-iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,sink_action_tag<Sink>> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(const sink_action_tag<Sink>& i_sink) const
+template<typename Adaptor, typename Sink>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,sink_action_tag<Sink>> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink)
 {
-    return i_sink(m_currValue);
+    return i_sink(i_adaptor.m_currValue);
 }
 template<typename Generator>
-iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,begin_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(const begin_action_tag&) const
+template<typename Adaptor>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,begin_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(Adaptor&& i_adaptor, const begin_action_tag&)
 {
-    m_currValue = 0;
+    i_adaptor.m_currValue = 0;
 
-    return success;
+    return make_result<iterable_action_tag_result<traits,begin_action_tag>>(i_adaptor.m_currValue);
 }
 template<typename Generator>
-iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,forward_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(const forward_action_tag&) const
+template<typename Adaptor>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,forward_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(Adaptor&& i_adaptor,const forward_action_tag&)
 {
-    m_currValue = ddk::eval(m_generator,m_currValue);
+    i_adaptor.m_currValue = ddk::eval(i_adaptor.m_generator,i_adaptor.m_currValue);
 
-    return success;
+    return make_result<iterable_action_tag_result<traits,forward_action_tag>>(i_adaptor.m_currValue);
 }
 
 }

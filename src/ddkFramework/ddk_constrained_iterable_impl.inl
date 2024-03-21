@@ -48,38 +48,19 @@ iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::iterabl
 {
 }
 template<typename Iterable,typename Constrain>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag)
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
-    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
+    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),i_adaptor.m_constrain };
 
-    if (auto actionRes = filteredAction.apply(m_adaptor))
+    if (auto actionRes = filteredAction.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
     {
         return make_result<iterable_action_tag_result<traits,ActionTag>>(actionRes);
     }
     else
     {
         return make_error<iterable_action_tag_result<traits,ActionTag>>(std::move(actionRes).error());
-    }
-}
-template<typename Iterable,typename Constrain>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag) const
-{
-    typedef iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>> adaptor_t;
-    typedef filtered_iterable_action_result<const adaptor_t,ActionTag,Constrain> filtered_action_result;
-
-    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
-
-    if (filtered_action_result applyRes = filteredAction.apply(m_adaptor))
-    {
-        return make_result<iterable_action_tag_result<const_traits,ActionTag>>(applyRes);
-    }
-    else
-    {
-        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(std::move(applyRes).error());
     }
 }
 
@@ -90,18 +71,18 @@ iterable_adaptor<const detail::constrained_iterable_impl<Iterable,Constrain>>::i
 {
 }
 template<typename Iterable,typename Constrain>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<const detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(ActionTag&& i_actionTag) const
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+auto iterable_adaptor<const detail::constrained_iterable_impl<Iterable,Constrain>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
     typedef iterable_adaptor<detail::constrained_iterable_impl<Iterable,Constrain>> adaptor_t;
     typedef filtered_iterable_action_result<const adaptor_t,ActionTag,Constrain> filtered_action_result;
 
-    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),m_constrain };
+    filtered_iterable_action filteredAction{ std::forward<ActionTag>(i_actionTag),i_adaptor.m_constrain };
 
-    if (filtered_action_result applyRes = filteredAction.apply(m_adaptor))
+    if (filtered_action_result applyRes = filteredAction.apply(std::forward<Adaptor>(m_adaptor)))
     {
-        return make_result<iterable_action_tag_result<const_traits,ActionTag>>(success);
+        return make_result<iterable_action_tag_result<const_traits,ActionTag>>(applyRes);
     }
     else
     {

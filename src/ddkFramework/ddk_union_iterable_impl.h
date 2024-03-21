@@ -52,24 +52,17 @@ public:
 	constexpr inline auto get_adaptor();
 	template<size_t Index>
 	constexpr inline auto get_adaptor() const;
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	constexpr inline auto perform_action(ActionTag&& i_actionTag);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	constexpr inline auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor,typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
 	typedef tuple<deduced_adaptor<Iterables>...> deduced_adaptors;
 
-	template<size_t ... Indexs,typename ActionTag>
-	constexpr inline auto perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag);
-	template<size_t ... Indexs,typename ActionTag>
-	constexpr inline auto perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
-	template<size_t Index,typename Traits,typename ActionTag>
-	constexpr inline static iterable_action_tag_result<Traits,ActionTag> _perform_action(deduced_adaptors& i_adaptor,ActionTag&& i_actionTag);
-	template<size_t Index,typename Traits,typename ActionTag>
-	constexpr inline static iterable_action_tag_result<const_iterable_traits<Traits>,ActionTag> _const_perform_action(const deduced_adaptors& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t ... Indexs, typename Adaptor,typename ActionTag>
+	static constexpr inline auto perform_action(const mpl::sequence<Indexs...>&,Adaptor&& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t Index,typename Traits,typename DeducedAdaptors,typename ActionTag>
+	static constexpr inline iterable_action_tag_result<Traits,ActionTag> _perform_action(DeducedAdaptors& i_adaptor,ActionTag&& i_actionTag);
 
 	deduced_adaptors m_adaptors;
 	mutable size_t m_currIndex = 0;
@@ -126,18 +119,13 @@ public:
 	using adaptor_base::set_current_iterable_index;
 	using adaptor_base::get_current_iterable_index;
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	constexpr inline auto perform_action(ActionTag&& i_actionTag);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	constexpr inline auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-	template<typename ActionTag>
-	constexpr inline auto perform_action(union_iterable_action<ActionTag> i_actionTag);
-	template<typename ActionTag>
-	constexpr inline auto perform_action(union_iterable_action<ActionTag> i_actionTag) const;
+	template<typename Adaptor, typename ActionTag>
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, union_iterable_action<ActionTag> i_actionTag);
 };
 
 template<typename ... Iterables>
@@ -155,13 +143,13 @@ public:
 	using adaptor_base::set_current_iterable_index;
 	using adaptor_base::get_current_iterable_index;
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	constexpr inline auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-	template<typename ActionTag>
-	constexpr inline auto perform_action(union_iterable_action<ActionTag> i_actionTag) const;
+	template<typename Adaptor, typename ActionTag>
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, union_iterable_action<ActionTag> i_actionTag);
 };
 
 }

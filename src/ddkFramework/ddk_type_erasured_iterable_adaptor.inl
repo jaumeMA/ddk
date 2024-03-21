@@ -25,38 +25,34 @@ iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::iterable_adaptor(c
 {
 }
 template<typename Traits>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-auto iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action)
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+auto iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_action)
 {
-	constexpr size_t posInTags = tags_t::template pos_in_type_pack<ActionTag,std::is_constructible>();
+	constexpr size_t posInTags = detail::adaptor_tags<Adaptor>::template pos_in_type_pack<ActionTag,std::is_constructible>();
 
-	static_assert(posInTags < tags_t::size(), "You shall provide a compatible action tag");
+	static_assert(posInTags < detail::adaptor_tags<Adaptor>::size(), "You shall provide a compatible action tag");
 
-	return (*m_actionPerformers.template get<posInTags>())(m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
-}
-template<typename Traits>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-auto iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action) const
-{
-	constexpr size_t posInTags = const_tags_t::template pos_in_type_pack<ActionTag,std::is_constructible>();
-
-	static_assert(posInTags < const_tags_t::size(),"You shall provide a compatible action tag");
-	
-	return (*m_constActionPerformers.template get<posInTags>())(m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
+	if constexpr (mpl::is_const<Adaptor>)
+	{
+		return (*i_adaptor.m_constActionPerformers.template get<posInTags>())(std::forward<Adaptor>(i_adaptor).m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
+	}
+	else
+	{
+		return (*i_adaptor.m_actionPerformers.template get<posInTags>())(std::forward<Adaptor>(i_adaptor).m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
+	}
 }
 template<typename Traits>
 template<typename Adaptor,typename ActionTag>
 iterable_action_tag_result<typename iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::traits,ActionTag> iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::_perform_action(type_erased_adaptor_t i_adaptor,ActionTag i_action)
 {
-	return reinterpret_cast<Adaptor*>(i_adaptor)->perform_action(std::move(i_action));
+	return Adaptor::perform_action(*reinterpret_cast<Adaptor*>(i_adaptor),std::move(i_action));
 }
 template<typename Traits>
 template<typename Adaptor,typename ActionTag>
 iterable_action_tag_result<typename iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::const_traits,ActionTag> iterable_adaptor<detail::type_erasure_iterable_impl<Traits>>::_const_perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action)
 {
-	return reinterpret_cast<const Adaptor*>(i_adaptor)->perform_action(std::move(i_action));
+	return Adaptor::perform_action(*reinterpret_cast<const Adaptor*>(i_adaptor),std::move(i_action));
 }
 
 template<typename Traits>
@@ -73,21 +69,21 @@ iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::iterable_ada
 {
 }
 template<typename Traits>
-TEMPLATE(typename ActionTag)
+TEMPLATE(typename Adaptor, typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Traits,ActionTag))
-auto iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::perform_action(ActionTag&& i_action) const
+auto iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_action)
 {
-	constexpr size_t posInTags = const_tags_t::template pos_in_type_pack<ActionTag,std::is_constructible>();
+	constexpr size_t posInTags = detail::adaptor_tags<Adaptor>::template pos_in_type_pack<ActionTag,std::is_constructible>();
 
-	static_assert(posInTags < const_tags_t::size(),"You shall provide a compatible action tag");
+	static_assert(posInTags < detail::adaptor_tags<Adaptor>::size(),"You shall provide a compatible action tag");
 
-	return (*m_actionPerformers.template get<posInTags>())(m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
+	return (*i_adaptor.m_actionPerformers.template get<posInTags>())(std::forward<Adaptor>(i_adaptor).m_typeErasuredAdaptor,std::forward<ActionTag>(i_action));
 }
 template<typename Traits>
 template<typename Adaptor,typename ActionTag>
 iterable_action_tag_result<typename iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::const_traits,ActionTag> iterable_adaptor<const detail::type_erasure_iterable_impl<Traits>>::_perform_action(type_erased_const_adaptor_t i_adaptor,ActionTag i_action)
 {
-	return reinterpret_cast<const Adaptor*>(i_adaptor)->perform_action(std::move(i_action));
+	return reinterpret_cast<const Adaptor*>(i_adaptor)->perform_action(*reinterpret_cast<const Adaptor*>(i_adaptor),std::move(i_action));
 }
 
 }

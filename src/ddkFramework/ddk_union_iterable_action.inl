@@ -14,7 +14,7 @@ constexpr union_iterable_action_result<Adaptor,begin_action_tag> union_iterable_
 {
 	if (i_adaptor.set_current_iterable_index(0))
 	{
-		return i_adaptor.adaptor_base::perform_action(begin_action_tag{});
+		return i_adaptor.adaptor_base::perform_action(std::forward<Adaptor>(i_adaptor),begin_action_tag{});
 	}
 	else
 	{
@@ -35,7 +35,7 @@ constexpr union_iterable_action_result<Adaptor,begin_next_iterable> union_iterab
 apply_begin_next_iterable:
 	if (i_adaptor.set_current_iterable_index(i_adaptor.get_current_iterable_index() + 1))
 	{
-		if (auto beginRes = i_adaptor.adaptor_base::perform_action(begin_action_tag{}))
+		if (auto beginRes = i_adaptor.adaptor_base::perform_action(std::forward<Adaptor>(i_adaptor),begin_action_tag{}))
 		{
 			return beginRes;
 		}
@@ -62,7 +62,7 @@ constexpr union_iterable_action_result<Adaptor,end_action_tag> union_iterable_ac
 {
 	if (i_adaptor.set_current_iterable_index(i_adaptor.s_numTypes - 1))
 	{
-		return i_adaptor.adaptor_base::perform_action(end_action_tag{});
+		return i_adaptor.adaptor_base::perform_action(std::forward<Adaptor>(i_adaptor),end_action_tag{});
 	}
 	else
 	{
@@ -82,7 +82,9 @@ constexpr union_iterable_action_result<Adaptor,end_prev_iterable> union_iterable
 {
 	if (i_adaptor.set_current_iterable_index(i_adaptor.get_current_iterable_index() - 1))
 	{
-		return i_adaptor.adaptor_base::perform_action(end_action_tag{});
+		i_adaptor.adaptor_base::perform_action(std::forward<Adaptor>(i_adaptor),end_action_tag{}).dismiss();
+
+		return i_adaptor.adaptor_base::perform_action(std::forward<Adaptor>(i_adaptor),backward_action_tag{});
 	}
 	else
 	{
@@ -108,7 +110,7 @@ template<typename Adaptor,size_t ... Indexs>
 constexpr union_iterable_action_result<Adaptor,size_action_tag> union_iterable_action<size_action_tag>::_apply(Adaptor&& i_adaptor,const mpl::sequence<Indexs...>&)
 {
 	typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
-	const tuple<iterable_action_tag_result<typename adaptor_t::template nth_adaptor<Indexs>::const_traits,size_action_tag>...> adaptorResults = { i_adaptor.adaptor_base::template get_adaptor<Indexs>().perform_action(size_action_tag{}) ... };
+	const tuple<iterable_action_tag_result<typename adaptor_t::template nth_adaptor<Indexs>::const_traits,size_action_tag>...> adaptorResults = { i_adaptor.adaptor_base::template get_adaptor<Indexs>().perform_action(std::forward<Adaptor>(i_adaptor).adaptor_base::template get_adaptor<Indexs>(),size_action_tag{}) ... };
 	const bool adaptorBools[mpl::num_ranks<Indexs...>] = { static_cast<bool>(adaptorResults.template get<Indexs>()) ... };
 
 	if ((adaptorBools[Indexs] && ...))
@@ -137,7 +139,7 @@ template<typename ActionTag>
 template<typename Adaptor>
 constexpr union_iterable_action_result<Adaptor,ActionTag> union_iterable_action<ActionTag>::apply(Adaptor&& i_adaptor)
 {
-	return i_adaptor.adaptor_base::perform_action(std::move(m_actionTag));
+	return i_adaptor.adaptor_base::perform_action(std::forward<Adaptor>(i_adaptor),std::move(m_actionTag));
 }
 template<typename ActionTag>
 constexpr const ActionTag& union_iterable_action<ActionTag>::action() const

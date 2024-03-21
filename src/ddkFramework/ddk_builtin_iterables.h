@@ -42,10 +42,12 @@ public:
     typedef detail::const_iterable_traits<traits> const_traits;
 
     iterable_adaptor(const detail::__numbers_iterable<Generator>& i_generator);
-    template<typename Sink>
-    inline iterable_action_tag_result<traits,sink_action_tag<Sink>> perform_action(const sink_action_tag<Sink>& i_sink) const;
-    inline iterable_action_tag_result<traits,begin_action_tag> perform_action(const begin_action_tag&) const;
-    inline iterable_action_tag_result<traits,forward_action_tag> perform_action(const forward_action_tag&) const;
+    template<typename Adaptor, typename Sink>
+    static inline iterable_action_tag_result<traits,sink_action_tag<Sink>> perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
+    template<typename Adaptor>
+    static inline iterable_action_tag_result<traits,begin_action_tag> perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+    template<typename Adaptor>
+    static inline iterable_action_tag_result<traits,forward_action_tag> perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
 
 private:
     mutable underlying_type m_currValue = 0;

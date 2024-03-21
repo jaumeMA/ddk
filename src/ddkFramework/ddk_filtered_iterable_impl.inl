@@ -48,42 +48,28 @@ iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::iterable_adap
 {
 }
 template<typename Iterable,typename Filter>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag)
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
-    if (auto actionRes = perform_action(filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),m_filter }))
+    if (auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),i_adaptor.m_filter }))
     {
-        return make_result<iterable_action_tag_result<traits,ActionTag>>(actionRes);
+        return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(actionRes);
     }
     else
     {
-        return make_error<iterable_action_tag_result<traits,ActionTag>>(std::move(actionRes).error());
+        return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(std::move(actionRes).error());
     }
 }
 template<typename Iterable,typename Filter>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag) const
-{
-    if (auto actionRes = perform_action(filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),m_filter }))
-    {
-        return make_result<iterable_action_tag_result<const_traits,ActionTag>>(actionRes);
-    }
-    else
-    {
-        return make_error<iterable_action_tag_result<const_traits,ActionTag>>(std::move(actionRes).error());
-    }
-}
-template<typename Iterable,typename Filter>
-template<typename ActionTag>
-constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag)
+template<typename Adaptor, typename ActionTag>
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag)
 {
     typedef filtered_iterable_action_result<deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
 
 apply_action:
-    if (filtered_action_result applyRes = i_actionTag.apply(m_adaptor))
+    if (filtered_action_result applyRes = i_actionTag.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
     {
         return make_result<filtered_result<ActionTag>>(applyRes);
     }
@@ -109,7 +95,7 @@ apply_action:
         {
             if (applyError)
             {
-                if (auto recoveryRes = perform_action(std::move(applyError).recovery()))
+                if (auto recoveryRes = perform_action(std::forward<Adaptor>(i_adaptor),std::move(applyError).recovery()))
                 {
                     return make_result<filtered_result<ActionTag>>(recoveryRes);
                 }
@@ -123,54 +109,6 @@ apply_action:
         return make_error<filtered_result<ActionTag>>(std::move(applyError));
     }
 }
-template<typename Iterable,typename Filter>
-template<typename ActionTag>
-constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
-{
-    typedef filtered_iterable_action_result<const deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
-    typedef typename filtered_action_result::error_t filtered_action_error;
-
-apply_action:
-    if (filtered_action_result applyRes = i_actionTag.apply(m_adaptor))
-    {
-        return make_result<const_filtered_result<ActionTag>>(applyRes);
-    }
-    else
-    {
-        typedef typename filtered_action_error::recovery_tag recovery_tag;
-        typedef filtered_iterable_action<ActionTag,Filter> filtered_action_tag;
-
-        filtered_action_error applyError = applyRes.error();
-
-        if constexpr (mpl::is_same_type<recovery_tag,filtered_action_tag>::value)
-        {
-            if (applyError)
-            {
-                i_actionTag.~filtered_iterable_action<ActionTag,Filter>();
-
-                new (&i_actionTag) filtered_iterable_action<ActionTag,Filter>(std::move(applyError).recovery());
-
-                goto apply_action;
-            }
-        }
-        else
-        {
-            if (applyError)
-            {
-                if (auto recoveryRes = perform_action(std::move(applyError).recovery()))
-                {
-                    return make_result<const_filtered_result<ActionTag>>(recoveryRes);
-                }
-                else
-                {
-                    return make_error<const_filtered_result<ActionTag>>(std::move(recoveryRes).error());
-                }
-            }
-        }
-
-        return make_error<const_filtered_result<ActionTag>>(std::move(applyError));
-    }
-}
 
 template<typename Iterable,typename Filter>
 iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::iterable_adaptor(const Iterable& i_iterable,const Filter& i_filter)
@@ -179,29 +117,29 @@ iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::iterabl
 {
 }
 template<typename Iterable,typename Filter>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(ActionTag&& i_actionTag) const
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
-    if (auto actionRes = perform_action(filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),m_filter }))
+    if (auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),i_adaptor.m_filter }))
     {
-        return make_result<iterable_action_tag_result<traits,ActionTag>>(actionRes);
+        return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(actionRes);
     }
     else
     {
-        return make_error<iterable_action_tag_result<traits,ActionTag>>(actionRes.error());
+        return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(actionRes.error());
     }
 }
 template<typename Iterable,typename Filter>
-template<typename ActionTag>
-constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(filtered_iterable_action<ActionTag,Filter> i_actionTag) const
+template<typename Adaptor, typename ActionTag>
+constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag)
 {
     typedef iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>> adaptor_t;
     typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
 
 apply_action:
-    if (filtered_action_result applyRes = i_actionTag.apply(m_adaptor))
+    if (filtered_action_result applyRes = i_actionTag.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
     {
         return make_result<filtered_result<ActionTag>>(applyRes);
     }
@@ -225,7 +163,7 @@ apply_action:
         {
             if (applyError)
             {
-                if (auto recoveryRes = perform_action(std::move(applyError).recovery()))
+                if (auto recoveryRes = perform_action(std::forward<Adaptor>(i_adaptor),std::move(applyError).recovery()))
                 {
                     return make_result<filtered_result<ActionTag>>(recoveryRes);
                 }

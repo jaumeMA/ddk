@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_iterable_action_tags.h"
+#include "ddk_iterable_action_tags_template_helper.h"
 #include "ddk_function_arguments_template_helper.h"
 #include <type_traits>
 

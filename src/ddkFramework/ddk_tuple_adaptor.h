@@ -26,24 +26,27 @@ public:
 
 	iterable_adaptor(tuple<T...>& i_iterable);
 
-	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>&);
-	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>&) const;
-	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const end_action_tag&) const;
-	inline auto perform_action(const forward_action_tag&) const;
-	inline auto perform_action(const backward_action_tag&) const;
-	inline auto perform_action(const displace_action_tag&) const;
+	template<typename Adaptor, typename Sink>
+	static inline auto perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const end_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const backward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const displace_action_tag&);
 
 private:
 	typedef typename traits::reference reference;
 	typedef typename traits::const_reference const_reference;
 
-	template<size_t Index,typename Sink>
-	inline static reference _get(const sink_action_tag<Sink>&,tuple<T...>&);
-	template<size_t Index,typename Sink>
-	inline static const_reference _get(const sink_action_tag<Sink>&,const tuple<T...>&);
+	template<size_t Index, typename Tuple, typename Return>
+	inline static Return _agnostic_get(Tuple&);
+	template<size_t Index,typename Sink,typename Tuple,typename Return>
+	inline static Return _get(const sink_action_tag<Sink>&,Tuple&);
 
 	tuple<T...>& m_iterable;
 	mutable typename traits::difference_type m_currIndex = 0;
@@ -65,18 +68,25 @@ public:
 	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(const tuple<T...>& i_iterable);
-	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>&) const;
-	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const end_action_tag&) const;
-	inline auto perform_action(const forward_action_tag&) const;
-	inline auto perform_action(const backward_action_tag&) const;
-	inline auto perform_action(const displace_action_tag&) const;
+	template<typename Adaptor, typename Sink>
+	static inline auto perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const end_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const backward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const displace_action_tag&);
 
 private:
 	typedef typename traits::reference reference;
 	typedef typename traits::const_reference const_reference;
 
+	template<size_t Index>
+	inline static const_reference _agnostic_const_get(const tuple<T...>&);
 	template<size_t Index,typename Sink>
 	inline static const_reference _const_get(const sink_action_tag<Sink>&,const tuple<T...>&);
 

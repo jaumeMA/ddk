@@ -21,15 +21,18 @@ public:
 	typedef typename high_order_array<T,ranks...>::dimension_t dimension_t;
 
 	iterable_adaptor(high_order_array<T,ranks...>& i_iterable);
-	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>& i_sink);
-	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>& i_sink) const;
-	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const end_action_tag&) const;
-	inline auto perform_action(const forward_action_tag&) const;
-	inline auto perform_action(const backward_action_tag&) const;
-	inline auto perform_action(const displace_action_tag&) const;
+	template<typename Adaptor, typename Sink>
+	static inline auto perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const end_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const backward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const displace_action_tag&);
 
 private:
 	static const size_t s_numRanks = mpl::get_num_ranks<ranks...>();
@@ -54,13 +57,18 @@ public:
 	typedef typename high_order_array<T,ranks...>::dimension_t dimension_t;
 
 	iterable_adaptor(const high_order_array<T,ranks...>& i_iterable);
-	template<typename Sink>
-	inline auto perform_action(const sink_action_tag<Sink>& i_sink) const;
-	inline auto perform_action(const begin_action_tag&) const;
-	inline auto perform_action(const end_action_tag&) const;
-	inline auto perform_action(const forward_action_tag&) const;
-	inline auto perform_action(const backward_action_tag&) const;
-	inline auto perform_action(const displace_action_tag&) const;
+	template<typename Adaptor, typename Sink>
+	static inline auto perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const end_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const backward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const displace_action_tag&);
 
 private:
 	static const size_t s_numRanks = mpl::get_num_ranks<ranks...>();

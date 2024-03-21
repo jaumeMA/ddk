@@ -48,7 +48,7 @@ constexpr auto intersection_action<sink_action_tag<Sink>>::apply(Adaptor&& ... i
 	typedef typename intersection_traits::reference reference;
 	typedef iterable_action_tag_result<intersection_traits,sink_action_tag<Sink>> intersection_result;
 
-	if (auto actionRes = create_reference<reference>(std::forward<Adaptor>(i_adaptors).perform_action(k_iterableEmptySink).dismiss() ...))
+	if (auto actionRes = create_reference<reference>(std::forward<Adaptor>(i_adaptors).perform_action(std::forward<Adaptor>(i_adaptors),k_iterableEmptySink).dismiss() ...))
 	{
 		return make_result<intersection_result>(m_action(*actionRes));
 	}
@@ -81,7 +81,7 @@ constexpr auto intersection_action<size_action_tag>::apply(Adaptor&& ... i_adapt
 	typedef detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...> intersection_traits;
 	typedef iterable_action_tag_result<intersection_traits,size_action_tag> intersection_result;
 
-	adaptors_result actionRes = { std::forward<Adaptor>(i_adaptors).perform_action(size_action_tag{}) ... };
+	adaptors_result actionRes = { std::forward<Adaptor>(i_adaptors).perform_action(std::forward<Adaptor>(i_adaptors),size_action_tag{}) ... };
 
 	//in order to avoid unchecked result asserts, ensure we check all of them
 	const bool actionResBool[mpl::num_ranks<Indexs...>] = { static_cast<bool>(actionRes.template get<Indexs>()) ... };
@@ -113,15 +113,47 @@ TEMPLATE(size_t ... Indexs,typename ... Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t)...)
 constexpr auto intersection_action<ActionTag>::apply(Adaptor&& ... i_adaptors)
 {
-	typedef iterable_action_tag_result<detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...>,ActionTag> intersection_result;
-
-	if(( std::forward<Adaptor>(i_adaptors).perform_action(std::move(m_action)) && ...))
+	if constexpr ((IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(Adaptor,ActionTag) && ...))
 	{
-		return make_result<intersection_result>(success);
+		typedef detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...> intersection_traits;
+		typedef typename intersection_traits::reference reference;
+		typedef tuple<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>...> adaptors_result;
+		typedef iterable_action_tag_result<intersection_traits,ActionTag> intersection_result;
+
+		if(auto actionRes = create_reference<reference>(std::forward<Adaptor>(i_adaptors).perform_action(std::forward<Adaptor>(i_adaptors),std::move(m_action)).dismiss() ...))
+		{
+			return make_result<intersection_result>(*actionRes);
+		}
+		else
+		{
+			return make_error<intersection_result>(std::move(m_action));
+		}
 	}
 	else
 	{
-		return make_error<intersection_result>(std::move(m_action));
+		typedef iterable_action_tag_result<detail::intersection_iterable_traits<detail::adaptor_traits<Adaptor>...>,ActionTag> intersection_result;
+
+		if ((std::forward<Adaptor>(i_adaptors).perform_action(std::forward<Adaptor>(i_adaptors),std::move(m_action)) && ...))
+		{
+			return make_result<intersection_result>(success);
+		}
+		else
+		{
+			return make_error<intersection_result>(std::move(m_action));
+		}
+	}
+}
+template<typename ActionTag>
+template<typename Reference,typename ... Result>
+constexpr inline optional<Reference> intersection_action<ActionTag>::create_reference(Result&& ... i_results)
+{
+	if ((static_cast<bool>(i_results) && ...))
+	{
+		return Reference{ i_results.get() ... };
+	}
+	else
+	{
+		return none;
 	}
 }
 

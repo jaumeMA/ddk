@@ -11,13 +11,7 @@ namespace iter
 template<typename Functor>
 auto transform_iterable_transform::operator()(Functor&& i_transform) const
 {
-	return impl<Functor>{i_transform};
-}
-
-template<typename Functor>
-transform_iterable_transform::impl<Functor>::impl(Functor i_transform)
-: m_transform(std::forward<Functor>(i_transform))
-{
+	return detail::iterable_transform<Functor>{i_transform};
 }
 
 }

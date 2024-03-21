@@ -32,7 +32,7 @@ private:
     static constexpr bool is_convertible = mpl::which_type<mpl::is_const<T>,std::is_convertible<T,typename Traits::const_reference>,std::is_convertible<T,typename Traits::reference>>::type::value;
 
 public:
-    typedef typename std::enable_if<is_convertible<Projection<OldTraits,NewTraits>>,which_sink_action<NewTraits>>::type type;
+    typedef typename which_sink_action<NewTraits> type;
 };
 
 template<typename OldTraits,typename NewTraits,template<typename,typename> typename Projection,typename T>
@@ -62,11 +62,11 @@ template<typename Sink>
 struct is_sink_action_tag_impl<sink_action_tag<Sink>> : public std::true_type
 {};
 template<typename T>
-struct is_sink_action_tag_impl : public std::true_type
+struct is_sink_action_tag_impl : public std::false_type
 {};
 
 template<typename T>
-constexpr inline bool is_sink_action_tag = is_sink_action_tag_impl<T>::value;
+constexpr inline bool is_sink_action_tag = is_sink_action_tag_impl<mpl::remove_qualifiers<T>>::value;
 
 struct iterable_action_tag;
 

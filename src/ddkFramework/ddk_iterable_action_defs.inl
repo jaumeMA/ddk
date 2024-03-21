@@ -38,7 +38,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr no_action remove_action::apply(Adaptor&& i_adaptor) const
 {
-	i_adaptor.perform_action(remove_action_tag{}).dismiss();
+	i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),remove_action_tag{}).dismiss();
 
 	return {};
 }
@@ -59,7 +59,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr no_action add_action<T>::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(add_action_tag<T>{std::move(m_value)})) };
+	return { static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),add_action_tag<T>{std::move(m_value)})) };
 }
 
 constexpr forward_action::forward_action(bool i_valid)
@@ -70,7 +70,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
 constexpr forward_action forward_action::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(forward_action_tag{})) };
+	return { static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),forward_action_tag{}))};
 }
 constexpr forward_action& forward_action::operator=(const forward_action& i_action)
 {
@@ -87,7 +87,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
 constexpr backward_action backward_action::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(backward_action_tag{})) };
+	return { static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),backward_action_tag{})) };
 }
 
 constexpr go_to_begin_action::go_to_begin_action(bool i_valid)
@@ -102,7 +102,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
 constexpr forward_action go_to_begin_action::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(begin_action_tag{})) };
+	return { static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),begin_action_tag{})) };
 }
 constexpr go_to_begin_action& go_to_begin_action::operator=(const go_to_begin_action& i_action)
 {
@@ -123,7 +123,8 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
 constexpr backward_action go_to_end_action::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(end_action_tag{})) && static_cast<bool>(i_adaptor.perform_action(backward_action_tag{})) };
+	return { static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),end_action_tag{})) && 
+			 static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),backward_action_tag{})) };
 }
 
 constexpr bidirectional_action::bidirectional_action(bool i_forward)
@@ -146,11 +147,11 @@ constexpr bidirectional_action bidirectional_action::apply(Adaptor&& i_adaptor) 
 {
 	if (m_forward)
 	{
-		return { m_forward,static_cast<bool>(i_adaptor.perform_action(forward_action_tag{})) };
+		return { m_forward,static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),forward_action_tag{})) };
 	}
 	else
 	{
-		return { m_forward,static_cast<bool>(i_adaptor.perform_action(backward_action_tag{})) };
+		return { m_forward,static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),backward_action_tag{})) };
 	}
 }
 
@@ -175,7 +176,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr no_action displacement_action::apply(Adaptor&& i_adaptor) const
 {
-	return { static_cast<bool>(i_adaptor.perform_action(displace_action_tag{ shift() })) };
+	return { static_cast<bool>(i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),displace_action_tag{ shift() })) };
 }
 
 template<typename Sink>
@@ -235,7 +236,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr auto sink_action<Sink>::apply(Adaptor&& i_adaptor) const
 {
-	if (auto actionRes = i_adaptor.perform_action(sink_action_tag{ [this](auto&& i_value) mutable { ddk::terse_eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }))
+	if (auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),sink_action_tag{ [this](auto&& i_value) mutable { ddk::terse_eval(m_sink,std::forward<decltype(i_value)>(i_value)); } }))
 	{
 		return sink_action{ m_sink };
 	}
@@ -300,7 +301,7 @@ constexpr auto action_sink<Action,Sink>::apply(Adaptor&& i_adaptor) const
 		typedef detail::adaptor_traits<adaptor_t> traits;
 		typedef typename traits::reference reference;
 
-		std::forward<Adaptor>(i_adaptor).perform_action(sink_action_tag{ [this](reference i_value) mutable { ddk::terse_eval(m_sink,std::forward<reference>(i_value)); } }).dismiss();
+		std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),sink_action_tag{ [this](reference i_value) mutable { ddk::terse_eval(m_sink,std::forward<reference>(i_value)); } }).dismiss();
 
 		return action_sink<decltype(nextAction),Sink>{ std::move(nextAction),m_sink };
 	}
@@ -326,7 +327,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr no_action size_action::apply(Adaptor&& i_adaptor) const
 {
-	if (auto actionRes = i_adaptor.perform_action(size_action_tag{}))
+	if (auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),size_action_tag{}))
 	{
 		m_size = actionRes.get();
 

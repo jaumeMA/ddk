@@ -71,7 +71,7 @@ auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterabl
 	typedef ddk::detail::iterable_traits<ddk::detail::iterable_by_value_adaptor<return_t,transformed_tags,transformed_const_tags>> iterable_transformed_traits;
 	typedef ddk::detail::transformed_iterable_impl<iterable_transformed_traits,traits,iterable_t,Function> transformed_iterable;
 
-	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_transform()));
+	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs));
 }
 TEMPLATE(typename Function,typename Iterable)
 REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))

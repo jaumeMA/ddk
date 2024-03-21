@@ -201,6 +201,12 @@
 #define IS_SIZED_TYPE(_TYPE) \
 	typename std::enable_if<IS_SIZED_TYPE_COND(_TYPE)>::type
 
+#define DEDUCED_THIS_COND(_FROM,_TO) \
+	IS_BASE_OF(_TO,_FROM)
+
+#define DEDUCED_THIS(_FROM,_TO) \
+	typename std::enable_if<DEDUCED_THIS_COND(_FROM,_TO)>::type
+
 namespace ddk
 {
 namespace concepts

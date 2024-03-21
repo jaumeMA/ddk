@@ -15,7 +15,7 @@ TEMPLATE(typename Adaptor,typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> backward_order_resolver::operator()(Adaptor&& i_adaptor, ActionTag&& i_action) const
 {
-	return i_adaptor.perform_action(std::forward<ActionTag>(i_action));
+	return i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),std::forward<ActionTag>(i_action));
 }
 TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,end_action_tag))
@@ -23,14 +23,15 @@ constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_actio
 {
 	if constexpr (ACTION_TAGS_SUPPORTED_COND(Adaptor,backward_action_tag))
 	{
-		if (i_adaptor.perform_action(end_action_tag{}) && i_adaptor.perform_action(backward_action_tag{}))
+		if (i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),end_action_tag{}))
 		{
-			return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(success);
+			if (auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),backward_action_tag{}))
+			{
+				return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>(actionRes);
+			}
 		}
-		else
-		{
-			return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>();
-		}
+
+		return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,begin_action_tag>>();
 	}
 	else
 	{
@@ -48,7 +49,7 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,begin_action_tag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,end_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor,end_action_tag&& i_action) const
 {
-	if (const auto actionRes = i_adaptor.perform_action(begin_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),begin_action_tag{}))
 	{
 		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,end_action_tag>>(success);
 	}
@@ -61,9 +62,9 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,backward_action_tag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor, forward_action_tag&& i_action) const
 {
-	if (const auto actionRes = i_adaptor.perform_action(backward_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),backward_action_tag{}))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>(success);
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>(actionRes);
 	}
 	else
 	{
@@ -74,9 +75,9 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor, backward_action_tag&& i_action) const
 {
-	if (const auto actionRes = i_adaptor.perform_action(forward_action_tag{}))
+	if (const auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),forward_action_tag{}))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>(success);
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>(actionRes);
 	}
 	else
 	{
@@ -87,9 +88,9 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,displace_action_tag))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag> backward_order_resolver::operator()(Adaptor&& i_adaptor, displace_action_tag&& i_action) const
 {
-	if (const auto actionRes = i_adaptor.perform_action(displace_action_tag{ -i_action.displacement() }))
+	if (const auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),displace_action_tag{ -i_action.displacement() }))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(success);
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(actionRes);
 	}
 	else
 	{
@@ -101,7 +102,7 @@ TEMPLATE(typename Adaptor,typename ActionTag)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
 constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> transpose_multi_dimensional_order_resolver::operator()(Adaptor&& i_adaptor,ActionTag&& i_action) const
 {
-	return i_adaptor.perform_action(std::forward<ActionTag>(i_action));
+	return i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),std::forward<ActionTag>(i_action));
 }
 TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,forward_action_tag),IS_DIMENSIONABLE_ADAPTOR(Adaptor))
@@ -112,7 +113,7 @@ constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_act
 
 	if (const auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),difference_type{ 1 }))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>(success);
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,forward_action_tag>>(actionRes);
 	}
 	else
 	{
@@ -128,7 +129,7 @@ constexpr iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_ac
 
 	if (const auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),difference_type{ -1 }))
 	{
-		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>(success);
+		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,backward_action_tag>>(actionRes);
 	}
 	else
 	{
@@ -154,7 +155,7 @@ constexpr auto transpose_multi_dimensional_order_resolver::perform_action(Adapto
 
 apply_action:
 
-	if (const auto actionRes = i_adaptor.perform_action(displace_action_tag{ static_cast<difference_type>(shift) }))
+	if (const auto actionRes = i_adaptor.perform_action(std::forward<Adaptor>(i_adaptor),displace_action_tag{ static_cast<difference_type>(shift) }))
 	{
 		return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,displace_action_tag>>(actionRes);
 	}

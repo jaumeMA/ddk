@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ddk_iterable_action_defs.h"
-#include "ddk_iterable_action_tag_concepts.h"
 
 #define IS_ITERABLE_ACTION_COND(_ACTION) \
     std::is_base_of<ddk::action_base,ddk::mpl::remove_qualifiers<_ACTION>>::value

@@ -63,22 +63,21 @@ struct E : C
 	using C::C;
 };
 
-namespace ddk
+struct from_tuple_to_string
 {
-
-struct tuple_visitor
-{
-	struct callable_tag;
-	typedef void return_type;
+	typedef std::string return_type;
 
 	template<typename T>
-	void operator()(T&& i_value) const
+	std::string operator()(T&& i_value) const
 	{
-		printf("A loperator de tuples");
+		return ddk::to_string(std::forward<T>(i_value));
+	}
+	template<typename ... T>
+	std::string operator()(ddk::variant<T...> i_value) const
+	{
+		return ddk::visit<from_tuple_to_string>(i_value);
 	}
 };
-
-}
 
 static std::list<int> myFoo;
 void proveta2(ddk::const_bidirectional_iterable<const int> i_iterable)
@@ -127,8 +126,8 @@ struct myBeginAction : ddk::action_base
 	{
 	}
 	TEMPLATE(typename Adaptor)
-		REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
-		inline ddk::no_action apply(Adaptor&& i_adaptor) const
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+	inline ddk::no_action apply(Adaptor&& i_adaptor) const
 	{
 		i_adaptor.perform_action(ddk::begin_action_tag{}).dismiss();
 
@@ -170,7 +169,9 @@ myForwardAction(const Sink&,bool i_valid) -> myForwardAction<Sink>;
 
 TEST(DDKIterableTest,peformance)
 {
-	ddk::go_to_begin >>= ddk::concat(v_prova,v_prova);
+	[](const int&)
+	{
+	} <<= v_prova;
 }
 struct myAdaptor
 {
@@ -205,12 +206,11 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	{
 	} <<= ddk::view::filter([](const std::pair<const int,ddk::unique_reference_wrapper<int>>&) { return true; }) <<= kk;
 
-	ddk::const_bidirectional_value_iterable<const int> _ = ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
+	ddk::const_bidirectional_value_iterable<const int> _ = ddk::iter::transform([](const std::pair<const int,int>& i_value) -> const int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	[](const int&)
 	{
-
-	} <<= _;
+	} <<= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	proveta2(proveta());
 
@@ -314,9 +314,10 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 
 	////} <<= provaTuple;
 
-	ddk::tuple_visitor tupleVisitor;
-
-	tupleVisitor <<= provaTuple;
+	[](const std::string& i_str)
+	{
+		printf("str from tuple: %s\n",i_str.c_str());
+	} <<= ddk::iter::transform(from_tuple_to_string{}) <<= provaTuple;
 
 	////ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 

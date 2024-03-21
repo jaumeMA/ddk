@@ -1,8 +1,5 @@
 #pragma once
 
-#include "ddk_iterable_action_recovery_tags.h"
-#include "ddk_iterable_action_tags_template_helper.h"
-
 #define ADAPTOR_SUPPORTS_TAGS_COND(_ADAPTOR,...) \
     ddk::concepts::adaptor_supports_actions<_ADAPTOR,__VA_ARGS__>
 
@@ -63,6 +60,12 @@
 #define IS_SINK_ACTION(_ACTION_TAG) \
     typename std::enable_if<IS_SINK_ACTION_COND(_ACTION_TAG)>::type
 
+#define IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(_ADAPTOR,_ACTION_TAG) \
+    ddk::concepts::is_adaptor_representable_by_action<_ADAPTOR,_ACTION_TAG>
+
+#define IS_ADAPTOR_REPRESENTABLE_BY_ACTION(_ADAPTOR,_ACTION_TAG) \
+    typename std::enable_if<IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(_ADAPTOR,_ACTION_TAG)>::type
+
 namespace ddk
 {
 namespace concepts
@@ -104,13 +107,13 @@ struct _adaptor_holds_actions;
 template<typename ... Tags,typename ... TTags>
 struct _adaptor_holds_actions<mpl::type_pack<Tags...>,mpl::type_pack<TTags...>>
 {
-    static const bool value = ( mpl::is_among_constructible_types<Tags,TTags...> && ... );
+    static const bool value = ( mpl::is_some_constructible_type<Tags,TTags...> && ... );
 };
 
 template<typename Tag,typename ... Tags>
 struct _adaptor_holds_actions<Tag,mpl::type_pack<Tags...>>
 {
-    static const bool value = mpl::is_among_constructible_types<Tag,Tags...>;
+    static const bool value = mpl::is_some_constructible_type<Tag,Tags...>;
 };
 
 template<typename Adaptor, typename ... ActionTags>
@@ -127,6 +130,20 @@ inline constexpr bool adaptor_holds_any_actions = (_adaptor_holds_actions<ddk::m
 
 template<typename FromAdaptor,typename ToAdaptor>
 inline constexpr bool adaptor_holds_any_adaptor_actions = (_adaptor_holds_actions<ddk::detail::adaptor_tags<FromAdaptor>,ddk::detail::adaptor_tags<ToAdaptor>>::value);
+
+template<typename Adaptor,typename ActionTag>
+struct is_adaptor_representable_by_action_impl
+{
+private:
+    typedef iterable_action_return_type<detail::adaptor_traits<Adaptor>,ActionTag> return_type;
+
+public:
+    static const bool value = std::is_same<return_type,typename detail::adaptor_traits<Adaptor>::const_reference>::value ||
+                              std::is_same<return_type,typename detail::adaptor_traits<Adaptor>::reference>::value;
+};
+
+template<typename Adaptor, typename ActionTag>
+constexpr inline bool is_adaptor_representable_by_action = is_adaptor_representable_by_action_impl<Adaptor,ActionTag>::value;
 
 }
 }

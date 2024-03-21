@@ -41,12 +41,12 @@ template<typename T,typename ... Args>
 struct is_callable_by
 {
 private:
-	template<typename TT>
-	static decltype(std::declval<TT>()(std::declval<Args>()...)) resolve(const TT&);
+	template<typename TT, typename = decltype(std::declval<TT>()(std::declval<Args>()...))>
+	static std::true_type resolve(const TT&);
 	static std::false_type resolve(...);
 
 public:
-	static const bool value = !std::is_same<decltype(resolve(std::declval<T>())),std::false_type>::value;
+	static const bool value = decltype(resolve(std::declval<T>()))::value;
 };
 
 }

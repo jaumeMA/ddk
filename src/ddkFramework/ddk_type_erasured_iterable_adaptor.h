@@ -3,9 +3,6 @@
 #include "ddk_iterable_interface.h"
 #include "ddk_iterable_action.h"
 #include "ddk_tuple.h"
-#include "ddk_type_concepts.h"
-#include "ddk_iterable_action_tag_concepts.h"
-#include "ddk_concepts.h"
 
 namespace ddk
 {
@@ -29,12 +26,9 @@ public:
 	template<typename Adaptor>
 	iterable_adaptor(Adaptor& i_adaptor);
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	inline auto perform_action(ActionTag&& i_action);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	inline auto perform_action(ActionTag&& i_action) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_action);
 
 private:
 	template<typename>
@@ -88,9 +82,9 @@ public:
 	template<typename Adaptor>
 	iterable_adaptor(const Adaptor& i_adaptor);
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	inline auto perform_action(ActionTag&& i_action) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_action);
 
 private:
 	template<typename>

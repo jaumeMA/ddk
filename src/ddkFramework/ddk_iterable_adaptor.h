@@ -45,7 +45,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable);
 
-	constexpr inline auto perform_action(const begin_action_tag&) const;
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const begin_action_tag&);
 
 protected:
 	typedef iterable_iterator<adaptor_iterable<Adaptor>> iterator;
@@ -63,7 +64,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable);
 
-	constexpr inline auto perform_action(const end_action_tag&) const;
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const end_action_tag&);
 
 protected:
 	typedef iterable_iterator<adaptor_iterable<Adaptor>> iterator;
@@ -81,7 +83,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	constexpr inline auto perform_action(const forward_action_tag&) const;
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const forward_action_tag&);
 };
 
 template<typename Adaptor>
@@ -94,7 +97,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	constexpr inline auto perform_action(const backward_action_tag&) const;
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const backward_action_tag&);
 };
 
 template<typename Adaptor>
@@ -107,7 +111,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	constexpr inline auto perform_action(const displace_action_tag&) const;
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const displace_action_tag&);
 };
 
 template<typename Adaptor>
@@ -120,7 +125,7 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	constexpr inline auto perform_action(const remove_action_tag&) const;
+	static constexpr inline auto perform_action(Adaptor& i_adaptor, const remove_action_tag&);
 };
 
 template<typename Adaptor,typename T>
@@ -133,7 +138,7 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	constexpr inline auto perform_action(add_action_tag<T>) const;
+	static constexpr inline auto perform_action(Adaptor& i_adaptor, add_action_tag<T>);
 };
 
 template<typename Adaptor,typename T>
@@ -146,10 +151,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	template<typename Sink>
-	constexpr inline auto perform_action(const sink_action_tag<Sink>& i_sink);
-	template<typename Sink>
-	constexpr inline auto perform_action(const sink_action_tag<Sink>& i_sink) const;
+	template<typename AAdaptor, typename Sink>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
 };
 
 template<typename Adaptor>
@@ -162,7 +165,8 @@ public:
 	template<typename Iterable>
 	iterable_adaptor_action(Iterable&& i_iterable) {};
 
-	constexpr inline auto perform_action(const size_action_tag&) const;
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const size_action_tag&);
 };
 
 template<typename Iterable,typename ... IterableActions>

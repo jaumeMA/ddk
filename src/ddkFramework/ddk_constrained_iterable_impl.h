@@ -56,12 +56,9 @@ public:
 
 	iterable_adaptor(Iterable& i_iterable,const Constrain& i_constrain);
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
 	deduced_adaptor<Iterable> m_adaptor;
@@ -79,9 +76,9 @@ public:
 
 	iterable_adaptor(const Iterable& i_iterable,const Constrain& i_constrain);
 
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
 	deduced_adaptor<const Iterable> m_adaptor;

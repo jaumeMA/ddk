@@ -23,11 +23,12 @@ constexpr filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_ite
     typedef typename mpl::remove_qualifiers<Adaptor>::traits traits;
     typedef typename traits::const_reference const_reference;
 
-    if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(std::move(m_actionTag)))
+    if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),std::move(m_actionTag)))
     {
-        if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink))
+        //we only filter out representable actions
+        if constexpr (IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(Adaptor,ActionTag))
         {
-            if (ddk::terse_eval(m_filter,sinkRes.get()))
+            if (ddk::terse_eval(m_filter,actionRes.get()))
             {
                 return make_result<filtered_result>(actionRes);
             }
@@ -80,14 +81,11 @@ constexpr filtered_iterable_action_result<Adaptor,displace_action_tag,Filter> fi
     displace_action_tag::difference_type prevShift = m_actionTag.displacement();
     displace_action_tag::difference_type postShift = prevShift;
 
-    if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(displace_action_tag{(prevShift > 0) ? 1 : -1}))
+    if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),displace_action_tag{(prevShift > 0) ? 1 : -1}))
     {
-        if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink))
+        if (ddk::terse_eval(m_filter,actionRes.get()))
         {
-            if (ddk::terse_eval(m_filter,sinkRes.get()))
-            {
-                postShift--;
-            }
+            postShift--;
         }
 
         if (postShift == 0)
@@ -134,7 +132,7 @@ constexpr filtered_iterable_action_result<Adaptor,sink_action_tag<Sink>,Filter> 
     typedef typename mpl::remove_qualifiers<Adaptor>::traits traits;
     typedef typename traits::const_reference const_reference;
 
-    if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(k_iterableEmptySink))
+    if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),k_iterableEmptySink))
     {
         if (ddk::terse_eval(m_filter,sinkRes.get()))
         {

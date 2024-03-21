@@ -77,6 +77,9 @@ public:
 	constexpr inline auto apply(Adaptor&& ... i_adaptors);
 
 private:
+	template<typename Reference,typename ... Result>
+	static constexpr inline optional<Reference> create_reference(Result&& ... i_result);
+
 	ActionTag m_action;
 };
 template<typename T>

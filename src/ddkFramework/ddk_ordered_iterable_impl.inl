@@ -50,18 +50,11 @@ iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::iterab
 {
 }
 template<typename Iterable,typename ActionResolver>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-constexpr auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag)
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(typename Adaptor::traits,ActionTag))
+constexpr auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
-	return m_actionResolver(m_adaptor,std::forward<ActionTag>(i_actionTag));
-}
-template<typename Iterable,typename ActionResolver>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-constexpr auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag) const
-{
-	return m_actionResolver(m_adaptor,std::forward<ActionTag>(i_actionTag));
+	return i_adaptor.m_actionResolver(std::forward<Adaptor>(i_adaptor).m_adaptor,std::forward<ActionTag>(i_actionTag));
 }
 
 template<typename Iterable,typename ActionResolver>
@@ -71,11 +64,11 @@ iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::
 {
 }
 template<typename Iterable,typename ActionResolver>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-constexpr auto iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(ActionTag&& i_actionTag) const
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
-	return m_actionResolver(m_adaptor,std::forward<ActionTag>(i_actionTag));
+	return i_adaptor.m_actionResolver(std::forward<Adaptor>(i_adaptor).m_adaptor,std::forward<ActionTag>(i_actionTag));
 }
 
 }

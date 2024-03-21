@@ -34,34 +34,19 @@ iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::iterable_ada
 {
 }
 template<typename ... Iterables>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag)
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
-    return perform_action(seq_type{},intersection_action{ std::forward<ActionTag>(i_actionTag) });
+    return perform_action(seq_type{},std::forward<Adaptor>(i_adaptor),intersection_action{std::forward<ActionTag>(i_actionTag)});
 }
 template<typename ... Iterables>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
+template<size_t ... Indexs,typename Adaptor,typename ActionTag>
+auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,Adaptor&& i_adaptor,intersection_action<ActionTag> i_actionTag)
 {
-    typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
-
-    return perform_action(seq_type{},intersection_action{ std::forward<ActionTag>(i_actionTag) });
-}
-template<typename ... Iterables>
-template<size_t ... Indexs,typename ActionTag>
-auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag)
-{
-    return i_actionTag.template apply<Indexs...>(m_adaptors.template get<Indexs>()...);
-}
-template<typename ... Iterables>
-template<size_t ... Indexs,typename ActionTag>
-auto iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const
-{
-    return i_actionTag.template apply<Indexs...>(m_adaptors.template get<Indexs>()...);
+    return i_actionTag.template apply<Indexs...>(std::forward<Adaptor>(i_adaptor).m_adaptors.template get<Indexs>()...);
 }
 
 template<typename ... Iterables>
@@ -70,19 +55,19 @@ iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::iterab
 {
 }
 template<typename ... Iterables>
-TEMPLATE(typename ActionTag)
-REQUIRED(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-constexpr auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(ActionTag&& i_actionTag) const
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
     typedef typename mpl::make_sequence<0,s_numTypes>::type seq_type;
 
-    return perform_action(seq_type{},intersection_action{ std::forward<ActionTag>(i_actionTag) });
+    return perform_action(seq_type{},std::forward<Adaptor>(i_adaptor),intersection_action{std::forward<ActionTag>(i_actionTag)});
 }
 template<typename ... Iterables>
-template<size_t ... Indexs,typename ActionTag>
-constexpr auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const
+template<size_t ... Indexs,typename Adaptor,typename ActionTag>
+constexpr auto iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>::perform_action(const mpl::sequence<Indexs...>&,Adaptor&& i_adaptor,intersection_action<ActionTag> i_actionTag)
 {
-    return i_actionTag.template apply<Indexs...>(m_adaptors.template get<Indexs>()...);
+    return i_actionTag.template apply<Indexs...>(std::forward<Adaptor>(i_adaptor).m_adaptors.template get<Indexs>()...);
 }
 
 }

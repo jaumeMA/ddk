@@ -46,18 +46,13 @@ public:
 	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(Iterables& ... i_iterable);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-	template<size_t ... Indexs,typename ActionTag>
-	auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag);
-	template<size_t ... Indexs,typename ActionTag>
-	auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const;
+	template<size_t ... Indexs,typename Adaptor,typename ActionTag>
+	static auto perform_action(const mpl::sequence<Indexs...>&, Adaptor&& i_adaptor, intersection_action<ActionTag> i_actionTag);
 
 	tuple<deduced_adaptor<Iterables>...> m_adaptors;
 };
@@ -75,13 +70,13 @@ public:
 	typedef typename traits::const_tags_t const_tags_t;
 
 	iterable_adaptor(const Iterables& ... i_iterable);
-	TEMPLATE(typename ActionTag)
-	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
-	constexpr auto perform_action(ActionTag&& i_actionTag) const;
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-	template<size_t ... Indexs,typename ActionTag>
-	constexpr auto perform_action(const mpl::sequence<Indexs...>&,intersection_action<ActionTag> i_actionTag) const;
+	template<size_t ... Indexs,typename Adaptor,typename ActionTag>
+	static constexpr auto perform_action(const mpl::sequence<Indexs...>&,Adaptor&& i_adaptor,intersection_action<ActionTag> i_actionTag);
 
 	const tuple<deduced_adaptor<Iterables>...> m_adaptors;
 };
