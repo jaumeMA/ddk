@@ -23,9 +23,9 @@ auto iterable_transform<Transform>::map_action(ActionTag&& i_action) const
 {
 	if constexpr (IS_SINK_ACTION_COND(ActionTag))
 	{
-		return sink_action_tag{ [=](auto&& i_value) mutable
+		return sink_action_tag{ [&](auto&& i_value) mutable
 		{
-			i_action(ddk::terse_eval(m_transform,std::forward<decltype(i_value)>(i_value)));
+			auto res = i_action(ddk::terse_eval(m_transform,std::forward<decltype(i_value)>(i_value)));
 		} };
 	}
 	else
@@ -88,7 +88,8 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 
 		if (auto actionRes = i_adaptor.m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,i_adaptor.m_transform.map_action<typename private_adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag))))
 		{
-			auto transformedRes = i_adaptor.m_transform(actionRes.get());
+			//avoid appearence of undesired rvalues
+			auto&& transformedRes = std::forward<Adaptor>(i_adaptor).m_transform(actionRes.get());
 
 			return make_result<transformed_result>(transformedRes);
 		}
@@ -120,7 +121,8 @@ constexpr auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTr
 
 		if (auto actionRes = i_adaptor.m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,i_adaptor.m_transform.map_action<typename private_adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag))))
 		{
-			auto transformedRes = i_adaptor.m_transform(actionRes.get());
+			//avoid appearence of undesired rvalues
+			auto&& transformedRes = std::forward<Adaptor>(i_adaptor).m_transform(actionRes.get());
 
 			return make_result<transformed_result>(transformedRes);
 		}

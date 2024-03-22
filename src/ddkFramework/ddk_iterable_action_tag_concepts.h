@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ddk_template_helper.h"
+
 #define ADAPTOR_SUPPORTS_TAGS_COND(_ADAPTOR,...) \
     ddk::concepts::adaptor_supports_actions<_ADAPTOR,__VA_ARGS__>
 

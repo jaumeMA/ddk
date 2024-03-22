@@ -1,6 +1,7 @@
 
 #include "ddk_iterable_exceptions.h"
 #include "ddk_iterable_action_result.h"
+#include "ddk_iterable_sink_adaptor.h"
 
 namespace ddk
 {
@@ -295,14 +296,8 @@ TEMPLATE(typename Adaptor)
 REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
 constexpr auto action_sink<Action,Sink>::apply(Adaptor&& i_adaptor) const
 {
-	if (auto nextAction = m_action.apply(std::forward<Adaptor>(i_adaptor)))
+	if (auto nextAction = m_action.apply(detail::sink_adaptor{ m_sink,std::forward<Adaptor>(i_adaptor) }))
 	{
-		typedef mpl::remove_qualifiers<Adaptor> adaptor_t;
-		typedef detail::adaptor_traits<adaptor_t> traits;
-		typedef typename traits::reference reference;
-
-		std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),sink_action_tag{ [this](reference i_value) mutable { ddk::terse_eval(m_sink,std::forward<reference>(i_value)); } }).dismiss();
-
 		return action_sink<decltype(nextAction),Sink>{ std::move(nextAction),m_sink };
 	}
 	else
