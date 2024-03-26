@@ -2,6 +2,7 @@
 
 #include "ddk_iterable_impl_interface.h"
 #include "ddk_iterable_visitor.h"
+#include "ddk_arena.h"
 
 namespace ddk
 {
@@ -11,6 +12,40 @@ namespace detail
 template<typename Traits,typename Iterable>
 inline auto transform_iterable(Iterable&& i_iterable);
 
+template<typename,typename,typename>
+struct iterable_transformed_action;
+
+template<typename Reference,typename Transform, typename ActionTag>
+struct iterable_transformed_action
+{
+public:
+	iterable_transformed_action(const Transform& i_transform, ActionTag i_actionTag);
+
+	auto operator*();
+	template<typename T>
+	constexpr inline auto operator()(T&& i_args) const;
+
+private:
+	const Transform m_transform;
+	ActionTag m_actionTag;
+};
+template<typename Reference,typename Transform, typename Sink>
+struct iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>
+{
+public:
+	template<typename SSink>
+	iterable_transformed_action(const Transform& i_transform,SSink&& i_actionTag);
+	~iterable_transformed_action();
+
+	auto operator*();
+	constexpr inline auto operator()(...) const;
+
+private:
+	const Transform m_transform;
+	sink_action_tag<Sink> m_actionTag;
+	mutable typed_arena<Reference> m_cache;
+};
+
 template<typename Transform>
 class iterable_transform
 {
@@ -19,9 +54,7 @@ public:
     REQUIRES(IS_CONSTRUCTIBLE(Transform,TTransform))
     iterable_transform(TTransform&& i_transform);
 
-	template<typename T>
-	constexpr inline auto operator()(T&& i_args) const;
-	template<typename Reference, typename ActionTag>
+	template<typename Reference,typename ActionTag>
 	auto map_action(ActionTag&& i_action) const;
 
 private:

@@ -4,6 +4,51 @@ namespace ddk
 namespace detail
 {
 
+template<typename Reference,typename Transform,typename ActionTag>
+iterable_transformed_action<Reference,Transform,ActionTag>::iterable_transformed_action(const Transform& i_transform,ActionTag i_actionTag)
+: m_transform(i_transform)
+, m_actionTag(std::forward<ActionTag>(i_actionTag))
+{
+}
+template<typename Reference,typename Transform,typename ActionTag>
+auto iterable_transformed_action<Reference,Transform,ActionTag>::operator*()
+{
+	return std::forward<ActionTag>(m_actionTag);
+}
+template<typename Reference,typename Transform,typename ActionTag>
+template<typename T>
+constexpr auto iterable_transformed_action<Reference,Transform,ActionTag>::operator()(T&& i_value) const
+{
+	return  ddk::terse_eval(m_transform,std::forward<T>(i_value));
+}
+
+template<typename Reference,typename Transform,typename Sink>
+template<typename SSink>
+iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::iterable_transformed_action(const Transform& i_transform, SSink&& i_actionTag)
+: m_transform(i_transform)
+, m_actionTag(std::forward<SSink>(i_actionTag))
+{
+}
+template<typename Reference,typename Transform,typename Sink>
+iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::~iterable_transformed_action()
+{
+	m_cache.template destroy<Reference>();
+}
+template<typename Reference,typename Transform,typename Sink>
+auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::operator*()
+{
+	return sink_action_tag{ [this](auto&& i_value) mutable
+	{
+		//transport value into outer result
+		m_cache.template construct<Reference>(m_actionTag(ddk::terse_eval(m_transform,std::forward<decltype(i_value)>(i_value))));
+	} };
+}
+template<typename Reference,typename Transform,typename Sink>
+constexpr auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::operator()(...) const
+{
+	return  m_cache.template get<Reference>();
+}
+
 template<typename Transform>
 TEMPLATE(typename TTransform)
 REQUIRED(IS_CONSTRUCTIBLE(Transform,TTransform))
@@ -12,26 +57,10 @@ iterable_transform<Transform>::iterable_transform(TTransform&& i_transform)
 {
 }
 template<typename Transform>
-template<typename T>
-constexpr auto iterable_transform<Transform>::operator()(T&& i_value) const
-{
-	return  ddk::terse_eval(m_transform,std::forward<T>(i_value));
-}
-template<typename Transform>
-template<typename Reference, typename ActionTag>
+template<typename Reference,typename ActionTag>
 auto iterable_transform<Transform>::map_action(ActionTag&& i_action) const
 {
-	if constexpr (IS_SINK_ACTION_COND(ActionTag))
-	{
-		return sink_action_tag{ [&](auto&& i_value) mutable
-		{
-			auto res = i_action(ddk::terse_eval(m_transform,std::forward<decltype(i_value)>(i_value)));
-		} };
-	}
-	else
-	{
-		return std::forward<ActionTag>(i_action);
-	}
+	return iterable_transformed_action<Reference,Transform,ActionTag>{ m_transform,std::forward<ActionTag>(i_action) };
 }
 
 template<typename FromTraits,typename ToTraits>
@@ -86,10 +115,11 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 	{
 		typedef iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag> transformed_result;
 
-		if (auto actionRes = i_adaptor.m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,i_adaptor.m_transform.map_action<typename private_adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag))))
+		auto mappedAction = i_adaptor.m_transform.map_action<typename detail::adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag));
+		if (auto actionRes = std::forward<Adaptor>(i_adaptor).m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,*mappedAction))
 		{
 			//avoid appearence of undesired rvalues
-			auto&& transformedRes = std::forward<Adaptor>(i_adaptor).m_transform(actionRes.get());
+			auto&& transformedRes = mappedAction(actionRes.get());
 
 			return make_result<transformed_result>(transformedRes);
 		}

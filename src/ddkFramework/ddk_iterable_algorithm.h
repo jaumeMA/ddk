@@ -30,7 +30,7 @@
 		{ \
 			using ::operator<<=; \
 			\
-			return transform([](auto&& i_value){ return _OP i_value; }) <<= deduce_iterable(i_iterable); \
+			return transform([](auto&& i_value){ return _OP std::forward<decltype(i_value)>(i_value); }) <<= deduce_iterable(i_iterable); \
 		} \
 	}; \
 	const _NAME##_iterable_transform _NAME;
@@ -44,7 +44,7 @@
 			template<typename ... Args> \
 			auto operator()(Args&& ... i_values) const\
 			{ \
-				return (i_values _OP ...); \
+				return (std::forward<Args>(i_values) _OP ...); \
 			} \
 		}; \
 	\

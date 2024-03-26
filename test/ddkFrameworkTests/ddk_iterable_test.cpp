@@ -169,9 +169,9 @@ myForwardAction(const Sink&,bool i_valid) -> myForwardAction<Sink>;
 
 TEST(DDKIterableTest,peformance)
 {
-	[](const int&)
+	[](const int& i_value)
 	{
-	} <<= v_prova;
+	} <<= ddk::view::order(ddk::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= ddk::iter::transform([](int& i_value) { return 2 * i_value; }) <<= v_prova;
 }
 struct myAdaptor
 {
