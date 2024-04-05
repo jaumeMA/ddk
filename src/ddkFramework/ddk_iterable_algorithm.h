@@ -75,11 +75,40 @@ namespace iter
 struct transform_iterable_transform
 {
 public:
+	template<typename Return>
+	struct as
+	{
+	public:
+		template<typename Functor>
+		struct transform
+		{
+		public:
+			typedef Return return_type;
+
+			transform(const Functor& i_functor);
+
+			template<typename ... Args>
+			constexpr inline auto operator()(Args&& ... i_args) const;
+
+		private:
+			const Functor m_functor;
+		};
+		template<typename Functor>
+		transform(const Functor&) -> transform<Functor>;
+
+		as() = default;
+
+		template<typename Functor>
+		auto operator()(Functor&& i_functor) const;
+	};
+
 	constexpr transform_iterable_transform() = default;
 	template<typename Functor>
 	inline auto operator()(Functor&& i_transform) const;
 };
 const transform_iterable_transform transform;
+template<typename Return>
+inline constexpr transform_iterable_transform::template as<Return> transform_as = transform_iterable_transform::template as<Return>();
 
 }
 }

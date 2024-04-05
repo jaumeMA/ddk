@@ -178,11 +178,12 @@ constexpr size_t size_of_unique_allocation()
 	return mpl::total_size<T,unique_control_block<T,Deleter>>();
 }
 template<typename T, typename Allocator, typename ... Args>
-inline unique_reference_wrapper<T> make_allocated_unique_reference(const Allocator& i_allocator, Args&& ... i_args)
+inline unique_reference_wrapper<T> make_allocated_unique_reference(Allocator&& i_allocator, Args&& ... i_args)
 {
 	typedef typename unique_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+	typedef unique_control_block<T,mpl::remove_qualifiers<Allocator>> control_block;
 
-	size_t allocatedStorageSize = size_of_unique_allocation<T,Allocator>();
+	size_t allocatedStorageSize = size_of_unique_allocation<T,mpl::remove_qualifiers<Allocator>>();
 
 	if(void* allocatedMemory = i_allocator.allocate(allocatedStorageSize))
 	{
@@ -190,11 +191,11 @@ inline unique_reference_wrapper<T> make_allocated_unique_reference(const Allocat
 
 		if(void* alignedTStorage = aligned_allocate<T>(allocatedStorage,allocatedStorageSize))
 		{
-			if(void* alignedRStorage = aligned_allocate<unique_control_block<T,Allocator>>(allocatedStorage,allocatedStorageSize))
+			if(void* alignedRStorage = aligned_allocate<control_block>(allocatedStorage,allocatedStorageSize))
 			{
 				T* allocatedObject = new (alignedTStorage) T(std::forward<Args>(i_args) ...);
 
-				unique_reference_counter* refCounter = new (alignedRStorage) unique_control_block<T,Allocator>(allocatedObject,i_allocator);
+				unique_reference_counter* refCounter = new (alignedRStorage) control_block(allocatedObject,std::forward<Allocator>(i_allocator));
 
 				tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
 
@@ -282,15 +283,16 @@ constexpr size_t size_of_shared_allocation()
 	return sizeof(T);
 }
 template<typename T,typename Allocator,typename ... Args>
-inline shared_reference_wrapper<T> make_allocated_shared_reference(const Allocator& i_allocator,Args&& ... i_args)
+inline shared_reference_wrapper<T> make_allocated_shared_reference(Allocator&& i_allocator,Args&& ... i_args)
 {
 	typedef typename shared_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+	typedef shared_control_block < T,mpl::remove_qualifiers<Allocator>> control_block;
 
 	if(void* allocatedMemory = i_allocator.allocate(sizeof(T)))
 	{
 		T* allocatedObject = new (allocatedMemory) T(std::forward<Args>(i_args) ...);
 
-		shared_reference_counter* refCounter = new  shared_control_block<T,Allocator>(allocatedObject,i_allocator);
+		shared_reference_counter* refCounter = new  control_block(allocatedObject,std::forward<Allocator>(i_allocator));
 
 		const tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Dynamic);
 
@@ -350,11 +352,12 @@ constexpr size_t size_of_distributed_allocation()
 	return mpl::total_size<T,distributed_control_block<T,Deleter>>();
 }
 template<typename T, typename Allocator,typename ... Args>
-inline distributed_reference_wrapper<T> make_allocated_distributed_reference(const Allocator& i_allocator, Args&& ... i_args)
+inline distributed_reference_wrapper<T> make_allocated_distributed_reference(Allocator&& i_allocator, Args&& ... i_args)
 {
 	typedef typename distributed_reference_wrapper<T>::tagged_reference_counter tagged_reference_counter;
+	typedef distributed_control_block<T,mpl::remove_qualifiers<Allocator>> control_block;
 
-	size_t allocatedStorageSize = size_of_distributed_allocation<T,Allocator>();
+	size_t allocatedStorageSize = size_of_distributed_allocation<T,mpl::remove_qualifiers<Allocator>>();
 
 	if(void* allocatedMemory = i_allocator.allocate(allocatedStorageSize))
 	{
@@ -362,11 +365,11 @@ inline distributed_reference_wrapper<T> make_allocated_distributed_reference(con
 
 		if(void* alignedTStorage = aligned_allocate<T>(allocatedStorage,allocatedStorageSize))
 		{
-			if(void* alignedRStorage = aligned_allocate<distributed_control_block<T,Allocator>>(allocatedStorage,allocatedStorageSize))
+			if(void* alignedRStorage = aligned_allocate<control_block>(allocatedStorage,allocatedStorageSize))
 			{
 				T* allocatedObject = new (alignedTStorage) T(std::forward<Args>(i_args) ...);
 
-				distributed_reference_counter* refCounter = new (alignedRStorage) distributed_control_block<T,Allocator>(allocatedObject,i_allocator);
+				distributed_reference_counter* refCounter = new (alignedRStorage) control_block(allocatedObject,std::forward<Allocator>(i_allocator));
 
 				tagged_reference_counter taggedRefCounter(refCounter,ReferenceAllocationType::Contiguous);
 

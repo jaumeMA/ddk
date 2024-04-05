@@ -52,8 +52,8 @@ public:
     typedef mpl::type_pack<Types...> type_pack;
 
     constexpr variant_impl();
-    template<size_t Index, typename TType>
-    constexpr variant_impl(const mpl::static_number<Index>&, TType&& other);
+    template<size_t Index, typename ... Args>
+    constexpr variant_impl(const mpl::static_number<Index>&, Args&& ... i_args);
     constexpr variant_impl(const variant_impl& other);
     constexpr variant_impl(variant_impl&& other);
     template<typename ... TTypes>
@@ -138,16 +138,20 @@ class variant : public detail::variant_impl<Types...>,contravariant_rules<Types.
     static_assert(mpl::get_num_types<Types...>() > 0,"You have to provide at least one type to variant");
     static_assert(mpl::get_num_types<Types...>() < 255,"You cannot provide more than 255 types to a variant!");
 
+    template<size_t Index>
+    using nth_type_of = typename mpl::nth_type_of<Index,Types...>::type;
+
 public:
     using detail::variant_impl<Types...>::npos;
+    using detail::variant_impl<Types...>::variant_impl;
 
     variant() = default;
     TEMPLATE(typename TType)
-        REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_COPY_CONSTRUCTIBLE(TType))
-        constexpr variant(const variant<TType>& other);
+    REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_COPY_CONSTRUCTIBLE(TType))
+    constexpr variant(const variant<TType>& other);
     TEMPLATE(typename TType)
-        REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
-        constexpr variant(variant<TType>&& other);
+    REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
+    constexpr variant(variant<TType>&& other);
     constexpr variant(const variant& other);
     constexpr variant(variant&& other);
     TEMPLATE(typename T)

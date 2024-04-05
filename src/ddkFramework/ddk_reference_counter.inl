@@ -5,8 +5,10 @@ namespace ddk
 {
 
 template<typename T,typename Deleter,typename ReferenceCounter>
-share_control_block<T,Deleter,ReferenceCounter>::share_control_block(T* i_ptr,const Deleter& i_deleter)
-: m_data(i_ptr,i_deleter)
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Deleter,Args...))
+share_control_block<T,Deleter,ReferenceCounter>::share_control_block(T* i_ptr, Args&& ... i_args)
+: m_data(i_ptr,Deleter{ std::forward<Args>(i_args)... })
 {
 }
 template<typename T,typename Deleter,typename ReferenceCounter>

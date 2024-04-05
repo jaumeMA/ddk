@@ -23,11 +23,11 @@ class variadic_union<Type,Types...>
 	{
 		constexpr trivial_union_type();
 		constexpr trivial_union_type(const detail::none_t&);
-		TEMPLATE(typename T)
-		REQUIRES(IS_CONSTRUCTIBLE(Type,T))
-		constexpr trivial_union_type(const  mpl::class_holder<Type>& i_holder,T&& i_value);
-		template<typename T,typename TT>
-		constexpr trivial_union_type(const mpl::class_holder<T>& i_holder,TT&& i_value);
+		TEMPLATE(typename ... Args)
+		REQUIRES(IS_CONSTRUCTIBLE(Type,Args...))
+		constexpr trivial_union_type(const mpl::class_holder<Type>& i_holder,Args&& ... i_args);
+		template<typename T,typename ... Args>
+		constexpr trivial_union_type(const mpl::class_holder<T>& i_holder,Args&& ... i_args);
 
 		embedded_type<Type> _local;
 		variadic_union<Types...> _nested;
@@ -37,10 +37,11 @@ class variadic_union<Type,Types...>
 	{
 		constexpr non_trivial_union_type();
 		constexpr non_trivial_union_type(const detail::none_t&);
-		template<typename TT>
-		non_trivial_union_type(const  mpl::class_holder<Type>& i_holder,TT&& i_value);
-		template<typename T,typename TT>
-		non_trivial_union_type(const mpl::class_holder<T>& i_holder,TT&& i_value);
+		TEMPLATE(typename ... Args)
+		REQUIRES(IS_CONSTRUCTIBLE(Type,Args...))
+		non_trivial_union_type(const  mpl::class_holder<Type>& i_holder, Args&& ... i_args);
+		template<typename T,typename ... Args>
+		non_trivial_union_type(const mpl::class_holder<T>& i_holder, Args&& ... i_args);
 		~non_trivial_union_type();
 
 		embedded_type<Type> _local;
@@ -52,8 +53,8 @@ public:
 	variadic_union(const variadic_union& other) = delete;
 	variadic_union(variadic_union&& other) = delete;
 	constexpr variadic_union(const detail::none_t&);
-	template<typename T, typename TT>
-	constexpr variadic_union(const mpl::class_holder<T>&, TT&& i_value);
+	template<typename T, typename ... Args>
+	constexpr variadic_union(const mpl::class_holder<T>&, Args&& ... i_args);
 	~variadic_union() = default;
 	variadic_union& operator=(const variadic_union& other) = delete;
 	variadic_union& operator=(variadic_union&& other) = delete;

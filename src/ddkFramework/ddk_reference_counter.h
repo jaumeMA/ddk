@@ -130,7 +130,9 @@ class share_control_block : public ReferenceCounter
 public:
 	typedef ReferenceCounter reference_counter;
 
-	share_control_block(T* i_ptr, const Deleter& i_deleter);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Deleter,Args...))
+	share_control_block(T* i_ptr, Args&& ... i_args);
 
 	share_control_block& operator=(const share_control_block& other);
 

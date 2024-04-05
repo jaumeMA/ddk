@@ -13,7 +13,7 @@ template<typename T, typename TT>
 inline constexpr bool inherit_from_first = ((sizeof(T) <= sizeof(TT)) && std::is_class<T>::value) || std::is_class<TT>::value == false;
 
 template<typename First, typename Second>
-class compressed_pair : public mpl::static_if<inherit_from_first<First,Second>,First,Second>::type
+class compressed_pair : public mpl::which_type<inherit_from_first<First,Second>,First,Second>::type
 {
 	static constexpr bool isFirstBased = inherit_from_first<First,Second>;
 	typedef typename mpl::static_if<isFirstBased,First,Second>::type base_type;

@@ -17,6 +17,7 @@ public:
 	virtual ~async_interface_base() = default;
 	virtual executor_context_lent_ptr get_execution_context() = 0;
 	virtual executor_context_const_lent_ptr get_execution_context() const = 0;
+	virtual allocator_const_lent_ptr get_async_allocator() const = 0;
 };
 
 using async_base_lent_ref = lent_reference_wrapper<async_interface_base>;

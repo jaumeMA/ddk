@@ -44,7 +44,8 @@ auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::ope
 	} };
 }
 template<typename Reference,typename Transform,typename Sink>
-constexpr auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::operator()(...) const
+template<typename T>
+constexpr auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::operator()(T&& i_args) const
 {
 	return  m_cache.template get<Reference>();
 }

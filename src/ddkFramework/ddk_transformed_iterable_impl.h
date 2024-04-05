@@ -38,7 +38,8 @@ public:
 	~iterable_transformed_action();
 
 	auto operator*();
-	constexpr inline auto operator()(...) const;
+	template<typename T>
+	constexpr inline auto operator()(T&& i_args) const;
 
 private:
 	const Transform m_transform;
@@ -60,6 +61,10 @@ public:
 private:
 	const Transform m_transform;
 };
+template<typename Transform>
+iterable_transform(const Transform&) -> iterable_transform<Transform>;
+template<typename Transform>
+iterable_transform(Transform&&) -> iterable_transform<Transform>;
 
 template<typename FromTraits,typename ToTraits>
 class traits_conversion_callable

@@ -22,15 +22,15 @@ struct adaptor_iterable_impl<iterable_adaptor_actions<Iterable,Actions>>
 };
 
 template<typename Adaptor>
-using adaptor_iterable = typename adaptor_iterable_impl<Adaptor>::type;
+using __adaptor_iterable = typename adaptor_iterable_impl<Adaptor>::type;
 template<typename Iterable>
-using iterable_value_type = typename mpl::which_type<std::is_const<Iterable>::value,typename std::add_const<typename Iterable::value_type>::type,typename Iterable::value_type>::type;
+using __iterable_reference = typename mpl::which_type<std::is_const<Iterable>::value,decltype(*std::declval<typename Iterable::const_iterator>()),decltype(*std::declval<typename Iterable::iterator>())>::type;
 template<typename Iterable>
-using iterable_reference = typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_reference,typename Iterable::reference>::type;
+using __iterable_const_reference = decltype(*std::declval<typename Iterable::const_iterator>());
 template<typename Iterable>
-using iterable_const_reference = typename Iterable::const_reference;
+using __iterable_value_type = mpl::remove_qualifiers<__iterable_const_reference<Iterable>>;
 template<typename Iterable>
-using iterable_iterator = typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type;
+using __iterable_iterator = typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type;
 
 template<typename,typename>
 class iterable_adaptor_action;
@@ -49,7 +49,7 @@ public:
 	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const begin_action_tag&);
 
 protected:
-	typedef iterable_iterator<adaptor_iterable<Adaptor>> iterator;
+	typedef __iterable_iterator<__adaptor_iterable<Adaptor>> iterator;
 
 	iterator m_beginIterator;
 };
@@ -68,7 +68,7 @@ public:
 	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const end_action_tag&);
 
 protected:
-	typedef iterable_iterator<adaptor_iterable<Adaptor>> iterator;
+	typedef __iterable_iterator<__adaptor_iterable<Adaptor>> iterator;
 
 	iterator m_endIterator;
 };
@@ -175,9 +175,9 @@ class iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>> : pu
 	template<typename,typename>
 	friend class detail::iterable_adaptor_action;
 
-	typedef iterable_value_type<Iterable> value_type;
-	typedef iterable_reference<Iterable> reference;
-	typedef iterable_const_reference<Iterable> const_reference;
+	typedef __iterable_value_type<Iterable> value_type;
+	typedef __iterable_reference<Iterable> reference;
+	typedef __iterable_const_reference<Iterable> const_reference;
 
 public:
 	typedef detail::iterable_by_type_traits<value_type,
@@ -194,7 +194,7 @@ public:
 	iterable_adaptor_actions(Iterable& i_iterable);
 
 private:
-	typedef detail::iterable_iterator<Iterable> iterator;
+	typedef detail::__iterable_iterator<Iterable> iterator;
 
 	Iterable& m_iterable;
 	mutable iterator m_currIterator;

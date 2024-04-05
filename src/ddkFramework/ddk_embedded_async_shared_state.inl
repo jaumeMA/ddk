@@ -6,7 +6,7 @@ namespace detail
 
 template<typename T,typename TT>
 embedded_private_async_state<T,TT>::embedded_private_async_state()
-	: m_refCounter(nullptr,*this)
+: m_refCounter(nullptr,*this)
 {
 }
 template<typename T,typename TT>

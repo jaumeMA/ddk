@@ -104,10 +104,10 @@ constexpr variant_impl<Types...>::variant_impl()
 {
 }
 template<typename ... Types>
-template<size_t Index, typename TType>
-constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&, TType&& other)
+template<size_t Index, typename ... Args>
+constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&, Args&& ... i_args)
 : m_currentType(Index)
-, m_storage(mpl::class_holder<mpl::nth_type_of_t<Index,Types...>>{},std::forward<TType>(other))
+, m_storage(mpl::class_holder<mpl::nth_type_of_t<Index,Types...>>{},std::forward<Args>(i_args)...)
 {
 }
 template<typename ... Types>
@@ -698,31 +698,31 @@ template<typename ... Types>
 TEMPLATE(typename TType)
 REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_COPY_CONSTRUCTIBLE(TType))
 constexpr variant<Types...>::variant(const variant<TType>& other)
-	: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<TType,Types...>>{},other.m_value)
+: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<TType,Types...>>{},other.m_value)
 {
 }
 template<typename ... Types>
 TEMPLATE(typename TType)
 REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
 constexpr variant<Types...>::variant(variant<TType>&& other)
-	: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<TType,Types...>>{},std::move(other.m_value))
+: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<TType,Types...>>{},std::move(other.m_value))
 {
 }
 template<typename ... Types>
 constexpr variant<Types...>::variant(const variant& other)
-	: detail::variant_impl<Types...>(other)
+: detail::variant_impl<Types...>(other)
 {
 }
 template<typename ... Types>
 constexpr variant<Types...>::variant(variant&& other)
-	: detail::variant_impl<Types...>(std::move(other))
+: detail::variant_impl<Types...>(std::move(other))
 {
 }
 template<typename ... Types>
 TEMPLATE(typename T)
 REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
 constexpr variant<Types...>::variant(T&& i_value)
-	: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<T,Types...>>{},std::forward<T>(i_value))
+: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<T,Types...>>{},std::forward<T>(i_value))
 {
 	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
 }

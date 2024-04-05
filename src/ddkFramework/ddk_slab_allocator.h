@@ -28,6 +28,7 @@ public:
 	slab_allocator& operator=(const slab_allocator&) = delete;
 	slab_allocator& operator=(slab_allocator&&) = delete;
 	void* allocate_chunk(size_t i_size) const;
+	void* reallocate_chunk(void* i_ptr, size_t i_newSize) const;
 	bool deallocate_chunk(const void* i_address) const;
 	size_t unit_size() const;
 	template<typename T>

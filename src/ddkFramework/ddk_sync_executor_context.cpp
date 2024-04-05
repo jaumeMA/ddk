@@ -217,13 +217,13 @@ thread_execution_context::thread_execution_context(thread i_thread)
 : m_thread(std::move(i_thread))
 {
 }
-void thread_execution_context::start(const function<void()>& i_callable, bool i_useAndKeep)
+void thread_execution_context::start(function<void()> i_callable, bool i_useAndKeep)
 {
-	m_thread.start([=]()
+	m_thread.start([this,callable=std::move(i_callable),useAndKeep = i_useAndKeep]() mutable
 	{
-		eval(i_callable);
+		eval(callable);
 
-		notify_recipients(i_useAndKeep);
+		notify_recipients(useAndKeep);
 	}).dismiss();
 }
 bool thread_execution_context::cancel()
@@ -244,7 +244,7 @@ fiber_execution_context::fiber_execution_context(fiber i_fiber)
 : m_fiber(std::move(i_fiber))
 {
 }
-void fiber_execution_context::start(const function<void()>& i_callable, bool i_useAndKeep)
+void fiber_execution_context::start(function<void()> i_callable, bool i_useAndKeep)
 {
 	m_fiber.start([=]()
 	{
@@ -273,7 +273,7 @@ thread_sheaf_execution_context::thread_sheaf_execution_context(thread_sheaf i_th
 , m_pendingThreads(m_threadSheaf.size())
 {
 }
-void thread_sheaf_execution_context::start(const function<void()>& i_callable)
+void thread_sheaf_execution_context::start(function<void()> i_callable)
 {
 	m_threadSheaf.start([=]()
 	{
@@ -320,7 +320,12 @@ fiber_sheaf_execution_context::fiber_sheaf_execution_context(fiber_sheaf i_fiber
 , m_pendingFibers(m_fiberSheaf.size())
 {
 }
-void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
+fiber_sheaf_execution_context::~fiber_sheaf_execution_context()
+{
+	int a = 0;
+	++a;
+}
+void fiber_sheaf_execution_context::start(function<void()> i_callable)
 {
 	m_fiberSheaf.start([=]()
 	{

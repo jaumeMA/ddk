@@ -65,13 +65,14 @@ template<typename Iterable,typename Filter>
 template<typename Adaptor, typename ActionTag>
 constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag)
 {
-    typedef filtered_iterable_action_result<deduced_adaptor<Iterable>,ActionTag,Filter> filtered_action_result;
+    typedef typename mpl::which_type<mpl::is_const<Adaptor>,const deduced_adaptor<Iterable>,deduced_adaptor<Iterable>>::type adaptor_t;
+    typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
 
 apply_action:
     if (filtered_action_result applyRes = i_actionTag.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
     {
-        return make_result<filtered_result<ActionTag>>(applyRes);
+        return make_result<filtered_action_result>(applyRes);
     }
     else
     {
@@ -97,16 +98,16 @@ apply_action:
             {
                 if (auto recoveryRes = perform_action(std::forward<Adaptor>(i_adaptor),std::move(applyError).recovery()))
                 {
-                    return make_result<filtered_result<ActionTag>>(recoveryRes);
+                    return make_result<filtered_action_result>(recoveryRes);
                 }
                 else
                 {
-                    return make_error<filtered_result<ActionTag>>(std::move(recoveryRes).error());
+                    return make_error<filtered_action_result>(std::move(recoveryRes).error());
                 }
             }
         }
 
-        return make_error<filtered_result<ActionTag>>(std::move(applyError));
+        return make_error<filtered_action_result>(std::move(applyError));
     }
 }
 
@@ -134,14 +135,14 @@ template<typename Iterable,typename Filter>
 template<typename Adaptor, typename ActionTag>
 constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag)
 {
-    typedef iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>> adaptor_t;
+    typedef typename mpl::which_type<mpl::is_const<Adaptor>,const deduced_adaptor<const Iterable>,deduced_adaptor<const Iterable>>::type adaptor_t;
     typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
     typedef typename filtered_action_result::error_t filtered_action_error;
 
 apply_action:
     if (filtered_action_result applyRes = i_actionTag.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
     {
-        return make_result<filtered_result<ActionTag>>(applyRes);
+        return make_result<filtered_action_result>(applyRes);
     }
     else
     {
@@ -165,16 +166,16 @@ apply_action:
             {
                 if (auto recoveryRes = perform_action(std::forward<Adaptor>(i_adaptor),std::move(applyError).recovery()))
                 {
-                    return make_result<filtered_result<ActionTag>>(recoveryRes);
+                    return make_result<filtered_action_result>(recoveryRes);
                 }
                 else
                 {
-                    return make_error<filtered_result<ActionTag>>(recoveryRes.error());
+                    return make_error<filtered_action_result>(recoveryRes.error());
                 }
             }
         }
 
-        return make_error<filtered_result<ActionTag>>(applyError);
+        return make_error<filtered_action_result>(applyError);
     }
 }
 

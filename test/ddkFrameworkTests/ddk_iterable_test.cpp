@@ -65,8 +65,6 @@ struct E : C
 
 struct from_tuple_to_string
 {
-	typedef std::string return_type;
-
 	template<typename T>
 	std::string operator()(T&& i_value) const
 	{
@@ -169,9 +167,13 @@ myForwardAction(const Sink&,bool i_valid) -> myForwardAction<Sink>;
 
 TEST(DDKIterableTest,peformance)
 {
-	[](const int& i_value)
+	int value = 0;
+	[&](const int& i_value)
 	{
-	} <<= ddk::view::order(ddk::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= ddk::iter::transform([](int& i_value) { return 2 * i_value; }) <<= v_prova;
+		value++;
+	} <<= ddk::view::order(ddk::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= ddk::iter::transform_as<int>([](auto&& i_value) { return 2 * i_value; }) <<= v_prova;
+
+	printf("final value: %d\n",value);
 }
 struct myAdaptor
 {
@@ -181,6 +183,7 @@ struct myAdaptor
 
 TEST(DDKIterableTest,forwardIterableConstruction)
 {
+	std::set<int> _kk;
 	std::map<int,ddk::unique_reference_wrapper<int>> kk;
 	std::map<int,int> _foo;
 	_foo.insert(std::make_pair(1,1));
@@ -195,6 +198,10 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	//foo.push_back(3);
 	//foo.push_back(-4);
 	//foo.push_back(-5);
+
+	auto __ = ddk::view::filter([](const int& i_value) { return i_value == 0; }) <<= _kk;
+
+	ddk::bidirectional_iterable<const int> ___ = __;
 
 	[](const int&)
 	{
@@ -317,7 +324,7 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	[](const std::string& i_str)
 	{
 		printf("str from tuple: %s\n",i_str.c_str());
-	} <<= ddk::iter::transform(from_tuple_to_string{}) <<= provaTuple;
+	} <<= ddk::iter::transform_as<std::string>(from_tuple_to_string{}) <<= provaTuple;
 
 	////ddk::const_random_access_iterable<int> fooIterable = ddk::make_iterable<ddk::random_access_iterable<int>>(foo);
 

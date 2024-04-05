@@ -10,7 +10,7 @@ namespace ddk
 template<typename T>
 promise<T>::promise()
 : m_sharedState(make_shared_reference<detail::context_private_async_state<T>>())
-, m_refCounter(this,{})
+, m_refCounter(this)
 {
 	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
 
@@ -21,7 +21,7 @@ promise<T>::promise()
 template<typename T>
 promise<T>::promise(promise<T>&& other)
 : m_sharedState(std::move(other.m_sharedState))
-, m_refCounter(this,{})
+, m_refCounter(this)
 {
 	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
 
@@ -34,7 +34,7 @@ TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(value_type,Args...))
 promise<T>::promise(Args&& ... i_args)
 : m_sharedState(make_shared_reference<detail::context_private_async_state<T>>(std::forward<Args>(i_args)...))
-, m_refCounter(this,{})
+, m_refCounter(this)
 {
 	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
 
@@ -141,6 +141,11 @@ template<typename T>
 executor_context_const_lent_ptr promise<T>::get_execution_context() const
 {
 	return lend(m_sharedState);
+}
+template<typename T>
+allocator_const_lent_ptr promise<T>::get_async_allocator() const
+{
+	return nullptr;
 }
 
 }

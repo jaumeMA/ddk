@@ -45,10 +45,10 @@ protected:
 	cancel_result cancel() override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
+	allocator_const_lent_ptr get_async_allocator() const override;
 
 	detail::context_private_async_state_shared_ptr<T> m_sharedState;
 	distributed_async_control_block m_refCounter;
-
 };
 
 template<>

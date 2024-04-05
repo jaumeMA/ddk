@@ -193,21 +193,23 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	{ 
 	 	return ddk::make_unique_reference<int>(10); 
 	})->attach(std::move(_myThread))
-	.then([_myThread = std::move(myThread)](my_result i_value) mutable -> ddk::future<std::string>
+	.then([_myThread = std::move(myThread)](my_result i_value) mutable -> std::string
 	{
 		if (i_value)
 		{
 			ddk::unique_reference_wrapper<int> nestedRes = std::move(i_value).extract();
 
-			return ddk::async([]() -> std::string { return "success"; })->attach(std::move(_myThread));
+			return "success";
 		}
 		else
 		{
-			return ddk::async([]() -> std::string { return "error"; })->attach(std::move(_myThread));
+			return "error";
 		}
 	})
 	.then([](std::string i_value)
 	{
+		printf("RESULT: %s\n",i_value.c_str());
+
 		return 10;
 	});
 }
@@ -216,7 +218,14 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	//std::this_thread::sleep_for(std::chrono::seconds(1000000));
 
 	ddk::thread myThread;
-	ddk::future<char> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 'a'; }))->attach(std::move(myThread));
+	ddk::future<char> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 'a'; })) -> attach(std::move(myThread));
+
+	ddk::thread _myThread;
+	ddk::async<ddk::extack_allocator>(ddk::make_function([]() { printf("funcio oroginal\n"); return 'a'; }),local_allocator(1024)) -> attach(std::move(_myThread))
+	.then([](char i_value)
+	{
+			printf("valor rebut %c\n",i_value);
+	});
 
 	//ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
 	//ddk::shared_future<int> mySharedFuture = share(std::move(myFuture2));

@@ -6,15 +6,16 @@
 #include "ddk_executor_promise.h"
 #include "ddk_sync_executor_impl.h"
 #include "ddk_lend_from_this.h"
+#include "ddk_lendable.h"
 #include "ddk_async_defs.h"
 
 namespace ddk
 {
 
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-class async_executor_base : public async_cancellable_interface,public lend_from_this<async_executor_base<Callable,CancelOp,Promise,Executor>>
+class async_executor_base : public async_cancellable_interface, public lend_from_this<async_executor_base<Callable,CancelOp,Promise,Executor>>
 {
-	typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return_type;
+	typedef typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::type callable_return_type;
 	typedef typename executor_interface<callable_return_type()>::sink_reference sink_reference;
 	typedef typename executor_interface<callable_return_type()>::sink_result sink_result;
 
@@ -45,6 +46,7 @@ public:
 	enum StartErrorCode
 	{
 		NotAvailable,
+		InternalError,
 		AlreadyStarted,
 		AlreadyDone
 	};
@@ -63,17 +65,20 @@ public:
 	template<typename ... Args>
 	start_result execute(SchedulerPolicy i_policy, Args&& ... i_args);
 	void reset(promised_callable i_callable);
-	void share_ownership(detail::private_async_state_base_const_shared_ref i_sharedState);
+	void attach(detail::private_async_state_base_const_shared_ref i_sharedState);
+	void chain(detail::private_async_state_base_const_shared_ref i_sharedState);
 
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
+	allocator_const_lent_ptr get_async_allocator() const override;
 
 protected:
 	cancel_result cancel() override;
 
+	detail::private_async_state_base_const_shared_ptr m_sharedState;
+	mutable lendable<Promise> m_promise;
 	promised_callable m_function;
 	CancelOp m_cancelFunc;
-	mutable Promise m_promise;
 	Executor m_executor;
 };
 

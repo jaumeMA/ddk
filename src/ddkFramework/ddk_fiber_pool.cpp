@@ -71,7 +71,7 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 		{
 			m_inUseFibers++;
 
-			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),deleter_proxy{ *this });
+			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),deleter_proxy{ *this});
 
 			m_fiberScheduler->register_fiber(acquiredFiber);
 

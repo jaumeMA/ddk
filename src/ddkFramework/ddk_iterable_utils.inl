@@ -17,7 +17,7 @@ auto make_iterable(Iterable&& i_iterable,const Allocator& i_allocator)
 {
 	typedef mpl::remove_qualifiers<Iterable> iterable_t;
 	typedef typename iterable_t::traits from_traits;
-	typedef typename Traits to_traits;
+	typedef Traits to_traits;
 
 	if constexpr (mpl::is_same_type<from_traits,to_traits>::value)
 	{

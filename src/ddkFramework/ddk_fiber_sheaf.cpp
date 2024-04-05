@@ -7,6 +7,11 @@ fiber_sheaf::fiber_sheaf(fiber_sheaf&& other)
 : m_fiberCtr(std::move(other.m_fiberCtr))
 {
 }
+fiber_sheaf::~fiber_sheaf()
+{
+	int a = 0;
+	++a;
+}
 fiber_sheaf& fiber_sheaf::operator=(fiber_sheaf&& other)
 {
 	m_fiberCtr = std::move(other.m_fiberCtr);

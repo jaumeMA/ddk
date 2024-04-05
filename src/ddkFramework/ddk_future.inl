@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_reference_wrapper.h"
+#include "ddk_sync_allocator.h"
 
 namespace ddk
 {
@@ -123,13 +124,13 @@ TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
 auto future<T>::then(Callable&& i_continuation) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		auto executor = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
+		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
+
+		future<callable_return> res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
 		{
-			if constexpr(mpl::is_void<return_type>)
+			if constexpr(mpl::is_void<callable_return>)
 			{
 				eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
@@ -137,13 +138,9 @@ auto future<T>::then(Callable&& i_continuation) &&
 			{
 				return eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
-		});
+		}) -> attach(promote_to_ref(sharedState),m_depth);
 
-		const unsigned char currDepth = m_depth;
-
-		return_type res = std::move(executor) -> attach(promote_to_ref(sharedState),currDepth);
-
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
 		return res;
 	}
@@ -155,31 +152,27 @@ TEMPLATE(typename Callable, typename Context)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
 auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		const unsigned char currDepth = m_depth;
+		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
 
-		auto executor = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation),context=i_execContext]() mutable
+		future<callable_return> res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation),context=i_execContext]() mutable
 		{
-			if constexpr(mpl::is_void<return_type>)
+			if constexpr(mpl::is_void<callable_return>)
 			{
-				return_type nestedFuture = ddk::async(eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(context));
+				future<callable_return> nestedFuture = ddk::async(eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(context));
 
 				nestedFuture.wait();
 			}
 			else
 			{
-				return_type nestedFuture = ddk::async(eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
+				future<callable_return> nestedFuture = ddk::async(eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
 
 				return std::move(nestedFuture).extract_value();
 			}
-		});
+		}) -> attach(promote_to_ref(sharedState),m_depth);
 
-		return_type res = std::move(executor) -> attach(promote_to_ref(sharedState),currDepth);
-
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
 		return res;
 	}
@@ -191,15 +184,13 @@ TEMPLATE(typename Callable,typename ... Args)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
 auto future<T>::async(Callable&& i_continuation, Args&& ... i_args) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		const unsigned char currDepth = m_depth;
+		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
 
-		return_type res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
+		future<callable_return> res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
 		{
-			if constexpr (mpl::is_void<return_type>)
+			if constexpr (mpl::is_void<callable_return>)
 			{
 				eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
@@ -209,7 +200,7 @@ auto future<T>::async(Callable&& i_continuation, Args&& ... i_args) &&
 			}
 		}) -> attach(std::forward<Args>(i_args)...);
 
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
 		return res;
 	}
@@ -221,9 +212,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		const unsigned char currDepth = m_depth;
-
-		auto executor = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
+		future<T> res = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
 		{
 			try
 			{
@@ -245,11 +234,9 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
 			}
-		});
+		}) -> attach(promote_to_ref(sharedState),m_depth);
 		
-		future<T> res = std::move(executor) -> attach(promote_to_ref(sharedState),currDepth);
-
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
 		return res;
 	}
@@ -261,8 +248,6 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		const unsigned char currDepth = m_depth;
-
 		future<T> res = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
 		{
 			try
@@ -285,9 +270,9 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
 			}
-		}) -> attach(i_execContext,currDepth);
+		}) -> attach(i_execContext,m_depth);
 
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
 		return res;
 	}
@@ -308,13 +293,11 @@ auto future<T>::chain(Callable&& i_callback, executor_context_lent_ref i_context
 		{
 			if (executor_context_lent_ptr context = asyncExecutor->get_execution_context())
 			{
-				const unsigned char currDepth = m_depth;
-
 				if (context->transfer(std::move(*i_context)))
 				{
-					return_type res{ std::move(*this).async(std::forward<Callable>(i_callback),i_context,currDepth) };
+					return_type res{ std::move(*this).async(std::forward<Callable>(i_callback),i_context,m_depth) };
 
-					res.m_depth = currDepth + 1;
+					res.m_depth = m_depth + 1;
 
 					return res;
 				}

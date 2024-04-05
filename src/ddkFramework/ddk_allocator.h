@@ -16,9 +16,6 @@ class deleter_proxy
 {
 public:
 	deleter_proxy(const Deleter& i_deleter);
-	TEMPLATE(typename DDeleter)
-	REQUIRES(IS_CONSTRUCTIBLE(Deleter,DDeleter))
-	deleter_proxy(const DDeleter& i_deleter);
 
 	template<typename T>
 	inline void deallocate(T* i_address) const;
@@ -40,9 +37,6 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 	allocator_proxy(const Allocator& i_allocator);
-	TEMPLATE(typename AAllocator)
-	REQUIRES(IS_CONSTRUCTIBLE(Allocator,AAllocator))
-	allocator_proxy(const AAllocator& i_allocator);
 
 	inline auto allocate(size_t i_size = 1) const;
 
@@ -85,50 +79,20 @@ public:
 	typed_deleter_proxy(const DDeleter& i_deleter);
 };
 
-template<typename ... Allocators>
-struct allocator_variant
+class allocator_interface
 {
-	static const size_t s_num_allocators = mpl::num_types<Allocators...>;
-	static const size_t s_invalidAllocator = -1;
-	typedef typename mpl::max_type<Allocators...>::type dominant_type;
-
 public:
-	typedef allocator_variant allocator;
-	typedef typename mpl::reduce_to_common_type<Allocators...> type;
-	typedef type* pointer;
-	typedef const type* const_pointer;
-	typedef std::ptrdiff_t difference_type;
-
-	template<typename Allocator>
-	allocator_variant(const Allocator& i_allocator);
-	allocator_variant(const allocator_variant& other);
-	allocator_variant(allocator_variant&& other);
-	~allocator_variant();
-
-	template<typename Allocator>
-	allocator_variant& operator=(const Allocator& i_allocator);
-	inline void* allocate(size_t i_size = 1) const;
-	template<typename T>
-	inline void deallocate(T* i_address) const;
-
-private:
-	void construct(const allocator_variant& other);
-	void construct(allocator_variant&& other);
-	void destroy();
-	template<typename Allocator>
-	inline static void* resolve_allocate(const typed_arena<dominant_type>&, size_t i_size);
-	template<typename Allocator, typename T>
-	inline static void resolve_deallocate(const typed_arena<dominant_type>&, T* i_ptr);
-	template<typename Allocator>
-	inline static void resolve_construct(typed_arena<dominant_type>&, const typed_arena<dominant_type>& other);
-	template<typename Allocator>
-	inline static void resolve_construct(typed_arena<dominant_type>&, typed_arena<dominant_type>&& other);
-	template<typename Allocator>
-	inline static void resolve_destroy(typed_arena<dominant_type>&);
-
-	typed_arena<dominant_type> m_allocator;
-	size_t m_currAllocator = s_invalidAllocator;
+	virtual ~allocator_interface() = default;
+	virtual void* allocate(size_t) const = 0;
+	virtual void* reallocate(void*,size_t) const = 0;
+	virtual void deallocate(const void*) const = 0;
 };
+
+using allocator_lent_ref = lent_reference_wrapper<allocator_interface>;
+using allocator_const_lent_ref = lent_reference_wrapper<const allocator_interface>;
+using allocator_lent_ptr = lent_pointer_wrapper<allocator_interface>;
+using allocator_const_lent_ptr = lent_pointer_wrapper<const allocator_interface>;
+
 
 }
 

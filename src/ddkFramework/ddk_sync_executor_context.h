@@ -109,7 +109,7 @@ class thread_execution_context : public detail::execution_context_base, public l
 {
 public:
 	thread_execution_context(thread i_thread);
-	void start(const function<void()>&, bool i_useAndKeep);
+	void start(function<void()>, bool i_useAndKeep);
 	bool cancel();
 
 private:
@@ -121,7 +121,7 @@ class fiber_execution_context : public detail::execution_context_base, public le
 public:
 	fiber_execution_context(fiber i_fiber);
 
-	void start(const function<void()>&, bool i_useAndKeep);
+	void start(function<void()>, bool i_useAndKeep);
 	bool cancel();
 
 private:
@@ -139,7 +139,7 @@ public:
 	bool has_failures() const;
 	continuation_token enqueue(const function<void()>&);
 
-	void start(const function<void()>&);
+	void start(function<void()>);
 
 private:
 	thread_sheaf m_threadSheaf;
@@ -151,6 +151,7 @@ class fiber_sheaf_execution_context : public detail::execution_context_base, pub
 {
 public:
 	fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf);
+	~fiber_sheaf_execution_context();
 
 	bool cancel();
 	void clear_fibers();
@@ -160,7 +161,7 @@ public:
 	bool has_succeed() const;
 	continuation_token enqueue(const function<void()>&);
 
-	void start(const function<void()>&);
+	void start(function<void()>);
 
 private:
 	fiber_sheaf m_fiberSheaf;

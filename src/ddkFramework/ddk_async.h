@@ -9,7 +9,7 @@ namespace ddk
 template<typename Callable>
 inline auto async(Callable&& i_callable);
 
-template<typename Allocator, typename Callable, typename ... Args>
+template<typename Allocator,typename Callable,typename ... Args>
 inline auto async(Callable&& i_callable, Args&& ... i_args);
 
 }

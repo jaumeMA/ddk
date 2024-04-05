@@ -59,6 +59,11 @@ void* slab_allocator::allocate_chunk(size_t i_size) const
 		return res;
 	}
 }
+void* slab_allocator::reallocate_chunk(void* i_ptr,size_t i_newSize) const
+{
+	//by now not supported
+	return nullptr;
+}
 bool slab_allocator::deallocate_chunk(const void* i_address) const
 {
 

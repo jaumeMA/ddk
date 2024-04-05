@@ -61,11 +61,6 @@ public:
 	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-	template<typename ActionTag>
-	using filtered_result = filtered_iterable_action_result<deduced_adaptor<Iterable>,ActionTag,Filter>;
-	template<typename ActionTag>
-	using const_filtered_result = filtered_iterable_action_result<const deduced_adaptor<Iterable>,ActionTag,Filter>;
-
 	template<typename Adaptor, typename ActionTag>
 	static constexpr auto perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag);
 
@@ -90,9 +85,6 @@ public:
 	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-	template<typename ActionTag>
-	using filtered_result = filtered_iterable_action_result<deduced_adaptor<const Iterable>,ActionTag,Filter>;
-
 	template<typename Adaptor, typename ActionTag>
 	static constexpr auto perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag);
 
