@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ddk_reference_wrapper.h"
-#include "ddk_sync_allocator.h"
 
 namespace ddk
 {
