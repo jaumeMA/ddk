@@ -6,7 +6,7 @@ namespace ddk
 
 template<typename Context, typename ExecutionModel>
 TEMPLATE(typename ... Args)
-REQUIRED(ExecutionModel,Args...)
+REQUIRED(IS_CONSTRUCTIBLE(ExecutionModel,Args...))
 executor<Context,ExecutionModel>::executor(Args&& ... i_args)
 : detail::executor_capabilities<Context>()
 , m_execModel(std::forward<Args>(i_args)...)
@@ -14,7 +14,7 @@ executor<Context,ExecutionModel>::executor(Args&& ... i_args)
 }
 template<typename Context, typename ExecutionModel>
 TEMPLATE(typename ... Args)
-REQUIRED(ExecutionModel,Args...)
+REQUIRED(IS_CONSTRUCTIBLE(ExecutionModel,Args...))
 executor<Context,ExecutionModel>::executor(Context i_context, Args&& ... i_args)
 : detail::executor_capabilities<Context>(std::move(i_context))
 , m_execModel(std::forward<Args>(i_args)...)

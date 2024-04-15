@@ -19,10 +19,10 @@ public:
 	typedef context_executor_interface::resume_result resume_result;
 
 	TEMPLATE(typename ... Args)
-	REQUIRES(ExecutionModel,Args...)
+	REQUIRES(IS_CONSTRUCTIBLE(ExecutionModel,Args...))
 	executor(Args&& ... i_args);
 	TEMPLATE(typename ... Args)
-	REQUIRES(ExecutionModel,Args...)
+	REQUIRES(IS_CONSTRUCTIBLE(ExecutionModel,Args...))
 	executor(Context i_context, Args&& ... i_args);
 	executor(const executor&) = delete;
 	executor(executor&&) = default;
