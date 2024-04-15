@@ -11,15 +11,17 @@ struct embedded_private_async_state : private_async_state<T>
 	static_assert(IS_LENDABLE_COND(TT),"You shall provide a lendable executor type");
 
 public:
+	typedef TT type;
+
 	embedded_private_async_state();
 	~embedded_private_async_state();
 
 	template<typename ... Args>
 	TT& attach(Args&& ... i_args);
-	void deallocate(TT* i_ptr) const;
+	void deallocate(const TT* i_ptr) const;
 
 private:
-	typedef distributed_control_block<TT,deleter_proxy<embedded_private_async_state<T,TT>>> distributed_async_control_block;
+	typedef distributed_control_block<TT,allocator_proxy<embedded_private_async_state<T,TT>>> distributed_async_control_block;
 
 	mutable typed_arena<TT> m_arena;
 	distributed_async_control_block m_refCounter;

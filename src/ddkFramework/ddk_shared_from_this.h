@@ -3,6 +3,7 @@
 #include "ddk_shared_reference_wrapper.h"
 #include "ddk_weak_pointer_wrapper.h"
 #include "ddk_reference_exception.h"
+#include "ddk_lend_from_this.h"
 
 namespace ddk
 {
@@ -15,7 +16,7 @@ inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference
 }
 
 template<typename T, typename TT = T>
-class share_from_this
+class share_from_this : public lend_from_this<T,TT>
 {
 	template<typename TTT, typename TTTT>
 	friend inline shared_reference_wrapper<TTTT> share(share_from_this<TTT,TTTT>&);
@@ -46,8 +47,8 @@ public:
 
 
 protected:
-	inline shared_reference_wrapper<TT> ref_from_this();
-	inline shared_reference_wrapper<const TT> ref_from_this() const;
+	inline shared_reference_wrapper<TT> shared_from_this();
+	inline shared_reference_wrapper<const TT> shared_from_this() const;
 
 private:		
 	inline tagged_reference_counter get_reference_counter() const;

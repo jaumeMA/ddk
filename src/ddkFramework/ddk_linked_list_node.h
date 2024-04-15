@@ -81,7 +81,7 @@ public:
 		if(i_node.get() != this)
 		{
 			m_nextNode = i_node;
-			i_node->m_prevNode = this->ref_from_this();
+			i_node->m_prevNode = this->shared_from_this();
 		}
 		else
 		{

@@ -102,6 +102,17 @@ void heavy_func()
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFunc)
 {
 	{
+		{
+			ddk::future<std::string> _ = ddk::async([]() -> std::string
+			{
+				return "HOLA";
+			});
+			std::move(_).then([](const std::string& i_str)
+			{
+				printf("%s\n",i_str.c_str());
+			});
+		}
+
 		ddk::fiber_pool fiberPool(ddk::fiber_pool::FixedSize,10);
 		ddk::fiber_pool::acquire_result<ddk::fiber_sheaf> acquireRes = fiberPool.acquire_sheaf(10);
 
@@ -193,17 +204,15 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	{ 
 	 	return ddk::make_unique_reference<int>(10); 
 	})->attach(std::move(_myThread))
-	.then([_myThread = std::move(myThread)](my_result i_value) mutable -> std::string
+	.then([_myThread = std::move(myThread)](my_result i_value) mutable -> ddk::future<std::string>
 	{
 		if (i_value)
 		{
-			ddk::unique_reference_wrapper<int> nestedRes = std::move(i_value).extract();
-
-			return "success";
+			return ddk::async([]() { return std::string("sucess"); }) -> attach(std::move(_myThread));
 		}
 		else
 		{
-			return "error";
+			return ddk::async([]() { return std::string("error"); }) -> attach(std::move(_myThread));
 		}
 	})
 	.then([](std::string i_value)
@@ -218,13 +227,27 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	//std::this_thread::sleep_for(std::chrono::seconds(1000000));
 
 	ddk::thread myThread;
-	ddk::future<char> myFuture = ddk::async(ddk::make_function([](){ printf("funcio oroginal\n"); return 'a'; })) -> attach(std::move(myThread));
+	{
+		ddk::future<void> res = ddk::async([counter = 0]() mutable { return counter++; })
+		-> schedule<ddk::polling_async_scheduler>()
+		-> attach(std::move(myThread))
+		.then([](int i_value)
+		{
+			printf("CURRENT VALUE: %d\n",i_value);
+		});
+
+		std::this_thread::sleep_for(std::chrono::seconds(3));
+
+		res.cancel().dismiss();
+	}
 
 	ddk::thread _myThread;
-	ddk::async<ddk::extack_allocator>(ddk::make_function([]() { printf("funcio oroginal\n"); return 'a'; }),local_allocator(1024)) -> attach(std::move(_myThread))
+	ddk::future<char> myFuture = ddk::async<ddk::extack_allocator>(ddk::make_function([]() { printf("funcio oroginal\n"); return 'a'; }),local_allocator(1024)) -> attach(std::move(_myThread))
 	.then([](char i_value)
 	{
-			printf("valor rebut %c\n",i_value);
+		printf("valor rebut %c\n",i_value);
+
+		return i_value;
 	});
 
 	//ddk::future<int> myFuture2 = ddk::async(ddk::make_function([]() { return 0; }));
@@ -270,11 +293,11 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	compose(std::move(myOtherOtherFuture),std::move(kk))
 	.then([](std::array<int, 2> i_data)
 	{
-		return i_data[0] + i_data[1];
+		return static_cast<float>(i_data[0] + i_data[1]);
 	})
-	.then([](int i_data)
+	.then([](float i_data)
 	{
-		int a = i_data;
+		int a = static_cast<int>(i_data);
 		++a;
 	});
 

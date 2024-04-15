@@ -16,7 +16,7 @@ promise<T>::promise()
 
 	set_reference_counter(tagged_reference_counter{ &m_refCounter,ddk::ReferenceAllocationType::Embedded });
 
-	m_sharedState->attach(this->ref_from_this());
+	m_sharedState->attach(this->distributed_from_this());
 }
 template<typename T>
 promise<T>::promise(promise<T>&& other)
@@ -27,7 +27,7 @@ promise<T>::promise(promise<T>&& other)
 
 	set_reference_counter(tagged_reference_counter{ &m_refCounter,ddk::ReferenceAllocationType::Embedded });
 
-	m_sharedState->attach(this->ref_from_this());
+	m_sharedState->attach(this->distributed_from_this());
 }
 template<typename T>
 TEMPLATE(typename ... Args)
@@ -40,7 +40,7 @@ promise<T>::promise(Args&& ... i_args)
 
 	set_reference_counter(tagged_reference_counter{ &m_refCounter,ddk::ReferenceAllocationType::Embedded });
 
-	m_sharedState->attach(this->ref_from_this());
+	m_sharedState->attach(this->distributed_from_this());
 }
 template<typename T>
 promise<T>::~promise()
@@ -62,7 +62,7 @@ promise<T>& promise<T>::operator=(promise<T>&& other)
 
 	if ((m_sharedState = std::move(other.m_sharedState)))
 	{
-		m_sharedState->attach(this->ref_from_this());
+		m_sharedState->attach(this->distributed_from_this());
 	}
 
 	return *this;

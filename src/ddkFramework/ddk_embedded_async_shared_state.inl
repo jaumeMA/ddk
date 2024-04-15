@@ -31,7 +31,7 @@ TT& embedded_private_async_state<T,TT>::attach(Args&& ... i_args)
 	return m_arena.get<TT>();
 }
 template<typename T,typename TT>
-void embedded_private_async_state<T,TT>::deallocate(TT* i_ptr) const
+void embedded_private_async_state<T,TT>::deallocate(const TT* i_ptr) const
 {
 	if (m_arena.get_ptr<TT>() == i_ptr)
 	{

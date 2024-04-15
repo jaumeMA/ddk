@@ -58,7 +58,7 @@ function_impl_base_const_dist_ref<Return,unresolved_types<mpl::type_pack<Args...
     typedef typename not_spec_indexs::template at<typename mpl::sequence_place_holder<mpl::type_pack<Args...>>::type>::type not_spec_sequence;
     typedef specialized_impl<spec_sequence,not_spec_sequence> spec_func_type;
 
-    return make_distributed_reference<spec_func_type>(i_allocator.acquire(),this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
+    return make_distributed_reference<spec_func_type>(i_allocator.acquire(),this->distributed_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
 }
 
 template<typename ObjectType, typename Return, typename ... Types>

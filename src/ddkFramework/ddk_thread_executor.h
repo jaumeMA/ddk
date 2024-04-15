@@ -6,12 +6,12 @@
 namespace ddk
 {
 
-typedef ddk::polling_executor<ddk::thread> thread_polling_executor;
-typedef ddk::event_driven_executor<ddk::thread> thread_event_driven_executor;
-typedef ddk::fire_and_forget_executor<ddk::thread> thread_fire_and_forget_executor;
+typedef ddk::executor<ddk::thread,detail::polling_execution_model> thread_polling_executor;
+typedef ddk::executor<ddk::thread,detail::async_execution_model> thread_event_driven_executor;
+typedef ddk::executor<ddk::thread,detail::forward_execution_model> thread_fire_and_forget_executor;
 
-typedef ddk::polling_executor<ddk::thread_sheaf> thread_sheaf_polling_executor;
-typedef ddk::event_driven_executor<ddk::thread_sheaf> thread_sheaf_event_driven_executor;
-typedef ddk::fire_and_forget_executor<ddk::thread_sheaf> thread_sheaf_fire_and_forget_executor;
+typedef ddk::executor<ddk::thread_sheaf,detail::polling_execution_model> thread_sheaf_polling_executor;
+typedef ddk::executor<ddk::thread_sheaf,detail::async_execution_model> thread_sheaf_event_driven_executor;
+typedef ddk::executor<ddk::thread_sheaf,detail::forward_execution_model> thread_sheaf_fire_and_forget_executor;
 
 }

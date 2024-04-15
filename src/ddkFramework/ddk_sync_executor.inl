@@ -7,72 +7,32 @@ namespace ddk
 template<typename Callable,typename CancelOp,typename Promise>
 auto make_async_executor(Callable&& i_callable, CancelOp&& i_cancelOp, Promise i_promise)
 {
-	return async_executor<Callable,CancelOp,Promise,deferred_async_scheduler,detail::immediate_executor>(std::forward<Callable>(i_callable),std::forward<CancelOp>(i_cancelOp),std::move(i_promise),{});
+	return async_executor<Callable,CancelOp,Promise,deferred_async_scheduler<async_executor_base<Callable,CancelOp,Promise,detail::immediate_executor>>,detail::immediate_executor>(std::forward<Callable>(i_callable),std::forward<CancelOp>(i_cancelOp),std::move(i_promise),deferred{});
 }
 
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-TEMPLATE(typename CCallable)
-REQUIRED(IS_CONSTRUCTIBLE(Callable,CCallable))
-async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::promised_callable(CCallable&& i_callable,lent_reference_wrapper<async_executor_base> i_executor)
-: m_function(std::forward<CCallable>(i_callable))
-, m_executor(i_executor)
+async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::promised_callable(Callable& i_callable,detail::private_async_state_base_const_shared_ptr i_sharedState, SchedulerPolicy i_policy)
+: m_function(i_callable)
+, m_sharedState(i_sharedState)
+, m_policy(i_policy)
 {
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::promised_callable(promised_callable&& other)
-: m_function(std::move(other.m_function))
-, m_sharedState(std::move(other.m_sharedState))
-, m_executor(std::move(other.m_executor))
-, m_schedulerPolicy(other.m_schedulerPolicy)
-{
-	other.m_schedulerPolicy = SchedulerPolicy::None;
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::promised_callable(promised_callable&& other,SchedulerPolicy i_policy)
-: m_function(std::move(other.m_function))
-, m_sharedState(std::move(other.m_sharedState))
-, m_executor(std::move(other.m_executor))
-, m_schedulerPolicy(i_policy)
-{
-	other.m_schedulerPolicy = SchedulerPolicy::None;
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::~promised_callable()
-{
-	if (async_executor_base* _executor = extract_raw_ptr(m_executor))
-	{
-		_executor->reset(static_cast<promised_callable&&>(*this));
-	}
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-void async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::share_ownership(detail::private_async_state_base_const_shared_ptr i_sharedState)
-{
-	m_sharedState = i_sharedState;
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 typename async_executor_base<Callable,CancelOp,Promise,Executor>::callable_return_type async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::operator()()
 {
-	return eval(std::forward<Callable>(m_function));
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-Callable async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::extract() &&
-{
-	m_sharedState = nullptr;
-	m_executor = nullptr;
-
-	return std::move(m_function);
+	return eval(m_function);
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 SchedulerPolicy async_executor_base<Callable,CancelOp,Promise,Executor>::promised_callable::policy() const
 {
-	return m_schedulerPolicy;
+	return m_policy;
 }
 
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 TEMPLATE(typename CCallable,typename CCancelOp,typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(Callable,CCallable),IS_CONSTRUCTIBLE(CancelOp,CCancelOp),IS_CONSTRUCTIBLE(Executor,Args...))
 async_executor_base<Callable,CancelOp,Promise,Executor>::async_executor_base(CCallable&& i_callable,CCancelOp&& i_cancelOp,Promise i_promise,Args&& ... i_args)
-: m_function(std::forward<CCallable>(i_callable),this->ref_from_this())
+: m_function(std::forward<CCallable>(i_callable))
 , m_cancelFunc(std::forward<CCancelOp>(i_cancelOp))
 , m_promise(std::move(i_promise))
 , m_executor(std::forward<Args>(i_args)...)
@@ -80,7 +40,7 @@ async_executor_base<Callable,CancelOp,Promise,Executor>::async_executor_base(CCa
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 async_executor_base<Callable,CancelOp,Promise,Executor>::async_executor_base(async_executor_base&& other)
-: m_function(std::move(other.m_function).extract(),this->ref_from_this())
+: m_function(std::move(other.m_function))
 , m_cancelFunc(std::move(other.m_cancelFunc))
 , m_promise(std::move(other.m_promise))
 , m_executor(std::move(other.m_executor))
@@ -97,10 +57,20 @@ const Promise& async_executor_base<Callable,CancelOp,Promise,Executor>::get_prom
 	return *m_promise;
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+detail::private_async_state_base_shared_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::share()
+{
+	return m_promise->shared_state();
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+detail::private_async_state_base_const_shared_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::share() const
+{
+	return m_promise->shared_state();
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 template<typename ... Args>
 typename async_executor_base<Callable,CancelOp,Promise,Executor>::start_result async_executor_base<Callable,CancelOp,Promise,Executor>::execute(SchedulerPolicy i_policy, Args&& ... i_args)
 {
-	const auto execRes = m_executor.execute(promised_callable{ std::move(m_function),i_policy },[this](sink_result i_value) mutable
+	const auto execRes = m_executor.execute(promised_callable{ m_function,m_promise->shared_state(),i_policy },[this](sink_result i_value) mutable
 	{
 		if (i_value.template is<sink_reference>())
 		{
@@ -126,6 +96,14 @@ typename async_executor_base<Callable,CancelOp,Promise,Executor>::start_result a
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 typename async_executor_base<Callable,CancelOp,Promise,Executor>::cancel_result async_executor_base<Callable,CancelOp,Promise,Executor>::cancel()
 {
+	if (m_sharedState)
+	{
+		if_not(const auto cancelRes = m_sharedState->cancel())
+		{
+			return make_error<cancel_result>(CancelErrorCode::CancelInternal,cancelRes.error().what());
+		}
+	}
+
 	const auto cancelRes = m_executor.cancel(m_cancelFunc,[this](sink_result i_value) mutable
 	{
 		m_promise->set_exception(i_value.template get<async_exception>());
@@ -137,26 +115,11 @@ typename async_executor_base<Callable,CancelOp,Promise,Executor>::cancel_result 
 	}
 	else
 	{
-		return make_error<cancel_result>(CancelErrorCode::CancelNoAsync);
+		return make_error<cancel_result>(CancelErrorCode::CancelInternal,cancelRes.error().what());
 	}
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-void async_executor_base<Callable,CancelOp,Promise,Executor>::reset(promised_callable i_callable)
-{
-	if (i_callable.policy() == SchedulerPolicy::FireAndReuse)
-	{
-		m_function.~promised_callable();
-
-		new (&m_function) promised_callable(std::move(i_callable),SchedulerPolicy::None);
-	}
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-void async_executor_base<Callable,CancelOp,Promise,Executor>::attach(detail::private_async_state_base_const_shared_ref i_sharedState)
-{
-	m_function.share_ownership(i_sharedState);
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-void async_executor_base<Callable,CancelOp,Promise,Executor>::chain(detail::private_async_state_base_const_shared_ref i_sharedState)
+void async_executor_base<Callable,CancelOp,Promise,Executor>::chain(async_base_dist_ref i_sharedState)
 {
 	m_sharedState = i_sharedState;
 }
@@ -241,7 +204,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 		class chained_async_scheduler
 		{
 		public:
-			chained_async_scheduler(detail::private_async_state_base_const_shared_ref i_sharedState)
+			chained_async_scheduler(async_base_dist_ref i_sharedState)
 			: m_sharedState(i_sharedState)
 			{
 			}
@@ -256,16 +219,16 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 			}
 
 		private:
-			detail::private_async_state_base_const_shared_ref m_sharedState;
+			async_base_dist_ref m_sharedState;
 		};
 
 		if (allocator_const_lent_ptr asyncAllocator = asyncExecutor->get_async_allocator())
 		{
-			return Promise::attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),Promise{ std::move(m_promise),promote_to_ref(asyncAllocator) },chained_async_scheduler{i_sharedState},asyncExecutor->get_execution_context(),i_depth);
+			return Promise::attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),Promise{ std::move(m_promise),promote_to_ref(asyncAllocator) },chained_async_scheduler{ promote_to_ref(asyncExecutor) },asyncExecutor->get_execution_context(),i_depth);
 		}
 		else
 		{
-			return Promise::attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),chained_async_scheduler{ i_sharedState },asyncExecutor->get_execution_context(),i_depth);
+			return Promise::attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),chained_async_scheduler{ promote_to_ref(asyncExecutor) },asyncExecutor->get_execution_context(),i_depth);
 		}
 	}
 	else
@@ -311,9 +274,11 @@ async_executor<Callable,CCancelOp,Promise,Scheduler,Executor> async_executor<Cal
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 template<typename SScheduler,typename ... Args>
-async_executor<Callable,CancelOp,Promise,SScheduler,Executor> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::at(Args&& ... i_args)
+async_executor<Callable,CancelOp,Promise,SScheduler,Executor> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::schedule(Args&& ... i_args)
 {
 	typedef async_executor_base<Callable,CancelOp,Promise,Executor> async_executor_base_t;
+
+	detach_scheduler(std::move(m_scheduler));
 
 	return { async_executor_base_t(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),std::move(m_executor)),std::forward<Args>(i_args)... };
 }
@@ -323,7 +288,6 @@ TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(Scheduler,Args...))
 async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::async_executor(async_executor_base<Callable,CancelOp,Promise,Executor> i_executor,Args&& ... i_args)
 : async_base_t(std::move(i_executor))
-, scheduler_base_t(*static_cast<async_base_t*>(this))
 , m_scheduler(std::forward<Args>(i_args)...)
 {
 }
@@ -332,39 +296,46 @@ TEMPLATE(typename CCallable,typename CCancelOp,typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(Callable,CCallable),IS_CONSTRUCTIBLE(CancelOp,CCancelOp),IS_CONSTRUCTIBLE(Executor,Args...))
 async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::async_executor(CCallable&& i_callable,CCancelOp&& i_cancelOp,Promise i_promise,Scheduler i_scheduler,Args&& ... i_args)
 : async_base_t(std::forward<CCallable>(i_callable),std::forward<CCancelOp>(i_cancelOp),std::move(i_promise),std::forward<Args>(i_args)...)
-, scheduler_base_t(*static_cast<async_base_t*>(this))
 , m_scheduler(std::move(i_scheduler))
+{
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
+TEMPLATE(typename CCallable,typename CCancelOp,typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Callable,CCallable),IS_CONSTRUCTIBLE(CancelOp,CCancelOp),IS_CONSTRUCTIBLE(Executor,Args...))
+async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::async_executor(CCallable&& i_callable,CCancelOp&& i_cancelOp,Promise i_promise,const deferred&,Args&& ... i_args)
+: async_base_t(std::forward<CCallable>(i_callable),std::forward<CCancelOp>(i_cancelOp),std::move(i_promise),std::forward<Args>(i_args)...)
+, m_scheduler(*this)
 {
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::async_executor(async_executor&& other)
 : async_base_t(std::move(other))
-, scheduler_base_t(*static_cast<async_base_t*>(this))
 , m_scheduler(std::move(other.m_scheduler))
 {
 }
 template<typename Callable,typename CancelOp,typename Promise, typename Scheduler, typename Executor>
 typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator->() &&
 {
-	scheduler_base_t::clear_scheduler();
-
-	return { std::move(m_function).extract(),std::move(m_cancelFunc),std::move(*m_promise),std::move(m_scheduler),std::move(m_executor)};
+	return { std::move(m_function),std::move(m_cancelFunc),std::move(*m_promise),std::move(m_scheduler),std::move(m_executor)};
 }
 template<typename Callable,typename CancelOp,typename Promise, typename Scheduler, typename Executor>
 async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type>() &&
 {
 	typedef async_executor<Callable,CancelOp,Promise,Scheduler,Executor> async_executor_t;
 
-	scheduler_base_t::clear_scheduler();
-
-	return std::move(this->m_promise).attach<async_executor_t>(std::move(this->m_function).extract(),std::move(this->m_cancelFunc),std::move(this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor));
+	return std::move(*this->m_promise).attach<async_executor_t>(std::move(this->m_function),std::move(this->m_cancelFunc),std::move(*this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
-void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach(detail::private_async_state_base_const_shared_ref i_sharedState)
+void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach()
 {
-	async_executor_base<Callable,CancelOp,Promise,Executor>::attach(i_sharedState);
+	m_scheduler.subscribe(static_cast<async_executor_base<Callable,CancelOp,Promise,Executor>&>(*this));
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
+typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::cancel_result async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::cancel()
+{
+	detach_scheduler(std::move(m_scheduler));
 
-	m_scheduler.subscribe(*this);
+	return async_base_t::cancel();
 }
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddk_executor_capabilities.h"
+#include "ddk_executor_context.h"
 #include "ddk_mutex.h"
 #include "ddk_cond_var.h"
 #include <pthread.h>
@@ -10,23 +11,26 @@
 namespace ddk
 {
 
-template<typename Context>
-class polling_executor: public detail::executor_capabilities<Context>
+template<typename Context, typename ExecutionModel>
+class executor: public detail::executor_capabilities<Context>
 {
 public:
 	typedef context_executor_interface::start_result start_result;
 	typedef context_executor_interface::resume_result resume_result;
 
-	polling_executor(const std::chrono::milliseconds& i_sleepInMs = std::chrono::milliseconds(1000));
-	polling_executor(Context i_context, const std::chrono::milliseconds& i_sleepInMs = std::chrono::milliseconds(1000));
-	polling_executor(const polling_executor&) = delete;
-	polling_executor(polling_executor&&);
-	~polling_executor();
-	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
-	std::chrono::milliseconds get_update_time() const;
-	start_result start(const ddk::function<void()>& i_executor);
+	TEMPLATE(typename ... Args)
+	REQUIRES(ExecutionModel,Args...)
+	executor(Args&& ... i_args);
+	TEMPLATE(typename ... Args)
+	REQUIRES(ExecutionModel,Args...)
+	executor(Context i_context, Args&& ... i_args);
+	executor(const executor&) = delete;
+	executor(executor&&) = default;
+	~executor();
+	template<typename Callable, typename ... Args>
+	start_result start(Callable&& i_executor, Args&& ... i_args);
 	resume_result stop();
-	bool is_stopped() const;
+	void signal_context();
 
 protected:
     typedef context_executor_interface::StartErrorCode StartErrorCode;
@@ -36,79 +40,12 @@ protected:
 	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
 	resume_result resume() override;
 	void signal() override;
-	void update() const;
 
-private:
-	std::chrono::milliseconds m_sleepTimeInMS;
-	ddk::function<void()> m_executor;
+	template<typename Callable, typename ... Args>
+	inline start_result _execute(Callable&& i_executor, Args&& ... i_sink);
+
+	ExecutionModel m_execModel;
 	bool m_stopped = true;
-};
-
-template<typename Context>
-class event_driven_executor: public detail::executor_capabilities<Context>
-{
-public:
-	typedef context_executor_interface::start_result start_result;
-	typedef context_executor_interface::resume_result resume_result;
-
-	event_driven_executor(const std::chrono::milliseconds& i_sleepInMs = std::chrono::milliseconds(1000));
-	event_driven_executor(Context i_context,const std::chrono::milliseconds& i_sleepInMs = std::chrono::milliseconds(1000));
-	event_driven_executor(const event_driven_executor&) = delete;
-	event_driven_executor(event_driven_executor&& other);
-	~event_driven_executor();
-	void set_update_time(const std::chrono::milliseconds& i_sleepInMs);
-	std::chrono::milliseconds get_update_time() const;
-	start_result start(const ddk::function<void()>& i_executor,const ddk::function<bool()>& i_testFunc = nullptr);
-	resume_result stop();
-	void signal_thread();
-	bool is_stopped() const;
-
-protected:
-	typedef context_executor_interface::StartErrorCode StartErrorCode;
-    typedef context_executor_interface::ResumErrorCode ResumErrorCode;
-    typedef context_executor_interface::sink_type sink_type;
-
-	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
-	resume_result resume() override;
-	void signal() override;
-	void update();
-
-private:
-	std::chrono::milliseconds m_sleepTimeInMS = std::chrono::milliseconds(1000);
-	ddk::function<void()> m_executor;
-	ddk::function<bool()> m_testFunc;
-	bool m_stopped = true;
-	bool m_pendingWork;
-	cond_var m_condVar;
-	mutex m_condVarMutex;
-};
-
-template<typename Context>
-class fire_and_forget_executor: public detail::executor_capabilities<Context>
-{
-public:
-	typedef context_executor_interface::start_result start_result;
-	typedef context_executor_interface::resume_result resume_result;
-
-	fire_and_forget_executor() = default;
-	fire_and_forget_executor(Context i_context);
-	fire_and_forget_executor(const fire_and_forget_executor&) = delete;
-	fire_and_forget_executor(fire_and_forget_executor&& other);
-
-	start_result start(const ddk::function<void()>& i_executor);
-
-protected:
-	typedef context_executor_interface::StartErrorCode StartErrorCode;
-    typedef context_executor_interface::ResumErrorCode ResumErrorCode;
-    typedef context_executor_interface::sink_type sink_type;
-
-	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
-	resume_result resume() override;
-	void signal() override;
-	void update();
-
-private:
-	mutable ddk::function<void()> m_executor;
 };
 
 }

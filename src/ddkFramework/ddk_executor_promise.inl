@@ -57,7 +57,7 @@ future<T> executor_promise<T,Allocator>::attach(Callable&& i_callable,CancelOp&&
 
 	Executor& _newExecutor = _sharedState->attach(std::forward<Callable>(i_callable),std::forward<CancelOp>(i_cancelOp),std::move(i_promise),std::forward<Args>(i_args)...);
 
-	_newExecutor.attach(_sharedState);
+	_newExecutor.attach();
 
 	return { _sharedState,0 };
 }
@@ -101,7 +101,7 @@ void* executor_promise<T,Allocator>::reallocate(void* i_ptr, size_t i_newSize) c
 	return m_allocator.reallocate(i_ptr,i_newSize);
 }
 template<typename T,typename Allocator>
-void executor_promise<T,Allocator>::deallocate(const void* i_ptr) const
+void executor_promise<T,Allocator>::deallocate(void* i_ptr) const
 {
 	m_allocator.deallocate(i_ptr);
 }

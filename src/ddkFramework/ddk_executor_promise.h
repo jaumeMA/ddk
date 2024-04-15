@@ -44,9 +44,9 @@ public:
 private:
 	void* allocate(size_t) const override;
 	void* reallocate(void*,size_t) const override;
-	void deallocate(const void*) const override;
+	void deallocate(void*) const override;
 
-	variant_allocator<Allocator,const allocator_interface&> m_allocator;
+	variant_allocator<Allocator,allocator_interface_proxy> m_allocator;
 	detail::private_async_state_weak_ptr<T> m_sharedState;
 };
 

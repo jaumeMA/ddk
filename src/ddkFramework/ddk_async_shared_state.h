@@ -57,7 +57,7 @@ public:
 	typedef typename embedded_type<T>::ref_type reference;
 	typedef typename embedded_type<T>::cref_type const_reference;
 	typedef typename embedded_type<T>::rref_type rreference;
-	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	typedef typename async_interface_base::cancel_result cancel_result;
 
 	private_async_state();
 	TEMPLATE(typename ... Args)
@@ -65,7 +65,7 @@ public:
 	inline private_async_state(Args&& ... i_args);
 	virtual ~private_async_state() = default;
 	cancel_result cancel();
-	void attach(async_cancellable_dist_ptr i_executor);
+	void attach(async_base_dist_ptr i_executor);
 	bool detach();
 	template<typename Predicate>
 	bool detach_if(Predicate&& i_predicate);
@@ -82,14 +82,15 @@ public:
 	void wait() const;
 	void wait_for(const std::chrono::milliseconds& i_period) const;
 	bool ready() const;
-	async_cancellable_dist_ptr get_async_execution() const;
+	async_base_dist_ptr get_async_execution() const;
 
 private:
 	mutable mutex m_mutex;
+	mutable mutex m_asyncMutex;
 	mutable cond_var m_condVar;
 	variant<detail::none_t,async_exception,T> m_arena;
 	function<bool()> m_valuePredicate;
-	mutable async_cancellable_dist_ptr m_asyncExecutor;
+	mutable async_base_dist_ptr m_asyncExecutor;
 };
 
 template<typename T>

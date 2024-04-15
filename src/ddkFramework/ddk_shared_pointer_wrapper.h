@@ -37,13 +37,13 @@ class shared_pointer_wrapper_impl
 	{
 		T* res = i_ref.m_data;
 
-		i_ref.m_data = nullptr;
+		i_ref = nullptr;
 
 		return res;
 	}
 	friend inline void clear_ptr(shared_pointer_wrapper_impl& i_ref)
 	{
-		i_ref.m_data = nullptr;
+		i_ref = nullptr;
 	}
 
 	template<typename,typename>

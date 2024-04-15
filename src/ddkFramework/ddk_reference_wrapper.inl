@@ -823,12 +823,12 @@ embedded_ref<const TT> lend(const embed_from_this<T,TT>& i_ref)
 template<typename T,typename TT>
 lent_reference_wrapper<TT> lend(lend_from_this<T,TT>& i_lendable)
 {
-	return i_lendable.ref_from_this();
+	return i_lendable.lent_from_this();
 }
 template<typename T,typename TT>
 lent_reference_wrapper<const TT> lend(const lend_from_this<T,TT>& i_lendable)
 {
-	return i_lendable.ref_from_this();
+	return i_lendable.lent_from_this();
 }
 
 template<typename T,typename TT>

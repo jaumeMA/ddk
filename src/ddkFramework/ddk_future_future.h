@@ -22,7 +22,7 @@ class future<future<T>>
 	}
 
 public:
-	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	typedef typename async_interface_base::cancel_result cancel_result;
 	typedef typename detail::private_async_state<future<T>>::reference reference;
 	typedef typename detail::private_async_state<future<T>>::const_reference const_reference;
 	typedef typename detail::private_async_state<future<T>>::rreference rreference;

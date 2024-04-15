@@ -16,7 +16,6 @@ public:
 	variant_allocator(Args&& ... i_args);
 	void* allocate(size_t i_size) const;
 	void* reallocate(void* i_ptr,size_t i_newSize) const;
-	void deallocate(void* i_ptr) const;
 	template<typename T>
 	inline void deallocate(T* i_address) const;
 

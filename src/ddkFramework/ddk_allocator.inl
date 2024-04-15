@@ -21,22 +21,9 @@ void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize)
 	}
 }
 
-template<typename Deleter>
-deleter_proxy<Deleter>::deleter_proxy(const Deleter& i_deleter)
-: m_deleter(&i_deleter)
-{
-}
-template<typename Deleter>
-template<typename T>
-void deleter_proxy<Deleter>::deallocate(T* i_address) const
-{
-	m_deleter->deallocate(i_address);
-}
-
 template<typename Allocator>
 allocator_proxy<Allocator>::allocator_proxy(const Allocator& i_allocator)
-: deleter_proxy(i_allocator)
-, m_allocator(&i_allocator)
+: m_allocator(&i_allocator)
 {
 }
 template<typename Allocator>
@@ -44,21 +31,31 @@ auto allocator_proxy<Allocator>::allocate(size_t i_size) const
 {
 	return m_allocator->allocate(i_size);
 }
-
-template<typename T,typename Allocator>
-TEMPLATE(typename AAllocator)
-REQUIRED(IS_CONSTRUCTIBLE(AAllocator,Allocator))
-typed_allocator_proxy<T,Allocator>::typed_allocator_proxy(const AAllocator& i_deallocator)
-: allocator_proxy<Allocator>(i_deallocator)
+template<typename Allocator>
+void* allocator_proxy<Allocator>::reallocate(void* i_ptr, size_t i_size) const
 {
+	return m_allocator->reallocate(i_ptr,i_size);
 }
-
-template<typename T, typename Deleter>
-TEMPLATE(typename DDeleter)
-REQUIRED(IS_CONSTRUCTIBLE(Deleter,DDeleter))
-typed_deleter_proxy<T,Deleter>::typed_deleter_proxy(const DDeleter& i_deleter)
-: deleter_proxy<Deleter>(i_deleter)
+template<typename Allocator>
+TEMPLATE(typename T)
+REQUIRED(IS_CLASS(T))
+void allocator_proxy<Allocator>::deallocate(T* i_ptr) const
 {
+	if constexpr (mpl::is_void<type>)
+	{
+		i_ptr->~T();
+
+		m_allocator->deallocate(static_cast<void*>(i_ptr));
+	}
+	else
+	{
+		m_allocator->deallocate(i_ptr);
+	}
+}
+template<typename Allocator>
+void allocator_proxy<Allocator>::deallocate(void* i_ptr) const
+{
+	m_allocator->deallocate(i_ptr);
 }
 
 }

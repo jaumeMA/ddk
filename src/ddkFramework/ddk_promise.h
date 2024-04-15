@@ -8,7 +8,7 @@ namespace ddk
 {
 
 template<typename T>
-class promise : public async_cancellable_interface, protected ddk::distribute_from_this<promise<T>,async_cancellable_interface>
+class promise : public async_interface_base, protected ddk::distribute_from_this<promise<T>,async_interface_base>
 {
 	template<typename,typename>
 	friend class executor_promise;
@@ -19,7 +19,7 @@ public:
 	typedef typename detail::private_async_state<T>::reference reference;
 	typedef typename detail::private_async_state<T>::const_reference const_reference;
 	typedef typename detail::private_async_state<T>::rreference rreference;
-	using async_cancellable_interface::cancel_result;
+	using async_interface_base::cancel_result;
 
 	promise();
 	promise(const promise<T>&) = delete;

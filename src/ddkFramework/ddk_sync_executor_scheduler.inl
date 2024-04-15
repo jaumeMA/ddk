@@ -6,46 +6,48 @@ namespace ddk
 {
 
 template<typename Executor>
-null_async_scheduler::null_async_scheduler(Executor& i_reference)
-{
-}
-template<typename Executor>
-void null_async_scheduler::subscribe(ddk::lent_reference_wrapper<Executor> i_executor)
-{
-}
-
-template<typename Executor>
-base_deferred_async_scheduler<Executor>::base_deferred_async_scheduler(Executor& i_executor)
+deferred_async_scheduler<Executor>::deferred_async_scheduler(Executor& i_executor)
 : m_boundExecutor(&i_executor)
 {
 }
 template<typename Executor>
-base_deferred_async_scheduler<Executor>::~base_deferred_async_scheduler()
+deferred_async_scheduler<Executor>::deferred_async_scheduler(deferred_async_scheduler&& other)
+: m_boundExecutor(other.m_boundExecutor)
+{
+	other.m_boundExecutor = nullptr;
+}
+template<typename Executor>
+deferred_async_scheduler<Executor>::~deferred_async_scheduler()
 {
 	if (m_boundExecutor)
 	{
-		if_not(auto execRes = m_boundExecutor->execute(SchedulerPolicy::FireAndForget))
-		{
-			//throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
-		}
+		m_boundExecutor->execute(SchedulerPolicy::FireAndForget).dismiss();
 	}
 }
 template<typename Executor>
-void base_deferred_async_scheduler<Executor>::clear_scheduler()
+bool deferred_async_scheduler<Executor>::clear()
 {
-	m_boundExecutor = nullptr;
-}
+	if (m_boundExecutor)
+	{
+		m_boundExecutor = nullptr;
 
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 template<typename Executor>
-void deferred_async_scheduler::subscribe(Executor&& i_executor)
+void deferred_async_scheduler<Executor>::subscribe(Executor& i_executor)
 {
 	//execution due to value retrievals
-	i_executor.get_promise().value_predicate(make_function([&_executor=i_executor]() mutable
+	i_executor.get_promise().value_predicate(make_function([this,&i_executor]() mutable
 	{
-		_executor.get_promise().value_predicate(nullptr);
-		_executor.clear_scheduler();
+		m_boundExecutor = nullptr;
+		i_executor.get_promise().value_predicate(nullptr);
 
-		if_not(auto execRes = _executor.execute(SchedulerPolicy::FireAndForget))
+		if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
 		{
 			throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
 		}
@@ -56,19 +58,19 @@ void deferred_async_scheduler::subscribe(Executor&& i_executor)
 	//execution due to task enqueue
 	if (lent_pointer_wrapper<detail::execution_context_base> execContext = static_lent_cast<detail::execution_context_base>(i_executor.get_execution_context()))
 	{
-		execContext->admission_predicate(make_function([_execContext=execContext,&_executor=i_executor](bool i_admission) mutable
+		execContext->admission_predicate(make_function([this,&i_executor,_execContext=extract_raw_ptr(execContext)](bool i_admission) mutable
 		{
+			m_boundExecutor = nullptr;
 			_execContext->admission_predicate(nullptr);
-			_execContext = nullptr;
-			_executor.clear_scheduler();
-				
+
 			if (i_admission)
 			{
-				if_not(auto execRes = _executor.execute(SchedulerPolicy::FireAndForget))
+				if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
 				{
 					throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
 				}
 			}
+
 				
 			//we return false so immediate context gets in action
 			return false;
@@ -77,7 +79,7 @@ void deferred_async_scheduler::subscribe(Executor&& i_executor)
 }
 
 template<typename Executor>
-void asap_async_scheduler::subscribe(Executor&& i_executor)
+void asap_async_scheduler::subscribe(Executor& i_executor)
 {
 	if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
 	{
@@ -86,53 +88,12 @@ void asap_async_scheduler::subscribe(Executor&& i_executor)
 }
 
 template<typename Executor>
-void polling_async_scheduler::subscribe(Executor&& i_executor)
+void polling_async_scheduler::subscribe(Executor& i_executor)
 {
-	if (m_stopped)
+	m_executor.start([&i_executor,sharedState=i_executor.share()]() mutable
 	{
-		m_stopped = false;
-
-		m_thread.start(ddk::make_function(this,&polling_async_scheduler::update<Executor>,i_executor));
-	}
-
-	return true;
-}
-template<typename Executor>
-void polling_async_scheduler::update(ddk::lent_reference_wrapper<Executor> i_executor)
-{
-	std::chrono::milliseconds systemDelta = std::chrono::milliseconds(0);
-
-	while (m_stopped == false)
-	{
-		const std::chrono::steady_clock::time_point beforeEval = std::chrono::steady_clock::now();
-
-		if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndReuse))
-		{
-			throw async_exception{ "Error executing async operation: " + execRes.error().what() };
-		}
-
-		const std::chrono::steady_clock::time_point afterEval = std::chrono::steady_clock::now();
-		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(afterEval - beforeEval);
-
-		if (evalDuration < (m_sleepTimeInMS - systemDelta))
-		{
-			const std::chrono::milliseconds remainingWaitingTime = m_sleepTimeInMS - evalDuration;
-
-			const std::chrono::steady_clock::time_point beforeSleep = std::chrono::steady_clock::now();
-
-			std::this_thread::sleep_for(remainingWaitingTime - systemDelta);
-
-			const std::chrono::steady_clock::time_point afterSleep = std::chrono::steady_clock::now();
-
-			systemDelta += (std::chrono::duration_cast<std::chrono::milliseconds>(afterSleep - beforeSleep) - remainingWaitingTime) / 2;
-		}
-		else
-		{
-			systemDelta = std::chrono::milliseconds(0);
-
-			std::this_thread::yield();
-		}
-	}
+		i_executor.execute(SchedulerPolicy::FireAndReuse).dismiss();
+	}).dismiss();
 }
 
 template<typename Provider>
@@ -142,21 +103,37 @@ event_driven_async_scheduler<Provider>::event_driven_async_scheduler(lent_refere
 {
 }
 template<typename Provider>
-template<typename Executor>
-void event_driven_async_scheduler<Provider>::subscribe(Executor&& i_executor)
+event_driven_async_scheduler<Provider>::~event_driven_async_scheduler()
 {
-	m_signaler = make_function([&](async_event<payload_t> i_event) mutable
+
+}
+template<typename Provider>
+template<typename Executor>
+void event_driven_async_scheduler<Provider>::subscribe(Executor& i_executor)
+{
+	m_execModel.instantiate([this,&i_executor,sharedState=i_executor.share()](async_event<payload_t> i_event) mutable
 	{
 		if (i_event)
 		{
-			if_not(auto execRes = i_executor.execute(m_policy,std::move(i_event).extract()))
+			if(auto execRes = i_executor.execute(m_policy,std::move(i_event).extract()))
+			{
+				if (m_policy == SchedulerPolicy::FireAndForget)
+				{
+					sharedState = nullptr;
+				}
+			}
+			else
 			{
 				throw async_exception{ "Error executing async operation: " + execRes.error().what() };
 			}
 		}
 		else
 		{
-			if_not(auto cancelRes = static_cast<async_cancellable_interface&>(i_executor).cancel())
+			if(auto cancelRes = i_executor.cancel())
+			{
+				sharedState = nullptr;
+			}
+			else
 			{
 				throw async_exception{ "Error cancelling async operation: " + cancelRes.error().what() };
 			}
@@ -168,33 +145,22 @@ void event_driven_async_scheduler<Provider>::subscribe(Executor&& i_executor)
 template<typename Provider>
 void event_driven_async_scheduler<Provider>::signal(async_event<payload_t> i_event)
 {
-	eval(m_signaler,std::move(i_event));
+	signal_model(m_execModel,std::move(i_event));
 }
 
 template<typename Executor,typename Scheduler>
 auto attach_scheduler(Scheduler&& i_oldScheduler)
 {
-	if constexpr (mpl::is_same_type<Scheduler,deferred_async_scheduler>::value)
-	{
-		//in this case we will have to detach old scheduler by moving into a local variable
-		const Scheduler _ = std::forward<Scheduler>(i_oldScheduler);
+	return std::forward<Scheduler>(i_oldScheduler);
+}
 
-		if constexpr (mpl::is_same_type<Executor,detail::immediate_executor>::value)
-		{
-			return deferred_async_scheduler{};
-		}
-		else
-		{
-			return asap_async_scheduler{};
-		}
-	}
-	else
-	{
-		return std::forward<Scheduler>(i_oldScheduler);
-	}
+template<typename Scheduler>
+inline bool detach_scheduler(Scheduler&& i_oldScheduler)
+{
+	return true;
 }
 
 template<typename Executor,typename Scheduler>
-using attached_scheduler = decltype(attach_scheduler<Executor>(std::declval<Scheduler>()));
+using attached_scheduler = typename mpl::which_type<detail::is_scheduler_v<Scheduler,deferred_async_scheduler>,typename mpl::which_type<mpl::is_same_type<Executor,detail::immediate_executor>::value,Scheduler,asap_async_scheduler>::type,Scheduler>::type;
 
 }

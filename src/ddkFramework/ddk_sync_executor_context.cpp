@@ -228,10 +228,10 @@ void thread_execution_context::start(function<void()> i_callable, bool i_useAndK
 }
 bool thread_execution_context::cancel()
 {
+	notify_recipients(false);
+
 	if(m_thread.joinable() == false)
 	{
-		notify_recipients(false);
-
 		return true;
 	}
 	else

@@ -9,11 +9,10 @@ namespace ddk
 
 SCOPED_ENUM_DECL(ExecutorState,
 	Idle,
-	Pending,
 	Executing,
 	Executed = Idle,
-	Cancelling,
-	Cancelled
+	Cancelling = Executing + 1,
+	Cancelled = Cancelling + 1
 );
 
 namespace detail

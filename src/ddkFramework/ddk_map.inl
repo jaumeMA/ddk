@@ -398,7 +398,7 @@ void map_impl<Key,Value,Node,Allocator,Balancer>::erase_node(map_node_lent_ref i
         }
         else
         {
-            eraseNode = i_node->replace_node(rightMostNode->extract_node(this->ref_from_this()));
+            eraseNode = i_node->replace_node(rightMostNode->extract_node(this->lent_from_this()));
         }
     }
     else if(leftChild)
@@ -666,7 +666,7 @@ std::pair<bool,typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator> m
 
     if(foundNode && foundNode->m_value.first == i_key)
     {
-        return std::make_pair<bool,iterator>(false,{ this->ref_from_this(),foundNode });
+        return std::make_pair<bool,iterator>(false,{ this->lent_from_this(),foundNode });
     }
     else
     {
@@ -685,7 +685,7 @@ std::pair<bool,typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator> m
 
         _onNodeInserted(newNodeRef);
 
-        return std::make_pair<bool,iterator>(true,{ this->ref_from_this(),newNodeRef });
+        return std::make_pair<bool,iterator>(true,{ this->lent_from_this(),newNodeRef });
     }
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
@@ -700,7 +700,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Valu
 
         erase_node(std::move(currNode));
 
-        return { this->ref_from_this() ,nextNode };
+        return { this->lent_from_this() ,nextNode };
     }
     else
     {
@@ -720,7 +720,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Ke
 
         erase_node(std::move(currNode));
 
-        return { this->ref_from_this() ,nextNode };
+        return { this->lent_from_this() ,nextNode };
     }
     else
     {
@@ -752,7 +752,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Valu
 {
     if(map_node_lent_ptr firstElem = get_first_elem())
     {
-        return { this->ref_from_this(),promote_to_ref(firstElem) };
+        return { this->lent_from_this(),promote_to_ref(firstElem) };
     }
     else
     {
@@ -764,7 +764,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Ke
 {
     if(map_node_lent_ptr firstElem = get_first_elem())
     {
-        return { this->ref_from_this(),promote_to_ref(firstElem) };
+        return { this->lent_from_this(),promote_to_ref(firstElem) };
     }
     else
     {
@@ -776,7 +776,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Valu
 {
     if(map_node_lent_ptr firstElem = get_last_elem())
     {
-        return { this->ref_from_this(),promote_to_ref(firstElem) };
+        return { this->lent_from_this(),promote_to_ref(firstElem) };
     }
     else
     {
@@ -788,7 +788,7 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Ke
 {
     if(map_node_lent_ptr firstElem = get_last_elem())
     {
-        return { this->ref_from_this(),promote_to_ref(firstElem) };
+        return { this->lent_from_this(),promote_to_ref(firstElem) };
     }
     else
     {
@@ -798,12 +798,12 @@ typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Ke
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::iterator map_impl<Key,Value,Node,Allocator,Balancer>::end()
 {
-    return { this->ref_from_this(),nullptr };
+    return { this->lent_from_this(),nullptr };
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 typename map_impl<Key,Value,Node,Allocator,Balancer>::const_iterator map_impl<Key,Value,Node,Allocator,Balancer>::end() const
 {
-    return { this->ref_from_this(),nullptr };
+    return { this->lent_from_this(),nullptr };
 }
 template<typename Key,typename Value,typename Node,template<typename> class Allocator,template<typename,typename> class Balancer>
 size_t map_impl<Key,Value,Node,Allocator,Balancer>::size() const
@@ -927,7 +927,7 @@ void map_impl<Key,Value,Node,Allocator,Balancer>::_onNodeInserted(map_node_lent_
 {
     if(m_root != nullptr)
     {
-        m_root = balancer_t::balance(this->ref_from_this(),node);
+        m_root = balancer_t::balance(this->lent_from_this(),node);
     }
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>
@@ -935,7 +935,7 @@ void map_impl<Key,Value,Node,Allocator,Balancer>::_onNodeErased(map_node_lent_re
 {
     if(m_root != nullptr)
     {
-        m_root = balancer_t::balance(this->ref_from_this(),node);
+        m_root = balancer_t::balance(this->lent_from_this(),node);
     }
 }
 template<typename Key, typename Value, typename Node, template<typename> class Allocator,template<typename,typename> class Balancer>

@@ -23,8 +23,12 @@ public:
 
 	void wait(mutex& i_mutex);
 	bool wait_for(mutex& i_mutex,const std::chrono::nanoseconds& i_time);
-	void wait_until(mutex& i_mutex, const function<bool()>& i_predicate);
-	void wait_until(mutex& i_mutex, const function<bool()>& i_predicate, const std::chrono::nanoseconds& i_time);
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable),IS_RETURN_TYPE_CONVERTIBLE_TO(Callable,bool))
+	void wait_until(mutex& i_mutex, Callable&& i_predicate);
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable),IS_RETURN_TYPE_CONVERTIBLE_TO(Callable,bool))
+	void wait_until(mutex& i_mutex, Callable&& i_predicate, const std::chrono::nanoseconds& i_time);
 	void notify_all();
 	void notify_one();
 	CondVarAccess access() const;
@@ -35,3 +39,5 @@ private:
 };
 
 }
+
+#include "ddk_cond_var.inl"

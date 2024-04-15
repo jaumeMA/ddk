@@ -534,45 +534,46 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 template<typename Callable,typename Sink>
 cancel_result execution_context_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled) ||
-	   ddk::atomic_compare_exchange(m_state,ExecutorState::Pending,ExecutorState::Cancelled))
+	if (m_execContext && m_execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
+	{
+		if (ddk::eval(std::forward<Callable>(i_cancelFunc)))
+		{
+			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
+		}
+
+		m_execContext = nullptr;
+	}
+
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
 		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
-		m_execContext = nullptr;
-
 		return ddk::success;
 	}
-	else 
+	else if (ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
 	{
-		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
+		if(ddk::eval(std::forward<Callable>(i_cancelFunc)))
 		{
-			if(m_execContext && m_execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
-			{
-				if(ddk::eval(std::forward<Callable>(i_cancelFunc)))
-				{
-					m_state = ExecutorState::Cancelled;
+			m_state = ExecutorState::Cancelled;
 
-					ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
-					m_execContext = nullptr;
-
-					return ddk::success;
-				}
-
-				m_execContext = nullptr;
-			}
-
+			return ddk::success;
+		}
+		else
+		{
 			m_state = ExecutorState::Executing;
 
 			std::this_thread::yield();
 
 			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 		}
-		else
-		{
-			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
-		}
+	}
+	else
+	{
+		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
 

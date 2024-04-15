@@ -34,20 +34,20 @@ public:
 
 protected:
 #ifdef DDK_DEBUG
-	inline ddk::lent_reference_wrapper<TT> ref_from_this()
+	inline ddk::lent_reference_wrapper<TT> lent_from_this()
 	{
 		return ddk::lent_reference_wrapper<TT>(static_cast<T*>(this),&m_counter);
 	}
-	inline ddk::lent_reference_wrapper<const TT> ref_from_this() const
+	inline ddk::lent_reference_wrapper<const TT> lent_from_this() const
 	{
 		return ddk::lent_reference_wrapper<const TT>(static_cast<typename std::add_const<T>::type*>(this),&m_counter);
 	}
 #else
-	inline ddk::lent_reference_wrapper<TT> ref_from_this()
+	inline ddk::lent_reference_wrapper<TT> lent_from_this()
 	{
 		return ddk::lent_reference_wrapper<TT>(static_cast<T*>(this));
 	}
-	inline ddk::lent_reference_wrapper<const TT> ref_from_this() const
+	inline ddk::lent_reference_wrapper<const TT> lent_from_this() const
 	{
 		return ddk::lent_reference_wrapper<const TT>(static_cast<typename std::add_const<T>::type*>(this));
 	}

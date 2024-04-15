@@ -82,14 +82,16 @@ typename future<T>::cancel_result future<T>::cancel()
 {
 	if (m_sharedState)
 	{
-		const auto cancelRes = std::move(*m_sharedState).cancel();
-
-		if(cancelRes)
+		if(auto cancelRes = std::move(*m_sharedState).cancel())
 		{
 			m_sharedState = nullptr;
-		}
 
-		return cancelRes;
+			return ddk::success;
+		}
+		else
+		{
+			return ddk::make_error<cancel_result>(cancelRes.error());
+		}
 	}
 	else
 	{

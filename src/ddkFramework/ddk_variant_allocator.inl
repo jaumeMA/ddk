@@ -26,14 +26,6 @@ void* variant_allocator<Allocators...>::reallocate(void* i_ptr,size_t i_newSize)
 	});
 }
 template<typename ... Allocators>
-void variant_allocator<Allocators...>::deallocate(void* i_ptr) const
-{
-	m_allocators.visit([i_ptr](auto&& i_allocator)
-	{
-		i_allocator.deallocate(i_ptr);
-	});
-}
-template<typename ... Allocators>
 template<typename T>
 void variant_allocator<Allocators...>::deallocate(T* i_ptr) const
 {

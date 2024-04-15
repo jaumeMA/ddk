@@ -1,70 +1,165 @@
 #pragma once
 
 #include "ddk_thread.h"
-#include "ddk_fiber.h"
-#include "ddk_thread_pool.h"
-#include "ddk_fiber_pool.h"
+#include "ddk_cond_var.h"
+#include "ddk_mutex.h"
+#include <chrono>
 
 namespace ddk
 {
 namespace detail
 {
 
-struct thread_executor_context
-{
-public:
-	thread_executor_context() = default;
-	thread_executor_context(ddk::thread i_thread);
+template<typename ExecutionModel>
+inline void signal_model(ExecutionModel&);
 
-	void execute(const function<void()>& i_function);
+
+template<typename Event>
+struct signaled_execution_model
+{
+	friend inline void signal_model(signaled_execution_model& i_model, Event i_event)
+	{
+		if (i_model.m_signaler != nullptr)
+		{
+			eval(i_model.m_signaler,std::move(i_event));
+		}
+	}
+
+	template<typename Callable>
+	struct execution
+	{
+		TEMPLATE(typename CCallable)
+		REQUIRES(IS_CONSTRUCTIBLE(Callable,CCallable))
+		execution(CCallable&& i_callable,signaled_execution_model& i_model);
+
+		inline auto operator()();
+
+	private:
+		Callable m_callable;
+	};
+	template<typename Callable>
+	execution(const Callable&,signaled_execution_model&) -> execution<Callable>;
+	template<typename Callable>
+	execution(Callable&&,signaled_execution_model&) -> execution<Callable>;
+
+public:
+	signaled_execution_model() = default;
+
+	template<typename Callable>
+	inline auto instantiate(Callable&& i_callable);
 	void resume();
-	void set_affinity(const cpu_set_t& i_set);
 
 private:
-	ddk::thread m_thread;
+	function<void(Event)> m_signaler;
 };
 
-struct fiber_executor_context
+struct polling_execution_model
 {
-public:
-	fiber_executor_context() = default;
-	fiber_executor_context(ddk::fiber i_fiber);
+	template<typename Callable>
+	struct execution
+	{
+		TEMPLATE(typename CCallable)
+		REQUIRES(IS_CONSTRUCTIBLE(Callable,CCallable))
+		execution(CCallable&& i_callable, polling_execution_model& i_model);
 
-	void execute(const function<void()>&i_function);
+		inline auto operator()();
+
+	private:
+		Callable m_callable;
+		polling_execution_model& m_model;
+	};
+	template<typename Callable>
+	execution(const Callable&,polling_execution_model&)->execution<Callable>;
+	template<typename Callable>
+	execution(Callable&&,polling_execution_model&)->execution<Callable>;
+
+public:
+	polling_execution_model(const std::chrono::milliseconds& i_sleepInMs = std::chrono::milliseconds(1000));
+
+	template<typename Callable>
+	inline auto instantiate(Callable&& i_callable);
 	void resume();
-	void set_affinity(const cpu_set_t& i_set);
 
 private:
-	ddk::fiber m_fiber;
+	bool m_stopped = true;
+	std::chrono::milliseconds m_sleepTimeInMS;
 };
 
-struct thread_sheaf_executor_context
+struct async_execution_model
 {
-public:
-	thread_sheaf_executor_context() = default;
-	thread_sheaf_executor_context(thread_pool& i_pool);
+	friend inline void signal_model(async_execution_model& i_model)
+	{
+		mutex_guard mg(i_model.m_condVarMutex);
 
-	void execute(const function<void()>&i_function);
+		i_model.m_pendingWork = true;
+
+		i_model.m_condVar.notify_one();
+	}
+
+	template<typename Callable, typename CCallable>
+	struct execution
+	{
+		TEMPLATE(typename CCCallable, typename CCCCallable)
+		REQUIRES(IS_CONSTRUCTIBLE(Callable,CCCallable),IS_CONSTRUCTIBLE(CCallable,CCCCallable))
+		execution(CCCallable&& i_callable,CCCCallable&& i_test, async_execution_model& i_model);
+
+		inline auto operator()();
+
+	private:
+		Callable m_callable;
+		CCallable m_test;
+		async_execution_model& m_model;
+	};
+	template<typename Callable,typename CCallable>
+	execution(const Callable&,const CCallable&, async_execution_model&) -> execution<Callable,CCallable>;
+	template<typename Callable,typename CCallable>
+	execution(Callable&&,const CCallable&,async_execution_model&) -> execution<Callable,CCallable>;
+
+public:
+	async_execution_model(const std::chrono::milliseconds& i_sleepInMs = std::chrono::milliseconds(1000));
+
+	template<typename Callable>
+	inline auto instantiate(Callable&& i_callable);
+	template<typename Callable, typename CCallable>
+	inline auto instantiate(Callable&& i_callable, CCallable&& i_test);
 	void resume();
-	void set_affinity(const cpu_set_t& i_set);
 
 private:
-	ddk::thread_sheaf m_sheaf;
+	std::chrono::milliseconds m_sleepTimeInMS;
+	bool m_stopped = true;
+	bool m_pendingWork = false;
+	cond_var m_condVar;
+	mutex m_condVarMutex;
 };
 
-struct fiber_sheaf_executor_context
+struct forward_execution_model
 {
-public:
-	fiber_sheaf_executor_context() = default;
-	fiber_sheaf_executor_context(fiber_pool& i_pool);
+	template<typename Callable>
+	struct execution
+	{
+		TEMPLATE(typename CCallable)
+		REQUIRES(IS_CONSTRUCTIBLE(Callable,CCallable))
+		execution(CCallable&& i_callable);
 
-	void execute(const function<void()>& i_function);
+		inline auto operator()();
+
+	private:
+		Callable m_callable;
+	};
+	template<typename Callable>
+	execution(const Callable&) -> execution<Callable>;
+	template<typename Callable>
+	execution(Callable&&) -> execution<Callable>;
+
+	template<typename Callable>
+	inline auto instantiate(Callable&& i_callable);
 	void resume();
-	void set_affinity(const cpu_set_t& i_set);
 
-private:
-	ddk::fiber_sheaf m_sheaf;
+public:
+	forward_execution_model() = default;
 };
 
 }
 }
+
+#include "ddk_executor_context.inl"

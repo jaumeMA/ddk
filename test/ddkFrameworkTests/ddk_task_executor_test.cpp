@@ -10,7 +10,7 @@ class DDKTaskExecutorTest: public Test
 
 TEST(DDKTaskExecutorTest,stressTest)
 {
-	ddk::atomic_size_t numExecutedTasks = 0;
+    ddk::atomic_size_t numExecutedTasks = 0;
     ddk::atomic_size_t numCancelledTasks = 0;
     ddk::task_executor taskExecutor(30,100);
 
