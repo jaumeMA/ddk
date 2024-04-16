@@ -12,7 +12,6 @@ deferred_async_scheduler<Executor>::deferred_async_scheduler(Executor& i_executo
 }
 template<typename Executor>
 deferred_async_scheduler<Executor>::deferred_async_scheduler(deferred_async_scheduler&& other)
-: m_boundExecutor(other.m_boundExecutor)
 {
 	other.m_boundExecutor = nullptr;
 }
@@ -58,7 +57,7 @@ void deferred_async_scheduler<Executor>::subscribe(Executor& i_executor)
 	//execution due to task enqueue
 	if (lent_pointer_wrapper<detail::execution_context_base> execContext = static_lent_cast<detail::execution_context_base>(i_executor.get_execution_context()))
 	{
-		execContext->admission_predicate(make_function([this,&i_executor,_execContext=extract_raw_ptr(execContext)](bool i_admission) mutable
+		execContext->admission_predicate(make_function([this,&i_executor,_execContext=get_raw_ptr(execContext)](bool i_admission) mutable
 		{
 			m_boundExecutor = nullptr;
 			_execContext->admission_predicate(nullptr);

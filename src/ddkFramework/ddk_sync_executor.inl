@@ -323,7 +323,7 @@ async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<ty
 {
 	typedef async_executor<Callable,CancelOp,Promise,Scheduler,Executor> async_executor_t;
 
-	return std::move(*this->m_promise).attach<async_executor_t>(std::move(this->m_function),std::move(this->m_cancelFunc),std::move(*this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor));
+	return Promise::attach<async_executor_t>(std::move(this->m_function),std::move(this->m_cancelFunc),std::move(*this->m_promise),std::move(this->m_scheduler),std::move(this->m_executor));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach()

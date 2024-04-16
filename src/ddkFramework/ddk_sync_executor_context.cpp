@@ -139,6 +139,7 @@ execution_context_base::execution_context_base(execution_context_base&& other)
 : m_recipients(std::move(other.m_recipients))
 , m_recipientsRef(lend(m_recipients))
 {
+	m_recipientsRef->call_admissionPredicate = std::move(other.m_recipientsRef->call_admissionPredicate);
 }
 void execution_context_base::notify_recipients(bool i_useAndKeep)
 {
