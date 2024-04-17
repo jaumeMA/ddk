@@ -102,7 +102,7 @@ void async_executor_recipients::clear()
 }
 bool async_executor_recipients::is_admissible()
 {
-	return (call_admissionPredicate != nullptr) ? eval(call_admissionPredicate,m_admissible) : m_admissible;
+	return m_admissible;
 }
 void async_executor_recipients::resolve(callable_container& i_pendingCallables)
 {
@@ -139,7 +139,6 @@ execution_context_base::execution_context_base(execution_context_base&& other)
 : m_recipients(std::move(other.m_recipients))
 , m_recipientsRef(lend(m_recipients))
 {
-	m_recipientsRef->call_admissionPredicate = std::move(other.m_recipientsRef->call_admissionPredicate);
 }
 void execution_context_base::notify_recipients(bool i_useAndKeep)
 {
@@ -153,7 +152,6 @@ bool execution_context_base::transfer(execution_context_base&& other)
 {
 	other.enqueue(make_function([&]()
 	{
-		other.m_recipients.call_admissionPredicate = nullptr;
 		other.m_recipientsRef = lend(other.m_recipients);
 	}),0);
 
@@ -171,10 +169,6 @@ bool execution_context_base::transfer(execution_context_base&& other)
 bool execution_context_base::dismiss(unsigned char i_depth,continuation_token i_token)
 {
 	return m_recipientsRef->dismiss(i_depth,std::move(i_token));
-}
-void execution_context_base::admission_predicate(const function<bool(bool)>& i_callable)
-{
-	m_recipientsRef->call_admissionPredicate = i_callable;
 }
 
 }

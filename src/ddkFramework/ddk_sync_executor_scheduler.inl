@@ -53,28 +53,6 @@ void deferred_async_scheduler<Executor>::subscribe(Executor& i_executor)
 
 		return false;
 	}));
-
-	//execution due to task enqueue
-	if (lent_pointer_wrapper<detail::execution_context_base> execContext = static_lent_cast<detail::execution_context_base>(i_executor.get_execution_context()))
-	{
-		execContext->admission_predicate(make_function([this,&i_executor,_execContext=get_raw_ptr(execContext)](bool i_admission) mutable
-		{
-			m_boundExecutor = nullptr;
-			_execContext->admission_predicate(nullptr);
-
-			if (i_admission)
-			{
-				if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
-				{
-					throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
-				}
-			}
-
-				
-			//we return false so immediate context gets in action
-			return false;
-		}));
-	}
 }
 
 template<typename Executor>

@@ -38,8 +38,6 @@ private:
 	typedef std::map<unsigned char,std::list<task>> callable_container;
 
 public:
-	function<bool(bool)> call_admissionPredicate;
-
 	async_executor_recipients();
 	async_executor_recipients(async_executor_recipients&& other);
 
@@ -73,7 +71,6 @@ public:
 	execution_context_base(execution_context_base&& other);
 	void notify_recipients(bool i_useAndKeep);
 	bool transfer_recipients(execution_context_base&& other);
-	void admission_predicate(const function<bool(bool)>& i_callable);
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE(Callable))
 	continuation_token enqueue(Callable&& i_callable, unsigned char i_depth);

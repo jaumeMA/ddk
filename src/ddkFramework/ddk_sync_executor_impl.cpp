@@ -8,11 +8,13 @@ namespace detail
 
 executor_context_lent_ptr immediate_executor::get_execution_context()
 {
-	return lend(m_execContext);
+	//immediat executors do not offer lent executor contexts
+	return nullptr;
 }
 executor_context_const_lent_ptr immediate_executor::get_execution_context() const
 {
-	return lend(m_execContext);
+	//immediat executors do not offer lent executor contexts
+	return nullptr;
 }
 
 fiber_executor::fiber_executor(fiber i_fiber)
