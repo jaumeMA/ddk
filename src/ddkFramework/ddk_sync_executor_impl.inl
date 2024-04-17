@@ -519,6 +519,8 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 
 		if(!m_continuationToken)
 		{
+			m_execContext = nullptr;
+
 			immediate_execution_context _immediateExecContext;
 
 			_immediateExecContext.start(std::move(callable),false);
