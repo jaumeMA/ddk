@@ -208,7 +208,7 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	{
 		if (i_value)
 		{
-			return ddk::async([]() { return std::string("sucess"); }) -> attach(std::move(_myThread));
+			return ddk::async([]() { return std::string("sucess"); })->attach(std::move(_myThread));
 		}
 		else
 		{
@@ -221,6 +221,8 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 
 		return 10;
 	});
+
+	printf("DONE\n");
 }
 TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 {
@@ -242,7 +244,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	}
 
 	ddk::thread _myThread;
-	ddk::future<char> myFuture = ddk::async<ddk::extack_allocator>(ddk::make_function([]() { printf("funcio oroginal\n"); return 'a'; }),local_allocator(1024)) -> attach(std::move(_myThread))
+	ddk::future<char> myFuture = ddk::async<ddk::system_extack_allocator>(ddk::make_function([]() { printf("funcio oroginal\n"); return 'a'; }),local_allocator(1024)) -> attach(std::move(_myThread))
 	.then([](char i_value)
 	{
 		printf("valor rebut %c\n",i_value);

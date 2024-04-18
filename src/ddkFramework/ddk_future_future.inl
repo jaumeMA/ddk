@@ -5,6 +5,7 @@ namespace ddk
 template<typename T>
 future<future<T>>::future(future&& other)
 : m_sharedState(std::move(other.m_sharedState))
+, m_depth(other.m_depth)
 {
 }
 template<typename T>
@@ -23,6 +24,7 @@ template<typename T>
 future<future<T>>& future<future<T>>::operator=(future<future<T>>&& other)
 {
 	m_sharedState = std::move(other.m_sharedState);
+	m_depth = other.m_depth;
 
 	return *this;
 }
@@ -116,7 +118,7 @@ bool future<future<T>>::wait_for(const std::chrono::milliseconds& i_period) cons
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,nested_rreference))
-auto future<future<T>>::then(Callable&& i_continuation) &&
+constexpr auto future<future<T>>::then(Callable&& i_continuation) &&
 {
 	if (detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
@@ -129,7 +131,7 @@ auto future<future<T>>::then(Callable&& i_continuation) &&
 					return std::move(i_future).chain(std::forward<Callable>(_continuation),promote_to_ref(context));
 				};
 
-				return contraction(std::move(*this)._async(continuation,promote_to_ref(sharedState)));
+				return contraction(std::move(*this)._async(continuation));
 			}
 		}
 
@@ -142,7 +144,7 @@ auto future<future<T>>::then(Callable&& i_continuation) &&
 	}
 }
 template<typename T>
-future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError)&&
+constexpr future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError)&&
 {
 	if(detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
@@ -182,7 +184,7 @@ future<T> future<future<T>>::on_error(const function<void(const async_error&)>& 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&
+constexpr future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&
 {
 	if(detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
@@ -222,31 +224,29 @@ future<T> future<future<T>>::on_error(const function<void(const async_error&)>& 
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<future<T>>::_then(Callable && i_continuation) &&
+constexpr auto future<future<T>>::_then(Callable && i_continuation) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
+	typedef typename mpl::aqcuire_callable_return_type<Callable>::type ret_type;
 
 	if (detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
-		auto executor = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
+		future<ret_type> res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
 		{
-			if constexpr (mpl::is_void<return_type>)
+			auto res = std::move(acquiredFuture).extract_value();
+
+			if constexpr (mpl::is_void<ret_type>)
 			{
-				eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
+				eval(std::forward<Callable>(continuation),std::move(res));
 			}
 			else
 			{
-				return eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
+				return eval(std::forward<Callable>(continuation),std::move(res));
 			}
-		});
+		}) -> attach(promote_to_ref(sharedState),m_depth);
 
-		const unsigned char currDepth = m_depth;
+		res.m_depth = m_depth + 1;
 
-		return_type res = std::move(executor) -> attach(promote_to_ref(sharedState),currDepth);
-
-		res.m_depth = currDepth + 1;
-
-		return std::move(res);
+		return res;
 	}
 
 	throw future_exception("Accessing empty future");
@@ -254,14 +254,12 @@ auto future<future<T>>::_then(Callable && i_continuation) &&
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<future<T>>::_async(Callable&& i_continuation, detail::private_async_state_shared_ptr<future<T>> i_sharedState) &&
+constexpr auto future<future<T>>::_async(Callable&& i_continuation) &&
 {
 	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
 
 	if (detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
-		const unsigned char currDepth = m_depth;
-
 		return_type res = ddk::async([acquiredFuture = std::move(*this),continuation=std::forward<Callable>(i_continuation)]() mutable
 		{
 			if constexpr (mpl::is_void<return_type>)
@@ -272,9 +270,9 @@ auto future<future<T>>::_async(Callable&& i_continuation, detail::private_async_
 			{
 				return eval(std::forward<Callable>(continuation),std::move(acquiredFuture).extract_value());
 			}
-		}) -> attach(promote_to_ref(sharedState),currDepth);
+		}) -> attach(promote_to_ref(sharedState),m_depth);
 
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
 		return std::move(res);
 	}

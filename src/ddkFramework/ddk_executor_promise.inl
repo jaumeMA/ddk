@@ -7,24 +7,24 @@ namespace ddk
 template<typename T, typename Allocator>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(Allocator,Args...))
-executor_promise<T,Allocator>::executor_promise(Args&& ... i_args)
+constexpr executor_promise<T,Allocator>::executor_promise(Args&& ... i_args)
 : m_allocator(mpl::static_number<0>{},std::forward<Args>(i_args)...)
 {
 }
 template<typename T, typename Allocator>
-executor_promise<T,Allocator>::executor_promise(executor_promise&& other)
+constexpr executor_promise<T,Allocator>::executor_promise(executor_promise&& other)
 : m_allocator(std::move(other.m_allocator))
 , m_sharedState(std::move(other.m_sharedState))
 {
 }
 template<typename T,typename Allocator>
-executor_promise<T,Allocator>::executor_promise(executor_promise&& other, allocator_const_lent_ref i_allocator)
+constexpr executor_promise<T,Allocator>::executor_promise(executor_promise&& other, allocator_const_lent_ref i_allocator)
 : m_allocator(mpl::static_number<1>{},*i_allocator)
 , m_sharedState(std::move(other.m_sharedState))
 {
 }
 template<typename T, typename Allocator>
-executor_promise<T,Allocator>& executor_promise<T,Allocator>::operator=(promise<T>&& other)
+constexpr executor_promise<T,Allocator>& executor_promise<T,Allocator>::operator=(promise<T>&& other)
 {
 	m_allocator = std::move(other.m_allocator);
 	m_sharedState = std::move(other.m_sharedState);
@@ -32,7 +32,7 @@ executor_promise<T,Allocator>& executor_promise<T,Allocator>::operator=(promise<
 	return *this;
 }
 template<typename T, typename Allocator>
-void executor_promise<T,Allocator>::set_value(sink_type i_value)
+constexpr void executor_promise<T,Allocator>::set_value(sink_type i_value)
 {
 	if (detail::private_async_state_shared_ptr<T> _sharedState = share(m_sharedState))
 	{
@@ -40,7 +40,7 @@ void executor_promise<T,Allocator>::set_value(sink_type i_value)
 	}
 }
 template<typename T, typename Allocator>
-void executor_promise<T,Allocator>::set_exception(const async_exception& i_exception)
+constexpr void executor_promise<T,Allocator>::set_exception(const async_exception& i_exception)
 {
 	if (detail::private_async_state_shared_ptr<T> _sharedState = share(m_sharedState))
 	{
@@ -49,7 +49,7 @@ void executor_promise<T,Allocator>::set_exception(const async_exception& i_excep
 }
 template<typename T, typename Allocator>
 template<typename Executor, typename Callable, typename CancelOp, typename Promise, typename ... Args>
-future<T> executor_promise<T,Allocator>::attach(Callable&& i_callable,CancelOp&& i_cancelOp,Promise i_promise,Args&& ... i_args)
+constexpr future<T> executor_promise<T,Allocator>::attach(Callable&& i_callable,CancelOp&& i_cancelOp,Promise i_promise,Args&& ... i_args)
 {
 	detail::embedded_private_async_state_shared_ref<T,Executor> _sharedState = make_shared_reference<detail::embedded_private_async_state<T,Executor>>(i_promise.m_allocator);
 
@@ -63,7 +63,7 @@ future<T> executor_promise<T,Allocator>::attach(Callable&& i_callable,CancelOp&&
 }
 template<typename T, typename Allocator>
 template<typename Callable, typename CancelOp, typename Promise, typename Scheduler, typename Executor>
-void executor_promise<T,Allocator>::detach() &&
+constexpr void executor_promise<T,Allocator>::detach() &&
 {
 	typedef async_executor<Callable,CancelOp,Promise,Scheduler,Executor> async_t;
 
@@ -73,7 +73,7 @@ void executor_promise<T,Allocator>::detach() &&
 	}
 }
 template<typename T,typename Allocator>
-void executor_promise<T,Allocator>::value_predicate(function<bool()> i_predicate)
+constexpr void executor_promise<T,Allocator>::value_predicate(function<bool()> i_predicate)
 {
 	if (detail::private_async_state_shared_ptr<T> _sharedState = share(m_sharedState))
 	{
@@ -81,12 +81,12 @@ void executor_promise<T,Allocator>::value_predicate(function<bool()> i_predicate
 	}
 }
 template<typename T,typename Allocator>
-detail::private_async_state_shared_ptr<T> executor_promise<T,Allocator>::shared_state()
+constexpr detail::private_async_state_shared_ptr<T> executor_promise<T,Allocator>::shared_state()
 {
 	return share(m_sharedState);
 }
 template<typename T,typename Allocator>
-detail::private_async_state_const_shared_ptr<T> executor_promise<T,Allocator>::shared_state() const
+constexpr detail::private_async_state_const_shared_ptr<T> executor_promise<T,Allocator>::shared_state() const
 {
 	return share(m_sharedState);
 }

@@ -48,17 +48,17 @@ public:
 	cancel_result cancel();
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,nested_rreference))
-	auto then(Callable&& i_continuation)&&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError)&&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
+	constexpr auto then(Callable&& i_continuation)&&;
+	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError)&&;
+	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 
 protected:
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto _then(Callable && i_continuation) &&;
+	constexpr auto _then(Callable && i_continuation) &&;
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto _async(Callable&& i_continuation, detail::private_async_state_shared_ptr<future<T>> i_execContext) &&;
+	constexpr auto _async(Callable&& i_continuation) &&;
 
 	detail::private_async_state_shared_ptr<future<T>> m_sharedState;
 	unsigned char m_depth = 0;

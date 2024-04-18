@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T>
-private_async_state<T>::private_async_state()
+constexpr private_async_state<T>::private_async_state()
 : m_arena(none)
 , m_mutex(MutexType::Recursive)
 , m_asyncMutex(MutexType::Recursive)
@@ -19,13 +19,13 @@ private_async_state<T>::private_async_state()
 template<typename T>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
-private_async_state<T>::private_async_state(Args&& ... i_args)
+constexpr private_async_state<T>::private_async_state(Args&& ... i_args)
 : private_async_state()
 {
 	emplace(std::forward<Args>(i_args)...);
 }
 template<typename T>
-typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
+constexpr typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
 {
 	mutex_guard lg(m_asyncMutex);
 
@@ -39,14 +39,14 @@ typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
 	}
 }
 template<typename T>
-void private_async_state<T>::attach(async_base_dist_ptr i_executor)
+constexpr void private_async_state<T>::attach(async_base_dist_ptr i_executor)
 {
 	mutex_guard lg(m_asyncMutex);
 
 	m_asyncExecutor = i_executor;
 }
 template<typename T>
-bool private_async_state<T>::detach()
+constexpr bool private_async_state<T>::detach()
 {
 	mutex_guard lg(m_asyncMutex);
 
@@ -63,7 +63,7 @@ bool private_async_state<T>::detach()
 }
 template<typename T>
 template<typename Predicate>
-bool private_async_state<T>::detach_if(Predicate&& i_predicate)
+constexpr bool private_async_state<T>::detach_if(Predicate&& i_predicate)
 {
 	mutex_guard lg(m_asyncMutex);
 
@@ -79,7 +79,7 @@ bool private_async_state<T>::detach_if(Predicate&& i_predicate)
 	}
 }
 template<typename T>
-async_base_dist_ptr private_async_state<T>::get_async_execution() const
+constexpr async_base_dist_ptr private_async_state<T>::get_async_execution() const
 {
 	mutex_guard lg(m_asyncMutex);
 
@@ -88,7 +88,7 @@ async_base_dist_ptr private_async_state<T>::get_async_execution() const
 template<typename T>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
-void private_async_state<T>::emplace(Args&& ... i_args)
+constexpr void private_async_state<T>::emplace(Args&& ... i_args)
 {
 	mutex_guard lg(m_mutex);
 
@@ -97,7 +97,7 @@ void private_async_state<T>::emplace(Args&& ... i_args)
 	m_condVar.notify_all();
 }
 template<typename T>
-void private_async_state<T>::set_value(sink_type i_value)
+constexpr void private_async_state<T>::set_value(sink_type i_value)
 {
 	mutex_guard lg(m_mutex);
 
@@ -106,7 +106,7 @@ void private_async_state<T>::set_value(sink_type i_value)
 	m_condVar.notify_all();
 }
 template<typename T>
-void private_async_state<T>::set_exception(const async_exception& i_exception)
+constexpr void private_async_state<T>::set_exception(const async_exception& i_exception)
 {
 	mutex_guard lg(m_mutex);
 
@@ -115,12 +115,12 @@ void private_async_state<T>::set_exception(const async_exception& i_exception)
 	m_condVar.notify_all();
 }
 template<typename T>
-void private_async_state<T>::signal() const
+constexpr void private_async_state<T>::signal() const
 {
 	m_condVar.notify_all();
 }
 template<typename T>
-typename private_async_state<T>::const_reference private_async_state<T>::get_value() const
+constexpr typename private_async_state<T>::const_reference private_async_state<T>::get_value() const
 {
 	mutex_guard lg(m_mutex);
 
@@ -143,7 +143,7 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 	}
 }
 template<typename T>
-typename private_async_state<T>::reference private_async_state<T>::get_value()
+constexpr typename private_async_state<T>::reference private_async_state<T>::get_value()
 {
 	mutex_guard lg(m_mutex);
 
@@ -166,7 +166,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 	}
 }
 template<typename T>
-embedded_type<T> private_async_state<T>::extract_value() &&
+constexpr embedded_type<T> private_async_state<T>::extract_value() &&
 {
 	mutex_guard lg(m_mutex);
 
@@ -193,14 +193,14 @@ embedded_type<T> private_async_state<T>::extract_value() &&
 	}
 }
 template<typename T>
-void private_async_state<T>::clear()
+constexpr void private_async_state<T>::clear()
 {
 	mutex_guard lg(m_mutex);
 
 	m_arena = none;
 }
 template<typename T>
-void private_async_state<T>::wait() const
+constexpr void private_async_state<T>::wait() const
 {
 	mutex_guard lg(m_mutex);
 
@@ -210,7 +210,7 @@ void private_async_state<T>::wait() const
 	}
 }
 template<typename T>
-void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period) const
+constexpr void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period) const
 {
 	mutex_guard lg(m_mutex);
 
@@ -220,7 +220,7 @@ void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period)
 	}
 }
 template<typename T>
-bool private_async_state<T>::ready() const
+constexpr bool private_async_state<T>::ready() const
 {
 	mutex_guard lg(m_mutex);
 

@@ -150,11 +150,6 @@ bool execution_context_base::transfer_recipients(execution_context_base&& other)
 }
 bool execution_context_base::transfer(execution_context_base&& other)
 {
-	other.enqueue(make_function([&]()
-	{
-		other.m_recipientsRef = lend(other.m_recipients);
-	}),0);
-
 	if (transfer_recipients(std::move(other)))
 	{
 		other.m_recipientsRef = lend(m_recipients);

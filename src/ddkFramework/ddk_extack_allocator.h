@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ddk_system_allocator.h"
 #include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
 #include <cstddef>
@@ -9,6 +10,7 @@
 namespace ddk
 {
 
+template<typename Allocator>
 struct extack_allocator
 {
 public:
@@ -18,7 +20,9 @@ public:
     typedef const void* const_pointer;
     typedef std::ptrdiff_t difference_type;
 
-    extack_allocator(void* i_ptr, size_t i_size);
+    TEMPLATE(typename ... Args)
+    REQUIRES(IS_CONSTRUCTIBLE(Allocator,Args...))
+    extack_allocator(void* i_ptr, size_t i_size, Args&& ... i_args);
     extack_allocator(const extack_allocator&) = default;
     extack_allocator(extack_allocator&&) = default;
     void* allocate(size_t i_size) const;
@@ -29,10 +33,12 @@ public:
     void deallocate(void* i_ptr) const;
 
 private:
+    const Allocator m_allocator;
     mutable char* m_base;
     const size_t m_size;
     mutable size_t m_usedSize;
 };
+typedef extack_allocator<system_allocator> system_extack_allocator;
 
 }
 

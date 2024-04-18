@@ -14,11 +14,13 @@ future<T>::future(future&& other)
 template<typename T>
 future<T>::future(const detail::private_async_state_shared_ptr<T>& i_sharedState, unsigned char i_depth)
 : m_sharedState(i_sharedState)
+, m_depth(i_depth)
 {
 }
 template<typename T>
 future<T>::future(detail::private_async_state_shared_ptr<T>&& i_sharedState, unsigned char i_depth)
 : m_sharedState(std::move(i_sharedState))
+, m_depth(i_depth)
 {
 }
 template<typename T>
@@ -123,7 +125,7 @@ bool future<T>::wait_for(const std::chrono::milliseconds& i_period) const
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::then(Callable&& i_continuation) &&
+constexpr auto future<T>::then(Callable&& i_continuation) &&
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
@@ -151,7 +153,7 @@ auto future<T>::then(Callable&& i_continuation) &&
 template<typename T>
 TEMPLATE(typename Callable, typename Context)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
+constexpr auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
@@ -183,7 +185,7 @@ auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
 template<typename T>
 TEMPLATE(typename Callable,typename ... Args)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::async(Callable&& i_continuation, Args&& ... i_args) &&
+constexpr auto future<T>::async(Callable&& i_continuation, Args&& ... i_args) &&
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
@@ -209,7 +211,7 @@ auto future<T>::async(Callable&& i_continuation, Args&& ... i_args) &&
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
+constexpr future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
@@ -245,7 +247,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&
+constexpr future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
@@ -283,7 +285,7 @@ future<T> future<T>::on_error(const function<void(const async_error&)>& i_onErro
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::chain(Callable&& i_callback, executor_context_lent_ref i_context) &&
+constexpr auto future<T>::chain(Callable&& i_callback, executor_context_lent_ref i_context) &&
 {
 	if (detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
@@ -314,17 +316,17 @@ auto future<T>::chain(Callable&& i_callback, executor_context_lent_ref i_context
 }
 
 template<typename Callable>
-future<void> future<void>::then(Callable&& i_continuation)&&
+constexpr future<void> future<void>::then(Callable&& i_continuation)&&
 {
 	return static_cast<future<detail::void_t>&&>(*this).then([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { eval(std::forward<Callable>(continuation)); });
 }
 template<typename Callable, typename ... Args>
-future<void> future<void>::then_on(Callable&& i_continuation, Args&& ... i_args) &&
+constexpr future<void> future<void>::then_on(Callable&& i_continuation, Args&& ... i_args) &&
 {
 	return static_cast<future<detail::void_t>&&>(*this).then_on([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { eval(std::forward<Callable>(continuation)); },std::forward<Args>(i_args)...);
 }
 template<typename Callable, typename ... Args>
-future<void> future<void>::async(Callable&& i_continuation, Args&& ... i_args) &&
+constexpr future<void> future<void>::async(Callable&& i_continuation, Args&& ... i_args) &&
 {
 	return static_cast<future<detail::void_t>&&>(*this).ddk::async([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { eval(std::forward<Callable>(continuation)); },std::forward<Args>(i_args)...);
 }

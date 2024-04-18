@@ -13,12 +13,12 @@ struct embedded_private_async_state : private_async_state<T>
 public:
 	typedef TT type;
 
-	embedded_private_async_state();
+	constexpr embedded_private_async_state();
 	~embedded_private_async_state();
 
 	template<typename ... Args>
-	TT& attach(Args&& ... i_args);
-	void deallocate(const TT* i_ptr) const;
+	constexpr TT& attach(Args&& ... i_args);
+	constexpr void deallocate(const TT* i_ptr) const;
 
 private:
 	typedef distributed_control_block<TT,allocator_proxy<embedded_private_async_state<T,TT>>> distributed_async_control_block;

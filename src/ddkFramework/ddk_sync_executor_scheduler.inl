@@ -24,7 +24,7 @@ deferred_async_scheduler<Executor>::~deferred_async_scheduler()
 	}
 }
 template<typename Executor>
-bool deferred_async_scheduler<Executor>::clear()
+constexpr bool deferred_async_scheduler<Executor>::clear()
 {
 	if (m_boundExecutor)
 	{
@@ -38,7 +38,7 @@ bool deferred_async_scheduler<Executor>::clear()
 	}
 }
 template<typename Executor>
-void deferred_async_scheduler<Executor>::subscribe(Executor& i_executor)
+constexpr void deferred_async_scheduler<Executor>::subscribe(Executor& i_executor)
 {
 	//execution due to value retrievals
 	i_executor.get_promise().value_predicate(make_function([this,&i_executor]() mutable
@@ -56,7 +56,7 @@ void deferred_async_scheduler<Executor>::subscribe(Executor& i_executor)
 }
 
 template<typename Executor>
-void asap_async_scheduler::subscribe(Executor& i_executor)
+constexpr void asap_async_scheduler::subscribe(Executor& i_executor)
 {
 	if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
 	{
@@ -65,7 +65,7 @@ void asap_async_scheduler::subscribe(Executor& i_executor)
 }
 
 template<typename Executor>
-void polling_async_scheduler::subscribe(Executor& i_executor)
+constexpr void polling_async_scheduler::subscribe(Executor& i_executor)
 {
 	m_executor.start([&i_executor,sharedState=i_executor.share()]() mutable
 	{
@@ -74,19 +74,14 @@ void polling_async_scheduler::subscribe(Executor& i_executor)
 }
 
 template<typename Provider>
-event_driven_async_scheduler<Provider>::event_driven_async_scheduler(lent_reference_wrapper<Provider> i_eventProvider, SchedulerPolicy i_policy)
+constexpr event_driven_async_scheduler<Provider>::event_driven_async_scheduler(lent_reference_wrapper<Provider> i_eventProvider, SchedulerPolicy i_policy)
 : m_provider(i_eventProvider)
 , m_policy(i_policy)
 {
 }
 template<typename Provider>
-event_driven_async_scheduler<Provider>::~event_driven_async_scheduler()
-{
-
-}
-template<typename Provider>
 template<typename Executor>
-void event_driven_async_scheduler<Provider>::subscribe(Executor& i_executor)
+constexpr void event_driven_async_scheduler<Provider>::subscribe(Executor& i_executor)
 {
 	m_execModel.instantiate([this,&i_executor,sharedState=i_executor.share()](async_event<payload_t> i_event) mutable
 	{
@@ -120,19 +115,19 @@ void event_driven_async_scheduler<Provider>::subscribe(Executor& i_executor)
 	m_provider->subscribe(lend(*this));
 }
 template<typename Provider>
-void event_driven_async_scheduler<Provider>::signal(async_event<payload_t> i_event)
+constexpr void event_driven_async_scheduler<Provider>::signal(async_event<payload_t> i_event)
 {
 	signal_model(m_execModel,std::move(i_event));
 }
 
 template<typename Executor,typename Scheduler>
-auto attach_scheduler(Scheduler&& i_oldScheduler)
+constexpr auto attach_scheduler(Scheduler&& i_oldScheduler)
 {
 	return std::forward<Scheduler>(i_oldScheduler);
 }
 
 template<typename Scheduler>
-inline bool detach_scheduler(Scheduler&& i_oldScheduler)
+constexpr bool detach_scheduler(Scheduler&& i_oldScheduler)
 {
 	return true;
 }

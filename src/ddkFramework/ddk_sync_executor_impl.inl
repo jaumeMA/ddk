@@ -9,7 +9,7 @@ namespace detail
 {
 
 template<typename Callable,typename Sink>
-start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -53,7 +53,7 @@ start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	return make_result<start_result>(m_state.get());
 }
 template<typename Callable,typename Sink>
-cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
@@ -87,7 +87,7 @@ cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 }
 
 template<typename Callable,typename Sink>
-start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 	{
@@ -146,7 +146,7 @@ start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
@@ -184,7 +184,7 @@ cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 }
 
 template<typename Callable,typename Sink>
-start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -226,7 +226,7 @@ start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
@@ -260,7 +260,7 @@ cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sin
 }
 
 template<typename Callable,typename Sink>
-start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 	{
@@ -308,7 +308,7 @@ start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
@@ -346,7 +346,7 @@ cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 }
 
 template<typename Callable,typename Sink>
-start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
+constexpr start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -390,7 +390,7 @@ start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
+constexpr cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
@@ -425,7 +425,7 @@ cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sin
 
 template<typename Executor>
 template<typename Callable,typename Sink,typename ... Args>
-start_result on_time_context_executor<Executor>::execute(Callable&& i_callable,Sink&& i_sink,Args&& ... i_args)
+constexpr start_result on_time_context_executor<Executor>::execute(Callable&& i_callable,Sink&& i_sink,Args&& ... i_args)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -440,7 +440,7 @@ start_result on_time_context_executor<Executor>::execute(Callable&& i_callable,S
 }
 template<typename Executor>
 template<typename Callable,typename Sink>
-cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
+constexpr cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
 {
 	if (m_executor)
 	{
@@ -469,7 +469,7 @@ executor_context_const_lent_ptr on_time_context_executor<Executor>::get_executio
 }
 
 template<typename Callable,typename Sink>
-start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	auto callable = [callable = std::forward<Callable>(i_callable),sink = i_sink,this]() mutable
 	{
@@ -513,11 +513,11 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 		return;
 	};
 
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
+	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
 		m_continuationToken = (m_execContext) ? m_execContext->enqueue(std::move(callable),m_depth) : continuation_token::ntoken;
 
-		if(!m_continuationToken)
+		if (!m_continuationToken)
 		{
 			m_execContext = nullptr;
 
@@ -534,7 +534,7 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result execution_context_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result execution_context_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (m_execContext && m_execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
 	{

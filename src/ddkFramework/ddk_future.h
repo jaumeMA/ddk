@@ -52,20 +52,20 @@ public:
 	cancel_result cancel();
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto then(Callable&& i_continuation) &&;
+	constexpr auto then(Callable&& i_continuation) &&;
 	TEMPLATE(typename Callable, typename Context)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
+	constexpr auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
 	TEMPLATE(typename Callable, typename ... Args)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto async(Callable&& i_continuation, Args&& ... i_args) &&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
+	constexpr auto async(Callable&& i_continuation, Args&& ... i_args) &&;
+	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
+	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
 protected:
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto chain(Callable&& i_callback, executor_context_lent_ref i_context)&&;
+	constexpr auto chain(Callable&& i_callback, executor_context_lent_ref i_context)&&;
 
 	detail::private_async_state_shared_ptr<T> m_sharedState;
 	unsigned char m_depth = 0;
@@ -85,11 +85,11 @@ public:
 	future& operator=(future&& other);
 	void extract_value()&&;
 	template<typename Callable>
-	future<void> then(Callable&& i_continuation)&&;
+	constexpr future<void> then(Callable&& i_continuation)&&;
 	template<typename Callable, typename ... Args>
-	future<void> then_on(Callable&& i_continuation, Args&& ... i_args)&&;
+	constexpr future<void> then_on(Callable&& i_continuation, Args&& ... i_args)&&;
 	template<typename Callable, typename ... Args>
-	future<void> async(Callable&& i_continuation, Args&& ... i_args)&&;
+	constexpr future<void> async(Callable&& i_continuation, Args&& ... i_args)&&;
 	future<void> on_error(const function<void(const async_error&)>& i_onError)&&;
 	future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 };

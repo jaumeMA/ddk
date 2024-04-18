@@ -21,27 +21,27 @@ public:
 	typedef typename detail::private_async_state<T>::rreference rreference;
 	using async_interface_base::cancel_result;
 
-	promise();
+	constexpr promise();
 	promise(const promise<T>&) = delete;
-	promise(promise<T>&&);
+	constexpr promise(promise<T>&&);
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(value_type,Args...))
-	promise(Args&& ... i_args);
+	constexpr promise(Args&& ... i_args);
 	~promise();
-	promise& operator=(const promise<T>& other) = delete;
-	promise& operator=(promise<T>&& other);
-	void set_value(sink_type i_value);
-	void set_exception(const async_exception& i_exception);
-	void clear();
-	future<T> get_future() const;
+	constexpr promise& operator=(const promise<T>& other) = delete;
+	constexpr promise& operator=(promise<T>&& other);
+	constexpr void set_value(sink_type i_value);
+	constexpr void set_exception(const async_exception& i_exception);
+	constexpr void clear();
+	constexpr future<T> get_future() const;
 
 protected:
 	typedef distributed_control_block<promise<T>,null_deleter> distributed_async_control_block;
 
-	void signal() const;
-	void wait() const;
-	void wait_for(unsigned int i_period) const;
-	bool ready() const;
+	constexpr void signal() const;
+	constexpr void wait() const;
+	constexpr void wait_for(unsigned int i_period) const;
+	constexpr bool ready() const;
 	cancel_result cancel() override;
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;

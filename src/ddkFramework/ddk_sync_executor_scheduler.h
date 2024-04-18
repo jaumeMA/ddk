@@ -48,17 +48,17 @@ struct deferred {};
 class asap_async_scheduler
 {
 public:
-	asap_async_scheduler() = default;
+	constexpr asap_async_scheduler() = default;
 
 	template<typename Executor>
-	void subscribe(Executor& i_executor);
+	constexpr void subscribe(Executor& i_executor);
 };
 
 template<typename Executor>
 class deferred_async_scheduler
 {
 	template<typename Executor>
-	friend inline auto attach_scheduler(deferred_async_scheduler&& i_oldScheduler)
+	friend constexpr inline auto attach_scheduler(deferred_async_scheduler&& i_oldScheduler)
 	{
 		i_oldScheduler.clear();
 
@@ -71,7 +71,7 @@ class deferred_async_scheduler
 			return asap_async_scheduler{};
 		}
 	}
-	friend inline bool detach_scheduler(deferred_async_scheduler&& i_oldScheduler)
+	friend constexpr inline bool detach_scheduler(deferred_async_scheduler&& i_oldScheduler)
 	{
 		return i_oldScheduler.clear();
 	}
@@ -81,8 +81,8 @@ public:
 	deferred_async_scheduler(deferred_async_scheduler&& other);
 	~deferred_async_scheduler();
 
-	bool clear();
-	void subscribe(Executor& i_executor);
+	constexpr bool clear();
+	constexpr void subscribe(Executor& i_executor);
 
 private:
 	Executor* m_boundExecutor = nullptr;
@@ -90,7 +90,7 @@ private:
 
 class polling_async_scheduler
 {
-	friend inline bool detach_scheduler(polling_async_scheduler&& i_oldScheduler)
+	friend constexpr inline bool detach_scheduler(polling_async_scheduler&& i_oldScheduler)
 	{
 		return static_cast<bool>(i_oldScheduler.m_executor.stop());
 	}
@@ -101,7 +101,7 @@ public:
 	polling_async_scheduler(polling_async_scheduler&&) = default;
 
 	template<typename Executor>
-	void subscribe(Executor& i_executor);
+	constexpr void subscribe(Executor& i_executor);
 
 private:
 	thread_polling_executor m_executor;
@@ -110,19 +110,18 @@ private:
 template<typename Provider>
 class event_driven_async_scheduler : public lend_from_this<event_driven_async_scheduler<Provider>>
 {
-	friend inline void detach_scheduler(event_driven_async_scheduler&& i_oldScheduler)
+	friend constexpr inline void detach_scheduler(event_driven_async_scheduler&& i_oldScheduler)
 	{
 		i_oldScheduler.m_execModel.resume();
 	}
 	typedef typename Provider::payload payload_t;
 
 public:
-	event_driven_async_scheduler(lent_reference_wrapper<Provider> i_eventProvider, SchedulerPolicy i_policy = SchedulerPolicy::FireAndForget);
-	~event_driven_async_scheduler();
+	constexpr event_driven_async_scheduler(lent_reference_wrapper<Provider> i_eventProvider, SchedulerPolicy i_policy = SchedulerPolicy::FireAndForget);
 
 	template<typename Executor>
-	void subscribe(Executor& i_executor);
-	void signal(async_event<payload_t> i_event);
+	constexpr void subscribe(Executor& i_executor);
+	constexpr void signal(async_event<payload_t> i_event);
 
 private:
 	lent_reference_wrapper<Provider> m_provider;
@@ -139,9 +138,9 @@ template<typename Provider>
 using event_driven_async_scheduler_const_lent_ptr = lent_pointer_wrapper<const event_driven_async_scheduler<Provider>>;
 
 template<typename Executor, typename Scheduler>
-inline auto attach_scheduler(Scheduler&& i_oldScheduler);
+constexpr inline auto attach_scheduler(Scheduler&& i_oldScheduler);
 template<typename Scheduler>
-inline bool detach_scheduler(Scheduler&& i_oldScheduler);
+constexpr inline bool detach_scheduler(Scheduler&& i_oldScheduler);
 
 }
 

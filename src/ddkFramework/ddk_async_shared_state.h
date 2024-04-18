@@ -59,30 +59,30 @@ public:
 	typedef typename embedded_type<T>::rref_type rreference;
 	typedef typename async_interface_base::cancel_result cancel_result;
 
-	private_async_state();
+	constexpr private_async_state();
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-	inline private_async_state(Args&& ... i_args);
-	virtual ~private_async_state() = default;
-	cancel_result cancel();
-	void attach(async_base_dist_ptr i_executor);
-	bool detach();
+	constexpr inline private_async_state(Args&& ... i_args);
+	~private_async_state() = default;
+	constexpr cancel_result cancel();
+	constexpr void attach(async_base_dist_ptr i_executor);
+	constexpr bool detach();
 	template<typename Predicate>
-	bool detach_if(Predicate&& i_predicate);
+	constexpr bool detach_if(Predicate&& i_predicate);
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
-	inline void emplace(Args&& ... i_args);
-	void set_value(sink_type i_value);
-	void set_exception(const async_exception& i_exception);
-	void signal() const;
-	const_reference get_value() const;
-	reference get_value();
-	embedded_type<T> extract_value() &&;
-	void clear();
-	void wait() const;
-	void wait_for(const std::chrono::milliseconds& i_period) const;
-	bool ready() const;
-	async_base_dist_ptr get_async_execution() const;
+	constexpr inline void emplace(Args&& ... i_args);
+	constexpr void set_value(sink_type i_value);
+	constexpr void set_exception(const async_exception& i_exception);
+	constexpr void signal() const;
+	constexpr const_reference get_value() const;
+	constexpr reference get_value();
+	constexpr embedded_type<T> extract_value() &&;
+	constexpr void clear();
+	constexpr void wait() const;
+	constexpr void wait_for(const std::chrono::milliseconds& i_period) const;
+	constexpr bool ready() const;
+	constexpr async_base_dist_ptr get_async_execution() const;
 
 private:
 	mutable mutex m_mutex;

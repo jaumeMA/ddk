@@ -15,9 +15,9 @@ public:
 	immediate_executor(immediate_executor&&) = default;
 
 	template<typename Callable, typename Sink>
-	start_result execute(Callable&& i_callable, Sink&& i_sink);
+	constexpr start_result execute(Callable&& i_callable, Sink&& i_sink);
 	template<typename Callable, typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc, Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc, Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;
@@ -33,9 +33,9 @@ public:
 	fiber_executor(fiber i_fiber);
 
 	template<typename Callable,typename Sink>
-	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	constexpr start_result execute(Callable&& i_callable,Sink&& i_sink);
 	template<typename Callable,typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;
@@ -51,9 +51,9 @@ public:
 	fiber_sheaf_executor(fiber_sheaf i_fiberSheaf);
 
 	template<typename Callable,typename Sink>
-	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	constexpr start_result execute(Callable&& i_callable,Sink&& i_sink);
 	template<typename Callable,typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;
@@ -69,9 +69,9 @@ public:
 	thread_executor(thread i_thread);
 
 	template<typename Callable,typename Sink>
-	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	constexpr start_result execute(Callable&& i_callable,Sink&& i_sink);
 	template<typename Callable,typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;
@@ -87,9 +87,9 @@ public:
 	thread_sheaf_executor(thread_sheaf i_threadSheaf);
 
 	template<typename Callable,typename Sink>
-	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	constexpr start_result execute(Callable&& i_callable,Sink&& i_sink);
 	template<typename Callable,typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;
@@ -106,9 +106,9 @@ public:
 	on_time_context_executor() = default;
 
 	template<typename Callable,typename Sink, typename ... Args>
-	start_result execute(Callable&& i_callable,Sink&& i_sink, Args&& ... i_args);
+	constexpr start_result execute(Callable&& i_callable,Sink&& i_sink, Args&& ... i_args);
 	template<typename Callable,typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;
@@ -125,9 +125,9 @@ public:
 	execution_context_executor(execution_context_executor&& other) = default;
 
 	template<typename Callable,typename Sink>
-	start_result execute(Callable&& i_callable,Sink&& i_sink);
+	constexpr start_result execute(Callable&& i_callable,Sink&& i_sink);
 	template<typename Callable,typename Sink>
-	cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
+	constexpr cancel_result cancel(Callable&& i_cancelFunc,Sink&& i_sink);
 
 	executor_context_lent_ptr get_execution_context();
 	executor_context_const_lent_ptr get_execution_context() const;

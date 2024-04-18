@@ -5,7 +5,7 @@ namespace detail
 {
 
 template<typename T,typename TT>
-embedded_private_async_state<T,TT>::embedded_private_async_state()
+constexpr embedded_private_async_state<T,TT>::embedded_private_async_state()
 : m_refCounter(nullptr,*this)
 {
 }
@@ -18,7 +18,7 @@ embedded_private_async_state<T,TT>::~embedded_private_async_state()
 }
 template<typename T,typename TT>
 template<typename ... Args>
-TT& embedded_private_async_state<T,TT>::attach(Args&& ... i_args)
+constexpr TT& embedded_private_async_state<T,TT>::attach(Args&& ... i_args)
 {
 	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
 
@@ -31,7 +31,7 @@ TT& embedded_private_async_state<T,TT>::attach(Args&& ... i_args)
 	return m_arena.get<TT>();
 }
 template<typename T,typename TT>
-void embedded_private_async_state<T,TT>::deallocate(const TT* i_ptr) const
+constexpr void embedded_private_async_state<T,TT>::deallocate(const TT* i_ptr) const
 {
 	if (m_arena.get_ptr<TT>() == i_ptr)
 	{
