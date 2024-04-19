@@ -126,12 +126,10 @@ constexpr auto future<future<T>>::then(Callable&& i_continuation) &&
 		{
 			if (executor_context_lent_ptr context = asyncExecutor->get_execution_context())
 			{
-				auto continuation = [context,_continuation=std::forward<Callable>(i_continuation)](future<T> i_future) mutable
+				return contraction(std::move(*this)._async([context,_continuation = std::forward<Callable>(i_continuation)](future<T> i_future) mutable
 				{
 					return std::move(i_future).chain(std::forward<Callable>(_continuation),promote_to_ref(context));
-				};
-
-				return contraction(std::move(*this)._async(continuation));
+				}));
 			}
 		}
 
