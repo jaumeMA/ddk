@@ -65,6 +65,17 @@ constexpr void asap_async_scheduler::subscribe(Executor& i_executor)
 }
 
 template<typename Executor>
+void chained_async_scheduler::subscribe(Executor& i_executor)
+{
+	if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
+	{
+		throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
+	}
+
+	i_executor.chain(std::move(m_sharedState));
+}
+
+template<typename Executor>
 constexpr void polling_async_scheduler::subscribe(Executor& i_executor)
 {
 	m_executor.start([&i_executor,sharedState=i_executor.share()]() mutable

@@ -8,12 +8,22 @@ namespace detail
 {
 
 template<typename T>
-struct context_private_async_state : public execution_context_base, private_async_state<T>
+struct context_private_async_state : public execution_context_base, private_async_state<T>, public async_interface_base, protected ddk::distribute_from_this<context_private_async_state<T>>
 {
 public:
+	using async_interface_base::cancel_result;
+
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(T,Args...))
 	context_private_async_state(Args&& ... i_args);
+	~context_private_async_state();
+
+private:
+	executor_context_lent_ptr get_execution_context() override;
+	executor_context_const_lent_ptr get_execution_context() const override;
+	allocator_const_lent_ptr get_async_allocator() const override;
+	cancel_result cancel() override;
+	void hold(private_async_state_base_shared_ref i_sharedState) override;
 };
 
 template<typename T>

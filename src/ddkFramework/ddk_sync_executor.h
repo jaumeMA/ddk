@@ -59,19 +59,20 @@ public:
 	constexpr detail::private_async_state_base_const_shared_ptr share() const;
 	template<typename ... Args>
 	constexpr start_result execute(SchedulerPolicy i_policy, Args&& ... i_args);
-	constexpr void chain(async_base_dist_ref i_sharedState);
+	constexpr void chain(detail::private_async_state_base_shared_ref i_sharedState);
 
 	executor_context_lent_ptr get_execution_context() override;
 	executor_context_const_lent_ptr get_execution_context() const override;
 	allocator_const_lent_ptr get_async_allocator() const override;
 	cancel_result cancel() override;
+	void hold(detail::private_async_state_base_shared_ref i_sharedState) override;
 
 protected:
-	mutable lendable<Promise> m_promise;
+	detail::private_async_state_base_shared_ptr m_sharedState;
 	Callable m_function;
 	CancelOp m_cancelFunc;
+	mutable lendable<Promise> m_promise;
 	Executor m_executor;
-	async_base_dist_ptr m_sharedState;
 };
 
 template<typename Callable,typename CancelOp, typename Promise, typename Scheduler, typename Executor>
@@ -97,12 +98,9 @@ public:
 		constexpr future<callable_return_type> attach(fiber i_fiber);
 		constexpr future<callable_return_type> attach(thread_sheaf i_threadSheaf);
 		constexpr future<callable_return_type> attach(fiber_sheaf i_fiberSheaf);
-		template<typename T>
-		constexpr future<callable_return_type> attach(detail::private_async_state_shared_ref<T> i_sharedState, unsigned char i_depth);
-		constexpr future<callable_return_type> attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth);
 		template<typename EExecutor,typename ... Args>
 		constexpr future<callable_return_type> attach(Args&& ... i_args);
-		
+
 		template<typename PPromise,typename ... Args>
 		constexpr NO_DISCARD_RETURN async_executor<Callable,CancelOp,PPromise,Scheduler,Executor> store(Args&& ... i_args);
 		template<typename CCancelOp>

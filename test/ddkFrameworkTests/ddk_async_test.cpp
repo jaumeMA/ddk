@@ -198,22 +198,27 @@ TEST(DDKAsyncTest,asyncNonCopiablePayload)
 	//});
 
 	ddk::thread _myThread;
+	ddk::thread myOtherThread;
 	int res = 0;
 
 	ddk::async([&]() -> my_result
 	{ 
 	 	return ddk::make_unique_reference<int>(10); 
-	})->attach(std::move(_myThread))
+	}) -> attach(std::move(_myThread))
 	.then([_myThread = std::move(myThread)](my_result i_value) mutable -> ddk::future<std::string>
 	{
 		if (i_value)
 		{
-			return ddk::async([]() { return std::string("sucess"); })->attach(std::move(_myThread));
+			return ddk::async([]() { return std::string("sucess"); }) -> attach(std::move(_myThread));
 		}
 		else
 		{
 			return ddk::async([]() { return std::string("error"); }) -> attach(std::move(_myThread));
 		}
+	})
+	.then([_myOtherThread = std::move(myOtherThread)](std::string i_value) mutable -> ddk::future<std::string>
+	{
+		return ddk::async([i_value]() { return i_value + std::string(":sucess"); }) -> attach(std::move(_myOtherThread));
 	})
 	.then([](std::string i_value)
 	{

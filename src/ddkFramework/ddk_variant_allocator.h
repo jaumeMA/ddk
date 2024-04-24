@@ -18,6 +18,9 @@ public:
 	void* reallocate(void* i_ptr,size_t i_newSize) const;
 	template<typename T>
 	inline void deallocate(T* i_address) const;
+	TEMPLATE(typename Allocator)
+	REQUIRES(IS_ASSIGNABLE(variant<Allocators...>,Allocator))
+	variant_allocator& operator=(Allocator&& i_allocator);
 
 private:
 	variant<Allocators...> m_allocators;

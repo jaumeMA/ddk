@@ -16,18 +16,21 @@ public:
 	shared_future& operator=(const shared_future&);
 	shared_future& operator=(shared_future&&);
 
-	template<typename TT>
-	shared_future<TT> then(const function<TT(const_reference)>& i_continuation) const;
-	template<typename TT,typename TTT>
-	shared_future<TT> then_on(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const;
-	template<typename TT,typename TTT>
-	shared_future<TT> async(const function<TT(const_reference)>& i_continuation,TTT&& i_execContext) const;
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto then(Callable&& i_continuation) const;
+	TEMPLATE(typename Callable, typename Context)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto then_on(Callable&& i_continuation, Context&& i_execContext) const;
+	TEMPLATE(typename Callable,typename Context)
+	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
+	auto async(Callable&& i_continuation, Context&& i_execContext) const;
 	shared_future<T> on_error(const function<void(const async_error&)>& i_onError) const;
 	shared_future<T> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext) const;
 };
 
 template<>
-class shared_future<void>: public shared_future<detail::void_t>
+class shared_future<void> : public shared_future<detail::void_t>
 {
 public:
 	using shared_future<detail::void_t>::shared_future;
@@ -38,31 +41,20 @@ public:
 	{
 	}
 	shared_future(shared_future<detail::void_t>&& other)
-		: shared_future<detail::void_t>(std::move(other))
+	: shared_future<detail::void_t>(std::move(other))
 	{
 	}
-	shared_future<void> then(const function<void()>& i_continuation) const
-	{
-		return { shared_future<detail::void_t>::then(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); })) };
-	}
-	template<typename TT>
-	shared_future<void> then_on(const function<void()>& i_continuation,TT&& i_execContext) const
-	{
-		return shared_future<detail::void_t>::then_on(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); }),std::forward<TT>(i_execContext));
-	}
-	template<typename TT>
-	shared_future<void> async(const function<void()>& i_continuation,TT&& i_execContext) const
-	{
-		return shared_future<detail::void_t>::async(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); }),std::forward<TT>(i_execContext));
-	}
-	shared_future<void> on_error(const function<void(const async_error&)>& i_onError) const
-	{
-		return shared_future<detail::void_t>::on_error(i_onError);
-	}
-	shared_future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext) const
-	{
-		return shared_future<detail::void_t>::on_error(i_onError,i_execContext);
-	}
+	TEMPLATE(typename Callable)
+	REQUIRES(IS_CALLABLE(Callable))
+	inline auto then(Callable&& i_continuation) const;
+	TEMPLATE(typename Callable, typename Context)
+	REQUIRES(IS_CALLABLE(Callable))
+	inline auto then_on(Callable&& i_continuation,Context&& i_execContext) const;
+	TEMPLATE(typename Callable, typename Context)
+	REQUIRES(IS_CALLABLE(Callable))
+	inline auto async(Callable&& i_continuation, Context&& i_execContext) const;
+	inline auto on_error(const function<void(const async_error&)>& i_onError) const;
+	inline auto on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext) const;
 };
 
 }

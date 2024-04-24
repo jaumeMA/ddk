@@ -215,8 +215,9 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 
 	ddk::const_bidirectional_value_iterable<const int> _ = ddk::iter::transform([](const std::pair<const int,int>& i_value) -> const int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
-	[](const int&)
+	[_counter=0](int& i_value) mutable
 	{
+		i_value *= 2;
 	} <<= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) <<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) <<= _foo;
 
 	proveta2(proveta());

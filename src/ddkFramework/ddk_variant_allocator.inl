@@ -34,5 +34,14 @@ void variant_allocator<Allocators...>::deallocate(T* i_ptr) const
 		i_allocator.deallocate(i_ptr);
 	});
 }
+template<typename ... Allocators>
+TEMPLATE(typename Allocator)
+REQUIRED(IS_ASSIGNABLE(variant<Allocators...>,Allocator))
+variant_allocator<Allocators...>& variant_allocator<Allocators...>::operator=(Allocator&& i_allocator)
+{
+	m_allocators = std::forward<Allocator>(i_allocator);
+
+	return *this;
+}
 
 }

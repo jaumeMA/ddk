@@ -56,16 +56,14 @@ public:
 	TEMPLATE(typename Callable, typename Context)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
 	constexpr auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
-	TEMPLATE(typename Callable, typename ... Args)
+	TEMPLATE(typename Callable, typename Context)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	constexpr auto async(Callable&& i_continuation, Args&& ... i_args) &&;
+	constexpr auto async(Callable&& i_continuation, Context&& i_execContext) &&;
 	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
 	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
 protected:
-	TEMPLATE(typename Callable)
-	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	constexpr auto chain(Callable&& i_callback, executor_context_lent_ref i_context)&&;
+	constexpr auto chain(detail::private_async_state_base_shared_ref i_sharedState) &&;
 
 	detail::private_async_state_shared_ptr<T> m_sharedState;
 	unsigned char m_depth = 0;

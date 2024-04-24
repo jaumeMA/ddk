@@ -17,7 +17,7 @@ auto iterable_transformed_action<Reference,Transform,ActionTag>::operator*()
 }
 template<typename Reference,typename Transform,typename ActionTag>
 template<typename T>
-constexpr auto iterable_transformed_action<Reference,Transform,ActionTag>::operator()(T&& i_value) const
+constexpr Reference iterable_transformed_action<Reference,Transform,ActionTag>::operator()(T&& i_value) const
 {
 	return  ddk::terse_eval(m_transform,std::forward<T>(i_value));
 }
@@ -45,7 +45,7 @@ auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::ope
 }
 template<typename Reference,typename Transform,typename Sink>
 template<typename T>
-constexpr auto iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::operator()(T&& i_args) const
+constexpr Reference iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>::operator()(T&& i_args) const
 {
 	return  m_cache.template get<Reference>();
 }
@@ -119,10 +119,7 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
 		auto mappedAction = i_adaptor.m_transform.map_action<typename detail::adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag));
 		if (auto actionRes = std::forward<Adaptor>(i_adaptor).m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,*mappedAction))
 		{
-			//avoid appearence of undesired rvalues
-			auto&& transformedRes = mappedAction(actionRes.get());
-
-			return make_result<transformed_result>(transformedRes);
+			return make_result<transformed_result>(mappedAction(actionRes.get()));
 		}
 		else
 		{
@@ -150,12 +147,10 @@ constexpr auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTr
 	{
 		typedef iterable_action_tag_result<traits,ActionTag> transformed_result;
 
-		if (auto actionRes = i_adaptor.m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,i_adaptor.m_transform.map_action<typename private_adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag))))
+		auto mappedAction = i_adaptor.m_transform.map_action<typename detail::adaptor_traits<Adaptor>::reference>(std::forward<ActionTag>(i_actionTag));
+		if (auto actionRes = std::forward<Adaptor>(i_adaptor).m_adaptor.perform_action(std::forward<Adaptor>(i_adaptor).m_adaptor,*mappedAction))
 		{
-			//avoid appearence of undesired rvalues
-			auto&& transformedRes = std::forward<Adaptor>(i_adaptor).m_transform(actionRes.get());
-
-			return make_result<transformed_result>(transformedRes);
+			return make_result<transformed_result>(mappedAction(actionRes.get()));
 		}
 		else
 		{

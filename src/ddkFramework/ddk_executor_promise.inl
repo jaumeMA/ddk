@@ -11,6 +11,11 @@ constexpr executor_promise<T,Allocator>::executor_promise(Args&& ... i_args)
 : m_allocator(mpl::static_number<0>{},std::forward<Args>(i_args)...)
 {
 }
+template<typename T,typename Allocator>
+constexpr executor_promise<T,Allocator>::executor_promise(variant_allocator<Allocator,allocator_interface_proxy> i_allocator)
+: m_allocator(std::move(i_allocator))
+{
+}
 template<typename T, typename Allocator>
 constexpr executor_promise<T,Allocator>::executor_promise(executor_promise&& other)
 : m_allocator(std::move(other.m_allocator))

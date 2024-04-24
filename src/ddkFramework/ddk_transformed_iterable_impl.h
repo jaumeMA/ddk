@@ -23,7 +23,7 @@ public:
 
 	auto operator*();
 	template<typename T>
-	constexpr inline auto operator()(T&& i_args) const;
+	constexpr inline Reference operator()(T&& i_args) const;
 
 private:
 	const Transform m_transform;
@@ -39,7 +39,7 @@ public:
 
 	auto operator*();
 	template<typename T>
-	constexpr inline auto operator()(T&& i_args) const;
+	constexpr inline Reference operator()(T&& i_args) const;
 
 private:
 	const Transform m_transform;

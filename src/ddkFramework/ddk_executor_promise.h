@@ -10,7 +10,10 @@
 namespace ddk
 {
 
-template<typename T, typename Allocator = system_allocator>
+template<typename T,typename Allocator = system_allocator>
+class executor_promise;
+	
+template<typename T, typename Allocator>
 class executor_promise : public allocator_interface
 {
 	template<typename,typename,typename,typename,typename>
@@ -27,6 +30,7 @@ public:
 	REQUIRES(IS_CONSTRUCTIBLE(Allocator,Args...))
 	constexpr executor_promise(Args&& ... i_args);
 	constexpr executor_promise(const executor_promise&) = delete;
+	constexpr executor_promise(variant_allocator<Allocator,allocator_interface_proxy> i_allocator);
 	constexpr executor_promise(executor_promise&& other);
 	constexpr executor_promise(executor_promise&& other, allocator_const_lent_ref i_allocator);
 	constexpr executor_promise& operator=(const promise<T>& other) = delete;
@@ -48,6 +52,13 @@ private:
 
 	variant_allocator<Allocator,allocator_interface_proxy> m_allocator;
 	detail::private_async_state_weak_ptr<T> m_sharedState;
+};
+
+template<typename Allocator>
+class executor_promise<void,Allocator> : public executor_promise<detail::void_t,Allocator>
+{
+public:
+	using executor_promise<detail::void_t,Allocator>::executor_promise;
 };
 
 }

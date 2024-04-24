@@ -94,13 +94,36 @@ constexpr typename async_executor_base<Callable,CancelOp,Promise,Executor>::star
 	}
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+constexpr void async_executor_base<Callable,CancelOp,Promise,Executor>::chain(detail::private_async_state_base_shared_ref i_sharedState)
+{
+	m_sharedState = i_sharedState;
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+executor_context_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_execution_context()
+{
+	return m_executor.get_execution_context();
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+executor_context_const_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_execution_context() const
+{
+	return m_executor.get_execution_context();
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
+allocator_const_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_async_allocator() const
+{
+	return lend(m_promise);
+}
+template<typename Callable,typename CancelOp,typename Promise,typename Executor>
 typename async_executor_base<Callable,CancelOp,Promise,Executor>::cancel_result async_executor_base<Callable,CancelOp,Promise,Executor>::cancel()
 {
 	if (m_sharedState)
 	{
-		if_not(const auto cancelRes = m_sharedState->cancel())
+		if (async_base_dist_ptr asyncExecutor = m_sharedState->get_async_execution())
 		{
-			return make_error<cancel_result>(CancelErrorCode::CancelInternal,cancelRes.error().what());
+			if_not(const auto cancelRes = asyncExecutor->cancel())
+			{
+				return make_error<cancel_result>(CancelErrorCode::CancelInternal,cancelRes.error().what());
+			}
 		}
 	}
 
@@ -119,24 +142,9 @@ typename async_executor_base<Callable,CancelOp,Promise,Executor>::cancel_result 
 	}
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-constexpr void async_executor_base<Callable,CancelOp,Promise,Executor>::chain(async_base_dist_ref i_sharedState)
+void async_executor_base<Callable,CancelOp,Promise,Executor>::hold(detail::private_async_state_base_shared_ref i_sharedState)
 {
-	m_sharedState = i_sharedState;
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-executor_context_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_execution_context()
-{
-	return m_executor.get_execution_context();
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-executor_context_const_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_execution_context() const
-{
-	return m_executor.get_execution_context();
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Executor>
-allocator_const_lent_ptr async_executor_base<Callable,CancelOp,Promise,Executor>::get_async_allocator() const
-{
-	return lend(m_promise);
+	chain(i_sharedState);
 }
 
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
@@ -192,60 +200,6 @@ constexpr future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Exe
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
 	return Promise::attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_fiberSheaf));
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
-template<typename T>
-constexpr future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(detail::private_async_state_shared_ref<T> i_sharedState, unsigned char i_depth)
-{
-	typedef future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> return_type;
-
-	if (async_base_dist_ptr asyncExecutor = i_sharedState->get_async_execution())
-	{
-		class chained_async_scheduler
-		{
-		public:
-			chained_async_scheduler(async_base_dist_ref i_sharedState)
-			: m_sharedState(i_sharedState)
-			{
-			}
-			void subscribe(async_executor_base<Callable,CancelOp,Promise,detail::execution_context_executor>& i_executor)
-			{
-				if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndForget))
-				{
-					throw async_exception{ "Error executing scheduler async operation: " + execRes.error().what() };
-				}
-
-				i_executor.chain(std::move(m_sharedState));
-			}
-
-		private:
-			async_base_dist_ref m_sharedState;
-		};
-
-		if (allocator_const_lent_ptr asyncAllocator = asyncExecutor->get_async_allocator())
-		{
-			return Promise::attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),Promise{ std::move(m_promise),promote_to_ref(asyncAllocator) },chained_async_scheduler{ promote_to_ref(asyncExecutor) },asyncExecutor->get_execution_context(),i_depth);
-		}
-		else
-		{
-			return Promise::attach<async_executor<Callable,CancelOp,Promise,chained_async_scheduler,detail::execution_context_executor>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),chained_async_scheduler{ promote_to_ref(asyncExecutor) },asyncExecutor->get_execution_context(),i_depth);
-		}
-	}
-	else
-	{
-		typedef detail::immediate_executor attached_executor_t;
-		typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
-
-		return Promise::attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)));
-	}
-}
-template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
-constexpr future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth)
-{
-	typedef detail::execution_context_executor attached_executor_t;
-	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
-
-	return Promise::attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_asyncExecutorContext),i_depth);
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 template<typename EExecutor,typename ... Args>

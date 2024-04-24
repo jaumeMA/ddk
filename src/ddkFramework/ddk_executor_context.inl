@@ -28,7 +28,7 @@ REQUIRED(IS_CONSTRUCTIBLE(Callable,CCallable))
 signaled_execution_model<Event>::execution<Callable>::execution(CCallable&& i_callable,signaled_execution_model& i_model)
 : m_callable(std::forward<CCallable>(i_callable))
 {
-	i_model.m_signaler = make_function(m_callable);
+	i_model.m_signaler = ddk::make_function(m_callable);
 }
 template<typename Event>
 template<typename Callable>
@@ -60,7 +60,7 @@ auto polling_execution_model::execution<Callable>::operator()()
 	{
 		const std::chrono::steady_clock::time_point beforeEval = std::chrono::steady_clock::now();
 
-		eval(m_callable);
+		ddk::eval(m_callable);
 
 		const std::chrono::steady_clock::time_point afterEval = std::chrono::steady_clock::now();
 		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(afterEval - beforeEval);
@@ -118,7 +118,7 @@ auto async_execution_model::execution<Callable,CCallable>::operator()()
 
 		m_model.m_condVarMutex.unlock();
 
-		eval(m_callable);
+		ddk::eval(m_callable);
 
 		m_model.m_condVarMutex.lock();
 
@@ -144,7 +144,7 @@ forward_execution_model::execution<Callable>::execution(CCallable&& i_callable)
 template<typename Callable>
 auto forward_execution_model::execution<Callable>::operator()()
 {
-	eval(m_callable);
+	ddk::eval(m_callable);
 }
 
 }

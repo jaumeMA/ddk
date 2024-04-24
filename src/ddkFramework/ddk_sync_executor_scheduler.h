@@ -88,6 +88,17 @@ private:
 	Executor* m_boundExecutor = nullptr;
 };
 
+class chained_async_scheduler
+{
+public:
+	chained_async_scheduler(detail::private_async_state_base_shared_ref i_sharedState);
+	template<typename Executor>
+	void subscribe(Executor& i_executor);
+
+private:
+	detail::private_async_state_base_shared_ref m_sharedState;
+};
+
 class polling_async_scheduler
 {
 	friend constexpr inline bool detach_scheduler(polling_async_scheduler&& i_oldScheduler)

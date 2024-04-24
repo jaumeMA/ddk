@@ -13,7 +13,6 @@ template<typename T>
 constexpr private_async_state<T>::private_async_state()
 : m_arena(none)
 , m_mutex(MutexType::Recursive)
-, m_asyncMutex(MutexType::Recursive)
 {
 }
 template<typename T>
@@ -23,67 +22,6 @@ constexpr private_async_state<T>::private_async_state(Args&& ... i_args)
 : private_async_state()
 {
 	emplace(std::forward<Args>(i_args)...);
-}
-template<typename T>
-constexpr typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
-{
-	mutex_guard lg(m_asyncMutex);
-
-	if(m_asyncExecutor)
-	{
-		return m_asyncExecutor->cancel();
-	}
-	else
-	{
-		return make_error<cancel_result>(async_interface_base::CancelErrorCode::CancelNoAsync);
-	}
-}
-template<typename T>
-constexpr void private_async_state<T>::attach(async_base_dist_ptr i_executor)
-{
-	mutex_guard lg(m_asyncMutex);
-
-	m_asyncExecutor = i_executor;
-}
-template<typename T>
-constexpr bool private_async_state<T>::detach()
-{
-	mutex_guard lg(m_asyncMutex);
-
-	if (m_asyncExecutor)
-	{
-		m_asyncExecutor = nullptr;
-
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-template<typename T>
-template<typename Predicate>
-constexpr bool private_async_state<T>::detach_if(Predicate&& i_predicate)
-{
-	mutex_guard lg(m_asyncMutex);
-
-	if(static_cast<bool>(m_asyncExecutor) && ddk::eval(std::forward<Predicate>(i_predicate)))
-	{
-		m_asyncExecutor = nullptr;
-
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-template<typename T>
-constexpr async_base_dist_ptr private_async_state<T>::get_async_execution() const
-{
-	mutex_guard lg(m_asyncMutex);
-
-	return m_asyncExecutor;
 }
 template<typename T>
 TEMPLATE(typename ... Args)

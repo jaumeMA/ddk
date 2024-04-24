@@ -10,6 +10,12 @@
 
 namespace ddk
 {
+namespace detail
+{
+
+struct private_async_state_base;
+
+}
 
 class async_interface_base
 {
@@ -29,6 +35,7 @@ public:
 	virtual executor_context_const_lent_ptr get_execution_context() const = 0;
 	virtual allocator_const_lent_ptr get_async_allocator() const = 0;
 	virtual cancel_result cancel() = 0;
+	virtual void hold(shared_reference_wrapper<detail::private_async_state_base>) = 0;
 };
 
 using async_base_lent_ref = lent_reference_wrapper<async_interface_base>;
