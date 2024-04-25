@@ -103,10 +103,10 @@ public:
     inline bool operator==(std::nullptr_t) const;
     inline bool operator!=(std::nullptr_t) const;
 	TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
+    REQUIRES(IS_CONVERTIBLE(Args,Types)...)
 	inline Return inline_eval(Args&& ... args) const;
     TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
+    REQUIRES(IS_CONVERTIBLE(Args,Types)...)
     inline Return inline_eval(const function_arguments<Args...>& i_args) const;
 	template<typename ... Args>
     inline NO_DISCARD_RETURN resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;

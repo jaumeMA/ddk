@@ -25,7 +25,7 @@ constexpr start_result immediate_executor::execute(Callable&& i_callable, Sink&&
 
 				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					ddk::eval(std::forward<Sink>(sink),std::move(res));
+					ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 				}
 
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed);
@@ -103,7 +103,7 @@ constexpr start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_s
 
 				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					ddk::eval(std::forward<Sink>(sink),std::move(res));
+					ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 				}
 
 				return;
@@ -139,7 +139,7 @@ constexpr start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_s
 
 		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 		{
-			ddk::eval(std::forward<Sink>(i_sink),std::move(res));
+			ddk::eval(std::forward<Sink>(i_sink),std::forward<callable_return_reference>(res));
 		}
 
 		return make_result<start_result>(m_state.get());
@@ -276,7 +276,7 @@ constexpr start_result thread_executor::execute(Callable&& i_callable, Sink&& i_
 
 				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					ddk::eval(std::forward<Sink>(sink),std::move(res));
+					ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 				}
 
 				return;
@@ -483,7 +483,7 @@ constexpr start_result execution_context_executor::execute(Callable&& i_callable
 
 			if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 			{
-				ddk::eval(std::forward<Sink>(sink),std::move(res));
+				ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 			}
 
 			goto leave;

@@ -134,7 +134,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstLightFuncStoredInPromise)
 	{
 		ddk::promise<VariadicClass> kk(10,"hola");
 		ddk::fiber_sheaf fiberSheaf = std::move(acquireRes).extract();
-		ddk::future<void> provaFuture = ddk::async([]() 
+		ddk::future<void> provaFuture = ddk::async([&]() 
 		{
 			recursive_func();
 		}) -> store<MyPromise<ddk::detail::void_t>>() 
@@ -235,12 +235,15 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 
 	ddk::thread myThread;
 	{
-		ddk::future<void> res = ddk::async([counter = 0]() mutable { return counter++; })
+		int a = 0;
+		ddk::future<int&> res = ddk::async([counter = 0]() mutable { return counter++; })
 		-> schedule<ddk::polling_async_scheduler>()
 		-> attach(std::move(myThread))
-		.then([](int i_value)
+		.then([&](int i_value) -> int&
 		{
 			printf("CURRENT VALUE: %d\n",i_value);
+
+			return a;
 		});
 
 		std::this_thread::sleep_for(std::chrono::seconds(3));

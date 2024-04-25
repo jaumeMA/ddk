@@ -55,15 +55,15 @@ auto shared_future<T>::then(Callable&& i_continuation) const
 			}
 		}
 
-		shared_future<callable_return> res = ddk::async([_sharedState = lend(sharedState),i_continuation]() mutable
+		shared_future<callable_return> res = ddk::async([_sharedState = lend(sharedState),i_continuation]() mutable -> callable_return
 		{
 			if constexpr(mpl::is_void<callable_return>)
 			{
-				eval(i_continuation,_sharedState->get_value());
+				ddk::eval(i_continuation,_sharedState->get_value());
 			}
 			else
 			{
-				return eval(i_continuation,_sharedState->get_value());
+				return ddk::eval(i_continuation,_sharedState->get_value());
 			}
 		}) -> store<executor_promise<callable_return>>(asyncAllocator)
 		-> schedule<chained_async_scheduler>(promote_to_ref(sharedState))
@@ -98,7 +98,7 @@ auto shared_future<T>::then_on(Callable&& i_continuation, Context&& i_execContex
 			}
 		}
 
-		shared_future<callable_return> res = ddk::async([_sharedState = lend(sharedState),i_continuation,_execContext = std::forward<Context>(i_execContext)]() mutable
+		shared_future<callable_return> res = ddk::async([_sharedState = lend(sharedState),i_continuation,_execContext = std::forward<Context>(i_execContext)]() mutable -> callable_return
 		{
 			shared_future<callable_return> nestedFuture = ddk::async(i_continuation(_sharedState->get_value())) -> attach(std::forward<Context>(_execContext));
 
@@ -140,19 +140,23 @@ auto shared_future<T>::async(Callable&& i_continuation, Context&& i_execContext)
 			}
 		}
 
-		return ddk::async(make_function([_sharedState = lend(sharedState),i_continuation]() mutable
+		shared_future<callable_return> res = ddk::async(make_function([_sharedState = lend(sharedState),i_continuation]() mutable -> callable_return
 		{
 			if constexpr(std::is_same<TT,void>::value)
 			{
-				eval(i_continuation,_sharedState->get_value());
+				ddk::eval(i_continuation,_sharedState->get_value());
 			}
 			else
 			{
-				return eval(i_continuation,_sharedState->get_value());
+				return ddk::eval(i_continuation,_sharedState->get_value());
 			}
 		})) -> store<executor_promise<callable_return>>(asyncAllocator)
 		-> schedule<chained_async_scheduler>(promote_to_ref(sharedState))
 		-> attach(std::forward<Context>(i_execContext));
+
+		res.m_depth = m_depth + 1;
+
+		return std::move(res);
 	}
 	else
 	{
@@ -177,7 +181,7 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			}
 		}
 
-		shared_future<T> res = ddk::async([_sharedState = lend(sharedState),i_onError]() mutable
+		shared_future<T> res = ddk::async([_sharedState = lend(sharedState),i_onError]() mutable -> T
 		{
 			try
 			{
@@ -194,7 +198,7 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp.as_error());
+					ddk::eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
@@ -225,7 +229,7 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			}
 		}
 
-		shared_future<T> res = ddk::async(make_function([_sharedState = lend(sharedState),i_onError]() mutable
+		shared_future<T> res = ddk::async(make_function([_sharedState = lend(sharedState),i_onError]() mutable -> T
 		{
 			try
 			{
@@ -242,7 +246,7 @@ shared_future<T> shared_future<T>::on_error(const function<void(const async_erro
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp.as_error());
+					ddk::eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
@@ -263,19 +267,19 @@ TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE(Callable))
 auto shared_future<void>::then(Callable&& i_continuation) const
 {
-	return { shared_future<detail::void_t>::then(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); })) };
+	return { shared_future<detail::void_t>::then(make_function([i_continuation](const detail::void_t&) { ddk::eval(i_continuation); })) };
 }
 TEMPLATE(typename Callable, typename Context)
 REQUIRED(IS_CALLABLE(Callable))
 auto shared_future<void>::then_on(Callable&& i_continuation, Context&& i_execContext) const
 {
-	return shared_future<detail::void_t>::then_on([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { eval(i_continuation); },std::forward<Context>(i_execContext));
+	return shared_future<detail::void_t>::then_on([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { ddk::eval(i_continuation); },std::forward<Context>(i_execContext));
 }
 TEMPLATE(typename Callable, typename Context)
 REQUIRED(IS_CALLABLE(Callable))
 auto shared_future<void>::async(Callable&& i_continuation, Context&& i_execContext) const
 {
-	return shared_future<detail::void_t>::async([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { eval(i_continuation); },std::forward<Context>(i_execContext));
+	return shared_future<detail::void_t>::async([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { ddk::eval(i_continuation); },std::forward<Context>(i_execContext));
 }
 auto shared_future<void>::on_error(const function<void(const async_error&)>& i_onError) const
 {

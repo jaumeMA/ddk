@@ -137,7 +137,7 @@ constexpr auto future<future<T>>::then(Callable&& i_continuation) &&
 	}
 }
 template<typename T>
-constexpr future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError)&&
+constexpr future<future<T>> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError)&&
 {
 	if(detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
@@ -154,24 +154,24 @@ constexpr future<T> future<future<T>>::on_error(const function<void(const async_
 			}
 		}
 
-		future<T> res = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
+		future<future<T>> res = ddk::async([_sharedState = lend(sharedState),i_onError]() mutable -> T
 		{
 			try
 			{
 				if constexpr(std::is_same<T,void>::value)
 				{
-					std::move(*std::move(*acquiredFuture.m_sharedState).extract_value()).extract_value();
+					std::move(*std::move(*_sharedState).extract_value());
 				}
 				else
 				{
-					return std::move(*std::move(*acquiredFuture.m_sharedState).extract_value()).extract_value();
+					return std::move(*std::move(*_sharedState).extract_value());
 				}
 			}
 			catch(const async_exception& i_excp)
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp.as_error());
+					ddk::eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
@@ -188,7 +188,7 @@ constexpr future<T> future<future<T>>::on_error(const function<void(const async_
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-constexpr future<T> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&
+constexpr future<future<T>> future<future<T>>::on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&
 {
 	if(detail::private_async_state_shared_ptr<future<T>> sharedState = m_sharedState)
 	{
@@ -202,24 +202,24 @@ constexpr future<T> future<future<T>>::on_error(const function<void(const async_
 			}
 		}
 
-		future<T> res = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
+		future<T> res = ddk::async([_sharedState = lend(sharedState),i_onError]() mutable -> T
 		{
 			try
 			{
 				if constexpr(std::is_same<T,void>::value)
 				{
-					std::move(*std::move(*acquiredFuture.m_sharedState).extract_value()).extract_value();
+					std::move(*std::move(*_sharedState).extract_value());
 				}
 				else
 				{
-					return std::move(*std::move(*acquiredFuture.m_sharedState).extract_value()).extract_value();
+					return std::move(*std::move(*_sharedState).extract_value());
 				}
 			}
 			catch(const async_exception& i_excp)
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp.as_error());
+					ddk::eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
@@ -257,15 +257,15 @@ constexpr auto future<future<T>>::_then(Callable && i_continuation) &&
 			}
 		}
 
-		future<callable_return_type> res = ddk::async([_sharedState = lend(sharedState),continuation=std::forward<Callable>(i_continuation)]() mutable
+		future<callable_return_type> res = ddk::async([_sharedState = lend(sharedState),continuation=std::forward<Callable>(i_continuation)]() mutable -> callable_return_type
 		{
 			if constexpr (mpl::is_void<callable_return_type>)
 			{
-				eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
+				ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
 			}
 			else
 			{
-				return eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
+				return ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
 			}
 		}) -> store<executor_promise<callable_return_type>>(asyncAllocator)
 		-> schedule<chained_async_scheduler>(promote_to_ref(sharedState))
@@ -300,18 +300,17 @@ constexpr auto future<future<T>>::_async(Callable&& i_continuation) &&
 			}
 		}
 
-		future<callable_return_type> res = ddk::async([_sharedState = lend(sharedState),continuation=std::forward<Callable>(i_continuation)]() mutable
+		future<callable_return_type> res = ddk::async([_sharedState = lend(sharedState),continuation=std::forward<Callable>(i_continuation)]() mutable -> callable_return_type
 		{
 			if constexpr (mpl::is_void<callable_return_type>)
 			{
-				eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
+				ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
 			}
 			else
 			{
-				return eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
+				return ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
 			}
-		})
-		-> store<executor_promise<callable_return_type>>(asyncAllocator)
+		}) -> store<executor_promise<callable_return_type>>(asyncAllocator)
 		-> schedule<chained_async_scheduler>(promote_to_ref(sharedState))
 		-> attach<detail::execution_context_executor>(context,m_depth);
 

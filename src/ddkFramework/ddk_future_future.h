@@ -49,8 +49,8 @@ public:
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,nested_rreference))
 	constexpr auto then(Callable&& i_continuation)&&;
-	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError)&&;
-	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
+	constexpr future<future<T>> on_error(const function<void(const async_error&)>& i_onError)&&;
+	constexpr future<future<T>> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 
 protected:
 	TEMPLATE(typename Callable)

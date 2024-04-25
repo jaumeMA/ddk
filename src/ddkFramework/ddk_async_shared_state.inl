@@ -119,7 +119,7 @@ constexpr embedded_type<T> private_async_state<T>::extract_value() &&
 
 		m_arena = none;
 
-		return std::move(res);
+		return res;
 	}
 	else if(m_arena.template is<async_exception>())
 	{

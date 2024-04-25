@@ -126,7 +126,7 @@ bool function_impl<Return(Types...),Allocator,FunctionImpl>::operator!=(std::nul
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
 TEMPLATE(typename ... Args)
-REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
+REQUIRED(IS_CONVERTIBLE(Args,Types)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&& ... i_args) const
 {
 	if constexpr (std::is_same<Return,void>::value)
@@ -140,7 +140,7 @@ Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
 TEMPLATE(typename ... Args)
-REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
+REQUIRED(IS_CONVERTIBLE(Args,Types)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(const function_arguments<Args...>& i_args) const
 {
     return eval_arguments(typename mpl::make_sequence<0,mpl::get_num_types<Args...>()>::type{},i_args);
