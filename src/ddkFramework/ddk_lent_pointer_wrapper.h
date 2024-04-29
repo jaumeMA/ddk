@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_reference_counter.h"
@@ -135,7 +143,6 @@ public:
 	typedef const_value_type* const_pointer;
 	typedef lent_pointer_wrapper<const_value_type> const_type;
 
-	lent_pointer_wrapper();
 	lent_pointer_wrapper(const std::nullptr_t&);
 	lent_pointer_wrapper(const lent_pointer_wrapper& other);
 	lent_pointer_wrapper(lent_pointer_wrapper&& other);

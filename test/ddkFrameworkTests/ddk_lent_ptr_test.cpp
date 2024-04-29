@@ -107,7 +107,7 @@ TEST(DDKLentPtrTest,uniquePtrLentScope)
 TEST(DDKLentPtrTest,uniquePtrLentAssignment)
 {
 	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	foo = ddk::lend(fooUnique);
 
@@ -116,7 +116,7 @@ TEST(DDKLentPtrTest,uniquePtrLentAssignment)
 TEST(DDKLentPtrTest,sharedPtrLentAssignment)
 {
 	ddk::shared_pointer_wrapper<DefaultType> fooShared = ddk::make_shared_reference<DefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	foo = ddk::lend(fooShared);
 
@@ -125,7 +125,7 @@ TEST(DDKLentPtrTest,sharedPtrLentAssignment)
 TEST(DDKLentPtrTest,pointerAccess)
 {
 	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	foo = ddk::lend(fooUnique);
 
@@ -136,7 +136,7 @@ TEST(DDKLentPtrTest,get)
 	using namespace ddk;
 
 	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	foo = ddk::lend(fooUnique);
 
@@ -145,7 +145,7 @@ TEST(DDKLentPtrTest,get)
 TEST(DDKLentPtrTest,clear)
 {
 	ddk::unique_pointer_wrapper<DefaultType> fooUnique = ddk::make_unique_reference<DefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	foo = ddk::lend(fooUnique);
 
@@ -167,7 +167,7 @@ TEST(DDKLentPtrTest,derivedConstruction)
 TEST(DDKLentPtrTest,derivedAssignment)
 {
 	ddk::unique_pointer_wrapper<DerivedDefaultType> fooUnique = ddk::make_unique_reference<DerivedDefaultType>(0xFF);
-	ddk::lent_pointer_wrapper<DefaultType> foo;
+	ddk::lent_pointer_wrapper<DefaultType> foo(nullptr);
 
 	foo = ddk::lend(fooUnique);
 

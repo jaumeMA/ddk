@@ -460,12 +460,12 @@ constexpr cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_
 template<typename Executor>
 executor_context_lent_ptr on_time_context_executor<Executor>::get_execution_context()
 {
-	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{};
+	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{ nullptr };
 }
 template<typename Executor>
 executor_context_const_lent_ptr on_time_context_executor<Executor>::get_execution_context() const
 {
-	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{};
+	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{ nullptr };
 }
 
 template<typename Callable,typename Sink>

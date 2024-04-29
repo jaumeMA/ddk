@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_dynamic_visitor.h"
@@ -96,7 +104,7 @@ private:
 	lent_object(lent_pointer_wrapper<TT> other,const rtti::TypeInfo& i_info);
 
 	rtti::TypeInfo m_typeInfo;
-	lent_pointer_wrapper<T> m_value;
+	lent_pointer_wrapper<T> m_value = nullptr;
 };
 
 }
