@@ -294,7 +294,7 @@ TEST(DDKAsyncTest, asyncExecByFiberPoolAgainstRecursiveFunc)
 	//	return "hola";
 	//}));
 
-	auto kk = compose(std::move(myFuture), std::move(myOtherFuture))
+	ddk::future<int> kk = compose(std::move(myFuture), std::move(myOtherFuture))
 	.then([](std::tuple<char,int> i_data)
 	{
 		return std::get<1>(i_data);

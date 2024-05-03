@@ -129,7 +129,7 @@ future<iterable_result> iteration<Iterable,Sink>::attach(const detail::this_thre
 template<typename Iterable, typename Sink>
 template<typename Action>
 constexpr iterable_result iteration<Iterable,Sink>::_execute(const Action& i_action)
-{	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::reference reference;	if constexpr (noexcept(m_sink(std::declval<reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
+{	typedef mpl::remove_qualifiers<Iterable> iterable_t;	typedef typename iterable_t::traits traits;	typedef typename traits::reference reference;	if constexpr (noexcept(ddk::terse_eval(m_sink,std::declval<reference>())))	{		m_iterable.iterate_impl(action_sink{ i_action,m_sink });
 
 		return make_result<iterable_result>(success);
 	}	else	{		return exception_handler::open_scope([&]()
