@@ -128,7 +128,7 @@ constexpr void event_driven_async_scheduler<Provider>::subscribe(Executor& i_exe
 template<typename Provider>
 constexpr void event_driven_async_scheduler<Provider>::signal(async_event<payload_t> i_event)
 {
-	signal_model(m_execModel,std::move(i_event));
+	m_execModel.signal(std::move(i_event));
 }
 
 template<typename Executor,typename Scheduler>

@@ -16,7 +16,7 @@ task_executor::task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks)
 	m_connection = m_availableThreads.on_availableThreads.connect(make_function([this]()
 	{
         if(m_state.get() == Running)
-        {            m_updateThread.signal_context();
+        {            m_updateThread.signal();
         }
     }));
 }
@@ -86,7 +86,7 @@ void task_executor::subscribe(task_executed_scheduler i_scheduler)
 
 	atomic_post_increment(m_numPendingTasks);
 
-	m_updateThread.signal_context();
+	m_updateThread.signal();
 }
 bool task_executor::running() const
 {

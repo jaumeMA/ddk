@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "ddk_executor_capabilities.h"
-#include "ddk_executor_context.h"
+#include "ddk_async_defs.h"
 #include "ddk_mutex.h"
 #include "ddk_cond_var.h"
 #include <pthread.h>
@@ -20,11 +19,24 @@ namespace ddk
 {
 
 template<typename Context, typename ExecutionModel>
-class executor: public detail::executor_capabilities<Context>
+class executor: public ExecutionModel
 {
 public:
-	typedef context_executor_interface::start_result start_result;
-	typedef context_executor_interface::resume_result resume_result;
+	enum StartErrorCode
+	{
+		StartNoCallable,
+		StartNotExecutable,
+		StartNotAvailable
+	};
+	typedef error<StartErrorCode> start_error;
+	typedef result<ExecutorState,start_error> start_result;
+	enum ResumErrorCode
+	{
+		NotRunning,
+		NotResumable
+	};
+	typedef error<ResumErrorCode> resume_error;
+	typedef ddk::result<void,resume_error> resume_result;
 
 	TEMPLATE(typename ... Args)
 	REQUIRES(IS_CONSTRUCTIBLE(ExecutionModel,Args...))
@@ -38,21 +50,9 @@ public:
 	template<typename Callable, typename ... Args>
 	start_result start(Callable&& i_executor, Args&& ... i_args);
 	resume_result stop();
-	void signal_context();
 
 protected:
-    typedef context_executor_interface::StartErrorCode StartErrorCode;
-    typedef context_executor_interface::ResumErrorCode ResumErrorCode;
-    typedef context_executor_interface::sink_type sink_type;
-
-	start_result execute(const ddk::function<void()>& i_executor, const sink_type& i_sink) override;
-	resume_result resume() override;
-	void signal() override;
-
-	template<typename Callable, typename ... Args>
-	inline start_result _execute(Callable&& i_executor, Args&& ... i_sink);
-
-	ExecutionModel m_execModel;
+	Context m_context;
 	bool m_stopped = true;
 };
 

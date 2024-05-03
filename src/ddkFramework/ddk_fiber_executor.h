@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ddk_executor.h"
+#include "ddk_execution_model.h"
 #include "ddk_fiber.h"
 #include "ddk_fiber_sheaf.h"
 

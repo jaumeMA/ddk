@@ -173,7 +173,7 @@ TEST(DDKIterableTest,peformance)
 		value++;
 	} <<= ddk::view::order(ddk::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= ddk::iter::transform_as<int>([](auto&& i_value) { return 2 * i_value; }) <<= v_prova;
 
-	printf("final value: %d\n",value);
+	//printf("final value: %d\n",value);
 }
 struct myAdaptor
 {

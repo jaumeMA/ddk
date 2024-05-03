@@ -4,16 +4,19 @@ namespace ddk
 namespace detail
 {
 
-template<typename ExecutionModel>
-void signal_model(ExecutionModel&)
-{
-}
-
 template<typename Event>
 template<typename Callable>
 auto signaled_execution_model<Event>::instantiate(Callable&& i_callable)
 {
 	return execution{ std::forward<Callable>(i_callable),*this };
+}
+template<typename Event>
+void signaled_execution_model<Event>::signal(Event i_event)
+{
+	if (m_signaler != nullptr)
+	{
+		eval(m_signaler,std::move(i_event));
+	}
 }
 template<typename Event>
 void signaled_execution_model<Event>::resume()

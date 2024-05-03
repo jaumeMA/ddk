@@ -32,8 +32,10 @@ receiver_id async_message_queue<MessageType>::get_id() const
 }
 
 template<typename MessageType>
-async_attachable_message_queue<MessageType>::async_attachable_message_queue(thread_executor_unique_ref i_executor)
-: m_executor(std::move(i_executor))
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(thread_event_driven_executor,Args...))
+async_attachable_message_queue<MessageType>::async_attachable_message_queue(Args&& ... i_args)
+: m_executor(std::forward<Args>(i_args)...)
 {
 }
 template<typename MessageType>
@@ -49,7 +51,7 @@ void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk
 	{
 		if(m_receivers.empty())
 		{
-			auto startRes = m_executor->execute(ddk::make_function(this,&async_attachable_message_queue<MessageType>::dispatch_messages),nullptr);
+			auto startRes = m_executor.start([this]() { dispatch_messages(); });
 
 			DDK_ASSERT(startRes == success,"Error while starting thread executor : " + startRes.error().what());
 		}
@@ -81,7 +83,7 @@ void async_attachable_message_queue<MessageType>::stop(sender_id i_id)
 
 	if(toBeStopped)
 	{
-		auto stopRes = m_executor->resume();
+		auto stopRes = m_executor.stop();
 
 		DDK_ASSERT(stopRes == success,"Error while stopping thread executor : " + stopRes.error().what());
 	}
@@ -91,12 +93,12 @@ void async_attachable_message_queue<MessageType>::push_message(const MessageType
 {
 	async_message_queue<MessageType>::push_message(i_msg);
 
-	m_executor->signal();
+	m_executor.signal();
 }
 template<typename MessageType>
 bool async_attachable_message_queue<MessageType>::set_affinity(const cpu_set_t& i_set)
 {
-	return m_executor->set_affinity(i_set);
+	return m_executor.set_affinity(i_set);
 }
 template<typename MessageType>
 void async_attachable_message_queue<MessageType>::dispatch_messages()

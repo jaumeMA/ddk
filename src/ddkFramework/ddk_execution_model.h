@@ -18,21 +18,9 @@ namespace ddk
 namespace detail
 {
 
-template<typename ExecutionModel>
-inline void signal_model(ExecutionModel&);
-
-
 template<typename Event>
 struct signaled_execution_model
 {
-	friend inline void signal_model(signaled_execution_model& i_model, Event i_event)
-	{
-		if (i_model.m_signaler != nullptr)
-		{
-			eval(i_model.m_signaler,std::move(i_event));
-		}
-	}
-
 	template<typename Callable>
 	struct execution
 	{
@@ -55,7 +43,8 @@ public:
 
 	template<typename Callable>
 	inline auto instantiate(Callable&& i_callable);
-	void resume();
+	inline void signal(Event i_event);
+	inline void resume();
 
 private:
 	function<void(Event)> m_signaler;
@@ -95,15 +84,6 @@ private:
 
 struct async_execution_model
 {
-	friend inline void signal_model(async_execution_model& i_model)
-	{
-		mutex_guard mg(i_model.m_condVarMutex);
-
-		i_model.m_pendingWork = true;
-
-		i_model.m_condVar.notify_one();
-	}
-
 	template<typename Callable, typename CCallable>
 	struct execution
 	{
@@ -130,6 +110,7 @@ public:
 	inline auto instantiate(Callable&& i_callable);
 	template<typename Callable, typename CCallable>
 	inline auto instantiate(Callable&& i_callable, CCallable&& i_test);
+	void signal();
 	void resume();
 
 private:
@@ -170,4 +151,4 @@ public:
 }
 }
 
-#include "ddk_executor_context.inl"
+#include "ddk_execution_model.inl"

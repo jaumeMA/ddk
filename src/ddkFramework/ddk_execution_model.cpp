@@ -1,4 +1,4 @@
-#include "ddk_executor_context.h"
+#include "ddk_execution_model.h"
 
 namespace ddk
 {
@@ -21,6 +21,14 @@ async_execution_model::async_execution_model(const std::chrono::milliseconds& i_
 , m_pendingWork(false)
 , m_condVarMutex(MutexType::Recursive)
 {
+}
+void async_execution_model::signal()
+{
+	mutex_guard mg(m_condVarMutex);
+
+	m_pendingWork = true;
+
+	m_condVar.notify_one();
 }
 void async_execution_model::resume()
 {

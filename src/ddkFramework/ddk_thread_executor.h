@@ -9,7 +9,9 @@
 #pragma once
 
 #include "ddk_executor.h"
-#include "ddk_thread_executor_capabilities.h"
+#include "ddk_execution_model.h"
+#include "ddk_thread.h"
+#include "ddk_thread_sheaf.h"
 
 namespace ddk
 {
