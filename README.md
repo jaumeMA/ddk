@@ -30,9 +30,9 @@ The DDK library covers the following topics:
   3. Iterable actions for algorithms:
 
   ```
-  	ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; }) 
-  							<<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) 
-  							<<= _foo;
+  	ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; })
+				<<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) 
+				<<= _foo;
   ```
 
 	Iterable actions act as building blocks and allowing to create action graphs for algorithm definition.
@@ -41,7 +41,7 @@ The DDK library covers the following topics:
 
   ```
   	ddk::const_bidirectional_value_iterable<const int> _ = ddk::iter::transform([](const std::pair<const int,int>& i_value) -> const int& { return i_value.second; }) 
-  															<<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) 
+								<<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) 
   															<<= _foo;
   ```
 	
