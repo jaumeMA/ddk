@@ -21,9 +21,9 @@ The DDK library covers the following topics:
   {
   	int a = 0;
 	  ++a;
-  }	<<= ddk::iter::transform([](const A& i_val1,const D& i_val2,const E& i_val3) -> A { return i_val1 + i_val2 + i_val3; })
-  	<<= ddk::view::filter([](const A& i_val1,const D& i_val2,const E& i_val3) { return i_val1 > i_val2; })
-  	<<= ddk::view::order(ddk::reverse_order)
+  } <<= ddk::iter::transform([](const A& i_val1,const D& i_val2,const E& i_val3) -> A { return i_val1 + i_val2 + i_val3; })
+    <<= ddk::view::filter([](const A& i_val1,const D& i_val2,const E& i_val3) { return i_val1 > i_val2; })
+    <<= ddk::view::order(ddk::reverse_order)
     <<= ddk::fusion(container1,container2,container3);
   ```
 
