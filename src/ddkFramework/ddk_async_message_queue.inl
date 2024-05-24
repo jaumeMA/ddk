@@ -43,11 +43,11 @@ void async_attachable_message_queue<MessageType>::start(sender_id i_id,const ddk
 {
 	m_exclArea.enterWriter(Reentrancy::NON_REENTRANT);
 
-	typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = std::find_if(m_receivers.begin(),m_receivers.end(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair) { return i_pair.first == i_id; });
+	typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = std::find_if(m_receivers.cbegin(),m_receivers.cend(),[&i_id](const std::pair<sender_id,ddk::function<void(const message_type&)>>& i_pair) { return i_pair.first == i_id; });
 
-	DDK_ASSERT(itReceiver == m_receivers.end(),"Attempting to connect more than once to the same queue");
+	DDK_ASSERT(itReceiver == m_receivers.cend(),"Attempting to connect more than once to the same queue");
 
-	if(itReceiver == m_receivers.end())
+	if(itReceiver == m_receivers.cend())
 	{
 		if(m_receivers.empty())
 		{
@@ -115,8 +115,8 @@ void async_attachable_message_queue<MessageType>::dispatch_messages()
 template<typename MessageType>
 void async_attachable_message_queue<MessageType>::dispatch_message(const message_type& i_msg)
 {
-	typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = m_receivers.begin();
-	for(; itReceiver != m_receivers.end(); ++itReceiver)
+	typename linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>::const_iterator itReceiver = m_receivers.cbegin();
+	for(; itReceiver != m_receivers.cend(); ++itReceiver)
 	{
 		const std::pair<const sender_id,ddk::function<void(const message_type&)>>& currReceiver = *itReceiver;
 

@@ -11,7 +11,7 @@
 #include "ddk_static_counter.h"
 
 #define ADD_STATIC_TYPE(_TYPE_NAME,_TAG) \
-    friend inline typename decltype(__get_static_type_list(std::declval<ddk::detail::static_typed_number<_TAG,ddk::static_counter<_TAG>::get_curr_count()>>()))::add_unique<_TYPE_NAME>::type __get_static_type_list(const ddk::detail::static_typed_number<_TAG,ddk::static_counter<_TAG>::get_next_count()>&); \
+    friend inline typename decltype(__get_static_type_list(std::declval<ddk::detail::static_typed_number<_TAG,ddk::static_counter<_TAG>::get_curr_count()>>(),std::declval<_TAG>()))::add_unique<_TYPE_NAME>::type __get_static_type_list(const ddk::detail::static_typed_number<_TAG,ddk::static_counter<_TAG>::get_next_count()>&,const _TAG&);
 
 namespace ddk
 {
@@ -22,14 +22,14 @@ template<typename Tag,size_t Number>
 struct static_typed_number
 {
 };
-template<typename T>
-struct static_typed_number<T,0>
+template<typename Tag>
+struct static_typed_number<Tag,0>
 {
-    friend inline mpl::type_pack<> __get_static_type_list(const static_typed_number&);
+    friend inline mpl::type_pack<> __get_static_type_list(const static_typed_number&, const Tag&);
 };
 
 template<typename Tag>
-using static_type_list = decltype(__get_static_type_list(std::declval<static_typed_number<Tag,ddk::static_counter<Tag>::get_curr_count()>>()));
+using static_type_list = decltype(__get_static_type_list(std::declval<static_typed_number<Tag,ddk::static_counter<Tag>::get_curr_count()>>(),std::declval<Tag>()));
 
 }
 }

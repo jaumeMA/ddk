@@ -70,6 +70,11 @@ typename linked_list<T,Allocator>::const_iterator linked_list<T,Allocator>::begi
 {
 	return const_iterator(lend(m_firstNode));
 }
+template<typename T,typename Allocator>
+typename linked_list<T,Allocator>::const_iterator linked_list<T,Allocator>::cbegin() const
+{
+	return const_iterator(lend(m_firstNode));
+}
 template<typename T, typename Allocator>
 typename linked_list<T,Allocator>::iterator linked_list<T,Allocator>::end()
 {
@@ -77,6 +82,11 @@ typename linked_list<T,Allocator>::iterator linked_list<T,Allocator>::end()
 }
 template<typename T, typename Allocator>
 typename linked_list<T,Allocator>::const_iterator linked_list<T,Allocator>::end() const
+{
+	return nullptr;
+}
+template<typename T,typename Allocator>
+typename linked_list<T,Allocator>::const_iterator linked_list<T,Allocator>::cend() const
 {
 	return nullptr;
 }

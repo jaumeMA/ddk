@@ -2,6 +2,7 @@
 
 #include "ddk_visitor_invoker.h"
 #include "ddk_static_builtin_visitors.h"
+#include "ddk_variant_concepts.h"
 
 
 #define CREATE_INNER_VISITOR(_visitor,_types) \

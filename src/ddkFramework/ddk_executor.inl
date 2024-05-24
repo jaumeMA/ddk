@@ -16,7 +16,7 @@ TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(ExecutionModel,Args...))
 executor<Context,ExecutionModel>::executor(Context i_context, Args&& ... i_args)
 : ExecutionModel(std::forward<Args>(i_args)...)
-, m_context(std::move(i_context))
+, Context(std::move(i_context))
 {
 }
 template<typename Context, typename ExecutionModel>
@@ -32,7 +32,7 @@ typename executor<Context,ExecutionModel>::start_result executor<Context,Executi
 	{
 		m_stopped = false;
 
-		if (auto startRes = this->m_context.start(ExecutionModel::instantiate(std::forward<Callable>(i_executor),std::forward<Args>(i_args)...)))
+		if (auto startRes = Context::start(ExecutionModel::instantiate(std::forward<Callable>(i_executor),std::forward<Args>(i_args)...)))
 		{
 			return ExecutorState::Executed;
 		}
@@ -51,7 +51,7 @@ typename executor<Context,ExecutionModel>::resume_result executor<Context,Execut
 {
 	ExecutionModel::resume();
 
-	if(auto stopRes = this->m_context.stop())
+	if(auto stopRes = Context::stop())
 	{
 		m_stopped = true;
 

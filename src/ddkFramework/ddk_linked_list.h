@@ -40,8 +40,10 @@ public:
 	void clear();
 	iterator begin();
 	const_iterator begin() const;
+	const_iterator cbegin() const;
 	iterator end();
 	const_iterator end() const;
+	const_iterator cend() const;
 	iterator erase(iterator i_it);
 	size_t size() const;
 	bool empty() const;

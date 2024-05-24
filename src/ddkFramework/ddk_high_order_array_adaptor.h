@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ddk_high_order_array.h"
-#include "ddk_iterable_type.h"
+#include "ddk_iterable_adaptor.h"
 
 namespace ddk
 {

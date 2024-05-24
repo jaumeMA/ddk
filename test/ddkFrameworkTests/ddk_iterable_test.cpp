@@ -192,6 +192,7 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	_foo.insert(std::make_pair(4,4));
 	_foo.insert(std::make_pair(5,5));
 	std::vector<int> foo;
+	std::vector<float> myFoo;
 	//foo.push_back(1);
 	//foo.push_back(2);
 
@@ -283,12 +284,18 @@ TEST(DDKIterableTest,forwardIterableConstruction)
 	////ddk::make_function([](int i_value) {printf("cur high transpose dimension value: %d\n",i_value); }) <<= ddk::view::order(ddk::transponse_dimension_order) <<= highOrderProva;
 
 	////std::vector<int> highOrderProvaSuma;
-	//////const auto res = ddk::iter::sum <<= ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(ddk::iter::transform([](int i_value) { return 2.f * i_value; }) <<= foo,foo,foo);
-	//[](float i_value)
-	//{
-	//	int a = 0;
-	//	++a;
-	//} <<= ddk::iter::pow <<= ddk::fusion(foo,foo);
+	//const auto res = ddk::iter::pow(ddk::arg_0,2.f) <<= ddk::iter::sum(foo,foo,foo);
+	[](float i_value)
+	{
+
+	} <<= ddk::iter::pow(ddk::fusion(ddk::iter::sum(foo,foo,foo),foo));
+
+	ddk::iter::inv(foo);
+
+	ddk::iter::transform([](int i_lhs, int i_rhs)
+	{
+		return std::pow(i_lhs,i_rhs);
+	}) <<= ddk::fusion(foo,foo);
 	////highOrderProvaSuma <<= ddk::iter::inv(foo);
 	////int provaSuma = ddk::iter::sum(foo);
 	////int provaSuma2 = ddk::sum({10,4,-25,1897,76});

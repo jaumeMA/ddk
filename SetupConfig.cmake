@@ -27,6 +27,8 @@ if(NOT SET_UP_CONFIGURATIONS_DONE)
       set(AGNOSTIC_RECURSIVE_COPY xcopy /s)
       set(AGNOSTIC_RECURSIVE_REMOVE del /q /s)
     
+	message("version: ${MSVC_TOOLSET_VERSION}")
+	
 	if(${SYSTEM_ARCHITECTURE} STREQUAL "x86")
 		set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/win32")
     elseif(${SYSTEM_ARCHITECTURE} STREQUAL "x64")
@@ -35,7 +37,7 @@ if(NOT SET_UP_CONFIGURATIONS_DONE)
 		message("Unsupported architecture: ${SYSTEM_ARCHITECTURE}")
     endif()
       
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX /std:c++17")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX /std:c++20 /permissive")
 
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
       ENABLE_LANGUAGE(ASM_NASM)

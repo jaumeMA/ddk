@@ -19,7 +19,7 @@ namespace ddk
 {
 
 template<typename Context, typename ExecutionModel>
-class executor: public ExecutionModel
+class executor: public ExecutionModel, public Context
 {
 public:
 	enum StartErrorCode
@@ -51,8 +51,7 @@ public:
 	start_result start(Callable&& i_executor, Args&& ... i_args);
 	resume_result stop();
 
-protected:
-	Context m_context;
+private:
 	bool m_stopped = true;
 };
 

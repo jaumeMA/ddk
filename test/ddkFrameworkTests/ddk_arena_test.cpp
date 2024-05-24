@@ -8,6 +8,7 @@
 #include "ddk_mutex.h"
 #include "ddk_async.h"
 #include "test_utils.h"
+#include "ddk_high_order_array.h"
 #include <utility>
 
 using namespace testing;

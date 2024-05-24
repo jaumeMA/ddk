@@ -23,7 +23,7 @@
 		{ \
 			using ::operator<<=; \
 			\
-			return transform(_FUNC) <<= deduce_iterable(i_iterable); \
+			return transform(_FUNC) <<= std::forward<Iterable>(i_iterable); \
 		} \
 	}; \
 	const _NAME##_iterable_transform _NAME;
@@ -31,14 +31,25 @@
 #define UNARY_ITERABLE_TRANSFORM(_NAME,_OP) \
 	struct _NAME##_iterable_transform \
 	{ \
+	private: \
+		template<typename T> \
+		struct impl \
+		{ \
+			typedef T return_type; \
+			template<typename Arg> \
+			auto operator()(Arg&& i_value) const\
+			{ \
+				return (_OP std::forward<Args>(i_value)); \
+			} \
+		}; \
 	public: \
 		_NAME##_iterable_transform() = default; \
 		template<typename Iterable> \
 		inline auto operator()(Iterable&& i_iterable) const \
 		{ \
-			using ::operator<<=; \
+			typedef decltype((_OP std::declval<typename ddk::detail::adaptor_traits<ddk::deduced_iterable<Iterable>>::const_reference>())) return_type; \
 			\
-			return transform([](auto&& i_value){ return _OP std::forward<decltype(i_value)>(i_value); }) <<= deduce_iterable(i_iterable); \
+			return transform(impl<return_type>{}) <<= std::forward<Iterable>(i_iterable); \
 		} \
 	}; \
 	const _NAME##_iterable_transform _NAME;
@@ -47,8 +58,10 @@
 	struct _NAME##_iterable_transform \
 	{ \
 	private: \
+		template<typename T> \
 		struct impl \
 		{ \
+			typedef T return_type; \
 			template<typename ... Args> \
 			auto operator()(Args&& ... i_values) const\
 			{ \
@@ -58,19 +71,12 @@
 	\
 	public: \
 		constexpr _NAME##_iterable_transform() = default; \
-		template<typename Iterable> \
-		inline auto operator()(Iterable&& i_iterable) const \
+		template<typename ... Iterables> \
+		inline auto operator()(Iterables&& ... i_iterables) const \
 		{ \
-			using ::operator<<=; \
+			typedef decltype((std::declval<typename ddk::detail::adaptor_traits<ddk::deduced_iterable<Iterables>>::const_reference>() _OP ...)) return_type; \
 			\
-			return transform(impl{}) <<= deduce_iterable(i_iterable); \
-		} \
-		template<typename Iterable, typename ... Iterables> \
-		inline auto operator()(Iterable&& i_iterable, Iterables&& ... i_iterables) const \
-		{ \
-			using ::operator<<=; \
-			\
-			return transform(impl{}) <<= ddk::fusion(std::forward<Iterable>(i_iterable),std::forward<Iterables>(i_iterables)...); \
+			return transform(impl<return_type>{}) <<= ddk::fusion(std::forward<Iterables>(i_iterables)...); \
 		} \
 	}; \
 	const _NAME##_iterable_transform _NAME;
