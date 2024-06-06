@@ -11,6 +11,19 @@
 namespace ddk
 {
 
+#ifdef DDK_DEBUG
+
+template<typename T>
+inline T* get_raw_ptr(lent_pointer_wrapper<T> i_ref);
+template<typename T>
+inline void set_raw_ptr(lent_pointer_wrapper<T>& i_ref,T* i_value);
+template<typename T>
+inline T* extract_raw_ptr(lent_pointer_wrapper<T>& i_ref);
+template<typename T>
+inline void clear_ptr(lent_pointer_wrapper<T>& i_ref);
+template<typename T>
+inline void rebase_ptr(lent_pointer_wrapper<T>& i_ref,std::ptrdiff_t i_diff);
+
 template<typename T>
 inline T* get_raw_ptr(T* i_ref);
 template<typename T>
@@ -22,13 +35,21 @@ inline void clear_ptr(T*& i_ref);
 template<typename T>
 inline void rebase_ptr(T*& i_ref,std::ptrdiff_t i_diff);
 
-namespace detail
-{
+#else
 
 template<typename T>
-inline void rebase_ptr(T& i_ref,std::ptrdiff_t i_diff);
+inline T* get_raw_ptr(T* i_ref);
+template<typename T>
+inline void set_raw_ptr(T*& i_ref,T* i_value);
+template<typename T>
+inline T* extract_raw_ptr(T*& i_ref);
+template<typename T>
+inline void clear_ptr(T*& i_ref);
+template<typename T>
+inline void rebase_ptr(T*& i_ref,std::ptrdiff_t i_diff);
 
-}
+#endif
+
 }
 
 #include "ddk_pointer_defs.inl"

@@ -1,6 +1,5 @@
 
 #include "ddk_macros.h"
-#include "ddk_pointer_defs.h"
 
 namespace ddk
 {

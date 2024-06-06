@@ -21,8 +21,6 @@
 		template<typename Iterable> \
 		inline auto operator()(Iterable&& i_iterable) const \
 		{ \
-			using ::operator<<=; \
-			\
 			return transform(_FUNC) <<= std::forward<Iterable>(i_iterable); \
 		} \
 	}; \

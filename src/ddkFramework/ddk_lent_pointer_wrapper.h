@@ -75,31 +75,11 @@ class unique_pointer_wrapper;
 template<typename T>
 class lent_pointer_wrapper
 {
-	friend inline T* get_raw_ptr(lent_pointer_wrapper i_ref)
-	{
-		return i_ref.m_data;
-	}
-	friend inline void set_raw_ptr(lent_pointer_wrapper& i_ref,T* i_value)
-	{
-		i_ref.m_data = i_value;
-	}
-	friend inline T* extract_raw_ptr(lent_pointer_wrapper& i_ref)
-	{
-		T* res = i_ref.m_data;
-
-		i_ref = nullptr;
-
-		return res;
-	}
-	friend inline void clear_ptr(lent_pointer_wrapper& i_ref)
-	{
-		i_ref = nullptr;
-	}
-	friend inline void rebase_ptr(lent_pointer_wrapper& i_ref,std::ptrdiff_t i_diff)
-	{
-		i_ref.m_data = reinterpret_cast<T*>(reinterpret_cast<char*>(i_ref.m_data) + i_diff);
-		i_ref.m_refCounter.set_pointer(reinterpret_cast<tagged_reference_counter::interface_ptr>(reinterpret_cast<char*>(i_ref.m_refCounter.get_pointer()) + i_diff));
-	}
+	friend inline T* get_raw_ptr(lent_pointer_wrapper i_ref);
+	friend inline void set_raw_ptr(lent_pointer_wrapper& i_ref,T* i_value);
+	friend inline T* extract_raw_ptr(lent_pointer_wrapper& i_ref);
+	friend inline void clear_ptr(lent_pointer_wrapper& i_ref);
+	friend inline void rebase_ptr(lent_pointer_wrapper& i_ref,std::ptrdiff_t i_diff);
 
 	template<typename>
 	friend class lent_pointer_wrapper;
@@ -194,3 +174,4 @@ using lent_pointer_wrapper = T*;
 }
 
 #include "ddk_lent_pointer_wrapper.inl"
+#include "ddk_pointer_defs.h"
