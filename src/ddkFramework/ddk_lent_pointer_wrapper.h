@@ -174,4 +174,3 @@ using lent_pointer_wrapper = T*;
 }
 
 #include "ddk_lent_pointer_wrapper.inl"
-#include "ddk_pointer_defs.h"

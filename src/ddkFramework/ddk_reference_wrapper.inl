@@ -1,6 +1,7 @@
 
 #include "ddk_system_allocator.h"
 #include "ddk_allocator_exceptions.h"
+#include "ddk_pointer_defs.h"
 
 namespace ddk
 {
