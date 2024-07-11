@@ -117,7 +117,7 @@ bool initialize_thread_stack()
 
 #elif defined(__LINUX__) or defined(__APPLE__)
 
-    static char signalStackArena[SIGSTKSZ];
+    static char signalStackArena[8192];
     static struct sigaction sa;
 
 	stack_t signalStack;

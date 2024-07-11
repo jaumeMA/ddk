@@ -402,7 +402,7 @@ T atomic_exchange(atomic8<T>& i_atomic, const TT& i_desiredValue)
 #if defined(WIN32)
 	return T(_InterlockedExchange8(i_atomic._get_arena(), T(i_desiredValue)));
 #elif defined(__LINUX__) or defined(__APPLE__)
-	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+	return  __sync_lock_test_and_set(i_atomic._get_typed_arena(), i_desiredValue);
 #else
 	#error "Unsupported platform"
 #endif
@@ -414,7 +414,7 @@ T atomic_exchange(atomic32<T>& i_atomic, const TT& i_desiredValue)
 #if defined(WIN32)
 	return T(InterlockedExchange(reinterpret_cast<LONG*>(i_atomic._get_arena()),i_desiredValue));
 #elif defined(__LINUX__) or defined(__APPLE__)
-	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+	return  __sync_lock_test_and_set(i_atomic._get_typed_arena(), i_desiredValue);
 #else
 	#error "Unsupported platform"
 #endif
@@ -426,7 +426,7 @@ T atomic_exchange(atomic64<T>& i_atomic, const TT& i_desiredValue)
 #if defined(WIN32)
 	return T(_InterlockedExchange64(i_atomic._get_arena(),T(i_desiredValue)));
 #elif defined(__LINUX__) or defined(__APPLE__)
-	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+	return  __sync_lock_test_and_set(i_atomic._get_typed_arena(), i_desiredValue);
 #else
 	#error "Unsupported platform"
 #endif
@@ -438,7 +438,7 @@ T* atomic_exchange(atomic<T*>&i_atomic, TT* i_desiredValue)
 #if defined(WIN32)
 	return reinterpret_cast<T*>(InterlockedExchangePointer(i_atomic._get_arena(),i_desiredValue));
 #elif defined(__LINUX__) or defined(__APPLE__)
-	return __sync_bool_compare_and_swap(i_atomic._get_typed_arena(), i_expectedValue, i_desiredValue);
+	return  __sync_lock_test_and_set(i_atomic._get_typed_arena(), i_desiredValue);
 #else
 	#error "Unsupported platform"
 #endif

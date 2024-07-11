@@ -896,6 +896,18 @@ constexpr unsigned int next_power_of_two(unsigned int i_value)
 
     return i_value;
 }
+constexpr unsigned int next_power_of_two(unsigned long int i_value)
+{
+    i_value--;
+    i_value |= i_value >> 1;
+    i_value |= i_value >> 2;
+    i_value |= i_value >> 4;
+    i_value |= i_value >> 8;
+    i_value |= i_value >> 16;
+    i_value++;
+
+    return i_value;
+}
 constexpr unsigned long long int next_power_of_two(unsigned long long int i_value)
 {
     i_value--;

@@ -1,5 +1,6 @@
 
 #include "ddk_lock_guard.h"
+#include "ddk_sync_executor_impl.h"
 
 namespace ddk
 {
@@ -91,48 +92,43 @@ void polling_async_scheduler::subscribe(Executor&& i_executor)
 	{
 		m_stopped = false;
 
-		m_thread.start(ddk::make_function(this,&polling_async_scheduler<Executor>::update<Executor>,i_executor));
+		m_thread.start(ddk::make_function(this,&polling_async_scheduler::update<Executor>,i_executor));
 	}
-
-	return true;
 }
 template<typename Executor>
 void polling_async_scheduler::update(ddk::lent_reference_wrapper<Executor> i_executor)
 {
 	std::chrono::milliseconds systemDelta = std::chrono::milliseconds(0);
 
-	if (ddk::atomic_compare_exchange(m_state,AsyncSchedulerState::Pending,AsyncSchedulerState::Triggering))
+	while (m_stopped == false)
 	{
-		while (m_stopped == false)
+		const std::chrono::steady_clock::time_point beforeEval = std::chrono::steady_clock::now();
+
+		if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndReuse))
 		{
-			const std::chrono::steady_clock::time_point beforeEval = std::chrono::steady_clock::now();
+			throw async_exception{ "Error executing async operation: " + execRes.error().what() };
+		}
 
-			if_not(auto execRes = i_executor.execute(SchedulerPolicy::FireAndReuse))
-			{
-				throw async_exception{ "Error executing async operation: " + execRes.error().what() };
-			}
+		const std::chrono::steady_clock::time_point afterEval = std::chrono::steady_clock::now();
+		const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(afterEval - beforeEval);
 
-			const std::chrono::steady_clock::time_point afterEval = std::chrono::steady_clock::now();
-			const std::chrono::milliseconds evalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(afterEval - beforeEval);
+		if (evalDuration < (m_sleepTimeInMS - systemDelta))
+		{
+			const std::chrono::milliseconds remainingWaitingTime = m_sleepTimeInMS - evalDuration;
 
-			if (evalDuration < (m_sleepTimeInMS - systemDelta))
-			{
-				const std::chrono::milliseconds remainingWaitingTime = m_sleepTimeInMS - evalDuration;
+			const std::chrono::steady_clock::time_point beforeSleep = std::chrono::steady_clock::now();
 
-				const std::chrono::steady_clock::time_point beforeSleep = std::chrono::steady_clock::now();
+			std::this_thread::sleep_for(remainingWaitingTime - systemDelta);
 
-				std::this_thread::sleep_for(remainingWaitingTime - systemDelta);
+			const std::chrono::steady_clock::time_point afterSleep = std::chrono::steady_clock::now();
 
-				const std::chrono::steady_clock::time_point afterSleep = std::chrono::steady_clock::now();
+			systemDelta += (std::chrono::duration_cast<std::chrono::milliseconds>(afterSleep - beforeSleep) - remainingWaitingTime) / 2;
+		}
+		else
+		{
+			systemDelta = std::chrono::milliseconds(0);
 
-				systemDelta += (std::chrono::duration_cast<std::chrono::milliseconds>(afterSleep - beforeSleep) - remainingWaitingTime) / 2;
-			}
-			else
-			{
-				systemDelta = std::chrono::milliseconds(0);
-
-				std::this_thread::yield();
-			}
+			std::this_thread::yield();
 		}
 	}
 }

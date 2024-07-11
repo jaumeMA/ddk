@@ -182,7 +182,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::immediate_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(*this));
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(*this));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(thread i_thread)
@@ -190,7 +190,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::thread_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_thread));
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_thread));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(fiber i_fiber)
@@ -198,7 +198,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::fiber_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_fiber));
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_fiber));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(thread_sheaf i_threadSheaf)
@@ -206,7 +206,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::thread_sheaf_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_threadSheaf));
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_threadSheaf));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(fiber_sheaf i_fiberSheaf)
@@ -214,7 +214,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::fiber_sheaf_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_fiberSheaf));
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_fiberSheaf));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type> async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_async_executor::attach(executor_context_lent_ptr i_asyncExecutorContext,unsigned char i_depth)
@@ -222,7 +222,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef detail::execution_context_executor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_asyncExecutorContext),i_depth);
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::move(i_asyncExecutorContext),i_depth);
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 template<typename EExecutor,typename ... Args>
@@ -231,7 +231,7 @@ future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::ca
 	typedef EExecutor attached_executor_t;
 	typedef attached_scheduler<attached_executor_t,Scheduler> attached_scheduler_t;
 
-	return std::move(m_promise).attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::forward<Args>(i_args)...);
+	return std::move(m_promise).template attach<async_executor<Callable,CancelOp,Promise,attached_scheduler_t,attached_executor_t>>(std::move(m_function),std::move(m_cancelFunc),std::move(m_promise),attach_scheduler<attached_executor_t>(std::move(m_scheduler)),std::forward<Args>(i_args)...);
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 template<typename PPromise,typename ... Args>
@@ -288,7 +288,7 @@ typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::moved_asy
 {
 	scheduler_base_t::clear_scheduler();
 
-	return { std::move(m_function).extract(),std::move(m_cancelFunc),std::move(m_promise),std::move(m_scheduler),std::move(m_executor)};
+	return { std::move(this->m_function).extract(),std::move(this->m_cancelFunc),std::move(this->m_promise),std::move(m_scheduler),std::move(this->m_executor)};
 }
 template<typename Callable,typename CancelOp,typename Promise, typename Scheduler, typename Executor>
 async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<typename async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::callable_return_type>() &&
@@ -297,12 +297,12 @@ async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::operator future<ty
 
 	scheduler_base_t::clear_scheduler();
 
-	return std::move(m_promise).attach<async_executor_t>(std::move(m_function).extract(),std::move(m_cancelFunc),std::move(m_promise),std::move(m_scheduler),std::move(m_executor));
+	return std::move(this->m_promise).template attach<async_executor_t>(std::move(this->m_function).extract(),std::move(this->m_cancelFunc),std::move(this->m_promise),std::move(m_scheduler),std::move(this->m_executor));
 }
 template<typename Callable,typename CancelOp,typename Promise,typename Scheduler,typename Executor>
 void async_executor<Callable,CancelOp,Promise,Scheduler,Executor>::attach(detail::private_async_state_shared_ptr<callable_return_type> i_sharedState)
 {
-	m_function.share_ownership(i_sharedState);
+	this->m_function.share_ownership(i_sharedState);
 
 	m_scheduler.subscribe(*this);
 }

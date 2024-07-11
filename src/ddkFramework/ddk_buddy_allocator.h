@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <cstddef>
 
 #define DEFAULT_BUDDY_PAGE_SIZE 64
 

@@ -1,5 +1,4 @@
 #include "ddk_mutex.h"
-#include "windows.h"
 
 namespace ddk
 {

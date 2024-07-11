@@ -23,7 +23,8 @@ template<typename Iterable, typename Sink>
 iteration_result execute_co_iteration(co_iteration<Iterable,Sink> i_co_iteration)
 {
 	if(ddk::atomic_compare_exchange(i_co_iteration.m_executable,true,false))
-	{        return i_co_iteration._execute();
+	{
+        return i_co_iteration._execute();
     }
     else
     {
@@ -130,10 +131,10 @@ auto iteration<Iterable,Sink>::transform(Callable&& i_callable) &&
 	{
 		typedef function<void(typename Iterable::reference)> SSink;
 
-		return iteration<Iterable,SSink>{ m_iterable,ddk::make_function([payload = m_try, callable = i_callable](typename Iterable::reference i_value)
+		return iteration{ m_iterable,[payload = this->m_try, callable = i_callable](typename Iterable::reference i_value)
 		{
 			ddk::eval(callable,payload(i_value));
-		}) };
+		} };
 	}
 	else
 	{
@@ -144,18 +145,17 @@ template<typename Iterable, typename Sink>
 template<typename T>
 future<iteration_result> iteration<Iterable,Sink>::attach(T&& i_execContext)
 {
-	shared_reference_wrapper<async_executor<iteration_result>> res = make_async_executor(make_function(&ddk::execute_iteration<Iterable,Sink>,*this));
-
-	return res->attach(std::forward<T>(i_execContext));
+	return ddk::async(make_function(this,&ddk::execute_iteration<Iterable,Sink>)) -> attach(std::forward<T>(i_execContext));
 }
 template<typename Iterable, typename Sink>
 future<iteration_result> iteration<Iterable,Sink>::attach(const detail::this_thread_t&)
 {
-	return make_async_executor(make_function(&ddk::execute_iteration<Iterable,Sink>,*this));
+	return ddk::async(make_function(this,&ddk::execute_iteration<Iterable,Sink>));
 }
 template<typename Iterable, typename Sink>
 iteration_result iteration<Iterable,Sink>::_execute()
-{	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
+{
+	if constexpr(IS_BASE_OF_ITERABLE_COND(Iterable))
 	{
 		return m_iterable.iterate(this->m_try);
 	}
@@ -300,7 +300,8 @@ future<iteration_result> co_iteration<Iterable,Sink>::attach(T&& i_execContext)
 	return ddk::async([this]()
 	{
 		if (ddk::atomic_compare_exchange(m_executable,true,false))
-		{			return _execute();
+		{
+			return _execute();
 		}
 		else
 		{
@@ -314,7 +315,8 @@ future<iteration_result> co_iteration<Iterable,Sink>::attach(const detail::this_
 	return ddk::async([this]()
 	{
 		if (ddk::atomic_compare_exchange(m_executable,true,false))
-		{			return _execute();
+		{
+			return _execute();
 		}
 		else
 		{
@@ -324,7 +326,8 @@ future<iteration_result> co_iteration<Iterable,Sink>::attach(const detail::this_
 }
 template<typename Iterable, typename Sink>
 iteration_result co_iteration<Iterable,Sink>::_execute()
-{	return m_iterable.co_iterate(this->m_try);
+{
+	return m_iterable.co_iterate(this->m_try);
 }
 template<typename Iterable, typename Sink>
 iteration_result co_iteration<Iterable,Sink>::_execute() const

@@ -8,7 +8,7 @@ auto fusion(Futures&& ... i_components)
 {
 	if constexpr (mpl::are_same_type<typename Futures::value_type ...>())
 	{
-		return composed_future<std::array<mpl::nth_type_of_t<0, typename Futures::value_type...>,static_cast<unsigned char>(mpl::num_types<Futures...>)>>(std::forward<Futures>(i_components)...);
+		return composed_future<std::array<mpl::nth_type_of_t<0, typename Futures::value_type...>,mpl::num_types<Futures...>>>(std::forward<Futures>(i_components)...);
 	}
 	else
 	{

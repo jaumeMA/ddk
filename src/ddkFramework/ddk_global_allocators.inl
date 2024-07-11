@@ -63,7 +63,7 @@ void fixed_size_or_allocator<Allocator>::deallocate(TT* i_ptr) const
 			}
 		}
 
-		m_allocator.get_second().deallocate(i_ptr);
+		m_allocator.get_second().deallocate(static_cast<void*>(i_ptr));
 	}
 }
 

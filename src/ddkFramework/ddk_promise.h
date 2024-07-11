@@ -9,7 +9,7 @@ namespace ddk
 {
 
 template<typename T>
-class promise : public async_cancellable_interface, protected ddk::distribute_from_this<promise<T>,async_cancellable_interface>
+class promise : public async_cancellable_interface, public ddk::distribute_from_this<promise<T>,async_cancellable_interface>
 {
 	template<typename,typename>
 	friend class executor_promise;

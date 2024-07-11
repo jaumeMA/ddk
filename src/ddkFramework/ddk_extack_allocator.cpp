@@ -3,6 +3,8 @@
 
 #if defined(_WIN32)
 #include <malloc.h>
+#else
+#include <alloca.h>
 #endif
 
 namespace ddk
@@ -13,7 +15,7 @@ void extack_deleter::deallocate(const void* i_ptr) const
 #if defined(_WIN32)
 	_freea(const_cast<void*>(i_ptr));
 #else
-#error "Platform not supported"
+	//freed by runtime
 #endif
 }
 
@@ -22,7 +24,7 @@ void* extack_allocator::allocate(size_t i_size) const
 #if defined(_WIN32)
 	return _malloca(i_size);
 #else
-	#error "Platform not supported"
+	return alloca(i_size);
 #endif
 }
 void* extack_allocator::reallocate(void* ptr,size_t i_newSize) const

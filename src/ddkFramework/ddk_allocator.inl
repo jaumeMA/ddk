@@ -42,7 +42,7 @@ void deleter_proxy<Deleter>::deallocate(T* i_address) const
 
 template<typename Allocator>
 allocator_proxy<Allocator>::allocator_proxy(const Allocator& i_allocator)
-: deleter_proxy(i_allocator)
+: deleter_proxy<Allocator>(i_allocator)
 , m_allocator(&i_allocator)
 {
 }
@@ -50,7 +50,7 @@ template<typename Allocator>
 TEMPLATE(typename AAllocator)
 REQUIRED(IS_CONSTRUCTIBLE(Allocator,AAllocator))
 allocator_proxy<Allocator>::allocator_proxy(const AAllocator& i_allocator)
-: deleter_proxy(std::forward<AAlocator>(i_allocator))
+: deleter_proxy<Allocator>(std::forward<AAllocator>(i_allocator))
 , m_allocator(&i_allocator)
 {
 }

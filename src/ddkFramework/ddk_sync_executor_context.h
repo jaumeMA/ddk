@@ -56,7 +56,6 @@ protected:
 	bool is_admissible();
 	void resolve(callable_container& i_pendingCallables);
 
-	bool m_destroyAfterUse;
 	mutex m_mutex;
 	callable_container m_pendingCallables;
 	bool m_admissible = true;

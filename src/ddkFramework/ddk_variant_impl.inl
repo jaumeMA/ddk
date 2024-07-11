@@ -22,7 +22,7 @@ template<typename ... Types, typename ... TTypes>
 inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, const variant_impl<TTypes...>& other)
 {
 	//here we rely on RVO
-	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	if (other.which() < variant_impl<TTypes...>::s_numTypes)
 	{
 		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
 		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
@@ -41,7 +41,7 @@ template<typename ... Types, typename ... TTypes>
 inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<Types...>&, variant_impl<TTypes...>&& other)
 {
 	//here we rely on RVO
-	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	if (other.which() < variant_impl<TTypes...>::s_numTypes)
 	{
 		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
 		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
@@ -59,7 +59,7 @@ inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<T
 template<typename ... Types, typename ... TTypes>
 inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, const variant_impl<TTypes...>& other)
 {
-	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	if (other.which() < variant_impl<TTypes...>::s_numTypes)
 	{
 		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
 		typedef typename constructor_inplace_visitor<variadic_union<Types...>,TTypes...>::return_type return_type;
@@ -75,7 +75,7 @@ inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types.
 template<typename ... Types, typename ... TTypes>
 inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types...>& i_storage, variant_impl<TTypes...>&& other)
 {
-	if (other.m_currentType < variant_impl<TTypes...>::s_numTypes)
+	if (other.which() < variant_impl<TTypes...>::s_numTypes)
 	{
 		typedef typename mpl::make_sequence<0, mpl::get_num_types<TTypes...>()>::type _range_seq_t;
 		typedef typename constructor_inplace_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;

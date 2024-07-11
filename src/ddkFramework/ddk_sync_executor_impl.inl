@@ -2,6 +2,7 @@
 #include "ddk_thread_impl.h"
 #include "ddk_ucontext.h"
 #include "ddk_async_exceptions.h"
+#include "ddk_executor_interface.h"
 
 namespace ddk
 {
@@ -381,7 +382,7 @@ start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
 						ddk::eval(std::forward<Sink>(sink),_void);
 					}
 
-					m_execContext.notify_recipients();
+					m_execContext.notify_recipients(callable.policy() == SchedulerPolicy::FireAndReuse);
 				}
 			}
 		},i_callable.policy() == SchedulerPolicy::FireAndReuse);
@@ -469,7 +470,7 @@ executor_context_lent_ptr on_time_context_executor<Executor>::get_execution_cont
 template<typename Executor>
 executor_context_const_lent_ptr on_time_context_executor<Executor>::get_execution_context() const
 {
-	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{};
+	return (m_executor) ? m_executor->get_execution_context() : executor_context_const_lent_ptr{};
 }
 
 template<typename Callable,typename Sink>
@@ -519,7 +520,7 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
-		m_continuationToken = (m_execContext) ? m_execContext->enqueue(std::move(callable),m_depth) : continuation_token::ntoken;
+		m_continuationToken = (m_execContext) ? m_execContext->enqueue(std::move(callable),m_depth) : continuation_token{ continuation_token::ntoken };
 
 		if(!m_continuationToken)
 		{

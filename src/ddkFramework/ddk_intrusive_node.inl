@@ -212,7 +212,7 @@ typename intrusive_node<T,Pointer>::const_reference intrusive_node<T,Pointer>::g
 template<typename T,template<typename>typename Pointer>
 typename intrusive_node<T,Pointer>::rreference intrusive_node<T,Pointer>::extract() &&
 {
-	return impl.extract();
+	return m_impl.extract();
 }
 template<typename T,template<typename>typename Pointer>
 typename intrusive_node<T,Pointer>::pointer intrusive_node<T,Pointer>::operator->()
