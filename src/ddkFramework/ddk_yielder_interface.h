@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_yielder_context.h"
@@ -14,7 +22,7 @@ protected:
 
 public:
 	virtual void yield(yielder_context*) = 0;
-	virtual void suspend(yielder_context*) = 0;
+	virtual bool suspend() = 0;
 };
 
 }

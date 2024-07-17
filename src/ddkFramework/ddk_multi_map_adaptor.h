@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_multi_map.h"
@@ -20,26 +28,22 @@ public:
 	typedef long long difference_type;
 
 	iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable);
+
+	inline auto get_value();
+	inline auto get_value() const;
 	template<typename Sink>
-	inline bool init(Sink&& i_sink,const ddk::shift_action& i_initialAction);
+	inline auto forward_value(Sink&& i_sink);
 	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	inline bool valid() const noexcept;
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const end_action_tag&) const;
+	inline bool perform_action(const forward_action_tag&) const;
+	inline bool perform_action(const backward_action_tag&) const;
+	inline bool perform_action(const displace_action_tag&) const;
+	inline bool valid() const;
 
 private:
-	reference navigate(const ddk::shift_action& i_initailAction);
-	void _navigate(value_t& i_map, std::vector<Key>& i_preffix);
-	
 	multi_map<Key,Value,Map,Allocator>& m_iterable;
-	awaitable<reference> m_awaitable;
-	difference_type m_nextMov = 0;
-	bool m_valid = true;
 };
 
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
@@ -55,26 +59,18 @@ public:
 	typedef long long difference_type;
 
 	iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable);
+	inline auto get_value() const;
 	template<typename Sink>
-	inline bool init(Sink&& i_sink,const ddk::shift_action& i_initialAction);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	inline bool valid() const noexcept;
+	inline auto forward_value(Sink&& i_sink) const;
+	inline bool perform_action(const begin_action_tag&) const;
+	inline bool perform_action(const end_action_tag&) const;
+	inline bool perform_action(const forward_action_tag&) const;
+	inline bool perform_action(const backward_action_tag&) const;
+	inline bool perform_action(const displace_action_tag&) const;
+	inline bool valid() const;
 
 private:
-	const_reference navigate(const ddk::shift_action& i_initailAction);
-	void _navigate(const value_t& i_map, std::vector<Key>& i_preffix);
-
 	const multi_map<Key,Value,Map,Allocator>& m_iterable;
-	awaitable<const_reference> m_awaitable;
-	difference_type m_nextMov = 0;
-	bool m_valid = true;
 };
 
 }

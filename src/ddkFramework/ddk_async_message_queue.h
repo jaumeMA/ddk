@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_async_message.h"
@@ -5,7 +13,7 @@
 #include "ddk_lock_free_stack.h"
 #include "ddk_linked_list.h"
 #include "ddk_optional.h"
-#include "ddk_thread_executor_interface.h"
+#include "ddk_thread_executor.h"
 #include "ddk_async_defs.h"
 #include "ddk_exclusion_area.h"
 
@@ -38,7 +46,10 @@ public:
     using async_message_queue<MessageType>::empty;
     using async_message_queue<MessageType>::pop_message;
 
-	async_attachable_message_queue(thread_executor_unique_ref i_executor);
+	async_attachable_message_queue() = default;
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(thread_event_driven_executor,Args...))
+	async_attachable_message_queue(Args&& ... i_args);
 	void start(sender_id i_id, const ddk::function<void(const MessageType&)>& i_processor);
 	void stop(sender_id i_id);
 	void push_message(const MessageType& i_msg) override;
@@ -51,7 +62,7 @@ public:
 private:
 	exclusion_area m_exclArea;
 	linked_list<std::pair<sender_id,ddk::function<void(const message_type&)>>>	m_receivers;
-	thread_executor_unique_ref m_executor;
+	thread_event_driven_executor m_executor;
 };
 
 }

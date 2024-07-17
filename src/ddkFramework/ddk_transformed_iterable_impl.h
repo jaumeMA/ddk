@@ -1,52 +1,169 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_iterable_impl_interface.h"
-#include "ddk_function.h"
+#include "ddk_iterable_visitor.h"
+#include "ddk_arena.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename Function>
+template<typename Traits,typename Iterable>
+inline auto transform_iterable(Iterable&& i_iterable);
+
+template<typename,typename,typename>
+struct iterable_transformed_action;
+
+template<typename Reference,typename Transform, typename ActionTag>
+struct iterable_transformed_action
+{
+public:
+	iterable_transformed_action(const Transform& i_transform, ActionTag i_actionTag);
+
+	auto operator*();
+	template<typename T>
+	constexpr inline Reference operator()(T&& i_args) const;
+
+private:
+	const Transform m_transform;
+	ActionTag m_actionTag;
+};
+template<typename Reference,typename Transform, typename Sink>
+struct iterable_transformed_action<Reference,Transform,sink_action_tag<Sink>>
+{
+public:
+	template<typename SSink>
+	iterable_transformed_action(const Transform& i_transform,SSink&& i_actionTag);
+	~iterable_transformed_action();
+
+	auto operator*();
+	template<typename T>
+	constexpr inline Reference operator()(T&& i_args) const;
+
+private:
+	const Transform m_transform;
+	sink_action_tag<Sink> m_actionTag;
+	mutable typed_arena<Reference> m_cache;
+};
+
+template<typename Transform>
 class iterable_transform
 {
 public:
-	iterable_transform(const Function& i_transform);
+	TEMPLATE(typename TTransform)
+    REQUIRES(IS_CONSTRUCTIBLE(Transform,TTransform))
+    iterable_transform(TTransform&& i_transform);
 
-	Function get_transform() const;
+	template<typename Reference,typename ActionTag>
+	auto map_action(ActionTag&& i_action) const;
 
 private:
-	const Function m_transform;
+	const Transform m_transform;
+};
+template<typename Transform>
+iterable_transform(const Transform&) -> iterable_transform<Transform>;
+template<typename Transform>
+iterable_transform(Transform&&) -> iterable_transform<Transform>;
+
+template<typename FromTraits,typename ToTraits>
+class traits_conversion_callable
+{
+public:
+    typedef typename FromTraits::value_type from_value_type;
+    typedef typename ToTraits::value_type to_value_type;
+    typedef typename FromTraits::reference from_reference;
+    typedef typename ToTraits::reference to_reference;
+    typedef typename FromTraits::const_reference from_const_reference;
+    typedef typename ToTraits::const_reference to_const_reference;
+
+    inline to_reference operator()(from_reference i_value) const;
+	TEMPLATE(typename T)
+	REQUIRES(IS_CONVERTIBLE(T,to_const_reference))
+	inline to_const_reference operator()(T&& i_value, ...) const; //added variadic for avoiding clash when from_reference and from_const_reference are the same
 };
 
-template<typename PublicTraits, typename PrivateTraits, typename Function>
-class transformed_iterable_impl : public iterable_impl_interface<typename PublicTraits::iterable_base_traits>
+template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform>
+class transformed_iterable_impl : public iterable_impl_interface<PublicTraits>, public iterable_visitor<transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
 {
-    static_assert(std::is_same<typename PublicTraits::action,typename PrivateTraits::action>::value, "Actions from both public and private traits shall be the same");
-    //static_assert(std::is_constructible<typename mpl::aqcuire_callable_return_type<Function>::type,typename PublicTraits::reference>::value || std::is_convertible<typename mpl::aqcuire_callable_return_type<Function>::type,typename PublicTraits::reference>::value, "You shall provider consistent transformations");
-
-    typedef typename PrivateTraits::iterable_base_traits private_iterable_base_traits;
-    typedef typename PrivateTraits::reference private_reference;
-    typedef typename PrivateTraits::const_reference private_const_reference;
+	typedef iterable_visitor<transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>> base_t;
 
 public:
-    typedef typename PublicTraits::value_type value_type;
-    typedef typename PublicTraits::reference reference;
-    typedef typename PublicTraits::const_reference const_reference;
-    typedef typename PublicTraits::action action;
+    typedef PublicTraits traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
 
-    transformed_iterable_impl(iterable_impl_dist_ref<private_iterable_base_traits> i_iterableRef, const Function& i_transform);
+    TEMPLATE(typename IIterable)
+    REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable))
+    transformed_iterable_impl(IIterable&& i_iterable, const ddk::detail::iterable_transform<Transform>& i_transform);
 
-private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-
-    iterable_impl_dist_ref<private_iterable_base_traits> m_iterableRef;
-    const Function m_transform;
+    TEMPLATE(typename Action)
+    REQUIRES(ACTION_SUPPORTED(traits,Action))
+    void iterate_impl(Action&& i_initialAction);
+    TEMPLATE(typename Action)
+    REQUIRES(ACTION_SUPPORTED(const_traits,Action))
+    void iterate_impl(Action&& i_initialAction) const;
 };
 
 }
+
+template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
+class iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
+{
+	typedef PrivateTraits private_traits;
+	typedef detail::const_iterable_traits<private_traits> private_const_traits;
+	template<typename Adaptor>
+	using private_adaptor_traits = typename mpl::which_type<mpl::is_const<Adaptor>,private_const_traits,private_traits>::type;
+
+public:
+	typedef PublicTraits traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	iterable_adaptor(Iterable& i_iterable, const detail::iterable_transform<Transform>& i_tranform);
+
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
+
+private:
+	mutable deduced_adaptor<Iterable> m_adaptor;
+	const ddk::detail::iterable_transform<Transform> m_transform;
+};
+
+template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
+class iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
+{
+	typedef PrivateTraits private_traits;
+	typedef detail::const_iterable_traits<private_traits> private_const_traits;
+	template<typename Adaptor>
+	using private_adaptor_traits = typename mpl::which_type<mpl::is_const<Adaptor>,private_const_traits,private_traits>::type;
+
+public:
+	typedef typename Iterable::traits traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	iterable_adaptor(const Iterable& i_iterable, const detail::iterable_transform<Transform>& i_transform);
+
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
+
+private:
+	deduced_adaptor<const Iterable> m_adaptor;
+	const ddk::detail::iterable_transform<Transform> m_transform;
+};
+
 }
 
 #include "ddk_transformed_iterable_impl.inl"

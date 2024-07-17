@@ -1,3 +1,4 @@
+
 #include <gtest/gtest.h>
 #include "ddk_awaitable.h"
 #include "ddk_thread_pool.h"
@@ -12,8 +13,6 @@ class DDKAwaitableTest: public Test
 
 int compute(int a)
 {
-	int b = a;
-
 	while(a < 50)
 	{
 		++a;
@@ -21,7 +20,7 @@ int compute(int a)
 		ddk::pause();
 	}
 
-	return b;
+	return a;
 }
 
 TEST(DDKAwaitableTest,voidAwait)
@@ -43,6 +42,8 @@ TEST(DDKAwaitableTest,voidAwait)
 	// 		{
 	// 			if(ddk::awaited_result<int> res = resume(newAwaitable))
 	// 			{
+	// 				int resValue = res.get();
+
 	// 				done = true;
 	// 			}
 	// 		}

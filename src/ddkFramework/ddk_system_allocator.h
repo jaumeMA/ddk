@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_reference_wrapper_deleter.h"
@@ -9,16 +17,7 @@
 namespace ddk
 {
 
-class system_deleter
-{
-public:
-    static void deallocate(const void* i_ptr);
-    TEMPLATE(typename T)
-    REQUIRES(IS_CLASS(T))
-    static void deallocate(T* i_ptr);
-};
-
-class system_allocator : public system_deleter
+class system_allocator
 {
 public:
     typedef system_allocator allocator;
@@ -30,22 +29,15 @@ public:
 	system_allocator() = default;
     static void* allocate(size_t i_size);
     static void* reallocate(void *ptr, size_t i_newSize);
+    TEMPLATE(typename T)
+    REQUIRES(IS_CLASS(T))
+    static void deallocate(T* i_ptr);
+    static void deallocate(void* i_ptr, ...);
 };
 extern system_allocator g_system_allocator;
 
 template<typename T>
-class typed_system_deleter
-{
-public:
-    static inline void deallocate(T* i_ptr);
-    static inline void deallocate(const void* i_ptr,...);
-
-protected:
-    typed_system_deleter() = default;
-};
-
-template<typename T>
-class typed_system_allocator : public typed_system_deleter<T>
+class typed_system_allocator
 {
 public:
     typedef typed_system_allocator allocator;
@@ -63,6 +55,8 @@ public:
     static void* allocate();
     static void* allocate(size_t i_size);
     static void* reallocate(void* ptr,size_t i_newSize);
+    static void deallocate(T* i_ptr);
+    static void deallocate(void* i_ptr,...);
     TEMPLATE(typename TT)
     REQUIRES(IS_BASE_OF(TT,T))
     typed_system_allocator& operator=(const typed_system_allocator<TT>&);

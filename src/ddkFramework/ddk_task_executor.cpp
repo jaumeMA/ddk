@@ -16,7 +16,7 @@ task_executor::task_executor(size_t i_numThreads, size_t i_maxNumPendingTasks)
 	m_connection = m_availableThreads.on_availableThreads.connect(make_function([this]()
 	{
         if(m_state.get() == Running)
-        {            m_updateThread.signal_thread();
+        {            m_updateThread.signal();
         }
     }));
 }
@@ -28,7 +28,7 @@ bool task_executor::start()
 {
 	if(ddk::atomic_compare_exchange(m_state,Idle,Starting))
 	{
-		if(m_updateThread.start(make_function(this,&task_executor::update),make_function([this](){ return (m_pendingTasks.empty() == false) && m_availableThreads.available_threads(); })))
+		if (m_updateThread.start([this]() { update(); },[this]() { return (m_pendingTasks.empty() == false) && m_availableThreads.available_threads(); }))
 		{
 			m_state = Running;
 		}
@@ -86,7 +86,7 @@ void task_executor::subscribe(task_executed_scheduler i_scheduler)
 
 	atomic_post_increment(m_numPendingTasks);
 
-	m_updateThread.signal_thread();
+	m_updateThread.signal();
 }
 bool task_executor::running() const
 {

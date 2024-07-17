@@ -1,9 +1,16 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include "ddk_tuple.h"
-#include "ddk_function_template_helper.h"
+#include "ddk_tuple_impl.h"
 #include "ddk_tuple_template_helper.h"
-#include "ddk_function_arguments.h"
+#include "ddk_function_arguments_template_helper.h"
 #include "ddk_function_impl.h"
 
 namespace ddk
@@ -17,7 +24,7 @@ struct sequence_composer;
 template<size_t Index>
 struct sequence_composer<Index>
 {
-    typedef mpl::type_pack<> type;
+    typedef mpl::empty_type_pack type;
 };
 
 template<size_t Index, typename CallableArgs, typename ... CallablesArgs>

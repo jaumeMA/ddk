@@ -69,6 +69,8 @@ one_shot_thread_impl::~one_shot_thread_impl()
 }
 typename one_shot_thread_impl::start_result one_shot_thread_impl::start(const ddk::function<void()>& i_function, yielder* i_yielder)
 {
+launch_thread:
+
 	if(m_started == false)
 	{
 		if(i_function != nullptr)
@@ -94,7 +96,19 @@ typename one_shot_thread_impl::start_result one_shot_thread_impl::start(const dd
 	}
 	else
 	{
-		return ddk::make_error<start_result>(StartErrorCode::StartNotAvailable, "Thread is alreday started.");
+		void* res = nullptr;
+		const int joinRes = pthread_join(m_thread,&res);
+
+		if (joinRes == 0)
+		{
+			m_started = false;
+
+			goto launch_thread;
+		}
+		else
+		{
+			return ddk::make_error<start_result>(StartErrorCode::StartNotAvailable, "Thread is alreday started.");
+		}
 	}
 }
 typename one_shot_thread_impl::stop_result one_shot_thread_impl::stop()

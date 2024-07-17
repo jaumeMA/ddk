@@ -1,0 +1,276 @@
+diff --git a/src/ddkFramework/ddk_iterable_algorithm.h b/src/ddkFramework/ddk_iterable_algorithm.h
+index c70967b..963a237 100644
+--- a/src/ddkFramework/ddk_iterable_algorithm.h
++++ b/src/ddkFramework/ddk_iterable_algorithm.h
+@@ -78,6 +78,8 @@ public:
+ 	constexpr transform_iterable_transform() = default;
+ 	template<typename Functor>
+ 	inline auto operator()(Functor&& i_transform) const;
++	template<typename Return,typename Functor>
++	inline auto operator()(Functor&& i_transform) const;
+ };
+ const transform_iterable_transform transform;
+ 
+diff --git a/src/ddkFramework/ddk_iterable_algorithm.inl b/src/ddkFramework/ddk_iterable_algorithm.inl
+index a21834c..94c3408 100644
+--- a/src/ddkFramework/ddk_iterable_algorithm.inl
++++ b/src/ddkFramework/ddk_iterable_algorithm.inl
+@@ -13,6 +13,11 @@ auto transform_iterable_transform::operator()(Functor&& i_transform) const
+ {
+ 	return detail::iterable_transform<Functor>{i_transform};
+ }
++template<typename Return,typename Functor>
++auto transform_iterable_transform::operator()(Functor&& i_transform) const
++{
++	return detail::iterable_transform<Functor>{i_transform};
++}
+ 
+ }
+ }
+diff --git a/src/ddkFramework/ddk_iterable_utils.h b/src/ddkFramework/ddk_iterable_utils.h
+index ddba011..2bdd241 100644
+--- a/src/ddkFramework/ddk_iterable_utils.h
++++ b/src/ddkFramework/ddk_iterable_utils.h
+@@ -45,9 +45,9 @@ using deduced_iterable = decltype(deduce_iterable(std::declval<T&&>()));
+ 
+ }
+ 
+-TEMPLATE(typename Function, typename Iterable)
++TEMPLATE(typename Function, typename Return, typename Iterable)
+ REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+-inline auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterable&& i_rhs);
++inline auto operator<<=(const ddk::detail::iterable_transform<Function,Return>& i_lhs, Iterable&& i_rhs);
+ 
+ TEMPLATE(typename Function,typename Iterable)
+ REQUIRES(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+diff --git a/src/ddkFramework/ddk_iterable_utils.inl b/src/ddkFramework/ddk_iterable_utils.inl
+index 8bee324..b6514ff 100644
+--- a/src/ddkFramework/ddk_iterable_utils.inl
++++ b/src/ddkFramework/ddk_iterable_utils.inl
+@@ -54,9 +54,9 @@ resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
+ 
+ }
+ 
+-TEMPLATE(typename Function,typename Iterable)
++TEMPLATE(typename Function,typename Return,typename Iterable)
+ REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+-auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterable&& i_rhs)
++auto operator<<=(const ddk::detail::iterable_transform<Function,Return>& i_lhs, Iterable&& i_rhs)
+ {
+ 	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_t;
+ 	typedef ddk::resolved_iterable<Iterable> iterable_t;
+@@ -69,7 +69,7 @@ auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterabl
+ 	typedef typename ddk::mpl::action_tags_retrait<traits,ddk::detail::by_value_traits<return_t>,ddk::detail::reduce_type_traits,const_tags_t>::type transformed_const_tags;
+ 
+ 	typedef ddk::detail::iterable_traits<ddk::detail::iterable_by_value_adaptor<return_t,transformed_tags,transformed_const_tags>> iterable_transformed_traits;
+-	typedef ddk::detail::transformed_iterable_impl<iterable_transformed_traits,traits,iterable_t,Function> transformed_iterable;
++	typedef ddk::detail::transformed_iterable_impl<iterable_transformed_traits,traits,iterable_t,Function,Return> transformed_iterable;
+ 
+ 	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs));
+ }
+diff --git a/src/ddkFramework/ddk_transformed_iterable_impl.h b/src/ddkFramework/ddk_transformed_iterable_impl.h
+index 4ffb6bc..51165a4 100644
+--- a/src/ddkFramework/ddk_transformed_iterable_impl.h
++++ b/src/ddkFramework/ddk_transformed_iterable_impl.h
+@@ -46,7 +46,7 @@ private:
+ 	mutable typed_arena<Reference> m_cache;
+ };
+ 
+-template<typename Transform>
++template<typename Transform, typename Return = mpl::aqcuire_callable_return_type<Transform>>
+ class iterable_transform
+ {
+ public:
+@@ -78,10 +78,10 @@ public:
+ 	inline to_const_reference operator()(T&& i_value, ...) const; //added variadic for avoiding clash when from_reference and from_const_reference are the same
+ };
+ 
+-template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform>
+-class transformed_iterable_impl : public iterable_impl_interface<PublicTraits>, public iterable_visitor<transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
++template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform, typename Return>
++class transformed_iterable_impl : public iterable_impl_interface<PublicTraits>, public iterable_visitor<transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>
+ {
+-	typedef iterable_visitor<transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>> base_t;
++	typedef iterable_visitor<transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>> base_t;
+ 
+ public:
+     typedef PublicTraits traits;
+@@ -89,7 +89,7 @@ public:
+ 
+     TEMPLATE(typename IIterable)
+     REQUIRES(IS_CONSTRUCTIBLE(Iterable,IIterable))
+-    transformed_iterable_impl(IIterable&& i_iterable, const ddk::detail::iterable_transform<Transform>& i_transform);
++    transformed_iterable_impl(IIterable&& i_iterable, const ddk::detail::iterable_transform<Transform,Return>& i_transform);
+ 
+     TEMPLATE(typename Action)
+     REQUIRES(ACTION_SUPPORTED(traits,Action))
+@@ -101,8 +101,8 @@ public:
+ 
+ }
+ 
+-template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
+-class iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
++template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform,typename Return>
++class iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>
+ {
+ 	typedef PrivateTraits private_traits;
+ 	typedef detail::const_iterable_traits<private_traits> private_const_traits;
+@@ -115,7 +115,7 @@ public:
+ 	typedef typename traits::tags_t tags_t;
+ 	typedef typename traits::const_tags_t const_tags_t;
+ 
+-	iterable_adaptor(Iterable& i_iterable, const detail::iterable_transform<Transform>& i_tranform);
++	iterable_adaptor(Iterable& i_iterable, const detail::iterable_transform<Transform,Return>& i_tranform);
+ 
+ 	TEMPLATE(typename Adaptor, typename ActionTag)
+ 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+@@ -123,11 +123,11 @@ public:
+ 
+ private:
+ 	mutable deduced_adaptor<Iterable> m_adaptor;
+-	const ddk::detail::iterable_transform<Transform> m_transform;
++	const ddk::detail::iterable_transform<Transform,Return> m_transform;
+ };
+ 
+-template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
+-class iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>
++template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform,typename Return>
++class iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>
+ {
+ 	typedef PrivateTraits private_traits;
+ 	typedef detail::const_iterable_traits<private_traits> private_const_traits;
+@@ -140,7 +140,7 @@ public:
+ 	typedef typename traits::tags_t tags_t;
+ 	typedef typename traits::const_tags_t const_tags_t;
+ 
+-	iterable_adaptor(const Iterable& i_iterable, const detail::iterable_transform<Transform>& i_transform);
++	iterable_adaptor(const Iterable& i_iterable, const detail::iterable_transform<Transform,Return>& i_transform);
+ 
+ 	TEMPLATE(typename Adaptor, typename ActionTag)
+ 	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+@@ -148,7 +148,7 @@ public:
+ 
+ private:
+ 	deduced_adaptor<const Iterable> m_adaptor;
+-	const ddk::detail::iterable_transform<Transform> m_transform;
++	const ddk::detail::iterable_transform<Transform,Return> m_transform;
+ };
+ 
+ }
+diff --git a/src/ddkFramework/ddk_transformed_iterable_impl.inl b/src/ddkFramework/ddk_transformed_iterable_impl.inl
+index ff50124..9363f82 100644
+--- a/src/ddkFramework/ddk_transformed_iterable_impl.inl
++++ b/src/ddkFramework/ddk_transformed_iterable_impl.inl
+@@ -49,16 +49,16 @@ constexpr auto iterable_transformed_action<Reference,Transform,sink_action_tag<S
+ 	return  m_cache.template get<Reference>();
+ }
+ 
+-template<typename Transform>
++template<typename Transform, typename Return>
+ TEMPLATE(typename TTransform)
+ REQUIRED(IS_CONSTRUCTIBLE(Transform,TTransform))
+-iterable_transform<Transform>::iterable_transform(TTransform&& i_transform)
++iterable_transform<Transform,Return>::iterable_transform(TTransform&& i_transform)
+ : m_transform(std::forward<TTransform>(i_transform))
+ {
+ }
+-template<typename Transform>
++template<typename Transform,typename Return>
+ template<typename Reference,typename ActionTag>
+-auto iterable_transform<Transform>::map_action(ActionTag&& i_action) const
++auto iterable_transform<Transform,Return>::map_action(ActionTag&& i_action) const
+ {
+ 	return iterable_transformed_action<Reference,Transform,ActionTag>{ m_transform,std::forward<ActionTag>(i_action) };
+ }
+@@ -76,40 +76,40 @@ typename traits_conversion_callable<FromTraits,ToTraits>::to_const_reference tra
+ 	return i_value;
+ }
+ 
+-template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform>
++template<typename PublicTraits, typename PrivateTraits, typename Iterable, typename Transform,typename Return>
+ TEMPLATE(typename IIterable)
+ REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable))
+-transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::transformed_iterable_impl(IIterable&& i_iterable, const detail::iterable_transform<Transform>& i_transform)
++transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>::transformed_iterable_impl(IIterable&& i_iterable, const detail::iterable_transform<Transform,Return>& i_transform)
+ : base_t(i_iterable,i_transform)
+ {
+ }
+-template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform>
++template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform,typename Return>
+ TEMPLATE(typename Action)
+ REQUIRED(ACTION_SUPPORTED(traits,Action))
+-void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Action&& i_initialAction)
++void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>::iterate_impl(Action&& i_initialAction)
+ {
+ 	loop(std::forward<Action>(i_initialAction));
+ }
+-template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform>
++template<typename PublicTraits, typename PrivateTraits, typename Iterable,typename Transform,typename Return>
+ TEMPLATE(typename Action)
+ REQUIRED(ACTION_SUPPORTED(const_traits,Action))
+-void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>::iterate_impl(Action&& i_initialAction) const
++void transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>::iterate_impl(Action&& i_initialAction) const
+ {
+ 	loop(std::forward<Action>(i_initialAction));
+ }
+ 
+ }
+ 
+-template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
+-iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::iterable_adaptor(Iterable& i_iterable, const detail::iterable_transform<Transform>& i_transform)
++template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform,typename Return>
++iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>::iterable_adaptor(Iterable& i_iterable, const detail::iterable_transform<Transform,Return>& i_transform)
+ : m_adaptor(deduce_adaptor(i_iterable))
+ , m_transform(i_transform)
+ {
+ }
+-template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
++template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform,typename Return>
+ TEMPLATE(typename Adaptor, typename ActionTag)
+ REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+-constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
++constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
+ {
+ 	if constexpr (IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(Adaptor,ActionTag))
+ 	{
+@@ -134,16 +134,16 @@ constexpr auto iterable_adaptor<detail::transformed_iterable_impl<PublicTraits,P
+ 	}
+ }
+ 
+-template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
+-iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::iterable_adaptor(const Iterable& i_iterable,const detail::iterable_transform<Transform>& i_transform)
++template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform,typename Return>
++iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>::iterable_adaptor(const Iterable& i_iterable,const detail::iterable_transform<Transform,Return>& i_transform)
+ : m_adaptor(deduce_adaptor(i_iterable))
+ , m_transform(i_transform)
+ {
+ }
+-template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform>
++template<typename PublicTraits,typename PrivateTraits,typename Iterable,typename Transform,typename Return>
+ TEMPLATE(typename Adaptor, typename ActionTag)
+ REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+-constexpr auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
++constexpr auto iterable_adaptor<const detail::transformed_iterable_impl<PublicTraits,PrivateTraits,Iterable,Transform,Return>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
+ {
+ 	if constexpr (IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(Adaptor,ActionTag))
+ 	{
+diff --git a/test/ddkFrameworkTests/ddk_iterable_test.cpp b/test/ddkFrameworkTests/ddk_iterable_test.cpp
+index d26b690..2c1d7e8 100644
+--- a/test/ddkFrameworkTests/ddk_iterable_test.cpp
++++ b/test/ddkFrameworkTests/ddk_iterable_test.cpp
+@@ -169,9 +169,14 @@ myForwardAction(const Sink&,bool i_valid) -> myForwardAction<Sink>;
+ 
+ TEST(DDKIterableTest,peformance)
+ {
+-	[](const int& i_value)
++	int value = 0;
++
++	[&](const int& i_value)
+ 	{
++		value++;
+ 	} <<= ddk::view::order(ddk::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= ddk::iter::transform([](int& i_value) { return 2 * i_value; }) <<= v_prova;
++
++	printf("final value: %d\n",value);
+ }
+ struct myAdaptor
+ {

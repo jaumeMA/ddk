@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_sync_executor_context_interface.h"
@@ -38,8 +46,6 @@ private:
 	typedef std::map<unsigned char,std::list<task>> callable_container;
 
 public:
-	function<bool(bool)> call_admissionPredicate;
-
 	async_executor_recipients();
 	async_executor_recipients(async_executor_recipients&& other);
 
@@ -71,14 +77,12 @@ public:
 	execution_context_base();
 	execution_context_base(execution_context_base&& other);
 	void notify_recipients(bool i_useAndKeep);
-	size_t transfer_recipients(execution_context_base&& other);
-	void admission_predicate(const function<bool(bool)>& i_callable);
+	bool transfer_recipients(execution_context_base&& other);
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE(Callable))
 	continuation_token enqueue(Callable&& i_callable, unsigned char i_depth);
-	void transfer(execution_context_base&& other);
+	bool transfer(execution_context_base&& other);
 	bool dismiss(unsigned char i_depth,continuation_token i_token);
-	void clear();
 
 	execution_context_base& operator=(execution_context_base&&) = default;
 
@@ -109,7 +113,7 @@ class thread_execution_context : public detail::execution_context_base, public l
 {
 public:
 	thread_execution_context(thread i_thread);
-	void start(const function<void()>&, bool i_useAndKeep);
+	void start(function<void()>, bool i_useAndKeep);
 	bool cancel();
 
 private:
@@ -121,7 +125,7 @@ class fiber_execution_context : public detail::execution_context_base, public le
 public:
 	fiber_execution_context(fiber i_fiber);
 
-	void start(const function<void()>&, bool i_useAndKeep);
+	void start(function<void()>, bool i_useAndKeep);
 	bool cancel();
 
 private:
@@ -139,7 +143,7 @@ public:
 	bool has_failures() const;
 	continuation_token enqueue(const function<void()>&);
 
-	void start(const function<void()>&);
+	void start(function<void()>);
 
 private:
 	thread_sheaf m_threadSheaf;
@@ -151,20 +155,21 @@ class fiber_sheaf_execution_context : public detail::execution_context_base, pub
 {
 public:
 	fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf);
+	~fiber_sheaf_execution_context();
 
 	bool cancel();
 	void clear_fibers();
-	size_t add_failure();
+	size_t add_success();
 	size_t remove_pending_thread();
 	bool has_pending_fibers() const;
-	bool has_failures() const;
+	bool has_succeed() const;
 	continuation_token enqueue(const function<void()>&);
 
-	void start(const function<void()>&);
+	void start(function<void()>);
 
 private:
 	fiber_sheaf m_fiberSheaf;
-	atomic_size_t m_failedFibers;
+	atomic_size_t m_successFibers;
 	atomic_size_t m_pendingFibers;
 };
 

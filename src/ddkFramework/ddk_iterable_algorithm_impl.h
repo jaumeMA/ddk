@@ -1,9 +1,16 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_future.h"
 #include "ddk_container_concepts.h"
 #include "ddk_concepts.h"
-#include "ddk_iteration_result.h"
 
 namespace ddk
 {
@@ -68,8 +75,8 @@ type_access_dumping<Sink> iterable_dumper_resolver(Sink&,const ValueType&);
 template<typename Sink,typename ValueType>
 using iterable_dumper_type = decltype(iterable_dumper_resolver(std::declval<Sink&>(),std::declval<ValueType>()));
 
-template<typename Sink,typename Traits>
-inline future<iteration_result> iterable_transformation_dump(Sink& i_sink, const ddk::detail::iterable<Traits>& i_transformedIterable);
+template<typename Sink,typename Iterable>
+inline future<iterable_result> iterable_transformation_dump(Sink& i_sink, Iterable&& i_transformedIterable);
 
 }
 }

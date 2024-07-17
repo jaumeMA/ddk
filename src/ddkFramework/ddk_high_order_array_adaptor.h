@@ -1,9 +1,15 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_high_order_array.h"
-#include "ddk_optional.h"
-#include "ddk_iterable_action_defs.h"
-#include <utility>
+#include "ddk_iterable_adaptor.h"
 
 namespace ddk
 {
@@ -11,69 +17,73 @@ namespace ddk
 template<typename T, size_t ... ranks>
 class iterable_adaptor<high_order_array<T,ranks ...>>
 {
+	static const size_t s_totalSize = high_order_array<T,ranks ...>::s_totalSize;
+
 public:
-	typedef typename high_order_array<T,ranks...>::value_type value_type;
-	typedef typename high_order_array<T,ranks...>::reference reference;
-	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
-	typedef long long difference_type;
+	typedef detail::iterable_adaptor_traits<high_order_array<T,ranks...>,
+											mpl::type_pack<agnostic_sink_action_tag<typename high_order_array<T,ranks...>::reference>>,
+											mpl::type_pack<agnostic_sink_action_tag<typename high_order_array<T,ranks...>::const_reference>,begin_action_tag,end_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+	typedef typename high_order_array<T,ranks...>::dimension_t dimension_t;
 
 	iterable_adaptor(high_order_array<T,ranks...>& i_iterable);
-	template<typename Sink>
-	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
-	inline bool valid() const noexcept;
+	template<typename Adaptor, typename Sink>
+	static inline auto perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const end_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const backward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const displace_action_tag&);
 
 private:
 	static const size_t s_numRanks = mpl::get_num_ranks<ranks...>();
 	static constexpr size_t s_ranks[s_numRanks] = { ranks ... };
 
 	high_order_array<T,ranks ...>& m_iterable;
-	mutable size_t m_currIndex = 0;
+	mutable typename traits::difference_type m_currIndex = 0;
 };
 
 template<typename T, size_t ... ranks>
 class iterable_adaptor<const high_order_array<T,ranks ...>>
 {
+	static const size_t s_totalSize = high_order_array<T,ranks ...>::s_totalSize;
+
 public:
-	typedef typename high_order_array<T,ranks...>::value_type value_type;
-	typedef typename high_order_array<T,ranks...>::const_reference reference;
-	typedef typename high_order_array<T,ranks...>::const_reference const_reference;
-	typedef long long difference_type;
+	typedef detail::iterable_adaptor_traits<high_order_array<T,ranks...>,
+											mpl::empty_type_pack,
+											mpl::type_pack<agnostic_sink_action_tag<typename high_order_array<T,ranks...>::const_reference>,begin_action_tag,end_action_tag,forward_action_tag,backward_action_tag,displace_action_tag>> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+	typedef typename high_order_array<T,ranks...>::dimension_t dimension_t;
 
 	iterable_adaptor(const high_order_array<T,ranks...>& i_iterable);
-	template<typename Sink>
-	inline bool init(Sink&& i_sink, const ddk::shift_action& i_initialAction);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
-	inline bool valid() const noexcept;
+	template<typename Adaptor, typename Sink>
+	static inline auto perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const begin_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const end_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const forward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const backward_action_tag&);
+	template<typename Adaptor>
+	static inline auto perform_action(Adaptor&& i_adaptor, const displace_action_tag&);
 
 private:
 	static const size_t s_numRanks = mpl::get_num_ranks<ranks...>();
 	static constexpr size_t s_ranks[s_numRanks] = { ranks ... };
 
 	const high_order_array<T,ranks ...>& m_iterable;
-	mutable size_t m_currIndex = 0;
+	mutable typename traits::difference_type m_currIndex = 0;
 };
 
 }

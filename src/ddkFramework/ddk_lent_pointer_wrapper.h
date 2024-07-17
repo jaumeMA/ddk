@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_reference_counter.h"
@@ -89,6 +97,8 @@ class lent_pointer_wrapper
 	}
 	friend inline void rebase_ptr(lent_pointer_wrapper& i_ref,std::ptrdiff_t i_diff)
 	{
+		typedef tagged_pointer<lent_reference_counter> tagged_reference_counter;
+
 		i_ref.m_data = reinterpret_cast<T*>(reinterpret_cast<char*>(i_ref.m_data) + i_diff);
 		i_ref.m_refCounter.set_pointer(reinterpret_cast<tagged_reference_counter::interface_ptr>(reinterpret_cast<char*>(i_ref.m_refCounter.get_pointer()) + i_diff));
 	}
@@ -135,7 +145,6 @@ public:
 	typedef const_value_type* const_pointer;
 	typedef lent_pointer_wrapper<const_value_type> const_type;
 
-	lent_pointer_wrapper();
 	lent_pointer_wrapper(const std::nullptr_t&);
 	lent_pointer_wrapper(const lent_pointer_wrapper& other);
 	lent_pointer_wrapper(lent_pointer_wrapper&& other);

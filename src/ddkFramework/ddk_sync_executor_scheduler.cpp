@@ -3,23 +3,14 @@
 namespace ddk
 {
 
-void null_async_scheduler::clear_scheduler()
+chained_async_scheduler::chained_async_scheduler(detail::private_async_state_base_shared_ref i_sharedState)
+: m_sharedState(i_sharedState)
 {
 }
 
 polling_async_scheduler::polling_async_scheduler(thread i_thread,std::chrono::milliseconds i_sleepTimeInMS)
-: m_thread(std::move(i_thread))
-, m_sleepTimeInMS(i_sleepTimeInMS)
+: m_executor(std::move(i_thread),i_sleepTimeInMS)
 {
-}
-polling_async_scheduler::~polling_async_scheduler()
-{
-	if (m_stopped == false)
-	{
-		m_stopped = true;
-
-		m_thread.stop();
-	}
 }
 
 }

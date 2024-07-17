@@ -45,6 +45,25 @@ void* fixed_size_or_allocator<Allocator>::allocate(size_t i_size) const
 	return nullptr;
 }
 template<typename Allocator>
+void* fixed_size_or_allocator<Allocator>::reallocate(void* i_ptr,size_t i_newSize) const
+{
+	if (const slab_allocator* fixedSizeAllocator = m_allocator.get_first())
+	{
+		if (void* mem = fixedSizeAllocator->reallocate_chunk(i_ptr,i_newSize))
+		{
+			return mem;
+		}
+	}
+
+	if (void* mem = m_allocator.get_second().reallocate(i_ptr,i_newSize))
+	{
+		return mem;
+	}
+
+	return nullptr;
+
+}
+template<typename Allocator>
 template<typename TT>
 void fixed_size_or_allocator<Allocator>::deallocate(TT* i_ptr) const
 {

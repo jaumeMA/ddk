@@ -13,9 +13,9 @@ void yielder::yield(yielder_context* i_context)
 {
     m_executor.yield(i_context);
 }
-void yielder::suspend(yielder_context* i_context)
+void yielder::suspend()
 {
-    m_executor.suspend(i_context);
+    m_executor.suspend();
 }
 
 

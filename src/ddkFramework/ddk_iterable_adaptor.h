@@ -1,130 +1,225 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include "ddk_optional.h"
+#include "ddk_iterable_traits.h"
 #include "ddk_iterable_action.h"
+#include "ddk_iterable_action_tag_result.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename>
-class iterable_adaptor_base;
+template<typename,typename>
+class iterable_adaptor_actions;
 
+template<typename>
+struct adaptor_iterable_impl;
+
+template<typename Iterable, typename Actions>
+struct adaptor_iterable_impl<iterable_adaptor_actions<Iterable,Actions>>
+{
+	typedef Iterable type;
+};
+
+template<typename Adaptor>
+using __adaptor_iterable = typename adaptor_iterable_impl<Adaptor>::type;
 template<typename Iterable>
-class iterable_adaptor_base
+using __iterable_reference = typename mpl::which_type<std::is_const<Iterable>::value,decltype(*std::declval<typename Iterable::const_iterator>()),decltype(*std::declval<typename Iterable::iterator>())>::type;
+template<typename Iterable>
+using __iterable_const_reference = decltype(*std::declval<typename Iterable::const_iterator>());
+template<typename Iterable>
+using __iterable_value_type = mpl::remove_qualifiers<__iterable_const_reference<Iterable>>;
+template<typename Iterable>
+using __iterable_iterator = typename mpl::which_type<std::is_const<Iterable>::value,typename Iterable::const_iterator,typename Iterable::iterator>::type;
+
+template<typename,typename>
+class iterable_adaptor_action;
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,begin_action_tag>
 {
 public:
-	typedef typename Iterable::iterator iterator;
-	typedef typename Iterable::const_iterator const_iterator;
-	typedef typename Iterable::value_type value_type;
-	typedef typename Iterable::reference reference;
-	typedef typename Iterable::const_reference const_reference;
-	typedef typename Iterable::pointer pointer;
-	typedef typename Iterable::const_pointer const_pointer;
-	typedef long long difference_type;
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<begin_action_tag> const_tags_t;
 
-	iterable_adaptor_base(Iterable& i_iterable);
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable);
 
-	template<typename Sink, typename Action>
-	inline bool init(Sink&& i_sink, Action&& i_initialAction);
-	inline bool valid() const noexcept;
-	template<typename Sink, typename Value>
-	inline bool forward_add_value_in(Value&& i_value, Sink&& i_sink);
-	template<typename Sink>
-	inline bool forward_erase_value_in(Sink&& i_sink);
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const begin_action_tag&);
 
 protected:
+	typedef __iterable_iterator<__adaptor_iterable<Adaptor>> iterator;
+
+	iterator m_beginIterator;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,end_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<end_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable);
+
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const end_action_tag&);
+
+protected:
+	typedef __iterable_iterator<__adaptor_iterable<Adaptor>> iterator;
+
+	iterator m_endIterator;
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,forward_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<forward_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const forward_action_tag&);
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,backward_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<backward_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const backward_action_tag&);
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,displace_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<displace_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const displace_action_tag&);
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,remove_action_tag>
+{
+public:
+	typedef mpl::type_pack<remove_action_tag> tags_t;
+	typedef mpl::empty_type_pack const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	static constexpr inline auto perform_action(Adaptor& i_adaptor, const remove_action_tag&);
+};
+
+template<typename Adaptor,typename T>
+class iterable_adaptor_action<Adaptor,add_action_tag<T>>
+{
+public:
+	typedef mpl::type_pack<add_action_tag<T>> tags_t;
+	typedef mpl::empty_type_pack const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	static constexpr inline auto perform_action(Adaptor& i_adaptor, add_action_tag<T>);
+};
+
+template<typename Adaptor,typename T>
+class iterable_adaptor_action<Adaptor,agnostic_sink_action_tag<T>>
+{
+public:
+	typedef typename mpl::which_type<mpl::is_const<T>,mpl::empty_type_pack,mpl::type_pack<agnostic_sink_action_tag<T>>>::type tags_t;
+	typedef mpl::type_pack<agnostic_sink_action_tag<mpl::add_const<T>>> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	template<typename AAdaptor, typename Sink>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink);
+};
+
+template<typename Adaptor>
+class iterable_adaptor_action<Adaptor,size_action_tag>
+{
+public:
+	typedef mpl::empty_type_pack tags_t;
+	typedef mpl::type_pack<size_action_tag> const_tags_t;
+
+	template<typename Iterable>
+	iterable_adaptor_action(Iterable&& i_iterable) {};
+
+	template<typename AAdaptor>
+	static constexpr inline auto perform_action(AAdaptor&& i_adaptor, const size_action_tag&);
+};
+
+template<typename Iterable,typename ... IterableActions>
+class iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>> : public iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions> ...
+{
+	template<typename,typename>
+	friend class detail::iterable_adaptor_action;
+
+	typedef __iterable_value_type<Iterable> value_type;
+	typedef __iterable_reference<Iterable> reference;
+	typedef __iterable_const_reference<Iterable> const_reference;
+
+public:
+	typedef detail::iterable_by_type_traits<value_type,
+		reference,
+		const_reference,
+		typename mpl::merge_type_packs<typename detail::iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>::tags_t ...>::type,
+		typename mpl::merge_type_packs<typename detail::iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>::const_tags_t ...>::type> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	using detail::iterable_adaptor_action<iterable_adaptor_actions<Iterable,mpl::type_pack<IterableActions...>>,IterableActions>::perform_action ...;
+
+	iterable_adaptor_actions(Iterable& i_iterable);
+
+private:
+	typedef detail::__iterable_iterator<Iterable> iterator;
+
 	Iterable& m_iterable;
-	iterator m_currIterator;
-	const iterator m_endIterator;
+	mutable iterator m_currIterator;
 };
 
 template<typename Iterable>
-class iterable_adaptor_base<const Iterable>
+class iterable_adaptor_actions<Iterable,mpl::type_pack<>>
 {
 public:
-	typedef typename Iterable::iterator iterator;
-	typedef typename Iterable::const_iterator const_iterator;
-	typedef typename Iterable::value_type value_type;
-	typedef typename Iterable::reference reference;
-	typedef typename Iterable::const_reference const_reference;
-	typedef typename Iterable::const_pointer pointer;
-	typedef typename Iterable::const_pointer const_pointer;
-	typedef long long difference_type;
+	typedef detail::iterable_by_type_traits<void,void,void,mpl::empty_type_pack,mpl::empty_type_pack> traits;
+	typedef traits const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
 
-	iterable_adaptor_base(const Iterable& i_iterable);
-
-	inline bool valid() const noexcept;
-	template<typename Sink,typename Action>
-	inline bool init(Sink&& i_sink, Action&& i_initialAction);
-
-protected:
-	const Iterable& m_iterable;
-	const_iterator m_currIterator;
-	const const_iterator m_endIterator;
-};
-
-template<typename Iterable>
-class forward_iterable_adaptor : public iterable_adaptor_base<Iterable>
-{
-public:
-	using iterable_adaptor_base<Iterable>::iterable_adaptor_base;
-	using typename iterable_adaptor_base<Iterable>::value_type;
-	using typename iterable_adaptor_base<Iterable>::reference;
-	using typename iterable_adaptor_base<Iterable>::const_reference;
-	using typename iterable_adaptor_base<Iterable>::pointer;
-	using typename iterable_adaptor_base<Iterable>::const_pointer;
-	using typename iterable_adaptor_base<Iterable>::difference_type;
-
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_next_value_in(Sink&& i_sink) const;
-};
-
-template<typename Iterable>
-class bidirectional_iterable_adaptor : public forward_iterable_adaptor<Iterable>
-{
-	typedef typename mpl::static_if<std::is_const<Iterable>::value,typename Iterable::const_reverse_iterator,typename Iterable::reverse_iterator>::type reverse_iterator;
-
-public:
-	using typename forward_iterable_adaptor<Iterable>::value_type;
-	using typename forward_iterable_adaptor<Iterable>::reference;
-	using typename forward_iterable_adaptor<Iterable>::const_reference;
-	using typename forward_iterable_adaptor<Iterable>::pointer;
-	using typename forward_iterable_adaptor<Iterable>::const_pointer;
-	using typename forward_iterable_adaptor<Iterable>::difference_type;
-
-	bidirectional_iterable_adaptor(Iterable& i_iterable);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_prev_value_in(Sink&& i_sink) const;
-
-protected:
-	const reverse_iterator m_endReverseIterator;
-};
-
-template<typename>
-class random_access_iterable_adaptor;
-
-template<typename Iterable>
-class random_access_iterable_adaptor : public bidirectional_iterable_adaptor<Iterable>
-{
-public:
-	using bidirectional_iterable_adaptor<Iterable>::bidirectional_iterable_adaptor;
-	using typename bidirectional_iterable_adaptor<Iterable>::value_type;
-	using typename bidirectional_iterable_adaptor<Iterable>::reference;
-	using typename bidirectional_iterable_adaptor<Iterable>::const_reference;
-	using typename bidirectional_iterable_adaptor<Iterable>::pointer;
-	using typename bidirectional_iterable_adaptor<Iterable>::const_pointer;
-	using typename bidirectional_iterable_adaptor<Iterable>::difference_type;
-
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift, Sink&& i_sink);
-	template<typename Sink>
-	inline difference_type forward_shift_value_in(difference_type i_shift,Sink&& i_sink) const;
+	iterable_adaptor_actions(Iterable& i_iterable)
+	{
+	}
 };
 
 }

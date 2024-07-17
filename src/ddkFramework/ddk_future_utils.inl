@@ -4,7 +4,7 @@ namespace ddk
 
 TEMPLATE(typename ... Futures)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER(0,Futures...),TYPE_CONTAINS_SYMBOL(Futures,future_tag)...)
-auto fusion(Futures&& ... i_components)
+auto compose(Futures&& ... i_components)
 {
 	if constexpr (mpl::are_same_type<typename Futures::value_type ...>())
 	{

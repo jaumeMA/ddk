@@ -1,5 +1,14 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
+#include "ddk_lent_reference_wrapper.h"
 #include "ddk_arena.h"
 #include "ddk_template_helper.h"
 #include "ddk_type_concepts.h"
@@ -11,26 +20,8 @@ namespace ddk
 template<typename T>
 inline void* aligned_allocate(void*& i_ptr,size_t& i_remainingSize);
 
-template<typename Deleter>
-class deleter_proxy
-{
-public:
-	deleter_proxy(const Deleter& i_deleter);
-	TEMPLATE(typename DDeleter)
-	REQUIRES(IS_CONSTRUCTIBLE(Deleter,DDeleter))
-	deleter_proxy(const DDeleter& i_deleter);
-
-	template<typename T>
-	inline void deallocate(T* i_address) const;
-
-private:
-	const Deleter* m_deleter;
-};
-template<typename Deleter>
-deleter_proxy(const Deleter&) -> deleter_proxy<Deleter>;
-
 template<typename Allocator>
-class allocator_proxy : public deleter_proxy<Allocator>
+class allocator_proxy
 {
 public:
 	typedef Allocator allocator;
@@ -40,11 +31,13 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 	allocator_proxy(const Allocator& i_allocator);
-	TEMPLATE(typename AAllocator)
-	REQUIRES(IS_CONSTRUCTIBLE(Allocator,AAllocator))
-	allocator_proxy(const AAllocator& i_allocator);
 
 	inline auto allocate(size_t i_size = 1) const;
+	inline void* reallocate(void*,size_t) const;
+	TEMPLATE(typename T)
+	REQUIRES(IS_CLASS(T))
+	inline void deallocate(T* i_address) const;
+	inline void deallocate(void* i_address) const;
 
 private:
 	const Allocator* m_allocator;
@@ -52,82 +45,39 @@ private:
 template<typename Allocator>
 allocator_proxy(const Allocator&) -> allocator_proxy<Allocator>;
 
-template<typename T, typename Allocator>
-class typed_allocator_proxy : allocator_proxy<Allocator>
+class allocator_interface
 {
 public:
-	typedef Allocator allocator;
-	typedef T type;
-	typedef type* pointer;
-	typedef const type* const_pointer;
+	typedef allocator_interface allocator;
+	typedef void type;
+	typedef void* pointer;
+	typedef const void* const_pointer;
 	typedef std::ptrdiff_t difference_type;
-	using allocator_proxy<Allocator>::allocate;
-	using allocator_proxy<Allocator>::deallocate;
 
-	TEMPLATE(typename AAllocator)
-	REQUIRES(IS_CONSTRUCTIBLE(Allocator,AAllocator))
-	typed_allocator_proxy(const AAllocator& i_deallocator);
+	virtual ~allocator_interface() = default;
+	virtual void* allocate(size_t) const = 0;
+	virtual void* reallocate(void*,size_t) const = 0;
+	virtual void deallocate(void*) const = 0;
 };
+typedef allocator_proxy<allocator_interface> allocator_interface_proxy;
 
-template<typename T,typename Deleter>
-class typed_deleter_proxy : deleter_proxy<Deleter>
+using allocator_lent_ref = lent_reference_wrapper<allocator_interface>;
+using allocator_const_lent_ref = lent_reference_wrapper<const allocator_interface>;
+using allocator_lent_ptr = lent_pointer_wrapper<allocator_interface>;
+using allocator_const_lent_ptr = lent_pointer_wrapper<const allocator_interface>;
+
+class wrapped_allocator
 {
 public:
-	typedef Deleter deleter;
-	typedef T type;
-	typedef type* pointer;
-	typedef const type* const_pointer;
-	typedef std::ptrdiff_t difference_type;
-	using deleter_proxy<Deleter>::deallocate;
-
-	TEMPLATE(typename DDeleter)
-	REQUIRES(IS_CONSTRUCTIBLE(Deleter,DDeleter))
-	typed_deleter_proxy(const DDeleter& i_deleter);
-};
-
-template<typename ... Allocators>
-struct allocator_variant
-{
-	static const size_t s_num_allocators = mpl::num_types<Allocators...>;
-	static const size_t s_invalidAllocator = -1;
-	typedef typename mpl::max_type<Allocators...>::type dominant_type;
-
-public:
-	typedef allocator_variant allocator;
-	typedef typename mpl::reduce_to_common_type<Allocators...> type;
-	typedef type* pointer;
-	typedef const type* const_pointer;
+	typedef wrapped_allocator allocator;
+	typedef void type;
+	typedef void* pointer;
+	typedef const void* const_pointer;
 	typedef std::ptrdiff_t difference_type;
 
-	template<typename Allocator>
-	allocator_variant(const Allocator& i_allocator);
-	allocator_variant(const allocator_variant& other);
-	allocator_variant(allocator_variant&& other);
-	~allocator_variant();
-
-	template<typename Allocator>
-	allocator_variant& operator=(const Allocator& i_allocator);
-	inline void* allocate(size_t i_size = 1) const;
-	template<typename T>
-	inline void deallocate(T* i_address) const;
-
-private:
-	void construct(const allocator_variant& other);
-	void construct(allocator_variant&& other);
-	void destroy();
-	template<typename Allocator>
-	inline static void* resolve_allocate(const typed_arena<dominant_type>&, size_t i_size);
-	template<typename Allocator, typename T>
-	inline static void resolve_deallocate(const typed_arena<dominant_type>&, T* i_ptr);
-	template<typename Allocator>
-	inline static void resolve_construct(typed_arena<dominant_type>&, const typed_arena<dominant_type>& other);
-	template<typename Allocator>
-	inline static void resolve_construct(typed_arena<dominant_type>&, typed_arena<dominant_type>&& other);
-	template<typename Allocator>
-	inline static void resolve_destroy(typed_arena<dominant_type>&);
-
-	typed_arena<dominant_type> m_allocator;
-	size_t m_currAllocator = s_invalidAllocator;
+	void* allocate(size_t) const;
+	void* reallocate(void*,size_t) const;
+	void deallocate(void*) const;
 };
 
 }

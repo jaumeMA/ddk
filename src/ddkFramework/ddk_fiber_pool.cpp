@@ -71,7 +71,7 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 		{
 			m_inUseFibers++;
 
-			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),deleter_proxy{ *this });
+			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),allocator_proxy{ *this});
 
 			m_fiberScheduler->register_fiber(acquiredFiber);
 
@@ -88,7 +88,7 @@ fiber_pool::acquire_result<fiber> fiber_pool::aquire_fiber()
 
 		fiber_container::iterator itFiber = m_fiberCtr.begin() + m_fiberCtr.size() - 1;
 
-		fiber acquiredFiber = as_unique_reference(*itFiber,deleter_proxy{ *this });
+		fiber acquiredFiber = as_unique_reference(*itFiber,allocator_proxy{ *this });
 
 		m_fiberCtr.erase(itFiber);
 
@@ -115,7 +115,7 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 		fiber_container::iterator itFiber = m_fiberCtr.begin();
 		for(size_t threadIndex = 0; threadIndex < availableThreads; ++threadIndex,++itFiber)
 		{
-			fiber acquiredFiber = as_unique_reference(*itFiber,deleter_proxy{ *this });
+			fiber acquiredFiber = as_unique_reference(*itFiber,allocator_proxy{ *this });
 
 			fiber_secheduler_t::register_fiber_result regRes = m_fiberScheduler->register_fiber(acquiredFiber);
 
@@ -134,7 +134,7 @@ fiber_pool::acquire_result<fiber_sheaf> fiber_pool::acquire_sheaf(size_t i_size)
 
 		for(size_t fiberIndex = 0; fiberIndex < missingFibers; ++fiberIndex)
 		{
-			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),deleter_proxy{ *this });
+			fiber acquiredFiber = as_unique_reference(new detail::fiber_impl({ m_stackAllocator,m_numMaxPages },*m_fiberScheduler),allocator_proxy{ *this });
 
 			fiber_secheduler_t::register_fiber_result regRes = m_fiberScheduler->register_fiber(acquiredFiber);
 

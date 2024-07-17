@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename T>
-private_async_state<T>::private_async_state()
+constexpr private_async_state<T>::private_async_state()
 : m_arena(none)
 , m_mutex(MutexType::Recursive)
 {
@@ -18,76 +18,15 @@ private_async_state<T>::private_async_state()
 template<typename T>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
-private_async_state<T>::private_async_state(Args&& ... i_args)
+constexpr private_async_state<T>::private_async_state(Args&& ... i_args)
 : private_async_state()
 {
 	emplace(std::forward<Args>(i_args)...);
 }
 template<typename T>
-typename private_async_state<T>::cancel_result private_async_state<T>::cancel()
-{
-	mutex_guard lg(m_mutex);
-
-	if(m_asyncExecutor)
-	{
-		return m_asyncExecutor->cancel();
-	}
-	else
-	{
-		return make_error<cancel_result>(async_cancellable_interface::CancelErrorCode::CancelNoAsync);
-	}
-}
-template<typename T>
-void private_async_state<T>::attach(async_cancellable_dist_ptr i_executor)
-{
-	mutex_guard lg(m_mutex);
-
-	m_asyncExecutor = i_executor;
-}
-template<typename T>
-bool private_async_state<T>::detach()
-{
-	mutex_guard lg(m_mutex);
-
-	if (m_asyncExecutor)
-	{
-		m_asyncExecutor = nullptr;
-
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-template<typename T>
-template<typename Predicate>
-bool private_async_state<T>::detach_if(Predicate&& i_predicate)
-{
-	mutex_guard lg(m_mutex);
-
-	if(static_cast<bool>(m_asyncExecutor) && ddk::eval(std::forward<Predicate>(i_predicate)))
-	{
-		m_asyncExecutor = nullptr;
-
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-template<typename T>
-async_cancellable_dist_ptr private_async_state<T>::get_async_execution() const
-{
-	mutex_guard lg(m_mutex);
-
-	return m_asyncExecutor;
-}
-template<typename T>
 TEMPLATE(typename ... Args)
 REQUIRED(IS_CONSTRUCTIBLE(T,Args...))
-void private_async_state<T>::emplace(Args&& ... i_args)
+constexpr void private_async_state<T>::emplace(Args&& ... i_args)
 {
 	mutex_guard lg(m_mutex);
 
@@ -96,7 +35,7 @@ void private_async_state<T>::emplace(Args&& ... i_args)
 	m_condVar.notify_all();
 }
 template<typename T>
-void private_async_state<T>::set_value(sink_type i_value)
+constexpr void private_async_state<T>::set_value(sink_type i_value)
 {
 	mutex_guard lg(m_mutex);
 
@@ -105,7 +44,7 @@ void private_async_state<T>::set_value(sink_type i_value)
 	m_condVar.notify_all();
 }
 template<typename T>
-void private_async_state<T>::set_exception(const async_exception& i_exception)
+constexpr void private_async_state<T>::set_exception(const async_exception& i_exception)
 {
 	mutex_guard lg(m_mutex);
 
@@ -114,12 +53,12 @@ void private_async_state<T>::set_exception(const async_exception& i_exception)
 	m_condVar.notify_all();
 }
 template<typename T>
-void private_async_state<T>::signal() const
+constexpr void private_async_state<T>::signal() const
 {
 	m_condVar.notify_all();
 }
 template<typename T>
-typename private_async_state<T>::const_reference private_async_state<T>::get_value() const
+constexpr typename private_async_state<T>::const_reference private_async_state<T>::get_value() const
 {
 	mutex_guard lg(m_mutex);
 
@@ -142,7 +81,7 @@ typename private_async_state<T>::const_reference private_async_state<T>::get_val
 	}
 }
 template<typename T>
-typename private_async_state<T>::reference private_async_state<T>::get_value()
+constexpr typename private_async_state<T>::reference private_async_state<T>::get_value()
 {
 	mutex_guard lg(m_mutex);
 
@@ -165,7 +104,7 @@ typename private_async_state<T>::reference private_async_state<T>::get_value()
 	}
 }
 template<typename T>
-embedded_type<T> private_async_state<T>::extract_value() &&
+constexpr embedded_type<T> private_async_state<T>::extract_value() &&
 {
 	mutex_guard lg(m_mutex);
 
@@ -180,7 +119,7 @@ embedded_type<T> private_async_state<T>::extract_value() &&
 
 		m_arena = none;
 
-		return std::move(res);
+		return res;
 	}
 	else if(m_arena.template is<async_exception>())
 	{
@@ -192,14 +131,14 @@ embedded_type<T> private_async_state<T>::extract_value() &&
 	}
 }
 template<typename T>
-void private_async_state<T>::clear()
+constexpr void private_async_state<T>::clear()
 {
 	mutex_guard lg(m_mutex);
 
 	m_arena = none;
 }
 template<typename T>
-void private_async_state<T>::wait() const
+constexpr void private_async_state<T>::wait() const
 {
 	mutex_guard lg(m_mutex);
 
@@ -209,7 +148,7 @@ void private_async_state<T>::wait() const
 	}
 }
 template<typename T>
-void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period) const
+constexpr void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period) const
 {
 	mutex_guard lg(m_mutex);
 
@@ -219,50 +158,11 @@ void private_async_state<T>::wait_for(const std::chrono::milliseconds& i_period)
 	}
 }
 template<typename T>
-bool private_async_state<T>::ready() const
+constexpr bool private_async_state<T>::ready() const
 {
 	mutex_guard lg(m_mutex);
 
 	return (m_arena.template is<detail::none_t>() == false);
-}
-
-template<typename T,typename TT>
-embedded_private_async_state<T,TT>::embedded_private_async_state()
-: m_refCounter(nullptr,*this)
-{
-}
-template<typename T,typename TT>
-embedded_private_async_state<T,TT>::~embedded_private_async_state()
-{
-	this->detach();
-
-	DDK_ASSERT(m_refCounter.hasSharedReferences() == false,"Pending shared references while destroying embedded async state");
-}
-template<typename T, typename TT>
-template<typename ... Args>
-TT& embedded_private_async_state<T,TT>::attach(Args&& ... i_args)
-{
-	typedef ddk::tagged_pointer<distributed_reference_counter> tagged_reference_counter;
-
-	m_arena.template construct<TT>(std::forward<Args>(i_args)...);
-
-	m_refCounter = distributed_async_control_block(m_arena.template get_ptr<TT>(),*this);
-
-	private_async_state<T>::attach(ddk::as_distributed_reference(m_arena.template get_ptr<TT>(),tagged_reference_counter{ &m_refCounter,ddk::ReferenceAllocationType::Embedded }));
-
-	return m_arena.template get<TT>();
-}
-template<typename T,typename TT>
-void embedded_private_async_state<T,TT>::deallocate(TT* i_ptr) const
-{
-	if (m_arena.template get_ptr<TT>() == i_ptr)
-	{
-		m_arena.template destroy<TT>();
-	}
-	else
-	{
-		throw async_exception("Mismatch between embedded async and to delete async addresses");
-	}
 }
 
 }

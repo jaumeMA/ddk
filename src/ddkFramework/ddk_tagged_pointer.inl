@@ -21,7 +21,7 @@ tagged_pointer<T>::tagged_pointer(interface_ptr i_data,short i_tag)
 {
 	DDK_ASSERT(i_tag <= tag_mask,"You shall provide a tag less than tag mask");
 
-	set_raw_ptr(m_data, as_pointer(as_number(i_data) | i_tag));
+	ddk::set_raw_ptr(m_data, as_pointer(as_number(i_data) | i_tag));
 }
 template<typename T>
 tagged_pointer<T>::tagged_pointer(const tagged_pointer& other)
@@ -70,14 +70,14 @@ tagged_pointer<T>& tagged_pointer<T>::operator=(const tagged_pointer<TT>& other)
 template<typename T>
 void tagged_pointer<T>::set_pointer(interface_ptr i_pointer)
 {
-	set_raw_ptr(m_data,as_pointer(as_number(i_pointer) | (as_number(m_data) & tag_mask)));
+	ddk::set_raw_ptr(m_data,as_pointer(as_number(i_pointer) | (as_number(m_data) & tag_mask)));
 }
 template<typename T>
 void tagged_pointer<T>::set_tag(short i_tag)
 {
 	DDK_ASSERT(i_tag <= tag_mask,"You shall provide a tag less than tag mask");
 
-	set_raw_ptr(m_data,as_pointer((as_number(m_data) & bitMask) | i_tag));
+	ddk::set_raw_ptr(m_data,as_pointer((as_number(m_data) & bitMask) | i_tag));
 }
 template<typename T>
 short tagged_pointer<T>::get_tag() const

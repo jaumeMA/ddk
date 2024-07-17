@@ -1,26 +1,37 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
+#include "ddk_iterable_result.h"
 #include <exception>
 #include <string>
 
 namespace ddk
 {
 
-class iterable_filtered_out_exception : public std::exception
+class iterable_exception
 {
 public:
-	iterable_filtered_out_exception() = default;
-};
+	enum Type
+	{
+		Terminated,
+		Aborted
+	};
 
-class iterable_operation_forbidden_exception : public std::exception
-{
-public:
-	iterable_operation_forbidden_exception(const char* i_reason);
+	constexpr iterable_exception(Type i_type, const char* i_reason = nullptr);
 
-    const char* what() const noexcept;
+	Type reason() const noexcept;
+	iterable_error error() const noexcept;
 
 private:
-    std::string m_reason;
+	const Type m_type;
+	const char* m_reason;
 };
 
 class iteration_exception : public std::exception
@@ -35,4 +46,9 @@ private:
 	const std::string m_reason;
 };
 
+void terminate_iteration();
+void abort_iteration(const std::string& i_msg);
+
 }
+
+#include "ddk_iterable_exception.inl"

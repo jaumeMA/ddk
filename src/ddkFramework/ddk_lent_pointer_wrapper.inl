@@ -4,6 +4,7 @@ namespace ddk
 
 #ifdef DDK_DEBUG
 
+
 template<typename T>
 lent_pointer_wrapper<T>::lent_pointer_wrapper(T* i_data,const tagged_pointer<lent_reference_counter>& i_refCounter)
 : m_data(i_data)
@@ -15,12 +16,6 @@ lent_pointer_wrapper<T>::lent_pointer_wrapper(T* i_data,const tagged_pointer<len
 	}
 
 	REGISTER_STACK_TRACE(THIS_OBJECT);
-}
-template<typename T>
-lent_pointer_wrapper<T>::lent_pointer_wrapper()
-: m_data(nullptr)
-, m_refCounter(nullptr)
-{
 }
 template<typename T>
 lent_pointer_wrapper<T>::lent_pointer_wrapper(const std::nullptr_t&)

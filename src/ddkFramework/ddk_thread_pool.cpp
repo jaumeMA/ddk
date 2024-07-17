@@ -204,7 +204,7 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 			m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
-			return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,deleter_proxy{ *this }));
+			return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,allocator_proxy{ *this }));
 		}
 		else
 		{
@@ -221,7 +221,7 @@ thread_pool::acquire_result<thread> thread_pool::aquire_thread()
 
 		m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 
-		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,deleter_proxy{ *this }));
+		return make_result<acquire_result<thread>>(as_unique_reference(acquiredThread,allocator_proxy{ *this }));
 	}
 }
 thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_size)
@@ -241,7 +241,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 		{
 			detail::thread_impl_interface* acquiredThread = *itThread;
 
-			threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,deleter_proxy{ *this }));
+			threadSheaf.m_threadCtr.push_back(as_unique_reference(acquiredThread,allocator_proxy{ *this }));
 
 			m_underUseThreads[static_cast<const void*>(acquiredThread)] = acquiredThread;
 		}
@@ -253,7 +253,7 @@ thread_pool::acquire_result<thread_sheaf> thread_pool::acquire_sheaf(size_t i_si
 
 			m_underUseThreads[static_cast<const void*>(newThread)] = newThread;
 
-			threadSheaf.m_threadCtr.push_back(as_unique_reference(newThread,deleter_proxy{ *this }));
+			threadSheaf.m_threadCtr.push_back(as_unique_reference(newThread,allocator_proxy{ *this }));
 		}
 
 		return make_result<acquire_result<thread_sheaf>>(std::move(threadSheaf));
@@ -273,7 +273,7 @@ bool thread_pool::available_threads() const
 
 	return m_availableThreads.empty() == false;
 }
-void thread_pool::deallocate(detail::thread_impl_interface* i_object) const
+void thread_pool::deallocate(const detail::thread_impl_interface* i_object) const
 {
 	bool awareAboutNewThreads = false;
 

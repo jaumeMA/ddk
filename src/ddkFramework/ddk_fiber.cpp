@@ -2,12 +2,6 @@
 
 namespace ddk
 {
-namespace detail
-{
-
-}
-
-//const thread_local detail::this_fiber_t this_fiber = detail::this_fiber_t{};
 
 fiber::fiber(detail::fiber_impl_unique_ref i_fiber)
 : m_impl(std::move(i_fiber))

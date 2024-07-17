@@ -1,8 +1,17 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_reference_counter.h"
 #include "ddk_reference_wrapper_deleter.h"
 #include "ddk_shared_reference_wrapper.h"
+#include "ddk_lend_from_this.h"
 
 namespace ddk
 {
@@ -15,7 +24,7 @@ inline shared_reference_wrapper_impl<T,ReferenceCounter> __make_shared_reference
 }
 
 template<typename T, typename TT = T>
-class distribute_from_this
+class distribute_from_this : public lend_from_this<T,TT>
 {
 	template<typename TTT,typename TTTT>
 	friend inline distributed_reference_wrapper<TTTT> distribute(distribute_from_this<TTT,TTTT>& i_distFromThis);
@@ -43,8 +52,8 @@ public:
 	distribute_from_this& operator=(distribute_from_this&&) = delete;
 
 protected:
-	inline ddk::distributed_reference_wrapper<TT> ref_from_this();
-	inline ddk::distributed_reference_wrapper<const TT> ref_from_this() const;
+	inline ddk::distributed_reference_wrapper<TT> distributed_from_this();
+	inline ddk::distributed_reference_wrapper<const TT> distributed_from_this() const;
 	inline tagged_reference_counter get_reference_counter() const;
 	inline void set_reference_counter(tagged_reference_counter i_refCounter) const;
 

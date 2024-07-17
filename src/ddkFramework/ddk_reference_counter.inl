@@ -5,17 +5,11 @@ namespace ddk
 {
 
 template<typename T,typename Deleter,typename ReferenceCounter>
-share_control_block<T,Deleter,ReferenceCounter>::share_control_block(T* i_ptr,const Deleter& i_deleter)
-: m_data(i_ptr,i_deleter)
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Deleter,Args...))
+share_control_block<T,Deleter,ReferenceCounter>::share_control_block(T* i_ptr, Args&& ... i_args)
+: m_data(i_ptr,Deleter{ std::forward<Args>(i_args)... })
 {
-}
-template<typename T,typename Deleter,typename ReferenceCounter>
-share_control_block<T,Deleter,ReferenceCounter>& share_control_block<T,Deleter,ReferenceCounter>::operator=(const share_control_block& other)
-{
-	m_data.set_first(other.m_data.get_first());
-	m_data.set_second(other.m_data.get_second());
-
-	return *this;
 }
 template<typename T,typename Deleter,typename ReferenceCounter>
 void share_control_block<T,Deleter,ReferenceCounter>::destroy_shared_resource(short i_tagCategory)
@@ -47,8 +41,10 @@ void share_control_block<T,Deleter,ReferenceCounter>::destroy_shared_resource(sh
 }
 
 template<typename T,typename Deleter>
-unique_control_block<T,Deleter>::unique_control_block(T* i_ptr,const Deleter& i_deleter)
-: m_data(i_ptr,i_deleter)
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Deleter,Args...))
+unique_control_block<T,Deleter>::unique_control_block(T* i_ptr, Args&& ... i_args)
+: m_data(i_ptr,Deleter{std::forward<Args>(i_args)...})
 {
 }
 template<typename T,typename Deleter>

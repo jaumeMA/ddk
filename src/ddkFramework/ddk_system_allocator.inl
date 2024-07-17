@@ -6,25 +6,13 @@ namespace ddk
 
 TEMPLATE(typename T)
 REQUIRED(IS_CLASS(T))
-void system_deleter::deallocate(T* i_ptr)
+void system_allocator::deallocate(T* i_ptr)
 {
     i_ptr->~T();
 
-    system_deleter::deallocate(static_cast<void*>(i_ptr));
+    system_allocator::deallocate(static_cast<void*>(i_ptr));
 }
 
-template<typename T>
-void typed_system_deleter<T>::deallocate(T* i_ptr)
-{
-    i_ptr->~T();
-
-    system_deleter::deallocate(static_cast<void*>(i_ptr));
-}
-template<typename T>
-void typed_system_deleter<T>::deallocate(const void* i_ptr,...)
-{
-    system_deleter::deallocate(i_ptr);
-}
 
 template<typename T>
 TEMPLATE(typename TT)
@@ -46,6 +34,18 @@ template<typename T>
 void* typed_system_allocator<T>::reallocate(void* ptr,size_t i_newSize)
 {
     return system_allocator::reallocate(ptr,i_newSize);
+}
+template<typename T>
+void typed_system_allocator<T>::deallocate(T* i_ptr)
+{
+    i_ptr->~T();
+
+    system_allocator::deallocate(static_cast<void*>(i_ptr));
+}
+template<typename T>
+void typed_system_allocator<T>::deallocate(void* i_ptr,...)
+{
+    system_allocator::deallocate(i_ptr);
 }
 template<typename T>
 TEMPLATE(typename TT)

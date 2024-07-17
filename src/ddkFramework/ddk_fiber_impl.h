@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_fiber_defs.h"
@@ -35,6 +43,9 @@ private:
 
 struct fiber_impl
 {
+	template<typename Return>
+	friend inline void launch_fiber(const ddk::function<Return()>* i_function,fiber_impl* i_fiber);
+
 public:
 	enum StartErrorCode
 	{

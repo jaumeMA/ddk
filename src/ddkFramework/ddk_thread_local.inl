@@ -11,56 +11,56 @@ threadlocal<T,Tag,Allocator>::threadlocal(Args&& ... i_args)
 	address.construct(std::forward<Args>(i_args) ...);
 }
 template<typename T,typename Tag, typename Allocator>
-T& threadlocal<T,Tag,Allocator>::get()
+auto threadlocal<T,Tag,Allocator>::get()
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 
 	return address.get();
 }
 template<typename T,typename Tag,typename Allocator>
-const T& threadlocal<T,Tag,Allocator>::get() const
+auto threadlocal<T,Tag,Allocator>::get() const
 {
 	const thread_local_storage<T,Allocator>& address = get_address();
 
 	return address.get();
 }
 template<typename T,typename Tag, typename Allocator>
-T threadlocal<T,Tag,Allocator>::extract() &&
+auto threadlocal<T,Tag,Allocator>::extract() &&
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 
 	return std::move(address).extract();
 }
 template<typename T,typename Tag,typename Allocator>
-T& threadlocal<T,Tag,Allocator>::operator*()
+auto threadlocal<T,Tag,Allocator>::operator*()
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 
 	return address.get();
 }
 template<typename T,typename Tag,typename Allocator>
-const T& threadlocal<T,Tag,Allocator>::operator*() const
+auto threadlocal<T,Tag,Allocator>::operator*() const
 {
 	const thread_local_storage<T,Allocator>& address = get_address();
 
 	return address.get();
 }
 template<typename T,typename Tag,typename Allocator>
-T* threadlocal<T,Tag,Allocator>::operator->()
+auto threadlocal<T,Tag,Allocator>::operator->()
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 
 	return address.get_ptr();
 }
 template<typename T,typename Tag,typename Allocator>
-const T* threadlocal<T,Tag,Allocator>::operator->() const
+auto threadlocal<T,Tag,Allocator>::operator->() const
 {
 	const thread_local_storage<T,Allocator>& address = get_address();
 
 	return address.get_ptr();
 }
 template<typename T,typename Tag, typename Allocator>
-T* threadlocal<T,Tag,Allocator>::get_ptr()
+auto threadlocal<T,Tag,Allocator>::get_ptr()
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 
@@ -74,7 +74,7 @@ T* threadlocal<T,Tag,Allocator>::get_ptr()
 	}
 }
 template<typename T,typename Tag,typename Allocator>
-const T* threadlocal<T,Tag,Allocator>::get_ptr() const
+auto threadlocal<T,Tag,Allocator>::get_ptr() const
 {
 	const thread_local_storage<T,Allocator>& address = get_address();
 
@@ -89,7 +89,7 @@ const T* threadlocal<T,Tag,Allocator>::get_ptr() const
 }
 template<typename T,typename Tag, typename Allocator>
 template<typename ... Args>
-T& threadlocal<T,Tag,Allocator>::acquire(Args&& ... i_args)
+auto threadlocal<T,Tag,Allocator>::acquire(Args&& ... i_args)
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 
@@ -104,7 +104,7 @@ T& threadlocal<T,Tag,Allocator>::acquire(Args&& ... i_args)
 }
 template<typename T,typename Tag, typename Allocator>
 template<typename ... Args>
-T& threadlocal<T,Tag,Allocator>::set(Args&& ... i_args)
+auto threadlocal<T,Tag,Allocator>::set(Args&& ... i_args)
 {
 	thread_local_storage<T,Allocator>& address = get_address();
 

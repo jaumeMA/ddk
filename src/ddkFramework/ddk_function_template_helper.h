@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_template_helper.h"
@@ -39,7 +47,7 @@ template<size_t currIndex,typename>
 struct pos_place_holder;
 
 template<size_t currIndex>
-struct pos_place_holder<currIndex,type_pack<>>
+struct pos_place_holder<currIndex,empty_type_pack>
 {
     typedef sequence<> type;
 };
@@ -59,7 +67,7 @@ template<typename>
 struct sequence_place_holder;
 
 template<>
-struct sequence_place_holder<type_pack<>>
+struct sequence_place_holder<empty_type_pack>
 {
     typedef sequence<> type;
 };
@@ -117,7 +125,16 @@ private:
 
 public:
     typedef decltype(resolve(std::declval<Functor&>())) type;
+
+    template<typename ... Args>
+    struct at
+    {
+        typedef decltype(std::declval<remove_qualifiers<Functor>>()(std::declval<Args>()...)) type;
+    };
 };
+
+template<typename Functor,typename ... Args>
+using aqcuire_callable_return_type_at = typename aqcuire_callable_return_type<Functor>::template at<Args...>::type;
 
 template<typename>
 struct aqcuire_callable_args_type;
@@ -151,15 +168,17 @@ public:
     typedef decltype(resolve(std::declval<Functor&>())) type;
 };
 
+template<typename Functor>
+using functor_args_type = typename aqcuire_callable_args_type<Functor>::type;
+
 template<typename Functor, size_t Position>
 struct aqcuire_callable_arg_type
 {
-private:
-    typedef typename aqcuire_callable_args_type<Functor>::type args_type;
-
-public:
-    typedef typename args_type::template nth_type<Position>::type type;
+    typedef typename functor_args_type<Functor>::template nth_type<Position> type;
 };
+
+template<size_t Position, typename Functor>
+using nth_functor_arg_type = typename aqcuire_callable_arg_type<Functor,Position>::type;
 
 std::false_type _is_function(...);
 template<typename T>
@@ -184,6 +203,15 @@ public:
     typedef typename static_if<is_function<T>,std::true_type,decltype(resolve(std::declval<T&>(),nullptr))>::type type;
     static const bool value = type::value;
 };
+
+template<typename Function>
+struct _terse_callable
+{
+    typedef Function type;
+};
+
+template<typename T>
+using terse_callable = typename _terse_callable<T>::type;
 
 }
 

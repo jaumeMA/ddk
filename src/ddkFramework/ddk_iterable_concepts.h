@@ -1,50 +1,36 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include "ddk_iterable_interface.h"
 #include "ddk_iterator_concepts.h"
 #include "ddk_container_concepts.h"
 
-#define IS_BASE_OF_ITERABLE(_TYPE) \
-	typename std::enable_if<std::is_base_of<ddk::detail::iterable_interface,typename std::remove_reference<_TYPE>::type>::value>::type
+#define IS_ITERABLE_TYPE_COND(_TYPE) \
+    ddk::concepts::is_iterable_type<ddk::mpl::remove_qualifiers<_TYPE>>::value
 
-#define IS_BASE_OF_ITERABLE_COND(_TYPE) \
-	std::is_base_of<ddk::detail::iterable_interface,typename std::remove_reference<_TYPE>::type>::value
+#define IS_ITERABLE_TYPE(_TYPE) \
+    typename std::enable_if<IS_ITERABLE_TYPE_COND(_TYPE)>::type
 
-#define IS_NOT_BASE_OF_ITERABLE(_TYPE) \
-	typename std::enable_if<std::is_base_of<ddk::detail::iterable_interface,typename std::remove_reference<_TYPE>::type>::value == false>::type
+#define IS_NOT_ITERABLE_TYPE(_TYPE) \
+    typename std::enable_if<IS_ITERABLE_TYPE_COND(_TYPE) == false>::type
 
-#define IS_NOT_BASE_OF_ITERABLE_COND(_TYPE) \
-	(std::is_base_of<ddk::detail::iterable_interface,typename std::remove_reference<_TYPE>::type>::value == false)
+#define IS_CONST_ITERABLE_COND(_TYPE) \
+    HAS_ITERATOR_DEFINED(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) || IS_CONST_ITERATOR_COND(typename _TYPE::iterator))
 
-#define IS_FORWARD_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE),IS_FORWARD_ITERATOR(typename _TYPE::iterator)
+#define IS_CONST_ITERABLE(_TYPE) \
+    typename std::enable_if<IS_CONST_ITERABLE_COND(_TYPE)>::type
 
-#define IS_BIDIRECTIONAL_ITERABLE(_TYPE) \
-    IS_FORWARD_ITERABLE(_TYPE),IS_BIDIRECTIONAL_ITERATOR(typename _TYPE::iterator)
+#define IS_NON_CONST_ITERABLE_COND(_TYPE) \
+    HAS_ITERATOR_DEFINED_COND(_TYPE) && (IS_TYPE_CONST_COND(_TYPE) == false && IS_CONST_ITERATOR_COND(typename _TYPE::iterator) == false)
 
-#define IS_RANDOM_ACCESS_ITERABLE(_TYPE) \
-    IS_BIDIRECTIONAL_ITERABLE(_TYPE),IS_RANDOM_ACCESS_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_FORWARD_ITERABLE_COND(_TYPE) \
-    HAS_ITERATOR_DEFINED_COND(_TYPE) && IS_EXCLUSIVE_FORWARD_ITERATOR_COND(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_FORWARD_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE),IS_EXCLUSIVE_FORWARD_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE_COND(_TYPE) \
-    HAS_ITERATOR_DEFINED_COND(_TYPE) && IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR_COND(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_BIDIRECTIONAL_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE), IS_EXCLUSIVE_BIDIRECTIONAL_ITERATOR(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE_COND(_TYPE) \
-    HAS_ITERATOR_DEFINED_COND(_TYPE) && IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR_COND(typename _TYPE::iterator)
-
-#define IS_EXCLUSIVE_RANDOM_ACCESS_ITERABLE(_TYPE) \
-    HAS_ITERATOR_DEFINED(_TYPE),IS_EXCLUSIVE_RANDOM_ACCESS_ITERATOR(typename _TYPE::iterator)
-
-#define IS_ITERABLE(_TYPE) \
-    typename std::enable_if<IS_CONTAINER_COND(_TYPE) || IS_BASE_OF_ITERABLE_COND(_TYPE)>::type
+#define IS_NON_CONST_ITERABLE(_TYPE) \
+    typename std::enable_if<IS_NON_CONST_ITERABLE_COND(_TYPE)>::type
 
 namespace ddk
 {
@@ -62,6 +48,20 @@ std::false_type resolve_iterable_valued_function(const T& ...);
 
 template<typename Iterable,typename Function>
 inline constexpr bool is_iterable_valued_function = decltype(resolve_iterable_valued_function(std::declval<Iterable>(),std::declval<mpl::remove_qualifiers<Function>&>()))::value;
+
+template<typename T>
+struct is_iterable_type;
+
+template<typename T>
+struct is_iterable_type<ddk::detail::iterable<T>>
+{
+    static const bool value = true;
+};
+template<typename T>
+struct is_iterable_type
+{
+    static const bool value = false;
+};
 
 }
 }

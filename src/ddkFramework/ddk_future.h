@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_arena.h"
@@ -27,7 +35,7 @@ class future
 	}
 
 public:
-	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	typedef typename async_interface_base::cancel_result cancel_result;
 	struct future_tag;
 	typedef T value_type;
 	typedef typename detail::private_async_state<T>::reference reference;
@@ -52,23 +60,18 @@ public:
 	cancel_result cancel();
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto then(Callable&& i_continuation) &&;
+	constexpr auto then(Callable&& i_continuation) &&;
 	TEMPLATE(typename Callable, typename Context)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
+	constexpr auto then_on(Callable&& i_continuation, Context&& i_execContext) &&;
 	TEMPLATE(typename Callable, typename Context)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto async(Callable&& i_continuation, Context&& i_execContext) &&;
-	TEMPLATE(typename Callable)
-	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto async(Callable&& i_continuation, executor_context_lent_ptr i_execContext)&&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
+	constexpr auto async(Callable&& i_continuation, Context&& i_execContext) &&;
+	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError) &&;
+	constexpr future<T> on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&;
 
 protected:
-	TEMPLATE(typename Callable)
-	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto chain(Callable&& i_callback, executor_context_lent_ref i_context)&&;
+	constexpr auto chain(detail::private_async_state_base_shared_ref i_sharedState) &&;
 
 	detail::private_async_state_shared_ptr<T> m_sharedState;
 	unsigned char m_depth = 0;
@@ -87,11 +90,12 @@ public:
 	future(future<detail::void_t>&& other);
 	future& operator=(future&& other);
 	void extract_value()&&;
-	future<void> then(const function<void()>& i_continuation)&&;
-	template<typename TT>
-	future<void> then_on(const function<void()>& i_continuation,TT&& i_execContext)&&;
-	template<typename TT>
-	future<void> async(const function<void()>& i_continuation,TT&& i_execContext)&&;
+	template<typename Callable>
+	constexpr future<void> then(Callable&& i_continuation)&&;
+	template<typename Callable, typename ... Args>
+	constexpr future<void> then_on(Callable&& i_continuation, Args&& ... i_args)&&;
+	template<typename Callable, typename ... Args>
+	constexpr future<void> async(Callable&& i_continuation, Args&& ... i_args)&&;
 	future<void> on_error(const function<void(const async_error&)>& i_onError)&&;
 	future<void> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 };

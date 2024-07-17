@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_macros.h"
@@ -81,7 +89,7 @@ public:
 		if(i_node.get() != this)
 		{
 			m_nextNode = i_node;
-			i_node->m_prevNode = this->ref_from_this();
+			i_node->m_prevNode = this->shared_from_this();
 		}
 		else
 		{

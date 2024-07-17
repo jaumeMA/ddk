@@ -1,74 +1,167 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
+#include "ddk_union_iterable_action.h"
+#include "ddk_iterable_impl_interface.h"
+#include "ddk_iterable_visitor.h"
+#include "ddk_iterable_action.h"
 #include "ddk_tuple.h"
-#include "ddk_iterable.h"
-#include "ddk_static_visitor.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename, typename ...>
-struct union_iterable_visitor_type;
-
-template<size_t ... Indexs, typename ... Iterables>
-struct union_iterable_visitor_type<mpl::sequence<Indexs...>,Iterables...> : public static_visitor<std::pair<size_t,shift_action>>
+template<typename ... Iterables>
+class union_iterable_impl : public iterable_impl_interface<union_iterable_traits<typename Iterables::traits ...>>,public iterable_visitor<union_iterable_impl<Iterables...>>
 {
-    static const size_t s_num_iterables = tuple<Iterables...>::size();
-    typedef size_t(*size_t_func)(const tuple<Iterables...>&);
+	static const size_t s_numTypes = mpl::num_types<Iterables...>;
 
 public:
-    using static_visitor<std::pair<size_t,shift_action>>::return_type;
+	typedef union_iterable_traits<typename Iterables::traits...> traits;
+	typedef const_iterable_traits<union_iterable_traits<typename Iterables::traits...>> const_traits;
 
-    union_iterable_visitor_type(size_t i_currIterableIndex, const tuple<Iterables...>& i_iterables);
+	TEMPLATE(typename ... IIterables)
+	REQUIRES(IS_CONSTRUCTIBLE(Iterables,IIterables)...)
+	union_iterable_impl(IIterables&& ... i_iterables);
 
-    std::pair<size_t,shift_action> operator()(const shift_error& i_action) const;
-    template<typename T>
-    std::pair<size_t,shift_action> operator()(const T& i_action) const;
+	TEMPLATE(typename Action)
+	REQUIRES(ACTION_SUPPORTED(traits,Action))
+	constexpr inline void iterate_impl(Action&& i_initialAction);
+	TEMPLATE(typename Action)
+	REQUIRES(ACTION_SUPPORTED(const_traits,Action))
+	constexpr inline void iterate_impl(Action&& i_initialAction) const;
+};
+template<typename ... Iterables>
+union_iterable_impl(Iterables&&...) -> union_iterable_impl<mpl::remove_qualifiers<Iterables>...>;
+
+template<typename ... Iterables>
+class union_iterable_adaptor
+{
+public:
+	static const size_t s_numTypes = mpl::num_types<Iterables...>;
+	template<size_t Index>
+	using nth_adaptor = typename mpl::nth_type_of<Index,deduced_adaptor<Iterables>...>::type;
+	typedef detail::union_iterable_traits<typename Iterables::traits...> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	union_iterable_adaptor(Iterables& ... i_iterable);
+
+	constexpr inline bool set_current_iterable_index(size_t i_currIndex) const;
+	constexpr inline size_t get_current_iterable_index() const;
+	template<size_t Index>
+	constexpr inline auto get_adaptor();
+	template<size_t Index>
+	constexpr inline auto get_adaptor() const;
+	TEMPLATE(typename Adaptor,typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
 
 private:
-    template<size_t Index>
-    static size_t iterable_size(const tuple<Iterables...>&);
+	typedef tuple<deduced_adaptor<Iterables>...> deduced_adaptors;
 
-    size_t m_currIterableIndex;
-    const tuple<Iterables...>& m_iterables;
-    static const size_t_func s_size_funcs[s_num_iterables];
+	template<size_t ... Indexs, typename Adaptor,typename ActionTag>
+	static constexpr inline auto perform_action(const mpl::sequence<Indexs...>&,Adaptor&& i_adaptor,ActionTag&& i_actionTag);
+	template<size_t Index,typename Traits,typename DeducedAdaptors,typename ActionTag>
+	static constexpr inline iterable_action_tag_result<Traits,ActionTag> _perform_action(DeducedAdaptors& i_adaptor,ActionTag&& i_actionTag);
+
+	deduced_adaptors m_adaptors;
+	mutable size_t m_currIndex = 0;
 };
 
 template<typename ... Iterables>
-using union_iterable_visitor = union_iterable_visitor_type<typename mpl::make_sequence<0,mpl::get_num_types<Iterables...>()>::type,Iterables...>;
-
-template<typename ... Iterables>
-class union_iterable_impl : public iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>>
+class union_iterable_const_adaptor
 {
-    static const size_t s_num_iterables = tuple<Iterables...>::size();
-    typedef iterable_impl_interface<union_iterable_base_traits<typename Iterables::traits ...>> base_t;
-
 public:
-    using typename base_t::reference;
-    using typename base_t::const_reference;
-    using typename base_t::action;
+	static const size_t s_numTypes = mpl::num_types<Iterables...>;
+	template<size_t Index>
+	using nth_adaptor = typename mpl::nth_type_of<Index,deduced_adaptor<const Iterables>...>::type;
+	typedef detail::union_iterable_traits<const typename Iterables::traits...> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
 
-    union_iterable_impl(const Iterables& ... i_iterables);
-    union_iterable_impl(const tuple<Iterables...>& i_tupleIterable);
+	union_iterable_const_adaptor(const Iterables& ... i_iterable);
 
-    const tuple<Iterables...>& get_iterables() const;
-    tuple<Iterables...>& get_iterables();
+	constexpr inline bool set_current_iterable_index(size_t i_currIndex) const;
+	constexpr inline size_t get_current_iterable_index() const;
+	template<size_t Index>
+	constexpr inline auto get_adaptor() const;
+	TEMPLATE(typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(const_traits,ActionTag))
+	constexpr inline auto perform_action(ActionTag&& i_actionTag) const;
 
 private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
+	typedef tuple<const deduced_adaptor<Iterables>...> deduced_adaptors;
 
-    template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr);
-    template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const;
+	template<size_t ... Indexs,typename ActionTag>
+	constexpr inline auto perform_action(const mpl::sequence<Indexs...>&,ActionTag&& i_actionTag) const;
+	template<size_t Index,typename Traits,typename ActionTag>
+	constexpr inline static iterable_action_tag_result<const_iterable_traits<Traits>,ActionTag> _perform_action(const deduced_adaptors& i_adaptor,ActionTag&& i_actionTag);
 
-    tuple<Iterables...> m_iterables;
+	deduced_adaptors m_adaptors;
+	mutable size_t m_currIndex = 0;
 };
 
 }
+
+template<typename ... Iterables>
+class iterable_adaptor<detail::union_iterable_impl<Iterables...>> : public detail::union_iterable_adaptor<Iterables...>
+{
+public:
+	typedef detail::union_iterable_adaptor<Iterables...> adaptor_base;
+	using adaptor_base::s_numTypes;
+	using adaptor_base::nth_adaptor;
+	using adaptor_base::traits;
+	using adaptor_base::const_traits;
+	using adaptor_base::tags_t;
+	using adaptor_base::const_tags_t;
+	using adaptor_base::union_iterable_adaptor;
+	using adaptor_base::set_current_iterable_index;
+	using adaptor_base::get_current_iterable_index;
+
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
+
+private:
+	template<typename Adaptor, typename ActionTag>
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, union_iterable_action<ActionTag> i_actionTag);
+};
+
+template<typename ... Iterables>
+class iterable_adaptor<const detail::union_iterable_impl<Iterables...>> : public detail::union_iterable_const_adaptor<Iterables...>
+{
+public:
+	typedef detail::union_iterable_const_adaptor<Iterables...> adaptor_base;
+	using adaptor_base::s_numTypes;
+	using adaptor_base::nth_adaptor;
+	using adaptor_base::traits;
+	using adaptor_base::const_traits;
+	using adaptor_base::tags_t;
+	using adaptor_base::const_tags_t;
+	using adaptor_base::union_iterable_const_adaptor;
+	using adaptor_base::set_current_iterable_index;
+	using adaptor_base::get_current_iterable_index;
+
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
+
+private:
+	template<typename Adaptor, typename ActionTag>
+	static constexpr inline auto perform_action(Adaptor&& i_adaptor, union_iterable_action<ActionTag> i_actionTag);
+};
+
 }
 
 #include "ddk_union_iterable_impl.inl"

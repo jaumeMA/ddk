@@ -1,115 +1,263 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include "ddk_any_value.h"
+#include "ddk_optional.h"
+#include "ddk_iterable_action_tags.h"
+#include "ddk_iterable_action_tag_concepts.h"
 #include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
-#include <stddef.h>
+
 namespace ddk
 {
 
-struct base_action
-{
-};
-
-struct stop_action : base_action
-{
-    void operator()() const;
-    template<typename T>
-    void operator()(const T& i_code, const std::string& i_reason = "") const;
-};
-
-struct erase_action: base_action
-{
-};
-
-struct add_action: base_action
-{
-public:
-    add_action() = default;
-    add_action(add_action&&) = default;
-    add_action(const add_action&) = default;
-    add_action& operator=(add_action&&) = default;
-    add_action& operator=(const add_action&) = default;
-    template<typename T,typename ... Args>
-    add_action operator()(Args&& ... i_args)
-    {
-        add_action res(std::forward<Args>(i_args) ...);
-
-        return res;
-    }
-    template<typename T>
-    const T& get() const
-    {
-        return m_value.getValue<T>();
-    }
-    template<typename T>
-    T extract() &&
-    {
-        return m_value.extractValue<T>();
-    }
-
-private:
-    template<typename T,typename ... Args>
-    add_action(Args&& ... i_args)
-       : m_value(T{ std::forward<Args>(i_args) ... })
-    {
-    }
-
-    any_value m_value;
-};
-
-struct shift_action: base_action
+struct action_base
 {
 public:
     typedef long long difference_type;
 
-    shift_action() = default;
-    shift_action(const shift_action&) = default;
-    shift_action(shift_action&& other);
-    shift_action(difference_type i_targetShift,difference_type i_currShift = 0,bool i_stepByStep = false);
+    constexpr action_base() = default;
+    constexpr action_base(const action_base&) = default;
+    constexpr action_base(bool i_valid);
 
-    difference_type shifted() const;
-    difference_type target_shift() const;
-    difference_type shifting() const;
-    shift_action operator()(difference_type i_targetShift,difference_type i_currShift = 0) const;
-    bool apply(const shift_action& i_appliedAction);
-    void set_step_by_step(bool i_cond);
-    bool step_by_step() const;
-    shift_action& operator=(const shift_action& other);
-    shift_action& operator=(shift_action&& other);
-    operator bool() const;
+    constexpr explicit operator bool() const;
+    constexpr action_base& operator=(const action_base& i_action);
 
 private:
-    difference_type m_targetShift = 0;
-    difference_type m_currShift = 0;
-    bool m_stepByStep = false;
+    bool m_valid = true;
 };
 
-struct ShiftActionError
+struct no_action : action_base
 {
 public:
-    typedef long long difference_type;
+    typedef mpl::empty_type_pack tags_t;
 
-    ShiftActionError(difference_type i_pendingShift);
+    constexpr no_action() = default;
+    constexpr no_action(bool i_valid);
 
-    difference_type get_pending_shift() const;
+    template<typename Adaptor>
+    constexpr no_action apply(Adaptor&& i_adaptor) const;
+};
+
+struct remove_action : action_base
+{
+public:
+    typedef mpl::type_pack<backward_action_tag> tags_t;
+
+    constexpr remove_action() = default;
+    constexpr remove_action(bool i_valid);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline no_action apply(Adaptor&& i_adaptor) const;
+};
+
+template<typename T>
+struct add_action : action_base
+{
+public:
+    typedef mpl::type_pack<add_action_tag<T>> tags_t;
+
+    constexpr add_action(T i_value);
+    constexpr add_action(T i_value, bool i_valid);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline no_action apply(Adaptor && i_adaptor) const;
 
 private:
-    difference_type m_pendingShift;
+    mutable T m_value;
+};
+template<typename T>
+add_action(T) -> add_action<T>;
+
+struct forward_action : action_base
+{
+public:
+    typedef mpl::type_pack<forward_action_tag> tags_t;
+
+    constexpr forward_action() = default;
+    constexpr forward_action(bool i_value);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline forward_action apply(Adaptor && i_adaptor) const;
+    constexpr forward_action& operator=(const forward_action&);
 };
 
-struct go_forward_action: public shift_action
+struct backward_action : action_base
 {
-    go_forward_action();
-    go_forward_action(const shift_action& other);
+public:
+    typedef mpl::type_pack<backward_action_tag> tags_t;
+
+    constexpr backward_action() = default;
+    constexpr backward_action(bool i_valid);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline backward_action apply(Adaptor&& i_adaptor) const;
 };
 
-struct go_backward_action: public shift_action
+struct go_to_begin_action : forward_action
 {
-    go_backward_action();
-    go_backward_action(const shift_action& other);
+public:
+    typedef mpl::type_pack<begin_action_tag,forward_action_tag> tags_t;
+
+    constexpr go_to_begin_action() = default;
+    constexpr go_to_begin_action(bool i_valid);
+    constexpr go_to_begin_action(const forward_action&);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline forward_action apply(Adaptor&& i_adaptor) const;
+    constexpr go_to_begin_action& operator=(const go_to_begin_action&);
+};
+
+struct go_to_end_action : backward_action
+{
+public:
+    typedef mpl::type_pack<end_action_tag,backward_action_tag> tags_t;
+
+    constexpr go_to_end_action() = default;
+    constexpr go_to_end_action(bool i_valud);
+    constexpr go_to_end_action(const backward_action&);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline backward_action apply(Adaptor&& i_adaptor) const;
+};
+
+struct displacement_action : action_base
+{
+    friend inline displacement_action stop_action(const displacement_action& i_action)
+    {
+        return { i_action.m_shift,false };
+    }
+
+public:
+    typedef mpl::type_pack<displace_action_tag> tags_t;
+
+    constexpr displacement_action(difference_type i_targetShift);
+    constexpr displacement_action(difference_type i_targetShift, bool i_valid);
+
+    constexpr difference_type shift() const;
+    constexpr void set_shift(difference_type i_shift);
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline no_action apply(Adaptor&& i_adaptor) const;
+
+private:
+    difference_type m_shift;
+};
+
+struct bidirectional_action : action_base
+{
+public:
+    typedef mpl::type_pack<forward_action_tag,backward_action_tag> tags_t;
+
+    constexpr bidirectional_action(bool i_foward);
+    constexpr bidirectional_action(bool i_foward, bool i_valid);
+    constexpr bidirectional_action(const displacement_action& i_action, bool i_valid);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline bidirectional_action apply(Adaptor&& i_adaptor) const;
+
+private:
+    const bool m_forward;
+};
+
+template<typename Sink>
+struct sink_action : action_base
+{
+    template<typename>
+    friend struct sink_action;
+
+public:
+    typedef mpl::type_pack<sink_action_tag<Sink>> tags_t;
+
+    constexpr sink_action(const Sink& i_sink);
+    constexpr sink_action(Sink&& i_sink);
+    constexpr sink_action(const Sink& i_sink, bool i_valid);
+    constexpr sink_action(Sink&& i_sink, bool i_valid);
+    TEMPLATE(typename SSink)
+    REQUIRES(IS_CONSTRUCTIBLE(Sink,SSink))
+    constexpr sink_action(const sink_action<SSink>& i_action);
+    TEMPLATE(typename SSink)
+    REQUIRES(IS_CONSTRUCTIBLE(Sink,SSink))
+    constexpr sink_action(sink_action<SSink>&& i_action);
+    constexpr sink_action(const sink_action&) = default;
+    constexpr sink_action(sink_action&&) = default;
+
+    constexpr sink_action& operator=(const sink_action& i_action);
+    constexpr sink_action& operator=(sink_action&& i_action);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline auto apply(Adaptor&& i_adaptor) const;
+
+private:
+    Sink m_sink;
+};
+
+template<typename Action, typename Sink>
+struct action_sink : action_base
+{
+public:
+    typedef typename Action::tags_t::template add_unique<sink_action_tag<Sink>>::type tags_t;
+
+    TEMPLATE(typename AAction, typename SSink)
+    REQUIRES(IS_CONSTRUCTIBLE(Action,AAction),IS_CONSTRUCTIBLE(Sink,SSink))
+    constexpr action_sink(AAction&& i_action, SSink&& i_sink);
+    TEMPLATE(typename AAction, typename SSink)
+    REQUIRES(IS_CONSTRUCTIBLE(Action,AAction),IS_CONSTRUCTIBLE(Sink,SSink))
+    constexpr action_sink(AAction&& i_action, SSink&& i_sink, bool i_valid);
+    constexpr action_sink(const action_sink&) = default;
+    constexpr action_sink(action_sink&&) = default;
+
+    constexpr action_sink& operator=(const action_sink&);
+    constexpr action_sink& operator=(action_sink&&);
+
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline auto apply(Adaptor && i_adaptor) const;
+
+private:
+    Action m_action;
+    Sink m_sink;
+};
+template<typename Action, typename Sink>
+action_sink(Action&&,Sink&&) -> action_sink<mpl::remove_qualifiers<Action>,mpl::remove_qualifiers<Sink>>;
+template<typename Action, typename Sink>
+action_sink(Action&&,Sink&&,bool) -> action_sink<mpl::remove_qualifiers<Action>,mpl::remove_qualifiers<Sink>>;
+
+struct size_action : action_base
+{
+public:
+    typedef mpl::type_pack<size_action_tag> tags_t;
+
+    static const size_t nsize = -1;
+
+    constexpr size_action() = default;
+    constexpr size_action(bool i_valid);
+
+    constexpr size_t operator()() const;
+    constexpr operator bool() const;
+    TEMPLATE(typename Adaptor)
+    REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+    constexpr inline no_action apply(Adaptor&& i_adaptor) const;
+
+private:
+    mutable size_t m_size = nsize;
 };
 
 }
 
+#include "ddk_iterable_action_ops.h"
 #include "ddk_iterable_action_defs.inl"

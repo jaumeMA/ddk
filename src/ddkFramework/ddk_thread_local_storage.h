@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_system_allocator.h"
@@ -17,8 +25,8 @@ public:
 	inline void destroy();
 	template<typename ... Args>
 	inline T* assign(Args&& ... i_args);
-	T& get();
-	const T& get() const;
+	auto get();
+	auto get() const;
 	T* get_address();
 	const T* get_address() const;
 	T extract() &&;

@@ -1,45 +1,78 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_template_helper.h"
 
 namespace ddk
 {
-
-template<typename ... Callables>
-class callable : public Callables ...
+namespace detail
 {
-public:
-	struct callable_tag;
-	using Callables::operator()...;
 
-	callable() = default;
-	template<typename ... CCallables>
-	callable(CCallables&& ... i_callables);
-};
-template<typename ... Callables>
-callable(Callables&& ... i_callables) -> callable<mpl::remove_qualifiers<Callables>...>;
-
-template<typename Return, typename ... Callables>
-class fixed_return_callable : public Callables ...
+template<typename Return,typename Function,bool Terse>
+class fixed_return_callable_impl
 {
 public:
 	typedef Return return_type;
+	typedef mpl::aqcuire_callable_args_type<Function> args_type;
 	struct callable_tag;
-	using Callables::operator()...;
 
-	fixed_return_callable() = default;
-	template<typename ... CCallables>
-	fixed_return_callable(CCallables&& ... i_callables);
+	fixed_return_callable_impl(const Function& i_function);
+	fixed_return_callable_impl(Function&& i_function);
+	fixed_return_callable_impl() = default;
+	fixed_return_callable_impl(const fixed_return_callable_impl&) = default;
+	fixed_return_callable_impl(fixed_return_callable_impl&&) = default;
+	template<typename ... Args>
+	inline Return operator()(Args&& ... i_args) const;
+	fixed_return_callable_impl& operator=(const fixed_return_callable_impl&) = default;
+	fixed_return_callable_impl& operator=(fixed_return_callable_impl&&) = default;
+
+private:
+	Function m_function;
 };
 
-template<typename Callable>
-inline auto deduce_callable(Callable&& i_callable);
-template<typename Return, typename Callable>
-inline auto deduce_fixed_callable(Callable&& i_callable);
-template<typename Callable>
-inline auto deduce_callable(const callable<Callable>& i_callable);
-template<typename Return, typename Callable>
-inline auto deduce_fixed_callable(const fixed_return_callable<Return,Callable>& i_callable);
+template<typename Return,typename Function,bool Terse>
+class replaced_return_callable_impl
+{
+public:
+	typedef Return return_type;
+	typedef mpl::aqcuire_callable_args_type<Function> args_type;
+	struct callable_tag;
+
+	template<typename ... Args>
+	replaced_return_callable_impl(const Function& i_function,Args&& ... i_args);
+	template<typename ... Args>
+	replaced_return_callable_impl(Function&& i_function,Args&& ... i_args);
+	replaced_return_callable_impl() = default;
+	replaced_return_callable_impl(const replaced_return_callable_impl&) = default;
+	replaced_return_callable_impl(replaced_return_callable_impl&&) = default;
+	template<typename ... Args>
+	inline Return operator()(Args&& ... i_args) const;
+	replaced_return_callable_impl& operator=(const replaced_return_callable_impl&) = default;
+	replaced_return_callable_impl& operator=(replaced_return_callable_impl&&) = default;
+
+private:
+	Function m_function;
+	Return m_return;
+};
+
+}
+
+template<typename Return,typename Function>
+using fixed_return_callable = detail::fixed_return_callable_impl<Return,Function,false>;
+template<typename Return,typename Function>
+using fixed_return_terse_callable = detail::fixed_return_callable_impl<Return,Function,true>;
+
+template<typename Return,typename Function>
+using replaced_return_callable = detail::replaced_return_callable_impl<Return,Function,false>;
+template<typename Return,typename Function>
+using replaced_return_terse_callable = detail::replaced_return_callable_impl<Return,Function,true>;
 
 }
 

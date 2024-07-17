@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_spin_lock.h"
@@ -28,6 +36,7 @@ public:
 	slab_allocator& operator=(const slab_allocator&) = delete;
 	slab_allocator& operator=(slab_allocator&&) = delete;
 	void* allocate_chunk(size_t i_size) const;
+	void* reallocate_chunk(void* i_ptr, size_t i_newSize) const;
 	bool deallocate_chunk(const void* i_address) const;
 	size_t unit_size() const;
 	template<typename T>

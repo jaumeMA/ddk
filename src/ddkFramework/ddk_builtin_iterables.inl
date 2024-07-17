@@ -4,64 +4,51 @@ namespace ddk
 namespace detail
 {
 
-template<typename T>
-__numbers_iterable<T>::__numbers_iterable(const function<T(const T&)>& i_generator)
+template<typename Generator>
+__numbers_iterable<Generator>::__numbers_iterable(const Generator& i_generator)
 : m_generator(i_generator)
 {
 }
-template<typename T>
-__numbers_iterable<T> __numbers_iterable<T>::operator()(const function<T(const T&)>& i_generator) const
+template<typename Generator>
+template<typename GGenerator>
+__numbers_iterable<GGenerator> __numbers_iterable<Generator>::operator()(const GGenerator& i_generator) const
 {
     return { i_generator };
 }
+template<typename Generator>
+auto __numbers_iterable<Generator>::operator()(const value_type& i_value) const
+{
+    return ddk::eval(m_generator,i_value);
+}
 
 }
 
-template<typename T>
-iterable_adaptor<const detail::__numbers_iterable<T>>::iterable_adaptor(const detail::__numbers_iterable<T>& i_iterable)
-: m_generator(lend(i_iterable))
+template<typename Generator>
+iterable_adaptor<const detail::__numbers_iterable<Generator>>::iterable_adaptor(const detail::__numbers_iterable<Generator>& i_generator)
+: m_generator(i_generator)
 {
 }
-template<typename T>
-bool iterable_adaptor<const detail::__numbers_iterable<T>>::valid() const
+template<typename Generator>
+template<typename Adaptor, typename Sink>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,sink_action_tag<Sink>> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(Adaptor&& i_adaptor, const sink_action_tag<Sink>& i_sink)
 {
-    return true;
+    return i_sink(i_adaptor.m_currValue);
 }
-template<typename T>
-template<typename Sink>
-bool iterable_adaptor<const detail::__numbers_iterable<T>>::init(Sink&& i_sink, const ddk::shift_action& i_initialAction)
+template<typename Generator>
+template<typename Adaptor>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,begin_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(Adaptor&& i_adaptor, const begin_action_tag&)
 {
-    m_currValue = static_cast<T>(i_initialAction.shifting());
+    i_adaptor.m_currValue = 0;
 
-    i_sink.apply((m_generator != nullptr) ? eval(m_generator,m_currValue) : m_currValue);
-
-    return true;
+    return make_result<iterable_action_tag_result<traits,begin_action_tag>>(i_adaptor.m_currValue);
 }
-template<typename T>
-template<typename Sink>
-typename iterable_adaptor<const detail::__numbers_iterable<T>>::difference_type iterable_adaptor<const detail::__numbers_iterable<T>>::forward_next_value_in(Sink&& i_sink)
+template<typename Generator>
+template<typename Adaptor>
+iterable_action_tag_result<typename iterable_adaptor<const detail::__numbers_iterable<Generator>>::traits,forward_action_tag> iterable_adaptor<const detail::__numbers_iterable<Generator>>::perform_action(Adaptor&& i_adaptor,const forward_action_tag&)
 {
-    i_sink.apply((m_generator != nullptr) ? eval(m_generator,++m_currValue) : ++m_currValue);
+    i_adaptor.m_currValue = ddk::eval(i_adaptor.m_generator,i_adaptor.m_currValue);
 
-    return 0;
-}
-template<typename T>
-template<typename Sink>
-typename iterable_adaptor<const detail::__numbers_iterable<T>>::difference_type iterable_adaptor<const detail::__numbers_iterable<T>>::forward_prev_value_in(Sink&& i_sink) const
-{
-    i_sink.apply((m_generator != nullptr) ? eval(m_generator,--m_currValue) : --m_currValue);
-
-    return 0;
-}
-template<typename T>
-template<typename Sink>
-typename iterable_adaptor<const detail::__numbers_iterable<T>>::difference_type iterable_adaptor<const detail::__numbers_iterable<T>>::forward_shift_value_in(difference_type i_shift,Sink&& i_sink)
-{
-    m_currValue += static_cast<T>(i_shift);
-
-    i_sink.apply((m_generator != nullptr) ? eval(m_generator,m_currValue) : m_currValue);
-
-    return 0;
+    return make_result<iterable_action_tag_result<traits,forward_action_tag>>(i_adaptor.m_currValue);
 }
 
 }

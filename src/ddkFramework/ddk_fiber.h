@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_lent_reference_wrapper.h"
@@ -34,8 +42,6 @@ public:
 private:
 	detail::fiber_impl_unique_ref m_impl;
 };
-
-//extern const thread_local detail::this_fiber_t this_fiber;
 
 template<typename Allocator, typename ... Args>
 fiber make_fiber(Args&& ... i_args);

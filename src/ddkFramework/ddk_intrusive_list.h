@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_intrusive_node.h"
@@ -26,8 +34,10 @@ public:
 	void clear();
 	iterator begin();
 	const_iterator begin() const;
+	const_iterator cbegin() const;
 	iterator end();
 	const_iterator end() const;
+	const_iterator cend() const;
 	iterator erase(iterator i_it);
 	size_t size() const;
 	bool empty() const;

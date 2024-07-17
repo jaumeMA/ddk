@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_result.h"
@@ -9,11 +17,10 @@ namespace ddk
 
 SCOPED_ENUM_DECL(ExecutorState,
 	Idle,
-	Pending,
 	Executing,
 	Executed = Idle,
-	Cancelling,
-	Cancelled
+	Cancelling = Executing + 1,
+	Cancelled = Cancelling + 1
 );
 
 namespace detail

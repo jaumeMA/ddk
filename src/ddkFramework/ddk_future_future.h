@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 namespace ddk
@@ -22,7 +30,7 @@ class future<future<T>>
 	}
 
 public:
-	typedef typename async_cancellable_interface::cancel_result cancel_result;
+	typedef typename async_interface_base::cancel_result cancel_result;
 	typedef typename detail::private_async_state<future<T>>::reference reference;
 	typedef typename detail::private_async_state<future<T>>::const_reference const_reference;
 	typedef typename detail::private_async_state<future<T>>::rreference rreference;
@@ -48,17 +56,17 @@ public:
 	cancel_result cancel();
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,nested_rreference))
-	auto then(Callable&& i_continuation)&&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError)&&;
-	future<T> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
+	constexpr auto then(Callable&& i_continuation)&&;
+	constexpr future<future<T>> on_error(const function<void(const async_error&)>& i_onError)&&;
+	constexpr future<future<T>> on_error(const function<void(const async_error&)>& i_onError,executor_context_lent_ptr i_execContext)&&;
 
 protected:
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto _then(Callable&& i_continuation) &&;
+	constexpr auto _then(Callable && i_continuation) &&;
 	TEMPLATE(typename Callable)
 	REQUIRES(IS_CALLABLE_BY(Callable,rreference))
-	auto _async(Callable&& i_continuation, executor_context_lent_ptr i_execContext) &&;
+	constexpr auto _async(Callable&& i_continuation) &&;
 
 	detail::private_async_state_shared_ptr<future<T>> m_sharedState;
 	unsigned char m_depth = 0;

@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_async_defs.h"
@@ -6,6 +14,10 @@
 #include "ddk_mutex.h"
 #include "ddk_cond_var.h"
 #include "ddk_atomics.h"
+#include "ddk_async_shared_state.h"
+#include "ddk_async_defs.h"
+#include "ddk_thread_executor.h"
+#include "ddk_sync_executor_impl.h"
 
 namespace ddk
 {
@@ -40,84 +52,101 @@ inline constexpr bool is_scheduler_v = is_scheduler<T,Scheduler>::value;
 
 }
 
-class null_async_scheduler
-{
-public:
-	template<typename Executor>
-	null_async_scheduler(Executor& i_reference);
-
-	void clear_scheduler();
-
-	template<typename Executor>
-	void subscribe(ddk::lent_reference_wrapper<Executor> i_executor);
-};
-
-template<typename Executor>
-class base_deferred_async_scheduler
-{
-public:
-	void clear_scheduler();
-
-protected:
-	base_deferred_async_scheduler(Executor& i_executor);
-	~base_deferred_async_scheduler();
-
-private:
-	Executor* m_boundExecutor;
-};
-
-class deferred_async_scheduler
-{
-public:
-	deferred_async_scheduler() = default;
-
-	template<typename Executor>
-	void subscribe(Executor&& i_executor);
-};
+struct deferred {};
 
 class asap_async_scheduler
 {
 public:
-	asap_async_scheduler() = default;
+	constexpr asap_async_scheduler() = default;
 
 	template<typename Executor>
-	void subscribe(Executor&& i_executor);
+	constexpr void subscribe(Executor& i_executor);
+};
+
+template<typename Executor>
+class deferred_async_scheduler
+{
+	template<typename EExecutor>
+	friend inline auto attach_scheduler(deferred_async_scheduler&& i_oldScheduler)
+	{
+		i_oldScheduler.clear();
+
+		if constexpr (mpl::is_same_type<EExecutor,detail::immediate_executor>::value)
+		{
+			return deferred{};
+		}
+		else
+		{
+			return asap_async_scheduler{};
+		}
+	}
+	friend inline bool detach_scheduler(deferred_async_scheduler&& i_oldScheduler)
+	{
+		return i_oldScheduler.clear();
+	}
+
+public:
+	deferred_async_scheduler(Executor& i_executor);
+	deferred_async_scheduler(deferred_async_scheduler&& other);
+	~deferred_async_scheduler();
+
+	constexpr bool clear();
+	constexpr void subscribe(Executor& i_executor);
+
+private:
+	Executor* m_boundExecutor = nullptr;
+};
+
+class chained_async_scheduler
+{
+public:
+	chained_async_scheduler(detail::private_async_state_base_shared_ref i_sharedState);
+	template<typename Executor>
+	void subscribe(Executor& i_executor);
+
+private:
+	detail::private_async_state_base_shared_ref m_sharedState;
 };
 
 class polling_async_scheduler
 {
+	friend inline bool detach_scheduler(polling_async_scheduler&& i_oldScheduler)
+	{
+		return static_cast<bool>(i_oldScheduler.m_executor.stop());
+	}
+
+public:
 	polling_async_scheduler() = default;
 	polling_async_scheduler(thread i_thread,std::chrono::milliseconds i_sleepTimeInMS = std::chrono::milliseconds(1000));
-	~polling_async_scheduler();
+	polling_async_scheduler(polling_async_scheduler&&) = default;
 
 	template<typename Executor>
-	void subscribe(Executor&& i_executor);
+	constexpr void subscribe(Executor& i_executor);
 
 private:
-	template<typename Executor>
-	void update(ddk::lent_reference_wrapper<Executor> i_executor);
-
-	bool m_stopped = true;
-	thread m_thread;
-	std::chrono::milliseconds m_sleepTimeInMS = std::chrono::milliseconds(1000);
+	thread_polling_executor m_executor;
 };
 
 template<typename Provider>
 class event_driven_async_scheduler : public lend_from_this<event_driven_async_scheduler<Provider>>
 {
+	friend inline void detach_scheduler(event_driven_async_scheduler&& i_oldScheduler)
+	{
+		i_oldScheduler.m_execModel.resume();
+	}
 	typedef typename Provider::payload payload_t;
 
 public:
-	event_driven_async_scheduler(lent_reference_wrapper<Provider> i_eventProvider, SchedulerPolicy i_policy = SchedulerPolicy::FireAndForget);
+	constexpr event_driven_async_scheduler(lent_reference_wrapper<Provider> i_eventProvider, SchedulerPolicy i_policy = SchedulerPolicy::FireAndForget);
 
 	template<typename Executor>
-	void subscribe(Executor&& i_executor);
-	void signal(async_event<payload_t> i_event);
+	constexpr void subscribe(Executor& i_executor);
+	constexpr void signal(async_event<payload_t> i_event);
 
 private:
 	lent_reference_wrapper<Provider> m_provider;
 	const SchedulerPolicy m_policy;
-	function<void(async_event<payload_t>)> m_signaler;
+	detail::signaled_execution_model<async_event<payload_t>> m_execModel;
 };
 template<typename Provider>
 using event_driven_async_scheduler_lent_ref = lent_reference_wrapper<event_driven_async_scheduler<Provider>>;
@@ -129,7 +158,9 @@ template<typename Provider>
 using event_driven_async_scheduler_const_lent_ptr = lent_pointer_wrapper<const event_driven_async_scheduler<Provider>>;
 
 template<typename Executor, typename Scheduler>
-inline auto attach_scheduler(Scheduler&& i_oldScheduler);
+constexpr inline auto attach_scheduler(Scheduler&& i_oldScheduler);
+template<typename Scheduler>
+constexpr inline bool detach_scheduler(Scheduler&& i_oldScheduler);
 
 }
 

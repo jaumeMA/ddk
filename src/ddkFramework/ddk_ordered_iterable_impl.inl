@@ -10,28 +10,65 @@ iterable_order<T>::iterable_order(const T& i_order)
 {
 }
 template<typename T>
-template<typename Iterable>
-T iterable_order<T>::init(const Iterable& i_iterable) const
+const T& iterable_order<T>::order() const
 {
-	return m_order.init(i_iterable);
+	return m_order;
 }
 
-template<typename T, typename Traits>
-ordered_iterable_impl<T,Traits>::ordered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const T& i_actionResolver)
-: m_iterableRef(i_iterableRef)
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename IIterable,typename AActionResolver)
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(ActionResolver,AActionResolver))
+ordered_iterable_impl<Iterable,ActionResolver>::ordered_iterable_impl(IIterable&& i_iterable,AActionResolver&& i_actionResolver)
+: iterable_visitor<ordered_iterable_impl<Iterable,ActionResolver>>(i_iterable,i_actionResolver)
+{
+}
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(traits,Action))
+void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Action&& i_initialAction)
+{
+	this->loop(std::forward<Action>(i_initialAction));
+}
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(traits,Action))
+void ordered_iterable_impl<Iterable,ActionResolver>::iterate_impl(Action&& i_initialAction) const
+{
+	this->loop(std::forward<Action>(i_initialAction));
+}
+
+}
+
+template<typename Iterable,typename ActionResolver>
+iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::iterable_adaptor(Iterable& i_iterable, const ActionResolver& i_actionResolver)
+: m_adaptor(deduce_adaptor(i_iterable))
 , m_actionResolver(i_actionResolver)
 {
 }
-template<typename T, typename Traits>
-void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename Iterable,typename ActionResolver>
+iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::iterable_adaptor(detail::ordered_iterable_impl<Iterable,ActionResolver>& i_iterable)
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](reference i_value) -> action { return m_actionResolver.resolve(eval(i_try,i_value)); }),m_actionResolver.resolve(i_initialAction),i_actionStatePtr);
 }
-template<typename T, typename Traits>
-void ordered_iterable_impl<T,Traits>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(typename Adaptor::traits,ActionTag))
+constexpr auto iterable_adaptor<detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
 {
-	m_iterableRef->iterate_impl(make_function([i_try,this](const_reference i_value) -> action { return m_actionResolver.resolve(eval(i_try,i_value)); }),m_actionResolver.resolve(i_initialAction),i_actionStatePtr);
+	return i_adaptor.m_actionResolver(std::forward<Adaptor>(i_adaptor).m_adaptor,std::forward<ActionTag>(i_actionTag));
 }
 
+template<typename Iterable,typename ActionResolver>
+iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::iterable_adaptor(const Iterable& i_iterable, const ActionResolver& i_actionResolver)
+: m_adaptor(deduce_adaptor(i_iterable))
+, m_actionResolver(i_actionResolver)
+{
 }
+template<typename Iterable,typename ActionResolver>
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<const detail::ordered_iterable_impl<Iterable,ActionResolver>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
+{
+	return i_adaptor.m_actionResolver(std::forward<Adaptor>(i_adaptor).m_adaptor,std::forward<ActionTag>(i_actionTag));
+}
+
 }

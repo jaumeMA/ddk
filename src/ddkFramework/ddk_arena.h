@@ -1,8 +1,16 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
+#include "ddk_embedded_type.h"
 #include <type_traits>
 #include <cstddef>
-#include "ddk_embedded_type.h"
 
 namespace ddk
 {

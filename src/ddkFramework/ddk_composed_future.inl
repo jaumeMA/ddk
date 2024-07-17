@@ -34,7 +34,7 @@ template<typename T, size_t Dim>
 template<size_t Index, size_t ... Indexs, typename Future>
 bool composed_future<std::array<T,Dim>>::place_future(Future&& i_future, ddk::distributed_reference_wrapper<future_data> i_futureData)
 {
-	std::forward<Future>(i_future).then(ddk::make_function([i_futureData](T i_value) mutable
+	std::forward<Future>(i_future).then([i_futureData](T i_value) mutable
 	{
 		i_futureData->m_values[Index].template construct<T>(std::move(i_value));
 
@@ -42,7 +42,7 @@ bool composed_future<std::array<T,Dim>>::place_future(Future&& i_future, ddk::di
 		{
 			i_futureData->m_promise.set_value({ { std::move(i_futureData->m_values[Indexs]).template extract<T>() ...} });
 		}
-	}));
+	});
 
 	return true;
 }
@@ -82,7 +82,7 @@ template<typename ... T>
 template<size_t Index, size_t ... Indexs, typename Future>
 bool composed_future<std::tuple<T...>>::place_future(Future&& i_future, ddk::distributed_reference_wrapper<future_data> i_futureData)
 {
-	std::forward<Future>(i_future).then(ddk::make_function([i_futureData](typename Future::value_type i_value) mutable
+	std::forward<Future>(i_future).then([i_futureData](typename Future::value_type i_value) mutable
 	{
 		i_futureData->m_values.template get<Index>().template construct<typename Future::value_type>(std::move(i_value));
 
@@ -90,7 +90,7 @@ bool composed_future<std::tuple<T...>>::place_future(Future&& i_future, ddk::dis
 		{
 			i_futureData->m_promise.set_value({ std::move(i_futureData->m_values).template extract<Indexs>().template extract<T>() ...});
 		}
-	}));
+	});
 
 	return true;
 }

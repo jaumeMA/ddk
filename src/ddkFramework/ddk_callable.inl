@@ -1,40 +1,62 @@
 
 namespace ddk
 {
+namespace detail
+{
 
-template<typename ... Callables>
-template<typename ... CCallables>
-callable<Callables...>::callable(CCallables&& ... i_callables)
-: Callables(std::forward<CCallables>(i_callables))...
+template<typename Return,typename Function,bool Terse>
+fixed_return_callable_impl<Return,Function,Terse>::fixed_return_callable_impl(const Function& i_function)
+: m_function(i_function)
 {
 }
-
-template<typename Return, typename ... Callables>
-template<typename ... CCallables>
-fixed_return_callable<Return,Callables...>::fixed_return_callable(CCallables&& ... i_callables)
-: Callables(std::forward<CCallables>(i_callables))...
+template<typename Return,typename Function,bool Terse>
+fixed_return_callable_impl<Return,Function,Terse>::fixed_return_callable_impl(Function&& i_function)
+: m_function(std::move(i_function))
 {
 }
-
-template<typename Callable>
-auto deduce_callable(Callable&& i_callable)
+template<typename Return,typename Function,bool Terse>
+template<typename ... Args>
+Return fixed_return_callable_impl<Return,Function,Terse>::operator()(Args&& ... i_args) const
 {
-	return callable(std::forward<Callable>(i_callable));
-}
-template<typename Return,typename Callable>
-auto deduce_fixed_callable(Callable&& i_callable)
-{
-	return fixed_return_callable<Return,mpl::remove_qualifiers<Callable>>(std::forward<Callable>(i_callable));
-}
-template<typename Callable>
-auto deduce_callable(const callable<Callable>& i_callable)
-{
-	return i_callable;
-}
-template<typename Return, typename Callable>
-auto deduce_fixed_callable(const fixed_return_callable<Return,Callable>& i_callable)
-{
-	return i_callable;
+	if constexpr (Terse)
+	{
+		return ddk::terse_eval(std::move(m_function),std::forward<Args>(i_args)...);
+	}
+	else
+	{
+		return ddk::eval(std::move(m_function),std::forward<Args>(i_args)...);
+	}
 }
 
+template<typename Return,typename Function,bool Terse>
+template<typename ... Args>
+replaced_return_callable_impl<Return,Function,Terse>::replaced_return_callable_impl(const Function& i_function,Args&& ... i_args)
+: m_function(i_function)
+, m_return(std::forward<Args>(i_args)...)
+{
+}
+template<typename Return,typename Function,bool Terse>
+template<typename ... Args>
+replaced_return_callable_impl<Return,Function,Terse>::replaced_return_callable_impl(Function&& i_function,Args&& ... i_args)
+: m_function(std::move(i_function))
+, m_return(std::forward<Args>(i_args)...)
+{
+}
+template<typename Return,typename Function,bool Terse>
+template<typename ... Args>
+Return replaced_return_callable_impl<Return,Function,Terse>::operator()(Args&& ... i_args) const
+{
+	if constexpr (Terse)
+	{
+		ddk::terse_eval(std::move(m_function),std::forward<Args>(i_args)...);
+	}
+	else
+	{
+		ddk::eval(std::move(m_function),std::forward<Args>(i_args)...);
+	}
+
+	return std::move(m_return);
+}
+
+}
 }

@@ -7,425 +7,106 @@ namespace ddk
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::iterable_adaptor(multi_map<Key,Value,Map,Allocator>& i_iterable)
 : m_iterable(i_iterable)
-, m_awaitable(await(make_function(this,&iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::navigate,go_no_place)))
 {
+}
+template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
+auto iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::get_value()
+{
+    throw;
+}
+template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
+auto iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::get_value() const
+{
+    throw;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 template<typename Sink>
-bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::init(Sink&& i_sink, const ddk::shift_action& i_initialAction)
+auto iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::forward_value(Sink&& i_sink)
 {
-    m_nextMov = i_initialAction.target_shift();
-
-    if(awaited_result<reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return no_action{};
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 template<typename Sink>
-typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::forward_next_value_in(Sink&& i_sink)
+auto iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::forward_value(Sink&& i_sink) const
 {
-    m_nextMov = 1;
-
-    if(awaited_result<reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return 1;
-    }
+    return no_action{};
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::forward_next_value_in(Sink&& i_sink) const
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const begin_action_tag&) const
 {
-    if(awaited_result<reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return 1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::forward_prev_value_in(Sink&& i_sink)
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const end_action_tag&) const
 {
-    m_nextMov = -1;
-
-    if(awaited_result<reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return -1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::forward_prev_value_in(Sink&& i_sink) const
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const forward_action_tag&) const
 {
-    m_nextMov = -1;
-
-    if(awaited_result<reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return -1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::valid() const noexcept
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const backward_action_tag&) const
 {
-    return m_valid;
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-void iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::_navigate(value_t& i_map, std::vector<Key>& i_preffix)
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::perform_action(const displace_action_tag&) const
 {
-    typename value_t::iterator itCurr = (m_nextMov == 1) ? i_map.begin() : i_map.last();
-    typename value_t::iterator itEnd = i_map.end();
-
-    for(; itCurr != itEnd;)
-    {
-        value_t& nestedMap = itCurr->second;
-
-        i_preffix.push_back(itCurr->first);
-
-        value_type currValue = { i_preffix,itCurr->second };
-
-        switch(m_nextMov)
-        {
-            case 1:
-            {
-                yield(currValue);
-
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,i_preffix);
-                }
-
-                ++itCurr;
-
-                break;
-            }
-            case -1:
-            {
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,i_preffix);
-                }
-
-                yield(currValue);
-
-                --itCurr;
-
-                break;
-            }
-            default:
-            {
-                yield(currValue);
-
-                break;
-            }
-        }
-
-        i_preffix.erase(i_preffix.begin() + i_preffix.size() - 1);
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-typename iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::reference iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::navigate(const ddk::shift_action& i_initialAction)
+bool iterable_adaptor<multi_map<Key,Value,Map,Allocator>>::valid() const
 {
-    typename value_t::iterator itCurr = (i_initialAction.target_shift() > 0) ? m_iterable.begin() : m_iterable.last();
-    typename value_t::iterator itEnd = m_iterable.end();
-    std::vector<Key> preffix;
-
-    m_nextMov = i_initialAction.target_shift();
-
-    for(; itCurr != itEnd;)
-    {
-        value_t& nestedMap = itCurr->second;
-        preffix.push_back(itCurr->first);
-        value_type currValue = { preffix,itCurr->second };
-
-        switch(m_nextMov)
-        {
-            case 1:
-            {
-                yield(currValue);
-
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,preffix);
-                }
-
-                ++itCurr;
-
-                break;
-            }
-            case -1:
-            {
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,preffix);
-                }
-
-                yield(currValue);
-
-                --itCurr;
-
-                break;
-            }
-            default:
-            {
-                yield(currValue);
-
-                break;
-            }
-        }
-
-        preffix.erase(preffix.begin() + preffix.size() - 1);
-    }
-
-    suspend();
-
-    return crash_on_return<reference>::value();
+    return false;
 }
 
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::iterable_adaptor(const multi_map<Key,Value,Map,Allocator>& i_iterable)
 : m_iterable(i_iterable)
-, m_awaitable(await(make_function(this,&iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::navigate,go_no_place)))
 {
+}
+template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
+auto iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::get_value() const
+{
+    throw;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
 template<typename Sink>
-bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::init(Sink&& i_sink,const ddk::shift_action& i_initialAction)
+auto iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::forward_value(Sink&& i_sink) const
 {
-    m_nextMov = i_initialAction.target_shift();
-
-    if(awaited_result<reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return no_action{};
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::forward_next_value_in(Sink&& i_sink)
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const begin_action_tag&) const
 {
-    m_nextMov = 1;
-
-    if(awaited_result<const_reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return 1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::forward_next_value_in(Sink&& i_sink) const
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const end_action_tag&) const
 {
-    m_nextMov = 1;
-
-    if(awaited_result<const_reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return 1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::forward_prev_value_in(Sink&& i_sink)
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const forward_action_tag&) const
 {
-    m_nextMov = -1;
-
-    if(awaited_result<const_reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return -1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-template<typename Sink>
-typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::difference_type iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::forward_prev_value_in(Sink&& i_sink) const
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const backward_action_tag&) const
 {
-    m_nextMov = -1;
-
-    if(awaited_result<const_reference> res = resume(m_awaitable))
-    {
-        i_sink.apply(res.get());
-
-        return 0;
-    }
-    else
-    {
-        m_valid = false;
-
-        return -1;
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-void iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::_navigate(const value_t& i_map, std::vector<Key>& i_preffix)
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::perform_action(const displace_action_tag&) const
 {
-    typename value_t::const_iterator itCurr = (m_nextMov == 1) ? i_map.begin() : i_map.last();
-    typename value_t::const_iterator itEnd = i_map.end();
-
-    for(; itCurr != itEnd;)
-    {
-        const value_t& nestedMap = itCurr->second;
-
-        i_preffix.push_back(itCurr->first);
-
-        const value_type currValue = { i_preffix,itCurr->second };
-
-        switch(m_nextMov)
-        {
-            case 1:
-            {
-                yield(currValue);
-
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,i_preffix);
-                }
-
-                ++itCurr;
-
-                break;
-            }
-            case -1:
-            {
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,i_preffix);
-                }
-
-                yield(currValue);
-
-                --itCurr;
-
-                break;
-            }
-            default:
-            {
-                yield(currValue);
-
-                break;
-            }
-        }
-    }
+    return false;
 }
 template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-typename iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::const_reference iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::navigate(const ddk::shift_action& i_initialAction)
+bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::valid() const
 {
-    typename value_t::const_iterator itCurr = (i_initialAction.target_shift() > 0) ? m_iterable.begin() : m_iterable.last();
-    typename value_t::const_iterator itEnd = m_iterable.end();
-    std::vector<Key> preffix;
-
-    for(; itCurr != itEnd;)
-    {
-        const value_t& nestedMap = itCurr->second;
-        preffix.push_back(itCurr->first);
-        const value_type currValue = { preffix,itCurr->second };
-
-        switch(m_nextMov)
-        {
-            case 1:
-            {
-                yield(currValue);
-
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,preffix);
-                }
-
-                ++itCurr;
-
-                break;
-            }
-            case -1:
-            {
-                if(nestedMap.empty() == false)
-                {
-                    _navigate(nestedMap,preffix);
-                }
-
-                yield(currValue);
-
-                --itCurr;
-
-                break;
-            }
-            default:
-            {
-                yield(currValue);
-
-                break;
-            }
-        }
-    }
-
-    suspend();
-
-    return crash_on_return<const_reference>::value();
-}
-template<typename Key,typename Value,template<typename,typename,template<typename>class> class Map,template<typename> class Allocator>
-bool iterable_adaptor<const multi_map<Key,Value,Map,Allocator>>::valid() const noexcept
-{
-    return m_valid;
+    return false;
 }
 
 }

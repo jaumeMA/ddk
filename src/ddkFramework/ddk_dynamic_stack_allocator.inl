@@ -17,12 +17,12 @@ namespace detail
 template<size_t NumGuardPages>
 stack_alloc_const_dist_ref dynamic_stack_allocator<NumGuardPages>::share() const
 {
-	return ref_from_this();
+	return distributed_from_this();
 }
 template<size_t NumGuardPages>
 stack_alloc_dist_ref dynamic_stack_allocator<NumGuardPages>::share()
 {
-	return ref_from_this();
+	return distributed_from_this();
 }
 template<size_t NumGuardPages>
 void* dynamic_stack_allocator<NumGuardPages>::reserve(size_t i_size) const

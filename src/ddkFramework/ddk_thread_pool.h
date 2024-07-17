@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_thread_impl.h"
@@ -84,7 +92,7 @@ public:
 	acquire_result<thread_sheaf> acquire_sheaf(size_t i_size);
 	acquire_result<thread_sheaf> acquire_sheaf();
 	bool available_threads() const;
-	void deallocate(detail::thread_impl_interface* i_object) const;
+	void deallocate(const detail::thread_impl_interface* i_object) const;
 	void join() const;
 	size_t size() const;
 	bool empty() const;

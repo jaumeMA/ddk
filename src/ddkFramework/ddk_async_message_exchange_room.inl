@@ -35,8 +35,8 @@ void async_message_exchange_typed_room<Callable,MessageType,BuiltInMessageType>:
 
 	const typename MessageType::tuple_t& forwarded_args = i_msg.forward_message();
 
-	typename intrusive_list<signal_functor_t>::const_iterator itCaller = m_callers.begin();
-	for(; itCaller != m_callers.end(); ++itCaller)
+	typename intrusive_list<signal_functor_t>::const_iterator itCaller = m_callers.cbegin();
+	for(; itCaller != m_callers.cend(); ++itCaller)
 	{
 		if(itCaller->is_enabled())
 		{

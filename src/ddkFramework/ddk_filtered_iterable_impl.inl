@@ -1,6 +1,5 @@
 
-#include "ddk_iterable_exceptions.h"
-#include "ddk_iterable_interface_utils.h"
+#pragma warning(disable: 4102)
 
 namespace ddk
 {
@@ -18,26 +17,172 @@ Function iterable_filter<Function>::get_filter() const
 	return m_filter;
 }
 
-template<typename Traits, typename Function>
-filtered_iterable_impl<Traits,Function>::filtered_iterable_impl(iterable_impl_dist_ref<iterable_base_traits> i_iterableRef, const Function& i_filter)
-: m_iterableRef(i_iterableRef)
-, m_filter(i_filter)
+template<typename Iterable, typename Filter>
+TEMPLATE(typename IIterable,typename FFilter)
+REQUIRED(IS_CONSTRUCTIBLE(Iterable,IIterable),IS_CONSTRUCTIBLE(Filter,FFilter))
+filtered_iterable_impl<Iterable,Filter>::filtered_iterable_impl(IIterable&& i_iterable,FFilter&& i_filter)
+: base_t(i_iterable,std::forward<FFilter>(i_filter))
 {
 }
-template<typename Traits, typename Function>
-void filtered_iterable_impl<Traits,Function>::iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr)
+template<typename Iterable,typename Filter>
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(traits,Action))
+void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Action&& i_initialAction)
 {
-    typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
-    
-    m_iterableRef->iterate_impl(make_function([i_try,this,actionResult=action(i_initialAction)](reference i_value) mutable -> action { if(call_iterable_payload(range_seq{},m_filter,i_value)) actionResult = eval(i_try,i_value); if(actionResult.template is_base_of<shift_action>()) actionResult.template get_as<shift_action>().set_step_by_step(true); return actionResult; }),i_initialAction,i_actionStatePtr);
+    this->loop(std::forward<Action>(i_initialAction));
 }
-template<typename Traits, typename Function>
-void filtered_iterable_impl<Traits,Function>::iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const
+template<typename Iterable,typename Filter>
+TEMPLATE(typename Action)
+REQUIRED(ACTION_SUPPORTED(const_traits,Action))
+void filtered_iterable_impl<Iterable,Filter>::iterate_impl(Action&& i_initialAction) const
 {
-    typedef typename mpl::make_sequence<0,mpl::aqcuire_callable_args_type<Function>::type::size()>::type range_seq;
-    
-    m_iterableRef->iterate_impl(make_function([i_try,this,actionResult=action(i_initialAction)](const_reference i_value) mutable -> action { if(call_iterable_payload(range_seq{},m_filter,i_value)) actionResult = eval(i_try, i_value); if(actionResult.template is_base_of<shift_action>()) actionResult.template get_as<shift_action>().set_step_by_step(true); return actionResult; }),i_initialAction,i_actionStatePtr);
+    this->loop(std::forward<Action>(i_initialAction));
 }
 
 }
+
+template<typename Iterable,typename Filter>
+iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::iterable_adaptor(Iterable& i_iterable,const Filter& i_filter)
+: m_adaptor(deduce_adaptor(i_iterable))
+, m_filter(i_filter)
+{
 }
+template<typename Iterable,typename Filter>
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
+{
+    if (auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),i_adaptor.m_filter }))
+    {
+        return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(actionRes);
+    }
+    else
+    {
+        return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(std::move(actionRes).error());
+    }
+}
+template<typename Iterable,typename Filter>
+template<typename Adaptor, typename ActionTag>
+constexpr auto iterable_adaptor<detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag)
+{
+    typedef typename mpl::which_type<mpl::is_const<Adaptor>,const deduced_adaptor<Iterable>,deduced_adaptor<Iterable>>::type adaptor_t;
+    typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
+    typedef typename filtered_action_result::error_t filtered_action_error;
+
+    while(true)
+    {
+        if (filtered_action_result applyRes = i_actionTag.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
+        {
+            return make_result<filtered_action_result>(applyRes);
+        }
+        else
+        {
+            typedef typename filtered_action_error::recovery_tag recovery_tag;
+            typedef filtered_iterable_action<ActionTag,Filter> filtered_action_tag;
+
+            filtered_action_error applyError = std::move(applyRes).error();
+
+            if constexpr (mpl::is_same_type<recovery_tag,filtered_action_tag>::value)
+            {
+                if (applyError)
+                {
+                    i_actionTag.~filtered_iterable_action<ActionTag,Filter>();
+
+                    new (&i_actionTag) filtered_iterable_action<ActionTag,Filter>(std::move(applyError).recovery());
+
+                    continue;
+                }
+            }
+            else 
+            {
+                if (applyError)
+                {
+                    if (auto recoveryRes = perform_action(std::forward<Adaptor>(i_adaptor),std::move(applyError).recovery()))
+                    {
+                        return make_result<filtered_action_result>(recoveryRes);
+                    }
+                    else
+                    {
+                        return make_error<filtered_action_result>(std::move(recoveryRes).error());
+                    }
+                }
+            }
+
+            return make_error<filtered_action_result>(std::move(applyError));
+        }
+    }
+}
+
+template<typename Iterable,typename Filter>
+iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::iterable_adaptor(const Iterable& i_iterable,const Filter& i_filter)
+: m_adaptor(deduce_adaptor(i_iterable))
+, m_filter(i_filter)
+{
+}
+template<typename Iterable,typename Filter>
+TEMPLATE(typename Adaptor, typename ActionTag)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag)
+{
+    if (auto actionRes = perform_action(std::forward<Adaptor>(i_adaptor),filtered_iterable_action{ std::forward<ActionTag>(i_actionTag),i_adaptor.m_filter }))
+    {
+        return make_result<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(actionRes);
+    }
+    else
+    {
+        return make_error<iterable_action_tag_result<detail::adaptor_traits<Adaptor>,ActionTag>>(actionRes.error());
+    }
+}
+template<typename Iterable,typename Filter>
+template<typename Adaptor, typename ActionTag>
+constexpr auto iterable_adaptor<const detail::filtered_iterable_impl<Iterable,Filter>>::perform_action(Adaptor&& i_adaptor, filtered_iterable_action<ActionTag,Filter> i_actionTag)
+{
+    typedef typename mpl::which_type<mpl::is_const<Adaptor>,const deduced_adaptor<const Iterable>,deduced_adaptor<const Iterable>>::type adaptor_t;
+    typedef filtered_iterable_action_result<adaptor_t,ActionTag,Filter> filtered_action_result;
+    typedef typename filtered_action_result::error_t filtered_action_error;
+
+    while(true)
+    {
+        if (filtered_action_result applyRes = i_actionTag.apply(std::forward<Adaptor>(i_adaptor).m_adaptor))
+        {
+            return make_result<filtered_action_result>(applyRes);
+        }
+        else
+        {
+            typedef typename filtered_action_error::recovery_tag recovery_tag;
+            typedef filtered_iterable_action<ActionTag,Filter> filtered_action_tag;
+
+            filtered_action_error applyError = applyRes.error();
+
+            if constexpr (IS_SAME_CLASS_COND(recovery_tag,filtered_action_tag) && IS_MOVE_ASSIGNABLE_COND(filtered_action_tag))
+            {
+                if (applyError)
+                {
+                    i_actionTag = std::move(applyError).recovery();
+
+                    continue;
+                }
+            }
+            else
+            {
+                if (applyError)
+                {
+                    if (auto recoveryRes = perform_action(std::forward<Adaptor>(i_adaptor),std::move(applyError).recovery()))
+                    {
+                        return make_result<filtered_action_result>(recoveryRes);
+                    }
+                    else
+                    {
+                        return make_error<filtered_action_result>(recoveryRes.error());
+                    }
+                }
+            }
+
+            return make_error<filtered_action_result>(applyError);
+        }
+    }
+}
+
+}
+
+#pragma warning(default: 4102)

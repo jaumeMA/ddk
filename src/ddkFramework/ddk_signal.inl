@@ -16,8 +16,8 @@ template<typename ... Types>
 template<typename ... Args>
 void signal<void(Types...)>::execute(Args&& ... i_args) const
 {
-	typename linked_list<signal_functor_t>::const_iterator itCaller = m_callers.begin();
-	for(; itCaller != m_callers.end(); ++itCaller)
+	typename linked_list<signal_functor_t>::const_iterator itCaller = m_callers.cbegin();
+	for(; itCaller != m_callers.cend(); ++itCaller)
 	{
 		if(itCaller->is_enabled())
 		{

@@ -1,56 +1,98 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_tuple.h"
 #include "ddk_iterable_impl_interface.h"
-#include "ddk_iterable_valued_traits.h"
+#include "ddk_iterable_traits.h"
+#include "ddk_intersection_iterable_action.h"
 
 namespace ddk
 {
 namespace detail
 {
 
-template<typename ActionAdapter, typename ... Iterables>
-class intersection_iterable_impl : public iterable_impl_interface<intersection_iterable_base_traits<typename Iterables::traits ...>>
+template<typename ... Iterables>
+class intersection_iterable_impl : public iterable_impl_interface<intersection_iterable_traits<typename Iterables::traits ...>>, public iterable_visitor<intersection_iterable_impl<Iterables...>>
 {
-    static const size_t s_num_iterables = tuple<Iterables...>::size();
-    typedef iterable_impl_interface<intersection_iterable_base_traits<typename Iterables::traits ...>> base_t;
-    using typename base_t::traits;
-    typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_value iterable_value;
-    typedef typename intersection_iterable_traits<typename Iterables::traits ...>::iterable_const_value iterable_const_value;
+    static const size_t s_numTypes = tuple<Iterables...>::size();
 
 public:
-    using typename base_t::reference;
-    using typename base_t::const_reference;
-    using typename base_t::action;
+	typedef intersection_iterable_traits<typename Iterables::traits ...> traits;
+	typedef const_iterable_traits<traits> const_traits;
 
-    intersection_iterable_impl(const ActionAdapter& i_adapter, const Iterables& ... i_iterables);
-    intersection_iterable_impl(const ActionAdapter& i_adapter, const tuple<Iterables...>& i_tupleIterable);
-    intersection_iterable_impl(ActionAdapter&& i_adapter,const Iterables& ... i_iterables);
-    intersection_iterable_impl(ActionAdapter&& i_adapter,const tuple<Iterables...>& i_tupleIterable);
-    intersection_iterable_impl(const intersection_iterable_impl&) = default;
-	intersection_iterable_impl(intersection_iterable_impl&&) = default;
+	TEMPLATE(typename ... IIterables)
+	REQUIRES(IS_CONSTRUCTIBLE(Iterables,IIterables)...)
+    intersection_iterable_impl(IIterables&& ... i_iterables);
 
-    const tuple<Iterables...>& get_iterables() const;
-    tuple<Iterables...>& get_iterables();
-
-private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-
-    template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr);
-    template<size_t ... Indexs>
-    inline void iterate_impl(const mpl::sequence<Indexs...>&, const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const;
-
-    tuple<Iterables...> m_iterables;
-    ActionAdapter m_actionAdapter;
+	TEMPLATE(typename Action)
+	REQUIRES(ACTION_SUPPORTED(traits,Action))
+	void iterate_impl(Action&& i_initialAction);
+	TEMPLATE(typename Action)
+	REQUIRES(ACTION_SUPPORTED(const_traits,Action))
+	void iterate_impl(Action&& i_initialAction) const;
 };
-template<typename ActionAdapter,typename ... Iterables>
-intersection_iterable_impl(const ActionAdapter&, const Iterables& ...) ->intersection_iterable_impl<ActionAdapter,Iterables...>;
-template<typename ActionAdapter,typename ... Iterables>
-intersection_iterable_impl(ActionAdapter&&,const Iterables& ...)->intersection_iterable_impl<ActionAdapter,Iterables...>;
+template<typename ... Iterables>
+intersection_iterable_impl(Iterables&&...) -> intersection_iterable_impl<mpl::remove_qualifiers<Iterables>...>;
+template<typename ... Iterables>
+intersection_iterable_impl(Iterables&...) -> intersection_iterable_impl<Iterables...>;
 
 }
+
+template<typename ... Iterables>
+class iterable_adaptor<detail::intersection_iterable_impl<Iterables...>>
+{
+	static const size_t s_numTypes = mpl::get_num_types<Iterables...>();
+	static_assert(s_numTypes != 0,"You shall provide any iterable");
+
+public:
+	typedef detail::intersection_iterable_traits<typename Iterables::traits...> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	iterable_adaptor(Iterables& ... i_iterable);
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
+
+private:
+	template<size_t ... Indexs,typename Adaptor,typename ActionTag>
+	static auto perform_action(const mpl::sequence<Indexs...>&, Adaptor&& i_adaptor, intersection_action<ActionTag> i_actionTag);
+
+	tuple<deduced_adaptor<Iterables>...> m_adaptors;
+};
+
+template<typename ... Iterables>
+class iterable_adaptor<const detail::intersection_iterable_impl<Iterables...>>
+{
+	static const size_t s_numTypes = mpl::get_num_types<Iterables...>();
+	static_assert(s_numTypes != 0,"You shall provide any iterable");
+
+public:
+	typedef detail::intersection_iterable_traits<typename Iterables::traits...> traits;
+	typedef detail::const_iterable_traits<traits> const_traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
+
+	iterable_adaptor(const Iterables& ... i_iterable);
+	TEMPLATE(typename Adaptor, typename ActionTag)
+	REQUIRES(ACTION_TAGS_SUPPORTED(Adaptor,ActionTag))
+	static constexpr auto perform_action(Adaptor&& i_adaptor, ActionTag&& i_actionTag);
+
+private:
+	template<size_t ... Indexs,typename Adaptor,typename ActionTag>
+	static constexpr auto perform_action(const mpl::sequence<Indexs...>&,Adaptor&& i_adaptor,intersection_action<ActionTag> i_actionTag);
+
+	const tuple<deduced_adaptor<Iterables>...> m_adaptors;
+};
+
 }
 
 #include "ddk_intersection_iterable_impl.inl"

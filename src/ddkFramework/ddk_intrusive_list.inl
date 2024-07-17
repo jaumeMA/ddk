@@ -87,12 +87,22 @@ typename intrusive_list<T,Pointer>::const_iterator intrusive_list<T,Pointer>::be
 	return const_iterator(m_firstNode);
 }
 template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::const_iterator intrusive_list<T,Pointer>::cbegin() const
+{
+	return const_iterator(m_firstNode);
+}
+template<typename T,template<typename> typename Pointer>
 typename intrusive_list<T,Pointer>::iterator intrusive_list<T,Pointer>::end()
 {
 	return nullptr;
 }
 template<typename T,template<typename> typename Pointer>
 typename intrusive_list<T,Pointer>::const_iterator intrusive_list<T,Pointer>::end() const
+{
+	return nullptr;
+}
+template<typename T,template<typename> typename Pointer>
+typename intrusive_list<T,Pointer>::const_iterator intrusive_list<T,Pointer>::cend() const
 {
 	return nullptr;
 }

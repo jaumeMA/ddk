@@ -2,6 +2,7 @@
 
 #include "ddk_visitor_invoker.h"
 #include "ddk_static_builtin_visitors.h"
+#include "ddk_variant_concepts.h"
 
 
 #define CREATE_INNER_VISITOR(_visitor,_types) \
@@ -28,7 +29,7 @@ inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<T
 		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
 
-		constructor_visitor<variadic_union<Types...>,TTypes...> ctr;
+		constructor_visitor<variadic_union<Types...>,Types...> ctr;
 
 		return _variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,other);
 	}
@@ -47,7 +48,7 @@ inline constexpr variadic_union<Types...> construct_union(const mpl::type_pack<T
 		typedef typename constructor_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type, TTypes...> _variant_visitor_t;
 
-		constructor_visitor<variadic_union<Types...>, TTypes...> ctr;
+		constructor_visitor<variadic_union<Types...>,Types...> ctr;
 
 		return _variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,std::move(other));
 	}
@@ -65,7 +66,7 @@ inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types.
 		typedef typename constructor_inplace_visitor<variadic_union<Types...>,TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
 
-		constructor_inplace_visitor<variadic_union<Types...>,TTypes...> ctr(i_storage);
+		constructor_inplace_visitor<variadic_union<Types...>,Types...> ctr(i_storage);
 
 		_variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,other);
 	}
@@ -81,7 +82,7 @@ inline constexpr variadic_union<Types...>& construct_union(variadic_union<Types.
 		typedef typename constructor_inplace_visitor<variadic_union<Types...>, TTypes...>::return_type return_type;
 		typedef variant_visitor_invoker<return_type,TTypes...> _variant_visitor_t;
 
-		constructor_inplace_visitor<variadic_union<Types...>, TTypes...> ctr(i_storage);
+		constructor_inplace_visitor<variadic_union<Types...>,Types...> ctr(i_storage);
 
 		_variant_visitor_t::template inner_invoker(_range_seq_t{},ctr,std::move(other));
 	}
@@ -104,10 +105,10 @@ constexpr variant_impl<Types...>::variant_impl()
 {
 }
 template<typename ... Types>
-template<size_t Index, typename TType>
-constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&, TType&& other)
+template<size_t Index, typename ... Args>
+constexpr variant_impl<Types...>::variant_impl(const mpl::static_number<Index>&, Args&& ... i_args)
 : m_currentType(Index)
-, m_storage(mpl::class_holder<mpl::nth_type_of_t<Index,Types...>>{},std::forward<TType>(other))
+, m_storage(mpl::class_holder<mpl::nth_type_of_t<Index,Types...>>{},std::forward<Args>(i_args)...)
 {
 }
 template<typename ... Types>
@@ -296,8 +297,9 @@ template<size_t Index,typename ... Args>
 mpl::nth_type_of_t<Index,Types...>& variant_impl<Types...>::emplace(Args&& ... i_args)
 {
 	static_assert(Index >= 0 && Index < s_numTypes,"Type out of bounds!");
+	typedef typename mpl::nth_type_of<Index,Types...>::type nth_type;
 
-	if (Index != m_currentType)
+	if constexpr (IS_MOVE_ASSIGNABLE_COND(nth_type) == false)
 	{
 		destroy();
 
@@ -305,14 +307,27 @@ mpl::nth_type_of_t<Index,Types...>& variant_impl<Types...>::emplace(Args&& ... i
 
 		m_currentType = static_cast<unsigned char>(Index);
 
-		return ctr.template operator()<Index>(std::forward<Args>(i_args)...);
+		return ctr.template operator() < Index > (std::forward<Args>(i_args)...);
 	}
 	else
 	{
-		//just an assignment
-		assigner_visitor<data_type,Types...> ass(m_storage);
+		if (Index != m_currentType)
+		{
+			destroy();
 
-		return ass.template operator()<Index>(std::forward<Args>(i_args)...);
+			constructor_inplace_visitor<data_type,Types...> ctr(m_storage);
+
+			m_currentType = static_cast<unsigned char>(Index);
+
+			return ctr.template operator()<Index>(std::forward<Args>(i_args)...);
+		}
+		else
+		{
+			//just an assignment
+			assigner_visitor<data_type,Types...> ass(m_storage);
+
+			return ass.template operator()<Index>(std::forward<Args>(i_args)...);
+		}
 	}
 }
 template<typename ... Types>
@@ -531,13 +546,13 @@ constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>:
 }
 template<typename ... Types>
 template<size_t Pos>
-embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> variant_impl<Types...>::extract() &&
+typename mpl::nth_type_of<Pos,Types...>::type variant_impl<Types...>::extract() &&
 {
 	typedef typename mpl::nth_type_of<Pos,Types...>::type embeddedType;
 
 	m_currentType = s_numTypes;
 
-	return embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>{ std::move(m_storage).template extract<embeddedType>() };
+	return std::move(m_storage).template extract<embeddedType>();
 }
 template<typename ... Types>
 template<size_t Pos>
@@ -679,4 +694,108 @@ constexpr auto variant_impl<Types...>::visit(Args&& ... i_args) const
 }
 
 }
+
+template<typename ... Types>
+TEMPLATE(typename TType)
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_COPY_CONSTRUCTIBLE(TType))
+constexpr variant<Types...>::variant(const variant<TType>& other)
+: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<TType,Types...>>{},other.m_value)
+{
+}
+template<typename ... Types>
+TEMPLATE(typename TType)
+REQUIRED(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
+constexpr variant<Types...>::variant(variant<TType>&& other)
+: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<TType,Types...>>{},std::move(other.m_value))
+{
+}
+template<typename ... Types>
+constexpr variant<Types...>::variant(const variant& other)
+: detail::variant_impl<Types...>(other)
+{
+}
+template<typename ... Types>
+constexpr variant<Types...>::variant(variant&& other)
+: detail::variant_impl<Types...>(std::move(other))
+{
+}
+template<typename ... Types>
+TEMPLATE(typename T)
+REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+constexpr variant<Types...>::variant(T&& i_value)
+: detail::variant_impl<Types...>(mpl::static_number<mpl::type_match_pos<T,Types...>>{},std::forward<T>(i_value))
+{
+	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
+}
+template<typename ... Types>
+variant<Types...>& variant<Types...>::operator=(const variant& other)
+{
+	detail::variant_impl<Types...>::operator=(other);
+
+	return *this;
+}
+template<typename ... Types>
+variant<Types...>& variant<Types...>::operator=(variant&& other)
+{
+	detail::variant_impl<Types...>::operator=(std::move(other));
+
+	return *this;
+}
+template<typename ... Types>
+TEMPLATE(typename T)
+REQUIRED(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+variant<Types...>& variant<Types...>::operator=(T&& i_value)
+{
+	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
+
+	detail::variant_impl<Types...>::template assign<mpl::type_match_pos<T,Types...>>(std::forward<T>(i_value));
+
+	return *this;
+}
+template<typename ... Types>
+TEMPLATE(typename T,typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(T,Args...),IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+T& variant<Types...>::emplace(Args&& ... i_args)
+{
+	static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
+
+	return detail::variant_impl<Types...>::template emplace<mpl::type_match_pos<T,Types...>>(std::forward<Args>(i_args)...);
+}
+template<typename ... Types>
+template<typename T>
+constexpr bool variant<Types...>::operator==(T&& other) const
+{
+	if constexpr (concepts::is_variant_v<T>)
+	{
+		return detail::variant_impl<Types...>::operator==(std::forward<T>(other));
+	}
+	else
+	{
+		static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
+
+		return detail::variant_impl<Types...>::template compare<mpl::type_match_pos<T,Types...>>(std::forward<T>(other));
+	}
+}
+template<typename ... Types>
+template<typename T>
+constexpr bool variant<Types...>::operator!=(T&& other) const
+{
+	if constexpr (concepts::is_variant_v<T>)
+	{
+		return detail::variant_impl<Types...>::operator!=(std::forward<T>(other));
+	}
+	else
+	{
+		static_assert(mpl::is_among_constructible_types<T,Types...>,"You shall provide convertible type");
+
+		return detail::variant_impl<Types...>::template compare<mpl::type_match_pos<T,Types...>>(std::forward<T>(other)) == false;
+	}
+}
+template<typename ... Types>
+template<typename Type>
+constexpr bool variant<Types...>::contains()
+{
+	return mpl::is_among_types<Type,Types...>;
+}
+
 }

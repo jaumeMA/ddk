@@ -14,11 +14,13 @@ future<T>::future(future&& other)
 template<typename T>
 future<T>::future(const detail::private_async_state_shared_ptr<T>& i_sharedState, unsigned char i_depth)
 : m_sharedState(i_sharedState)
+, m_depth(i_depth)
 {
 }
 template<typename T>
 future<T>::future(detail::private_async_state_shared_ptr<T>&& i_sharedState, unsigned char i_depth)
 : m_sharedState(std::move(i_sharedState))
+, m_depth(i_depth)
 {
 }
 template<typename T>
@@ -68,9 +70,7 @@ T future<T>::extract_value() &&
 {
 	if(m_sharedState)
 	{
-		embedded_type<T> res = std::move(*m_sharedState).extract_value();
-
-		return std::move(res).extract();
+		return std::move(*m_sharedState).extract_value().extract();
 	}
 	else
 	{
@@ -82,14 +82,16 @@ typename future<T>::cancel_result future<T>::cancel()
 {
 	if (m_sharedState)
 	{
-		const auto cancelRes = std::move(*m_sharedState).cancel();
-
-		if(cancelRes)
+		if(auto cancelRes = std::move(*m_sharedState).cancel())
 		{
 			m_sharedState = nullptr;
-		}
 
-		return cancelRes;
+			return ddk::success;
+		}
+		else
+		{
+			return ddk::make_error<cancel_result>(cancelRes.error());
+		}
 	}
 	else
 	{
@@ -121,81 +123,87 @@ bool future<T>::wait_for(const std::chrono::milliseconds& i_period) const
 template<typename T>
 TEMPLATE(typename Callable)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::then(Callable&& i_continuation) &&
+constexpr auto future<T>::then(Callable&& i_continuation) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
-	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_shared_ptr<T> sharedState = std::move(m_sharedState))
 	{
-		auto executor = ddk::async([acquiredFuture = std::move(*this),i_continuation]() mutable
+		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
+		typedef variant_allocator<system_allocator,allocator_interface_proxy> async_allocator;
+
+		async_allocator asyncAllocator = g_system_allocator;
+		executor_context_lent_ptr context = nullptr;
+
+		if (async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
 		{
-			if constexpr(mpl::is_void<return_type>)
+			context = asyncExecutor->get_execution_context();
+
+			if (allocator_const_lent_ptr alloc = asyncExecutor->get_async_allocator())
 			{
-				eval(i_continuation, std::move(acquiredFuture).extract_value());
+				asyncAllocator = allocator_interface_proxy{ *alloc };
+			}
+		}
+
+		future<callable_return> res = ddk::async([_sharedState = lend(sharedState),continuation = std::forward<Callable>(i_continuation)]() mutable -> callable_return
+		{
+			if constexpr (mpl::is_void<callable_return>)
+			{
+				ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value().extract());
 			}
 			else
 			{
-				return eval(i_continuation, std::move(acquiredFuture).extract_value());
+				return ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value().extract());
 			}
-		});
+		}) -> template schedule<chained_async_scheduler>(promote_to_ref(sharedState))
+		-> template attach<detail::execution_context_executor>(context,m_depth);
 
-		if(async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
-		{
-			const unsigned char currDepth = m_depth;
+		res.m_depth = m_depth + 1;
 
-			return_type res = std::move(executor) -> attach(asyncExecutor->get_execution_context(),currDepth);
-
-			res.m_depth = currDepth + 1;
-
-			return std::move(res);
-		}
-		else
-		{
-			return return_type{ std::move(executor) };
-		}
+		return res;
 	}
 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-TEMPLATE(typename Callable,typename Context)
+TEMPLATE(typename Callable, typename Context)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
+constexpr auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
-	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_shared_ptr<T> sharedState = std::move(m_sharedState))
 	{
-		const unsigned char currDepth = m_depth;
+		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
+		typedef variant_allocator<system_allocator,allocator_interface_proxy> async_allocator;
 
-		auto executor = ddk::async([acquiredFuture = std::move(*this),i_continuation,acquiredExecContext = std::forward<Context>(i_execContext)]() mutable
+		async_allocator asyncAllocator = g_system_allocator;
+		executor_context_lent_ptr context = nullptr;
+
+		if (async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
 		{
-			if constexpr(mpl::is_void<return_type>)
-			{
-				return_type nestedFuture = ddk::async(i_continuation(std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
+			context = asyncExecutor->get_execution_context();
 
+			if (allocator_const_lent_ptr alloc = asyncExecutor->get_async_allocator())
+			{
+				asyncAllocator = allocator_interface_proxy{ *alloc };
+			}
+		}
+
+		future<callable_return> res = ddk::async([_sharedState = lend(sharedState),continuation=std::forward<Callable>(i_continuation),context=std::forward<Context>(i_execContext)]() mutable
+		{
+			future<callable_return> nestedFuture = ddk::async(ddk::make_function(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value())) -> attach(std::forward<Context>(context));
+	
+			if constexpr(mpl::is_void<callable_return>)
+			{
 				nestedFuture.wait();
 			}
 			else
 			{
-				return_type nestedFuture = ddk::async(i_continuation(std::move(acquiredFuture).extract_value())) -> attach(std::forward<Context>(acquiredExecContext));
-
 				return std::move(nestedFuture).extract_value();
 			}
-		});
+		}) -> template schedule<chained_async_scheduler>(promote_to_ref(sharedState))
+		-> template attach<detail::execution_context_executor>(context,m_depth);
 
-		if(async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
-		{
-			return_type res = std::move(executor) -> attach(asyncExecutor->get_execution_context(),currDepth);
+		res.m_depth = m_depth + 1;
 
-			res.m_depth = currDepth + 1;
-
-			return std::move(res);
-		}
-		else
-		{
-			return return_type{ executor };
-		}
+		return res;
 	}
 
 	throw future_exception("Accessing empty future");
@@ -203,187 +211,184 @@ auto future<T>::then_on(Callable&& i_continuation, Context&& i_execContext) &&
 template<typename T>
 TEMPLATE(typename Callable,typename Context)
 REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::async(Callable&& i_continuation, Context&& i_execContext) &&
+constexpr auto future<T>::async(Callable&& i_continuation, Context&& i_execContext) &&
 {
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
-	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_shared_ptr<T> sharedState = std::move(m_sharedState))
 	{
-		const unsigned char currDepth = m_depth;
+		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
+		typedef variant_allocator<system_allocator,allocator_interface_proxy> async_allocator;
 
-		return_type res = ddk::async([acquiredFuture = std::move(*this),i_continuation]() mutable
+		async_allocator asyncAllocator = g_system_allocator;
+
+		if (async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
 		{
-			if constexpr (mpl::is_void<return_type>)
+			if (allocator_const_lent_ptr alloc = asyncExecutor->get_async_allocator())
 			{
-				eval(i_continuation, std::move(acquiredFuture).extract_value());
+				asyncAllocator = allocator_interface_proxy{ *alloc };
+			}
+		}
+
+		future<callable_return> res = ddk::async([_sharedState = lend(sharedState),continuation=std::forward<Callable>(i_continuation)]() mutable -> callable_return
+		{
+			if constexpr (mpl::is_void<callable_return>)
+			{
+				ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
 			}
 			else
 			{
-				return eval(i_continuation, std::move(acquiredFuture).extract_value());
+				return ddk::eval(std::forward<Callable>(continuation),std::move(*_sharedState).extract_value());
 			}
-		}) -> attach(std::forward<Context>(i_execContext));
+		}) -> template schedule<chained_async_scheduler>(promote_to_ref(sharedState))
+		-> template attach(std::forward<Context>(i_execContext));
 
-		res.m_depth = currDepth + 1;
+		res.m_depth = m_depth + 1;
 
-		return std::move(res);
+		return res;
 	}
 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-TEMPLATE(typename Callable)
-REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::async(Callable&& i_continuation, executor_context_lent_ptr i_execContext) &&
-{
-	typedef future<typename mpl::aqcuire_callable_return_type<Callable>::type> return_type;
-
-	if(m_sharedState)
-	{
-		const unsigned char currDepth = m_depth;
-
-		return_type res = ddk::async([acquiredFuture = std::move(*this),i_continuation]() mutable
-		{
-			if constexpr(mpl::is_void<return_type>)
-			{
-				eval(i_continuation, std::move(acquiredFuture).extract_value());
-			}
-			else
-			{
-				return eval(i_continuation, std::move(acquiredFuture).extract_value());
-			}
-		}) -> attach(std::move(i_execContext),currDepth);
-
-		res.m_depth = currDepth + 1;
-
-		return std::move(res);
-	}
-
-	throw future_exception("Accessing empty future");
-}
-template<typename T>
-future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
+constexpr future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError) &&
 {
 	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		const unsigned char currDepth = m_depth;
+		typedef variant_allocator<system_allocator,allocator_interface_proxy> async_allocator;
 
-		auto executor = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
+		async_allocator asyncAllocator = g_system_allocator;
+		executor_context_lent_ptr context = nullptr;
+
+		if (async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
 		{
-			try
+			context = asyncExecutor->get_execution_context();
+
+			if (allocator_const_lent_ptr alloc = asyncExecutor->get_async_allocator())
 			{
-				if constexpr(std::is_same<T,void>::value)
-				{
-					std::move(acquiredFuture).extract_value();
-				}
-				else
-				{
-					return std::move(acquiredFuture).extract_value();
-				}
+				asyncAllocator = allocator_interface_proxy{ *alloc };
 			}
-			catch(const async_exception& i_excp)
-			{
-				if(i_excp.acquired() == false)
-				{
-					eval(i_onError,i_excp.as_error());
-				}
-
-				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
-			}
-		});
-		
-		if(async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
-		{
-			future<T> res = std::move(executor) -> attach(asyncExecutor->get_execution_context(),currDepth);
-
-			res.m_depth = currDepth + 1;
-
-			return std::move(res);
 		}
-		else
-		{
-			return executor;
-		}
-	}
 
-	throw future_exception("Accessing empty future");
-}
-template<typename T>
-future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&
-{
-	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
-	{
-		const unsigned char currDepth = m_depth;
-
-		future<T> res = ddk::async([acquiredFuture = std::move(*this),i_onError]() mutable
+		future<T> res = ddk::async([_sharedState = lend(sharedState),i_onError]() mutable -> T
 		{
 			try
 			{
 				if constexpr(mpl::is_void<T>)
 				{
-					std::move(acquiredFuture).extract_value();
+					std::move(*_sharedState).extract_value();
 				}
 				else
 				{
-					return std::move(acquiredFuture).extract_value();
+					return std::move(*_sharedState).extract_value();
 				}
 			}
 			catch(const async_exception& i_excp)
 			{
 				if(i_excp.acquired() == false)
 				{
-					eval(i_onError,i_excp.as_error());
+					ddk::eval(i_onError,i_excp.as_error());
 				}
 
 				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
 			}
-		}) -> attach(i_execContext,currDepth);
+		}) -> template schedule<chained_async_scheduler>(promote_to_ref(sharedState))
+		-> template attach<detail::execution_context_executor>(context,m_depth);
+		
+		res.m_depth = m_depth + 1;
 
-		res.m_depth = currDepth + 1;
-
-		return std::move(res);
+		return res;
 	}
 
 	throw future_exception("Accessing empty future");
 }
 template<typename T>
-TEMPLATE(typename Callable)
-REQUIRED(IS_CALLABLE_BY(Callable,rreference))
-auto future<T>::chain(Callable&& i_callback, executor_context_lent_ref i_context) &&
+constexpr future<T> future<T>::on_error(const function<void(const async_error&)>& i_onError, executor_context_lent_ptr i_execContext) &&
 {
-	if (detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
+	if(detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return;
-		typedef future<callable_return> return_type;
+		typedef variant_allocator<system_allocator,allocator_interface_proxy> async_allocator;
+
+		async_allocator asyncAllocator = g_system_allocator;
 
 		if (async_base_dist_ptr asyncExecutor = sharedState->get_async_execution())
 		{
-			if (executor_context_lent_ptr context = asyncExecutor->get_execution_context())
+			if (allocator_const_lent_ptr alloc = asyncExecutor->get_async_allocator())
 			{
-				return_type res{ std::move(*this).async(std::forward<Callable>(i_callback),context) };
-
-				context->transfer(std::move(*i_context));
-
-				return std::move(res);
+				asyncAllocator = allocator_interface_proxy{ *alloc };
 			}
 		}
 
-		return return_type{ std::move(*this).then(i_callback) };
+		future<T> res = ddk::async([_sharedState = lend(sharedState),i_onError]() mutable -> T
+		{
+			try
+			{
+				if constexpr(mpl::is_void<T>)
+				{
+					std::move(*_sharedState).extract_value();
+				}
+				else
+				{
+					return std::move(*_sharedState).extract_value();
+				}
+			}
+			catch(const async_exception& i_excp)
+			{
+				if(i_excp.acquired() == false)
+				{
+					ddk::eval(i_onError,i_excp.as_error());
+				}
+
+				throw async_exception{ i_excp.what(),i_excp.get_code(),true };
+			}
+		}) -> template schedule<chained_async_scheduler>(promote_to_ref(sharedState))
+		-> template attach<detail::execution_context_executor>(i_execContext,m_depth);
+
+		res.m_depth = m_depth + 1;
+
+		return res;
 	}
-	else
+
+	throw future_exception("Accessing empty future");
+}
+template<typename T>
+constexpr auto future<T>::chain(detail::private_async_state_base_shared_ref i_sharedState) &&
+{
+	if (detail::private_async_state_shared_ptr<T> sharedState = m_sharedState)
 	{
-		throw future_exception("Accessing empty future");
+		if (async_base_dist_ptr executor = sharedState->get_async_execution())
+		{
+			if (executor_context_lent_ptr context = executor->get_execution_context())
+			{
+				if (async_base_dist_ptr otherExecutor = i_sharedState->get_async_execution())
+				{
+					if (executor_context_lent_ptr otherContext = otherExecutor->get_execution_context())
+					{
+						if (context->transfer(std::move(*otherContext)))
+						{
+							executor->hold(i_sharedState);
+						}
+					}
+				}
+			}
+		}
 	}
+
+	return std::move(*this);
 }
 
-template<typename T>
-future<void> future<void>::then_on(const function<void()>& i_continuation, T&& i_execContext) &&
+template<typename Callable>
+constexpr future<void> future<void>::then(Callable&& i_continuation)&&
 {
-	return static_cast<future<detail::void_t>&&>(*this).then_on(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); }),std::forward<T>(i_execContext));
+	return static_cast<future<detail::void_t>&&>(*this).then([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { ddk::eval(std::forward<Callable>(continuation)); });
 }
-template<typename T>
-future<void> future<void>::async(const function<void()>& i_continuation, T&& i_execContext) &&
+template<typename Callable, typename ... Args>
+constexpr future<void> future<void>::then_on(Callable&& i_continuation, Args&& ... i_args) &&
 {
-	return static_cast<future<detail::void_t>&&>(*this).async(make_function([i_continuation](const detail::void_t&) { eval(i_continuation); }),std::forward<T>(i_execContext));
+	return static_cast<future<detail::void_t>&&>(*this).then_on([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { ddk::eval(std::forward<Callable>(continuation)); },std::forward<Args>(i_args)...);
+}
+template<typename Callable, typename ... Args>
+constexpr future<void> future<void>::async(Callable&& i_continuation, Args&& ... i_args) &&
+{
+	return static_cast<future<detail::void_t>&&>(*this).async([continuation=std::forward<Callable>(i_continuation)](const detail::void_t&) { ddk::eval(std::forward<Callable>(continuation)); },std::forward<Args>(i_args)...);
 }
 
 }

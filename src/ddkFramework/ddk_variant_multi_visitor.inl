@@ -67,7 +67,7 @@ TEMPLATE(typename Return, typename Callable,typename ... Variants)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_VARIANT(Variants)...)
 constexpr auto visit(Variants&& ... i_variants)
 {
-	typedef typename std::remove_reference<decltype(deduce_fixed_callable<Return>(std::declval<Callable>())) >::type callable_t;
+	typedef mpl::remove_qualifiers<Callable> callable_t;
 
 	detail::multi_visitor<Return,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(callable_t{},std::forward<Variants>(i_variants)...);
 
@@ -86,8 +86,8 @@ TEMPLATE(typename Callable,typename ... Variants)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_VARIANT(Variants)...)
 constexpr auto visit(Variants&& ... i_variants)
 {
+	typedef mpl::remove_qualifiers<Callable> callable_t;
 	typedef decltype(std::declval<Callable>()(std::declval<typename std::remove_reference<Variants>::type::type_pack::template nth_type<0>>()...)) return_type;
-	typedef typename std::remove_reference<decltype(deduce_fixed_callable<return_type>(std::declval<Callable>())) >::type callable_t;
 
 	detail::multi_visitor<return_type,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(callable_t{},std::forward<Variants>(i_variants)...);
 
@@ -107,9 +107,9 @@ TEMPLATE(typename Return, typename Callable,typename ... Variants)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
 constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants)
 {
-    typedef typename std::remove_reference<decltype(deduce_fixed_callable<Return>(i_callable))>::type callable_t;
+	typedef mpl::remove_qualifiers<Callable> callable_t;
 
-	detail::multi_visitor<Return,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(deduce_fixed_callable<Return>(i_callable),std::forward<Variants>(i_variants)...);
+	detail::multi_visitor<Return,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(std::forward<Callable>(i_callable),std::forward<Variants>(i_variants)...);
 
 	const function<Return()> resolvedFunction = multiVisitor.visit();
 
@@ -126,10 +126,10 @@ TEMPLATE(typename Callable,typename ... Variants)
 REQUIRED(IS_NUMBER_OF_ARGS_GREATER(1,Variants...),IS_NOT_VARIANT(Callable),IS_VARIANT(Variants)...)
 constexpr auto visit(Callable&& i_callable,Variants&& ... i_variants)
 {
+	typedef mpl::remove_qualifiers<Callable> callable_t;
 	typedef decltype(std::declval<Callable>()(std::declval<typename std::remove_reference<Variants>::type::type_pack::template nth_type<0>>()...)) return_type;
-	typedef typename std::remove_reference<decltype(deduce_fixed_callable<return_type>(i_callable))>::type callable_t;
 
-	detail::multi_visitor<return_type,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(deduce_fixed_callable<return_type>(i_callable),std::forward<Variants>(i_variants)...);
+	detail::multi_visitor<return_type,callable_t,tuple<>,typename mpl::static_if<std::is_lvalue_reference<Variants>::value,Variants,const Variants>::type...> multiVisitor(std::forward<Callable>(i_callable),std::forward<Variants>(i_variants)...);
 
 	const function<return_type()> resolvedFunction = multiVisitor.visit();
 

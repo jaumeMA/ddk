@@ -40,7 +40,7 @@ typename fiber_scheduler<Comparator>::register_fiber_result fiber_scheduler<Comp
 
 	if(itFiber == m_fibers.end())
 	{
-		i_fiber.m_impl->set_executor(this->ref_from_this());
+		i_fiber.m_impl->set_executor(this->lent_from_this());
 
 		const std::pair<fiber_container::const_iterator,bool> insertRes = m_fibers.insert(std::make_pair(i_fiber.get_id(),i_fiber.m_impl.get()));
 
@@ -160,15 +160,13 @@ void fiber_scheduler<Comparator>::yield(detail::yielder_context* i_context)
 	m_callee->resume_to(m_caller);
 }
 template<typename Comparator>
-void fiber_scheduler<Comparator>::suspend(detail::yielder_context* i_context)
+bool fiber_scheduler<Comparator>::suspend()
 {
-	{
-		mutex_guard lg(m_fiberMutex);
+	mutex_guard lg(m_fiberMutex);
 
-		m_fiberCondVar.notify_one();
-	}
+	m_fiberCondVar.notify_one();
 
-	throw suspend_exception(m_callee->get_id());
+	return true;
 }
 template<typename Comparator>
 bool fiber_scheduler<Comparator>::activate(fiber_id i_id, const ddk::function<void()>& i_function)

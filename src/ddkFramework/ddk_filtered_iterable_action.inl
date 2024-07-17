@@ -1,0 +1,164 @@
+
+namespace ddk
+{
+
+template<typename ActionTag,typename Filter>
+constexpr filtered_iterable_action<ActionTag,Filter>::filtered_iterable_action(const ActionTag& i_action,const Filter& i_filter)
+: m_actionTag(i_action)
+, m_filter(i_filter)
+{
+}
+template<typename ActionTag,typename Filter>
+constexpr filtered_iterable_action<ActionTag,Filter>::filtered_iterable_action(ActionTag&& i_action,const Filter& i_filter)
+: m_actionTag(std::move(i_action))
+, m_filter(i_filter)
+{
+}
+template<typename ActionTag,typename Filter>
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+constexpr filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_iterable_action<ActionTag,Filter>::apply(Adaptor&& i_adaptor)
+{
+    typedef filtered_iterable_action_result<Adaptor,ActionTag,Filter> filtered_result;
+    typedef typename mpl::remove_qualifiers<Adaptor>::traits traits;
+    typedef typename traits::const_reference const_reference;
+
+    if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),std::move(m_actionTag)))
+    {
+        //we only filter out representable actions
+        if constexpr (IS_ADAPTOR_REPRESENTABLE_BY_ACTION_COND(Adaptor,ActionTag))
+        {
+            if (ddk::terse_eval(m_filter,actionRes.get()))
+            {
+                return make_result<filtered_result>(actionRes);
+            }
+            else
+            {
+                return make_error<filtered_result>(m_filter);
+            }
+        }
+        else
+        {
+            return make_result<filtered_result>(actionRes);
+        }
+    }
+    else
+    {
+        return make_error<filtered_result>(std::move(actionRes).error(),m_filter,false);
+    }
+}
+template<typename ActionTag,typename Filter>
+constexpr const ActionTag& filtered_iterable_action<ActionTag,Filter>::action() const &
+{
+    return m_actionTag;
+}
+template<typename ActionTag,typename Filter>
+constexpr ActionTag filtered_iterable_action<ActionTag,Filter>::action() &&
+{
+    return std::move(m_actionTag);
+}
+template<typename ActionTag,typename Filter>
+constexpr const Filter& filtered_iterable_action<ActionTag,Filter>::filter() const
+{
+    return m_filter;
+}
+
+template<typename Filter>
+constexpr filtered_iterable_action<displace_action_tag,Filter>::filtered_iterable_action(const displace_action_tag& i_action,const Filter& i_filter)
+: m_actionTag(i_action)
+, m_filter(i_filter)
+{
+}
+template<typename Filter>
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+constexpr filtered_iterable_action_result<Adaptor,displace_action_tag,Filter> filtered_iterable_action<displace_action_tag,Filter>::apply(Adaptor&& i_adaptor)
+{
+    typedef filtered_iterable_action_result<Adaptor,displace_action_tag,Filter> filtered_result;
+    typedef typename mpl::remove_qualifiers<Adaptor>::traits traits;
+    typedef typename traits::const_reference const_reference;
+
+    displace_action_tag::difference_type prevShift = m_actionTag.displacement();
+    displace_action_tag::difference_type postShift = prevShift;
+
+    if (auto actionRes = std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),displace_action_tag{(prevShift > 0) ? 1 : -1}))
+    {
+        if (ddk::terse_eval(m_filter,actionRes.get()))
+        {
+            postShift--;
+        }
+
+        if (postShift == 0)
+        {
+            return make_result<filtered_result>(success);
+        }
+        else
+        {
+            return make_error<filtered_result>(postShift,m_filter,true);
+        }
+    }
+
+    return make_error<filtered_iterable_action_result<Adaptor,displace_action_tag,Filter>>(prevShift,m_filter,false);
+}
+template<typename Filter>
+constexpr const displace_action_tag& filtered_iterable_action<displace_action_tag,Filter>::action() const
+{
+    return m_actionTag;
+}
+template<typename Filter>
+constexpr const Filter& filtered_iterable_action<displace_action_tag,Filter>::filter() const
+{
+    return m_filter;
+}
+
+template<typename Sink,typename Filter>
+constexpr filtered_iterable_action<sink_action_tag<Sink>,Filter>::filtered_iterable_action(const sink_action_tag<Sink>& i_action,const Filter& i_filter)
+: m_actionTag(i_action)
+, m_filter(i_filter)
+{
+}
+template<typename Sink,typename Filter>
+constexpr filtered_iterable_action<sink_action_tag<Sink>,Filter>::filtered_iterable_action(sink_action_tag<Sink>&& i_action,const Filter& i_filter)
+: m_actionTag(std::move(i_action))
+, m_filter(i_filter)
+{
+}
+template<typename Sink,typename Filter>
+TEMPLATE(typename Adaptor)
+REQUIRED(ACTION_TAGS_SUPPORTED(Adaptor,tags_t))
+constexpr filtered_iterable_action_result<Adaptor,sink_action_tag<Sink>,Filter> filtered_iterable_action<sink_action_tag<Sink>,Filter>::apply(Adaptor&& i_adaptor)
+{
+    typedef filtered_iterable_action_result<Adaptor,sink_action_tag<Sink>,Filter> filtered_result;
+    typedef typename mpl::remove_qualifiers<Adaptor>::traits traits;
+    typedef typename traits::const_reference const_reference;
+
+    if (auto sinkRes = std::forward<Adaptor>(i_adaptor).perform_action(std::forward<Adaptor>(i_adaptor),k_iterableEmptySink))
+    {
+        if (ddk::terse_eval(m_filter,sinkRes.get()))
+        {
+            m_actionTag(sinkRes.get());
+
+            return make_result<filtered_result>(sinkRes);
+        }
+        else
+        {
+            return make_error<filtered_result>();
+        }
+    }
+    else
+    {
+        return make_error<filtered_result>(m_actionTag,m_filter,false);
+    }
+}
+template<typename Sink,typename Filter>
+constexpr const sink_action_tag<Sink>& filtered_iterable_action<sink_action_tag<Sink>,Filter>::action() const
+{
+    return m_actionTag;
+}
+template<typename Sink,typename Filter>
+constexpr const Filter& filtered_iterable_action<sink_action_tag<Sink>,Filter>::filter() const
+{
+    return m_filter;
+}
+
+}

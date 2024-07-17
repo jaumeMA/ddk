@@ -9,6 +9,44 @@ namespace detail
 
 const size_t k_small_buffer_allocation_size = 40;
 
+template<typename Return,typename ... Args>
+auto aqcuire_nested_callable_ptr<Return(*)(Args...)>::resolve(detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<detail::free_function_impl<Return,Args...>&>(i_function).get();
+}
+template<typename Return,typename ... Args>
+auto aqcuire_nested_callable_ptr<Return(*)(Args...)>::resolve(const detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<const detail::free_function_impl<Return,Args...>&>(i_function).get();
+}
+template<typename Return,typename T,typename ... Args>
+auto aqcuire_nested_callable_ptr<Return(T::*)(Args...) const>::resolve(const detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<const detail::relative_function_impl<T,Return,Args...>&>(i_function).get();
+}
+template<typename Return,typename T,typename ... Args>
+auto aqcuire_nested_callable_ptr<Return(T::*)(Args...)>::resolve(detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<detail::relative_function_impl<T,Return,Args...>&>(i_function).get();
+}
+template<typename Return,typename T,typename ... Args>
+auto aqcuire_nested_callable_ptr<Return(T::*)(Args...)>::resolve(const detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<const detail::relative_function_impl<T,Return,Args...>&>(i_function).get();
+}
+template<typename Functor>
+template<typename Return,typename ... Args>
+auto aqcuire_nested_callable_ptr<Functor>::resolve(detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<detail::aggregated_functor_impl<Functor,Return,Args...>&>(i_function).get();
+}
+template<typename Functor>
+template<typename Return,typename ... Args>
+auto aqcuire_nested_callable_ptr<Functor>::resolve(const detail::function_base<Return,Args...>& i_function)
+{
+    return static_cast<const detail::aggregated_functor_impl<Functor,Return,Args...>&>(i_function).get();
+}
+
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
 function_impl<Return(Types...),Allocator,FunctionImpl>::function_impl()
 : m_allocator(k_small_buffer_allocation_size,Allocator())
@@ -88,7 +126,7 @@ bool function_impl<Return(Types...),Allocator,FunctionImpl>::operator!=(std::nul
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
 TEMPLATE(typename ... Args)
-REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
+REQUIRED(IS_CONVERTIBLE(Args,Types)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&& ... i_args) const
 {
 	if constexpr (std::is_same<Return,void>::value)
@@ -102,7 +140,7 @@ Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(Args&
 }
 template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
 TEMPLATE(typename ... Args)
-REQUIRED(IS_CONSTRUCTIBLE(Types,Args)...)
+REQUIRED(IS_CONVERTIBLE(Args,Types)...)
 Return function_impl<Return(Types...),Allocator,FunctionImpl>::inline_eval(const function_arguments<Args...>& i_args) const
 {
     return eval_arguments(typename mpl::make_sequence<0,mpl::get_num_types<Args...>()>::type{},i_args);
@@ -122,6 +160,19 @@ NO_DISCARD_RETURN resolved_function<Return,detail::unresolved_types<mpl::type_pa
     else
     {
         throw call_function_exception{"Trying to call empty function_impl"};
+    }
+}
+template<typename Return,typename ... Types,typename Allocator,typename FunctionImpl>
+template<typename T>
+T function_impl<Return(Types...),Allocator,FunctionImpl>::callable() const
+{
+    if (m_functionImpl)
+    {
+        return aqcuire_nested_callable_ptr<T>::resolve(*m_functionImpl);
+    }
+    else
+    {
+        throw call_function_exception{ "Trying to acquire callable from function_impl" };
     }
 }
 template<typename Return, typename ... Types, typename Allocator, typename FunctionImpl>

@@ -1,6 +1,13 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include "ddk_tuple.h"
 #include "ddk_tuple_template_helper.h"
 #include "ddk_function_template_helper.h"
 #include "ddk_tagged_pointer.h"
@@ -29,13 +36,13 @@ using function_impl_base_const_lent_ptr = lent_pointer_wrapper<const function_im
 template<typename Sequence, typename ... Types>
 using types_at_indexs = typename mpl::make_tuple<Types...>::template at<Sequence>::type;
 template<typename TTypes, typename ... Types>
-using place_holder_types = typename mpl::type_pack<Types...>::template at<typename mpl::pos_place_holder<0,TTypes>::type>::type;
+using place_holder_types = typename mpl::type_pack<Types...>::template subset<typename mpl::pos_place_holder<0,TTypes>::type>::type;
 template<typename TTypes>
 using place_holders_at_indexs = typename mpl::pos_place_holder<0,TTypes>::type;
 template<typename TTypes, typename ... Types>
-using unresolved_types = typename mpl::type_pack<Types...>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
+using unresolved_types = typename mpl::type_pack<Types...>::template subset<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 template<typename TTypes, typename Types>
-using unresolved_tuple = typename mpl::type_pack<Types>::template at<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
+using unresolved_tuple = typename mpl::type_pack<Types>::template subset<typename place_holders_at_indexs<TTypes>::template at<typename mpl::sequence_place_holder<TTypes>::type>::type>::type;
 template<typename T>
 using forwarded_arg = typename mpl::static_if<std::is_copy_constructible<T>::value,T,typename std::add_rvalue_reference<T>::type>::type;
 
@@ -51,7 +58,7 @@ struct function_impl_base<Return, mpl::type_pack<Types...>> : public distribute_
 	struct specialized_impl;
 
 	template<size_t ... specIndexs, size_t ... notSpecIndexs>
-	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::type_pack<Types...>::template at<mpl::sequence<notSpecIndexs...>>::type>
+	struct specialized_impl<mpl::sequence<specIndexs...>,mpl::sequence<notSpecIndexs...>> : function_impl_base<Return, typename mpl::type_pack<Types...>::template subset<mpl::sequence<notSpecIndexs...>>::type>
 	{
 #ifndef _WIN32
 		static_assert((std::is_copy_constructible<typename mpl::nth_type_of<specIndexs, Types...>::type>::value && ...), "You cannot specialize non copy constructible arguments");
@@ -107,11 +114,11 @@ class relative_function_impl : public function_base<Return,Types...>
 {
     typedef Return(ObjectType::*NonConstFuncPointerType)(Types...);
     typedef Return(ObjectType::*ConstFuncPointerType)(Types...)const;
-    typedef typename mpl::static_if<std::is_const<ObjectType>::value,ConstFuncPointerType,NonConstFuncPointerType>::type FuncPointerType;
     using function_base<Return,Types...>::s_numTypes;
     using typename function_base<Return,Types...>::tuple_args;
 
 public:
+    typedef typename mpl::static_if<std::is_const<ObjectType>::value,ConstFuncPointerType,NonConstFuncPointerType>::type FuncPointerType;
 	typedef Return return_type;
 
 	constexpr relative_function_impl(ObjectType* i_object, FuncPointerType i_funcPointer);
@@ -120,6 +127,7 @@ public:
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 	Return operator()(forwarded_arg<Types> ... args) const final;
+	FuncPointerType get() const;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -134,11 +142,11 @@ private:
 template<typename Return, typename ... Types>
 class free_function_impl : public function_base<Return,Types...>
 {
-    typedef Return(*FuncPointerType)(Types...);
     using function_base<Return,Types...>::s_numTypes;
     using typename function_base<Return,Types...>::tuple_args;
 
 public:
+    typedef Return(*FuncPointerType)(Types...);
 	typedef Return return_type;
 
 	constexpr free_function_impl(FuncPointerType i_funcPointer);
@@ -146,6 +154,7 @@ public:
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 	Return operator()(forwarded_arg<Types> ... args) const final;
+	FuncPointerType get() const;
 
 private:
     Return apply(const tuple_args& i_tuple) const final;
@@ -170,6 +179,8 @@ public:
 
 	inline Return inline_eval(forwarded_arg<Types> ... args) const;
 	Return operator()(forwarded_arg<Types> ... args) const final;
+	const T& get() const;
+	T& get();
 
 private:
     Return apply(const tuple_args& i_tuple) const final;

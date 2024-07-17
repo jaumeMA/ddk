@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_shared_reference_wrapper.h"
@@ -17,7 +25,6 @@
 #include "ddk_atomic_shared_reference_wrapper.h"
 #include "ddk_atomic_weak_pointer_wrapper.h"
 #include "ddk_smart_ptr_template_helper.h"
-#include "ddk_pointer_defs.h"
 #include "ddk_allocator_concepts.h"
 #include "ddk_concepts.h"
 

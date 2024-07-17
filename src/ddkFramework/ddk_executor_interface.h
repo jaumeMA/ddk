@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_function.h"
@@ -68,8 +76,8 @@ class cancellable_executor_interface<Return()> : public executor_interface<Retur
 {
 public:
     using typename executor_interface<Return()>::sink_type;
-	typedef typename async_cancellable_interface::cancel_result cancel_result;
-	typedef typename async_cancellable_interface::CancelErrorCode CancelErrorCode;
+	typedef typename async_interface_base::cancel_result cancel_result;
+	typedef typename async_interface_base::CancelErrorCode CancelErrorCode;
 };
 
 template<typename Return, typename ... Args>

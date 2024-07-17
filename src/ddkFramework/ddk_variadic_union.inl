@@ -11,15 +11,16 @@ constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(
 {
 }
 template<typename Type,typename ... Types>
-template<typename TT>
-constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(const  mpl::class_holder<Type>& i_holder,TT&& i_value)
-: _local(std::forward<TT>(i_value))
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Type,Args...))
+constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(const  mpl::class_holder<Type>& i_holder, Args&& ... i_args)
+: _local(std::forward<Args>(i_args)...)
 {
 }
 template<typename Type,typename ... Types>
-template<typename T,typename TT>
-constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(const mpl::class_holder<T>& i_holder,TT&& i_value)
-: _nested(i_holder,std::forward<TT>(i_value))
+template<typename T,typename ... Args>
+constexpr variadic_union<Type,Types...>::trivial_union_type::trivial_union_type(const mpl::class_holder<T>& i_holder,Args&& ... i_args)
+: _nested(i_holder,std::forward<Args>(i_args)...)
 {
 }
 
@@ -32,15 +33,16 @@ constexpr variadic_union<Type,Types...>::non_trivial_union_type::non_trivial_uni
 {
 }
 template<typename Type,typename ... Types>
-template<typename TT>
-variadic_union<Type,Types...>::non_trivial_union_type::non_trivial_union_type(const  mpl::class_holder<Type>& i_holder,TT&& i_value)
-: _local(std::forward<TT>(i_value))
+TEMPLATE(typename ... Args)
+REQUIRED(IS_CONSTRUCTIBLE(Type,Args...))
+variadic_union<Type,Types...>::non_trivial_union_type::non_trivial_union_type(const  mpl::class_holder<Type>& i_holder,Args&& ... i_args)
+: _local(std::forward<Args>(i_args)...)
 {
 }
 template<typename Type,typename ... Types>
-template<typename T,typename TT>
-variadic_union<Type,Types...>::non_trivial_union_type::non_trivial_union_type(const mpl::class_holder<T>& i_holder,TT&& i_value)
-: _nested(i_holder,std::forward<TT>(i_value))
+template<typename T,typename ... Args>
+variadic_union<Type,Types...>::non_trivial_union_type::non_trivial_union_type(const mpl::class_holder<T>& i_holder,Args&& ... i_args)
+: _nested(i_holder,std::forward<Args>(i_args)...)
 {
 }
 template<typename Type,typename ... Types>
@@ -59,9 +61,9 @@ constexpr variadic_union<Type,Types...>::variadic_union(const detail::none_t&)
 {
 }
 template<typename Type,typename ... Types>
-template<typename T, typename TT>
-constexpr variadic_union<Type,Types...>::variadic_union(const mpl::class_holder<T>& i_holder, TT&& i_value)
-: m_data(i_holder,std::forward<TT>(i_value))
+template<typename T, typename ... Args>
+constexpr variadic_union<Type,Types...>::variadic_union(const mpl::class_holder<T>& i_holder, Args&& ... i_args)
+: m_data(i_holder,std::forward<Args>(i_args)...)
 {
 }
 template<typename Type,typename ... Types>

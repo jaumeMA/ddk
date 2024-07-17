@@ -10,13 +10,13 @@ class DDKTaskExecutorTest: public Test
 
 TEST(DDKTaskExecutorTest,stressTest)
 {
-	ddk::atomic_size_t numExecutedTasks = 0;
+    ddk::atomic_size_t numExecutedTasks = 0;
     ddk::atomic_size_t numCancelledTasks = 0;
     ddk::task_executor taskExecutor(30,100);
 
 	if(taskExecutor.start())
     {
-        printf("done\n");
+        printf("starting\n");
 
         const size_t k_numProducers = 10;
         const size_t k_numTasksPerProducer = 1000;
@@ -30,7 +30,9 @@ TEST(DDKTaskExecutorTest,stressTest)
                     taskExecutor.enqueue([&]()
                     {
                         ddk::atomic_post_increment(numExecutedTasks);
-                        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                        
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                        
                         return 10;
                     });
 
@@ -47,7 +49,7 @@ TEST(DDKTaskExecutorTest,stressTest)
         }
 
         taskExecutor.stop();
-        printf("done\n");
+        printf("done: %d\n",numExecutedTasks.get());
     }
 	//EXPECT_EQ(numExecutedTasks.get(),k_numProducers * k_numTasksPerProducer);
 

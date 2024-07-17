@@ -2,6 +2,7 @@
 #include <thread>
 #include "ddk_reference_wrapper.h"
 #include "ddk_thread_impl.h"
+#include "ddk_exception_handler.h"
 #include "ddk_async_exceptions.h"
 
 extern "C"
@@ -23,41 +24,43 @@ typed_yielder_context<T>* this_fiber_t::get_typed_context() const
 }
 
 template<typename Return>
-inline void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
+void launch_fiber(const ddk::function<Return()>* i_function, fiber_impl* i_fiber)
 {
-	if(i_fiber->get_state() == FiberExecutionState::Executing)
+	if(i_fiber->m_state == FiberExecutionState::Executing)
 	{
 		const ddk::function<Return()> localCallable = *i_function;
 
-		try
+		exception_handler::open_scope([callable = localCallable]()
 		{
-			if constexpr(std::is_same<Return,void>::value)
+			if constexpr (std::is_same<Return,void>::value)
 			{
-				eval(localCallable);
+				eval(callable);
 			}
 			else
 			{
-				yield(eval(localCallable));
+				yield(eval(callable));
 			}
-		}
-		catch(const suspend_exception&)
+		}).on_error([](const fiber_error& i_error)
 		{
-		}
-		catch(const async_exception& i_excp)
-		{
-			yield(i_excp);
-		}
-		catch(const std::exception& i_excp)
-		{
-			yield(async_exception{ i_excp.what() });
-		}
-		catch(...)
-		{
-			yield(async_exception{ "Unkwon exception" });
-		}
+			switch (i_error.get_error())
+			{
+				case FiberErrorCode::Suspended:
+				{
+					//do nothing, just exit
+					break;
+				}
+				case FiberErrorCode::AsyncExecption:
+				default:
+				{
+					yield(async_exception{ i_error.what(),AsyncExceptionCode::Cancelled });
+
+					break;
+				}
+			}
+		});
 	}
 
-	i_fiber->set_state(FiberExecutionState::Done);
+	i_fiber->m_state = FiberExecutionState::Done;
 }
 
 template<typename Return>

@@ -63,6 +63,8 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 
 #include <signal.h>
 
+#define SIGNAL_STACK_SIZE 8192
+
 namespace ddk
 {
 
@@ -117,12 +119,12 @@ bool initialize_thread_stack()
 
 #elif defined(__LINUX__) or defined(__APPLE__)
 
-    static char signalStackArena[8192];
+    static char signalStackArena[SIGNAL_STACK_SIZE];
     static struct sigaction sa;
 
 	stack_t signalStack;
 	signalStack.ss_sp = signalStackArena;
-    signalStack.ss_size = SIGSTKSZ;
+    signalStack.ss_size = SIGNAL_STACK_SIZE;
     signalStack.ss_flags = 0;
     int val = sigaltstack(&signalStack,nullptr);
 

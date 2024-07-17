@@ -58,7 +58,7 @@ function_impl_base_const_dist_ref<Return,unresolved_types<mpl::type_pack<Args...
     typedef typename not_spec_indexs::template at<typename mpl::sequence_place_holder<mpl::type_pack<Args...>>::type>::type not_spec_sequence;
     typedef specialized_impl<spec_sequence,not_spec_sequence> spec_func_type;
 
-    return make_distributed_reference<spec_func_type>(i_allocator.acquire(),this->ref_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
+    return make_distributed_reference<spec_func_type>(i_allocator.acquire(),this->distributed_from_this(),ddk::make_tuple(std::forward<Args>(args)...));
 }
 
 template<typename ObjectType, typename Return, typename ... Types>
@@ -98,6 +98,11 @@ Return relative_function_impl<ObjectType,Return,Types...>::operator()(forwarded_
     {
         return (m_object->*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
     }
+}
+template<typename ObjectType,typename Return,typename ... Types>
+typename relative_function_impl<ObjectType,Return,Types...>::FuncPointerType relative_function_impl<ObjectType,Return,Types...>::get() const
+{
+    return m_funcPointer;
 }
 template<typename ObjectType, typename Return, typename ... Types>
 Return relative_function_impl<ObjectType,Return,Types...>::apply(const tuple_args& i_tuple) const
@@ -155,6 +160,11 @@ Return free_function_impl<Return,Types...>::operator()(forwarded_arg<Types> ... 
     {
         return (*m_funcPointer)(std::forward<forwarded_arg<Types>>(args)...);
     }
+}
+template<typename Return,typename ... Types>
+typename free_function_impl<Return,Types...>::FuncPointerType free_function_impl<Return,Types...>::get() const
+{
+    return m_funcPointer;
 }
 template<typename Return, typename ... Types>
 Return free_function_impl<Return,Types...>::apply(const tuple_args& i_tuple) const
@@ -217,6 +227,16 @@ Return aggregated_functor_impl<T,Return,Types...>::operator()(forwarded_arg<Type
     {
         return m_functor(std::forward<decltype(args)>(args)...);
     }
+}
+template<typename T,typename Return,typename ... Types>
+const T& aggregated_functor_impl<T,Return,Types...>::get() const
+{
+    return m_functor;
+}
+template<typename T,typename Return,typename ... Types>
+T& aggregated_functor_impl<T,Return,Types...>::get()
+{
+    return m_functor;
 }
 template<typename T, typename Return, typename ... Types>
 Return aggregated_functor_impl<T,Return,Types...>::apply(const tuple_args& i_tuple) const

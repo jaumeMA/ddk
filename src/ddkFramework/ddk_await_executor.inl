@@ -1,4 +1,6 @@
 
+#include "ddk_exception_handler.h"
+
 namespace ddk
 {
 namespace detail
@@ -9,7 +11,7 @@ await_executor<Return>::await_executor()
 : m_state(ExecutorState::Idle)
 , m_callee(*this)
 {
-	m_callee.set_executor(this->ref_from_this());
+	m_callee.set_executor(this->lent_from_this());
 }
 template<typename Return>
 await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable)
@@ -17,7 +19,7 @@ await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable
 , m_state(ExecutorState::Executing)
 , m_callee(*this)
 {
-	m_callee.set_executor(this->ref_from_this());
+	m_callee.set_executor(this->lent_from_this());
 
 	m_callee.start_from(m_caller,m_callable);
 }
@@ -27,7 +29,7 @@ await_executor<Return>::await_executor(const ddk::function<Return()>& i_callable
 , m_callee(std::move(i_stackAlloc),*this)
 , m_state(ExecutorState::Executing)
 {
-	m_callee.set_executor(this->ref_from_this());
+	m_callee.set_executor(this->lent_from_this());
 
 	m_callee.start_from(m_caller,m_callable);
 }
@@ -113,7 +115,7 @@ bool await_executor<Return>::resume(const sink_type& i_sink)
 			}
 			else
 			{
-				throw async_exception{ "No yielded value when retorning from secondary context" };
+				DDK_FAIL("No yielded value when retorning from secondary context");
 			}
 		}
 
@@ -144,14 +146,11 @@ void await_executor<Return>::yield(yielder_context* i_context)
 	}
 }
 template<typename Return>
-void await_executor<Return>::suspend(yielder_context*)
+bool await_executor<Return>::suspend()
 {
 	const ExecutorState prevState = ddk::atomic_compare_exchange_val(m_state,ExecutorState::Executing,ExecutorState::Cancelling);
 
-	if(prevState == ExecutorState::Executing || prevState == ExecutorState::Cancelling)
-	{
-		throw suspend_exception(m_callee.get_id());
-	}
+	return prevState == ExecutorState::Executing || prevState == ExecutorState::Cancelling;
 }
 template<typename Return>
 bool await_executor<Return>::activate(fiber_id i_id,const ddk::function<void()>& i_callable)

@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 namespace ddk
@@ -14,13 +22,6 @@ inline void clear_ptr(T*& i_ref);
 template<typename T>
 inline void rebase_ptr(T*& i_ref,std::ptrdiff_t i_diff);
 
-namespace detail
-{
-
-template<typename T>
-inline void rebase_ptr(T& i_ref,std::ptrdiff_t i_diff);
-
-}
 }
 
 #include "ddk_pointer_defs.inl"

@@ -3,7 +3,7 @@ namespace ddk
 {
 
 template<typename T,typename TT>
-shared_reference_wrapper<TT> share_from_this<T,TT>::ref_from_this()
+shared_reference_wrapper<TT> share_from_this<T,TT>::shared_from_this()
 {
 	if(m_refCounter->hasSharedReferences() == false)
 	{
@@ -13,7 +13,7 @@ shared_reference_wrapper<TT> share_from_this<T,TT>::ref_from_this()
 	return as_shared_reference(static_cast<TT*>(this),m_refCounter);
 }
 template<typename T,typename TT>
-shared_reference_wrapper<const TT> share_from_this<T,TT>::ref_from_this() const
+shared_reference_wrapper<const TT> share_from_this<T,TT>::shared_from_this() const
 {
 	if(m_refCounter->hasSharedReferences() == false)
 	{

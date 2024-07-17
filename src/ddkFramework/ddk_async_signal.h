@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_async_message_loop.h"
@@ -32,8 +40,9 @@ class async_signal<void(Types...)> : protected detail::signal_connector
 	typedef detail::async_builtin_message<typename std::remove_const<typename std::remove_reference<Types>::type>::type ...> builtn_message_type;
 
 public:
-	async_signal(const std::chrono::milliseconds& i_updateTime = std::chrono::milliseconds(k_defaultProcessTimeInMs));
-	async_signal(thread_executor_unique_ref i_executor);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(async_attachable_message_queue<builtn_message_type>,Args...))
+	async_signal(Args&& ... i_args);
     NO_DISCARD_RETURN connection connect(const ddk::function<void(Types...)>& i_function) const;
 	template<typename MessageType>
     NO_DISCARD_RETURN connection connect(const ddk::function<void(Types...)>& i_function, lent_reference_wrapper<async_attachable_message_queue<MessageType>> i_messageQueue) const;

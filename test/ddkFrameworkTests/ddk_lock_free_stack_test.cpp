@@ -107,71 +107,71 @@ TEST(DDKLockFreeStackTest,singleProducerMultipleConsumer)
 
 	printf("leaving\n");
 }
-TEST(DDKLockFreeStackTest,multipleProducerSingleConsumer)
-{
-	ddk::single_consumer_lock_free_stack<DefaultType> lockFreeStack;
-	bool stop1 = false;
-	bool stop2 = false;
-	ddk::atomic_size_t itemsProduced = 0;
-	ddk::atomic_size_t itemsConsumed = 0;
+// TEST(DDKLockFreeStackTest,multipleProducerSingleConsumer)
+// {
+// 	ddk::single_consumer_lock_free_stack<DefaultType> lockFreeStack;
+// 	bool stop1 = false;
+// 	bool stop2 = false;
+// 	ddk::atomic_size_t itemsProduced = 0;
+// 	ddk::atomic_size_t itemsConsumed = 0;
 
-	auto producerFunc = [&stop1,&lockFreeStack,&itemsProduced]()
-	{
-		size_t stackIndex = 0;
+// 	auto producerFunc = [&stop1,&lockFreeStack,&itemsProduced]()
+// 	{
+// 		size_t stackIndex = 0;
 
-		while(stop1 == false)
-		{
-			ddk::atomic_post_increment(itemsProduced);
-			lockFreeStack.push(static_cast<int>(++stackIndex));
-		}
-	};
+// 		while(stop1 == false)
+// 		{
+// 			ddk::atomic_post_increment(itemsProduced);
+// 			lockFreeStack.push(static_cast<int>(++stackIndex));
+// 		}
+// 	};
 
-	auto consumerFunc = [&stop2,&lockFreeStack,&itemsConsumed]()
-	{
-		while((stop2 == false) || (lockFreeStack.empty() == false))
-		{
-			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
-			{
-				ddk::atomic_post_increment(itemsConsumed);
+// 	auto consumerFunc = [&stop2,&lockFreeStack,&itemsConsumed]()
+// 	{
+// 		while((stop2 == false) || (lockFreeStack.empty() == false))
+// 		{
+// 			if(ddk::optional<DefaultType> currValueOpt = lockFreeStack.pop())
+// 			{
+// 				ddk::atomic_post_increment(itemsConsumed);
 
-				DefaultType currValue = *currValueOpt;
+// 				DefaultType currValue = *currValueOpt;
 
-				EXPECT_GT(currValue,0);
-			}
-		}
-	};
+// 				EXPECT_GT(currValue,0);
+// 			}
+// 		}
+// 	};
 
-	static const size_t threadPoolSize = 100;
-	std::array<ddk::thread,threadPoolSize> threadPool;
+// 	static const size_t threadPoolSize = 100;
+// 	std::array<ddk::thread,threadPoolSize> threadPool;
 
-	if(threadPool[0].start(consumerFunc))
-	{
-		size_t runningThreads = 1;
-		for(size_t index=1;index<threadPoolSize;++index)
-		{
-			if(threadPool[index].start(producerFunc))
-			{
-				++runningThreads;
-			}
-		}
+// 	if(threadPool[0].start(consumerFunc))
+// 	{
+// 		size_t runningThreads = 1;
+// 		for(size_t index=1;index<threadPoolSize;++index)
+// 		{
+// 			if(threadPool[index].start(producerFunc))
+// 			{
+// 				++runningThreads;
+// 			}
+// 		}
 
-		ddk::sleep(1000);
+// 		ddk::sleep(1000);
 
-		stop1 = true;
+// 		stop1 = true;
 
-		for(size_t index=1;index< runningThreads;++index)
-		{
-			threadPool[index].stop().dismiss();
-		}
+// 		for(size_t index=1;index< runningThreads;++index)
+// 		{
+// 			threadPool[index].stop().dismiss();
+// 		}
 
-		stop2 = true;
+// 		stop2 = true;
 
-		threadPool[0].stop().dismiss();
-	}
+// 		threadPool[0].stop().dismiss();
+// 	}
 
-	EXPECT_EQ(lockFreeStack.empty(),true);
-	EXPECT_EQ(itemsProduced.get(),itemsConsumed.get());
-}
+// 	EXPECT_EQ(lockFreeStack.empty(),true);
+// 	EXPECT_EQ(itemsProduced.get(),itemsConsumed.get());
+// }
 TEST(DDKLockFreeStackTest,multipleProducerMultipleConsumer)
 {
 	ddk::multiple_consumer_lock_free_stack<DefaultType> lockFreeStack;

@@ -1,45 +1,159 @@
 DDK Library
 ===================
 
-DDK library is just another set of functionalities broading from signal/slot pattern to unformatted arenas.
+The DDK library covers the following topics:
 
-Its main highlights are:
+* **Iterability**: The DDK library offers a set of classes capable to offering iterable visitation based on actions. This infrastructure offers:
+  1. Iterable adaptors for visitation, transformation, filtering, ordering, as can be seen in the following example:
 
-1.- Smart Pointers such as: shared, unique and lent pointers (borrrow checker like). It comes as well with lendable structure types (wrapping or inheriting).
+  ```
+  [&](const int& i_value)
+  {
+  	value++;
+  } <<= ddk::view::order(ddk::reverse_order) <<= ddk::view::filter([](const int& i_value) { return i_value > 0; }) <<= ddk::iter::transform_as<int>([](auto&& i_value) {
+  return 2 * i_value; }) <<= v_prova;
+  ```
 
-2.- Variants and optionals: In case of variants it comes with static visitor pattern (no heterogeneous variants allowed by now)
+  2. Composition of iterables offering other iterables such as:
 
-3.- Flagsets
+  ```
+  [](const A& i_value)
+  {
+  	int a = 0;
+	  ++a;
+  } <<= ddk::iter::transform([](const A& i_val1,const D& i_val2,const E& i_val3) -> A { return i_val1 + i_val2 + i_val3; })
+    <<= ddk::view::filter([](const A& i_val1,const D& i_val2,const E& i_val3) { return i_val1 > i_val2; })
+    <<= ddk::view::order(ddk::reverse_order)
+    <<= ddk::fusion(container1,container2,container3);
+  ```
 
-4.- Intrusive lists and stacks
+  3. Iterable actions for algorithms:
 
-5.- Scoped enums (superseded by class enums)
+  ```
+  	ddk::swap_action{} >>= ddk::iter::transform([](std::pair<const int,int>& i_value) -> int& { return i_value.second; })
+				<<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) 
+				<<= _foo;
+  ```
 
-6.- Tagged pointers (already used by smart pointers)
+	Iterable actions act as building blocks and allowing to create action graphs for algorithm definition.
+	
+  4. Agnostic iterables for api implementation:
 
-7.- Executors pattern. It does not contain process executors by now
+  ```
+  	ddk::const_bidirectional_value_iterable<const int> _ = ddk::iter::transform([](const std::pair<const int,int>& i_value) -> const int& { return i_value.second; }) 
+								<<= ddk::view::filter([](const std::pair<const int,int>& i_value) { return i_value.second > 0; }) 
+  															<<= _foo;
+  ```
+	
+   This feature allows to offer agnostic from container iterables. The client code has the hability to select allocator for allocatin the resulting iterable.
+			
+* **Async operations**: The DDK library offers a suite of classes (typically promises, futures, continuations...) for executing operations in an async fashion.
+	This infrastructure allows:
 
-8.- Custom thread with thread pools as well
+  1. Execution context selection. While creating a new async operation one can attach this operation to a certain execution context:
 
-9.- Critical section concept. It comes with multiple reader single writer pattern embedded (exclusion area class)
+  ```
+  ddk::async([&]()
+  { 
+  	return ddk::make_unique_reference<int>(10); 
+  }) -> attach(std::move(_myThread))
+  ```
+	
+  2. Custom promises. In case it is needed to store result of async operation in a customized promise (for specifying its allocator for instance) one can:
 
-10.- Transformed iterators (supereseded by views)
+  ```
+  ddk::future<void> provaFuture = ddk::async([&]() 
+  {
+  	recursive_func();
+  }) -> store<MyPromise>();
+  ```
+	
+  3. Custom scheduler. By default deferred scheduler is selected if no execution context is provided, or asap scheduler if it is, but still custom schedulers are allowed:
 
-11.- Dynamic visitors
+  ```
+  ddk::future<int&> res = ddk::async([counter = 0]() mutable 
+  { 
+  	return counter++;
+  }) -> schedule<ddk::polling_async_scheduler>()
+  ```
+	
+  4. Custom allocators are allowed:
 
-12.- Fibers and coroutines for windows and linux (iOS pending to be tested). It comes with co_iteration as well.
+  ```
+  ddk::future<char> myFuture = ddk::async<ddk::system_extack_allocator>(ddk::make_function([]() { return 'a'; }),local_allocator(1024));
+  ```
+  	
+    5. Continuations are supported:
+  
+  ```
+  ddk::future<char> myFuture = ddk::async(ddk::make_function([]() { return 'a'; })) -> attach(std::move(_myThread))
+  .then([](char i_value)
+  {
+  	printf("valor rebut %c\n",i_value);
+  
+  	return i_value;
+  });
+  ```
+	
+  6. Future compositions are supported:
 
-13.- std like async funcionatlity. In this case we allow to specify where to execute the callable object (in a thread/thread_pool/fiber/fiber_pool/deferred). It comes with futures and promises.
+  ```
+  ddk::future<int> myComposedFuture = compose(std::move(myCharFuture), std::move(myIntFuture))
+  .then([](std::tuple<char,int> i_data)
+  {
+  	return std::get<1>(i_data);
+  });
+  
+  compose(std::move(myOtherIntFuture),std::move(myComposedFuture))
+  .then([](std::array<int, 2> i_data)
+  {
+  	return static_cast<float>(i_data[0] + i_data[1]);
+  })
+  .then([](float i_data)
+  {
+  	int a = static_cast<int>(i_data);
+  	++a;
+  });
+  ```
+	
+  7. Higher order futures:
 
-14.- Asynchronous signals with the ability to work with multiple message queues (acting as multiplexer)
+  ```
+  ddk::async([&]() -> my_result
+  { 
+  	return ddk::make_unique_reference<int>(10); 
+  }) -> attach(std::move(_myThread))
+  .then([_myThread = std::move(myThread)](my_result i_value) mutable -> ddk::future<std::string>
+  {
+  	if (i_value)
+  	{
+  		return ddk::async([]() { return std::string("sucess"); }) -> attach(std::move(_myThread));
+  	}
+  	else
+  	{
+  		return ddk::async([]() { return std::string("error"); }) -> attach(std::move(_myThread));
+  	}
+  })
+  .then([_myOtherThread = std::move(myOtherThread)](std::string i_value) mutable -> ddk::future<std::string>
+  {
+  	return ddk::async([i_value]() { return i_value + std::string(":sucess"); }) -> attach(std::move(_myOtherThread));
+  })
+  .then([](std::string i_value)
+  {
+  	return 10;
+  });
+  ```
 
-15.- Lock free structures (already used by asynchronous signals).
-
-16.- Functions. The design of the function class has in mind a good memory usage by means of shared objects and user provided allocators. Functions can be specialized giving other functions (instead of using separate bind methods). A set of make_function methods has been provided.
-
-17.- Iterables free of iterators. Fully functional style for iterables. Client code can compose transformations and filtering over a given iterable. Client code shall provide a function which receives a iterable value and is able to ask for some shifts over the current iterable place (such as next value, prev value and so on). With this design there is no visible iterator concept. The client code can run iteration process in a certain context, that is, as in the case of asynchronous operations, we will be able to attach an iteration execution in a user provided context (thread, fiber ,...)
-
-
+* **General purpose utilities**:
+	
+	1. Smart pointers such as unique pointers/references, shared/distributed pointers/references, weak pointers, lent pointers/references.
+	2. Generalized functions allowing higher order functions.
+	3. Custom threads and fibers with the hability to create thread and fiber pools.
+	4. Multithread related utilities such as multiple reader writer infrastructure, lock free queues, task executors, atomics...
+	5. Optionals and Variants.
+	6. General template metaprogramming infrastructure.
+	7. And many more...
+		
 Installing CMake
 ----------------
 
@@ -70,3 +184,4 @@ Building the Project
 - execute perl script genPrj-XXX.pl (where XXX stands for platform)
 
 The **ddkXXX.sln** solution will be located in the `build` folder, while generated binaries will be generated in the `bin` folder.
+Unfortunately, at some point this library stopped compiling in Linux and now only windows visual studio compiler (using 17 standard) is supported.

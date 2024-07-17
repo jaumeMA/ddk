@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_void.h"
@@ -62,20 +70,12 @@ struct class_holder
     constexpr class_holder() = default;
 };
 
-template<typename ... Types>
-struct type_pack;
-
 template<template<typename ...>typename T>
 struct template_class_holder
 {
-private:
-    static detail::void_t resolve_template_class(...);
-    template<typename ... TT>
-    static T<TT...> resolve_template_class(const type_pack<TT...>&);
-
 public:
     template<typename ... TT>
-    using type = decltype(resolve_template_class(std::declval<type_pack<TT...>>()));
+    using type = T<TT...>;
 };
 
 template<typename T>
@@ -150,6 +150,26 @@ struct size_of_qualified_type<T*>
 	static const size_t value = sizeof(decltype(reinterpret_cast<T*>(NULL)));
 };
 
+template<typename>
+struct add_const_impl;
+    
+template<typename T>
+struct add_const_impl<T&>
+{
+    typedef const T& type;
+};
+template<typename T>
+struct add_const_impl
+{
+    typedef const T type;
+};
+
+template<typename T>
+using add_const = typename add_const_impl<T>::type;
+
+template<typename T>
+inline constexpr bool is_const = std::is_const<typename std::remove_reference<T>::type>::value;
+
 template<typename T>
 using remove_qualifiers = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 
@@ -169,6 +189,25 @@ struct add_contravariant_constness_impl<T<TT>>
 
 template<typename T>
 using add_contravariant_constness = typename add_contravariant_constness_impl<T>::type;
+
+template<typename,typename>
+struct _are_types_contravariant;
+
+template<typename T>
+struct _are_types_contravariant<T,T> : std::true_type
+{
+};
+template<template<typename> typename T,typename ... TT,typename ... TTT>
+struct _are_types_contravariant<T<TT...>,T<TTT...>> : std::true_type
+{
+};
+template<typename T,typename TT>
+struct _are_types_contravariant : std::false_type
+{
+};
+
+template<typename T,typename TT>
+inline constexpr bool are_types_contravariant = _are_types_contravariant<T,TT>::value;
 
 template<typename T>
 struct get_pointer
@@ -262,8 +301,42 @@ constexpr size_t get_num_ranks()
 	return sizeof...(ranks);
 };
 
+template<typename T, typename ... TT>
+constexpr inline auto get_min(T&& i_value, TT&& ... i_values)
+{
+    typedef typename std::common_type<T,TT...>::type res_type;
+
+    res_type res = i_value;
+    const res_type tail[] = { i_values... };
+
+    for (auto&& value : tail)
+    {
+        res = (res > value) ? value : res;
+    }
+
+    return res;
+};
+
 template<size_t ... ranks>
 inline constexpr size_t num_ranks = sizeof...(ranks);
+
+template<size_t ... ranks>
+constexpr size_t get_sum_ranks()
+{
+    return (ranks + ...);
+}
+
+template<size_t ... ranks>
+inline constexpr size_t sum_ranks = (ranks + ...);
+
+template<size_t ... ranks>
+constexpr size_t get_prod_ranks()
+{
+    return (ranks * ...);
+}
+
+template<size_t ... ranks>
+inline constexpr size_t prod_ranks = (ranks * ...);
 
 template<template<size_t,size_t> class cond, size_t ... ranks>
 struct get_cond_rank;
@@ -305,7 +378,13 @@ struct sequence<>
 template<size_t ... ranks>
 struct sequence
 {
-    static const size_t size = 1 + sizeof...(ranks);
+    inline static constexpr size_t size = sizeof...(ranks);
+    template<size_t Index>
+    inline static constexpr size_t nth_rank = nth_rank_of<ranks...>(Index);
+    inline static constexpr size_t prod = ddk::mpl::prod_ranks<ranks...>;
+    inline static constexpr size_t sum = ddk::mpl::sum_ranks<ranks...>;
+    inline static constexpr size_t min = get_cond_rank<min_rank,ranks...>::value;
+    inline static constexpr size_t max = get_cond_rank<max_rank,ranks...>::value;
 
     constexpr sequence() = default;
 
@@ -317,7 +396,6 @@ struct sequence
     {
         typedef sequence<nth_rank_of<ranks...>(Indexs) ...> type;
     };
-
     static constexpr bool present(size_t i_pos)
     {
         return ((i_pos == ranks) || ...);
@@ -337,11 +415,8 @@ struct sequence
         return static_cast<size_t>(-1);
     }
 
-    template<size_t ... Indexs>
-    using drop = typename merge_sequence<typename static_if<sequence<Indexs...>::present(ranks),sequence<>,sequence<ranks>>::type...>::type;
-
-    static const size_t min = get_cond_rank<min_rank,ranks...>::value;
-    static const size_t max = get_cond_rank<max_rank,ranks...>::value;
+    template<size_t Index>
+    using drop = typename merge_sequence<typename at<typename make_sequence<0,(Index > 0) ? Index-1 : 0>::type>::type,typename at<typename make_sequence<Index+1,size>::type>::type>::type;
 };
 
 template<size_t ... ranksA, size_t ... ranksB>
@@ -459,23 +534,8 @@ inline constexpr size_t type_to_index = Index;
 template<size_t Index,size_t IIndex>
 inline constexpr size_t index_to_index = IIndex;
 
-template<size_t ... ranks>
-constexpr size_t get_sum_ranks()
-{
-    return (ranks + ...);
-}
-
-template<size_t ... ranks>
-inline constexpr size_t sum_ranks = (ranks + ...);
-
-template<size_t ... ranks>
-constexpr size_t get_prod_ranks()
-{
-    return (ranks * ...);
-}
-
-template<size_t ... ranks>
-inline constexpr size_t prod_ranks = (ranks * ...);
+template<typename T,typename TT>
+using type_to_type = TT;
 
 template<typename ... Types>
 constexpr size_t get_num_types()
@@ -495,25 +555,44 @@ constexpr size_t get_num_of_types_of()
 template<template<typename> class predicate, typename ... Types>
 inline constexpr size_t num_types_of = get_num_of_types_of<predicate,Types...>();
 
-template<typename A, typename B>
+template<typename,typename>
 struct is_same_type;
-
-template<typename A, typename B>
-struct is_same_type
-{
-    static const bool value = false;
-};
-
+template<typename A,typename B>
+struct is_same_type : std::false_type
+{};
 template<typename A>
-struct is_same_type<A,A>
+struct is_same_type<A,A> : std::true_type
+{};
+
+template<typename T>
+struct is_type
 {
-    static const bool value = true;
+    template<typename TT>
+    using type = is_same_type<T,TT>;
+};
+
+template<typename,typename>
+struct is_not_same_type;
+template<typename A,typename B>
+struct is_not_same_type : std::true_type
+{};
+template<typename A>
+struct is_not_same_type<A,A> : std::false_type
+{};
+
+template<typename T>
+struct is_not_type
+{
+    template<typename TT>
+    using type = is_not_same_type<T,TT>;
+    template<typename TT>
+    constexpr static bool value = is_not_same_type<T,TT>::value;
 };
 
 template<typename T>
-inline constexpr bool is_void = is_same_type<T,void>::value;
+inline constexpr bool is_void = is_type<T>::template type<void>::value;
 template<typename T>
-inline constexpr bool is_void_t = is_same_type<T,detail::void_t>::value;
+inline constexpr bool is_void_t = is_type<T>::template type<detail::void_t>::value;
 
 template<typename T, typename ... Types>
 constexpr bool are_same_type()
@@ -589,13 +668,19 @@ using reduce_to_common_type = typename _reduce_to_common_type<Types...>::type;
 template<template<typename,typename...> typename Predicate, typename Type, typename ... Types>
 inline constexpr size_t nth_pos_of_predicate()
 {
-    size_t res = 0;
+    const bool predicateRes[num_types<Types...>] = { Predicate<Types,Type>::value ... };
+    size_t pos = 0;
 
-    (((Predicate<Types,Type>::value == false) && (++res > 0)) && ...);
+    while (predicateRes[pos] == false)
+    {
+        if (++pos == num_types<Types...>)
+        {
+            break;
+        }
+    }
 
-    return res;
+    return pos;
 }
-
 template<template<typename,typename> typename Predicate, typename Type, typename ... Types>
 inline constexpr bool holds_type_for_any_type()
 {
@@ -654,6 +739,19 @@ template<typename Type,typename ... Types>
 inline constexpr bool is_not_among_constructible_types = (holds_type_for_some_type<std::is_constructible,Type,Types...>() == false);
 
 template<typename Type,typename ... Types>
+inline constexpr bool is_some_convertible_type = holds_type_by_some_type<std::is_convertible,Type,Types...>();
+
+template<typename Type,typename ... Types>
+inline constexpr bool is_not_any_convertible_type = (holds_type_by_some_type<std::is_convertible,Type,Types...>() == false);
+
+template<typename Type,typename ... Types>
+inline constexpr bool is_some_constructible_type = holds_type_by_some_type<std::is_constructible,Type,Types...>();
+
+template<typename Type,typename ... Types>
+inline constexpr bool is_not_any_constructible_type = (holds_type_by_some_type<std::is_constructible,Type,Types...>() == false);
+
+
+template<typename Type,typename ... Types>
 inline constexpr size_t first_same_type = nth_pos_of_predicate<is_same_type,Type,Types...>();
 
 template<typename Type,typename ... Types>
@@ -689,10 +787,10 @@ struct type_pack
         
         typedef type_pack<Types...,TTypes...> type;
 	};
-	template<typename ... TTypes>
+	template<typename TType>
 	struct add_unique
 	{
-		typedef typename merge_type_packs<type_pack<Types...>,typename static_if<is_among_types<TTypes,Types...>,type_pack<>,type_pack<TTypes>>::type ...>::type type;
+        typedef typename which_type<is_among_types<TType,Types...>,type_pack<Types...>,type_pack<Types...,TType>>::type type;
 	};
 	template<typename ... TTypes>
 	struct drop
@@ -704,6 +802,11 @@ struct type_pack
     {
         typedef typename merge_type_packs<typename static_if<Predicate<Types>::value,type_pack<>,type_pack<Types>>::type ...>::type type;
     };
+    template<typename Type, template<typename,typename> typename Predicate = is_same_type>
+    static constexpr size_t pos_in_type_pack()
+    {
+        return nth_pos_of_predicate<Predicate,Type,Types...>();
+    }
     template<typename ... TTypes>
 	static constexpr bool contains(const type_pack<TTypes...>&)
 	{
@@ -712,35 +815,75 @@ struct type_pack
     template<typename ... TTypes>
     static constexpr bool contains()
     {
-        return num_types<TTypes...> > 0 && num_types<TTypes...> < num_types<Types...> && (is_among_types<TTypes,Types...> && ...);
+        return (num_types<TTypes...> == 0) || (is_among_types<TTypes,Types...> && ...);
     }
-    template<typename>
-    struct at;
+    template<typename ... TTypes>
+    static constexpr bool projects(const type_pack<TTypes...>&)
+    {
+        return (num_types<TTypes...> == 0) || (is_among_constructible_types<TTypes,Types...> && ...);
+    }
+    template<typename ... TTypes>
+    static constexpr bool projects()
+    {
+        return (num_types<TTypes...> == 0) || (is_among_constructible_types<TTypes,Types...> && ...);
+    }
+    template<size_t Index>
+    struct at
+    {
+        typedef typename nth_type_of<Index,Types...>::type type;
+    };
 
+    template<typename>
+    struct subset;
     template<size_t ... Indexs>
-    struct at<sequence<Indexs...>>
+    struct subset<sequence<Indexs...>>
     {
         typedef type_pack<typename nth_type_of<Indexs,Types...>::type ...> type;
     };
 
-    template<size_t Index>
+    template<int Index>
     using nth_type = typename nth_type_of<Index,Types...>::type;
 
     static constexpr size_t size()
     {
         return num_types<Types...>;
     }
+    static constexpr bool empty()
+    {
+        return num_types<Types...> == 0;
+    }
+};
+typedef type_pack<> empty_type_pack;
+
+template<typename...>
+struct merge_pair_type_packs;
+
+template<typename ... Types>
+struct merge_pair_type_packs<type_pack<Types...>,type_pack<>>
+{
+    typedef type_pack<Types...> type;
 };
 
-template<typename ... Types, typename ... TTypes,typename ... TTTypes>
-struct merge_type_packs<type_pack<Types...>,type_pack<TTypes...>,TTTypes...>
+template<typename ... Types,typename TType,typename ... TTypes>
+struct merge_pair_type_packs<type_pack<Types...>,type_pack<TType,TTypes...>>
 {
-	typedef typename merge_type_packs<type_pack<Types...,TTypes...>,TTTypes...>::type type;
+    typedef typename merge_pair_type_packs<typename type_pack<Types...>::template add_unique<TType>::type,type_pack<TTypes...>>::type type;
+};
+
+template<>
+struct merge_type_packs<>
+{
+    typedef empty_type_pack type;
 };
 template<typename ... Types>
 struct merge_type_packs<type_pack<Types...>>
 {
     typedef type_pack<Types...> type;
+};
+template<typename ... Types, typename ... TTypes,typename ... TTTypes>
+struct merge_type_packs<type_pack<Types...>,type_pack<TTypes...>,TTTypes...>
+{
+    typedef typename merge_type_packs<typename merge_pair_type_packs<type_pack<Types...>,type_pack<TTypes...>>::type,TTTypes...>::type type;
 };
 
 template<typename ... Types>
@@ -787,6 +930,15 @@ struct is_type_pack<type_pack<Types...>>
 
 template<typename Type, typename ... Types>
 inline constexpr bool is_among_type_pack = (is_type_pack<Types...>::value && is_type_pack<Types...>::template is_among_types<Type>()) || is_among_types<Type,Types...>;
+
+template<typename,typename>
+struct convertible_type_equivalence_type_pack;
+
+template<typename ReferenceType, typename ... Types>
+struct convertible_type_equivalence_type_pack<ReferenceType,type_pack<Types...>>
+{
+    typedef type_pack<Types...> type;
+};
 
 template<int ...ranks>
 inline bool constexpr check_monotonic_range()

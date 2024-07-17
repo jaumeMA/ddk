@@ -40,6 +40,8 @@ void async_executor_recipients::notify(bool i_useAndKeep)
 {
 	mutex_guard mg(m_mutex);
 
+	m_admissible = false;
+
 	if (i_useAndKeep)
 	{
 		callable_container pendingCallables = m_pendingCallables;
@@ -50,8 +52,6 @@ void async_executor_recipients::notify(bool i_useAndKeep)
 	{
 		resolve(m_pendingCallables);
 	}
-
-	m_admissible = false;
 }
 bool async_executor_recipients::dismiss(unsigned char i_depth, continuation_token i_token)
 {
@@ -73,10 +73,10 @@ bool async_executor_recipients::dismiss(unsigned char i_depth, continuation_toke
 }
 bool async_executor_recipients::move(async_executor_recipients&& i_recipients)
 {
+	mutex_guard mg(m_mutex);
+
 	if (is_admissible())
 	{
-		mutex_guard mg(m_mutex);
-
 		callable_container pendingCallables = std::move(i_recipients.m_pendingCallables);
 
 		for (auto&& valuePair : pendingCallables)
@@ -102,7 +102,7 @@ void async_executor_recipients::clear()
 }
 bool async_executor_recipients::is_admissible()
 {
-	return (call_admissionPredicate != nullptr) ? eval(call_admissionPredicate,m_admissible) : m_admissible;
+	return m_admissible;
 }
 void async_executor_recipients::resolve(callable_container& i_pendingCallables)
 {
@@ -144,34 +144,26 @@ void execution_context_base::notify_recipients(bool i_useAndKeep)
 {
 	m_recipientsRef->notify(i_useAndKeep);
 }
-size_t execution_context_base::transfer_recipients(execution_context_base&& other)
+bool execution_context_base::transfer_recipients(execution_context_base&& other)
 {
 	return m_recipientsRef->move(std::move(other.m_recipients));
 }
-void execution_context_base::transfer(execution_context_base&& other)
+bool execution_context_base::transfer(execution_context_base&& other)
 {
-	other.enqueue(make_function([&]()
-	{
-		other.m_recipients.call_admissionPredicate = nullptr;
-		other.m_recipientsRef = lend(other.m_recipients);
-	}),0);
-
 	if (transfer_recipients(std::move(other)))
 	{
 		other.m_recipientsRef = lend(m_recipients);
+
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 bool execution_context_base::dismiss(unsigned char i_depth,continuation_token i_token)
 {
 	return m_recipientsRef->dismiss(i_depth,std::move(i_token));
-}
-void execution_context_base::clear()
-{
-	m_recipientsRef->clear();
-}
-void execution_context_base::admission_predicate(const function<bool(bool)>& i_callable)
-{
-	m_recipientsRef->call_admissionPredicate = i_callable;
 }
 
 }
@@ -215,21 +207,21 @@ thread_execution_context::thread_execution_context(thread i_thread)
 : m_thread(std::move(i_thread))
 {
 }
-void thread_execution_context::start(const function<void()>& i_callable, bool i_useAndKeep)
+void thread_execution_context::start(function<void()> i_callable, bool i_useAndKeep)
 {
-	m_thread.start([=]()
+	m_thread.start([this,callable=std::move(i_callable),useAndKeep = i_useAndKeep]() mutable
 	{
-		eval(i_callable);
+		eval(callable);
 
-		notify_recipients(i_useAndKeep);
+		notify_recipients(useAndKeep);
 	}).dismiss();
 }
 bool thread_execution_context::cancel()
 {
+	notify_recipients(false);
+
 	if(m_thread.joinable() == false)
 	{
-		notify_recipients(false);
-
 		return true;
 	}
 	else
@@ -242,7 +234,7 @@ fiber_execution_context::fiber_execution_context(fiber i_fiber)
 : m_fiber(std::move(i_fiber))
 {
 }
-void fiber_execution_context::start(const function<void()>& i_callable, bool i_useAndKeep)
+void fiber_execution_context::start(function<void()> i_callable, bool i_useAndKeep)
 {
 	m_fiber.start([=]()
 	{
@@ -271,7 +263,7 @@ thread_sheaf_execution_context::thread_sheaf_execution_context(thread_sheaf i_th
 , m_pendingThreads(m_threadSheaf.size())
 {
 }
-void thread_sheaf_execution_context::start(const function<void()>& i_callable)
+void thread_sheaf_execution_context::start(function<void()> i_callable)
 {
 	m_threadSheaf.start([=]()
 	{
@@ -314,11 +306,16 @@ bool thread_sheaf_execution_context::has_failures() const
 
 fiber_sheaf_execution_context::fiber_sheaf_execution_context(fiber_sheaf i_fiberSheaf)
 : m_fiberSheaf(std::move(i_fiberSheaf))
-, m_failedFibers(0)
+, m_successFibers(0)
 , m_pendingFibers(m_fiberSheaf.size())
 {
 }
-void fiber_sheaf_execution_context::start(const function<void()>& i_callable)
+fiber_sheaf_execution_context::~fiber_sheaf_execution_context()
+{
+	int a = 0;
+	++a;
+}
+void fiber_sheaf_execution_context::start(function<void()> i_callable)
 {
 	m_fiberSheaf.start([=]()
 	{
@@ -346,9 +343,9 @@ void fiber_sheaf_execution_context::clear_fibers()
 {
 	m_fiberSheaf.clear();
 }
-size_t fiber_sheaf_execution_context::add_failure()
+size_t fiber_sheaf_execution_context::add_success()
 {
-	return atomic_post_increment(m_failedFibers);
+	return atomic_post_increment(m_successFibers);
 }
 size_t fiber_sheaf_execution_context::remove_pending_thread()
 {
@@ -358,9 +355,9 @@ bool fiber_sheaf_execution_context::has_pending_fibers() const
 {
 	return m_pendingFibers.get() > 0;
 }
-bool fiber_sheaf_execution_context::has_failures() const
+bool fiber_sheaf_execution_context::has_succeed() const
 {
-	return m_failedFibers.get() > 0;
+	return m_successFibers.get() == m_fiberSheaf.size();
 }
 
 }

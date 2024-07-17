@@ -1,6 +1,15 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_iterable_impl_interface.h"
+#include "ddk_iterable_visitor.h"
 
 namespace ddk
 {
@@ -8,21 +17,20 @@ namespace detail
 {
 
 template<typename Traits, typename Iterable>
-class iterable_impl : public iterable_impl_interface<typename Traits::iterable_base_traits>
+class iterable_impl : public iterable_impl_interface<Traits>, public iterable_visitor<Iterable>
 {
 public:
-    typedef typename Traits::value_type value_type;
-    typedef typename Traits::reference reference;
-    typedef typename Traits::const_reference const_reference;
-    typedef typename Traits::action action;
+    typedef Traits traits;
+    typedef const_iterable_traits<Traits> const_traits;
+    typedef typename traits::tags_t tags_t;
+    typedef typename traits::const_tags_t const_tags_t;
 
     iterable_impl(Iterable& i_iterable);
 
-private:
-    void iterate_impl(const function<action(reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) override;
-    void iterate_impl(const function<action(const_reference)>& i_try, const shift_action& i_initialAction, action_state_lent_ptr i_actionStatePtr) const override;
-
-    Iterable& m_iterable;
+    template<typename Action>
+    void iterate_impl(const Action& i_initialAction);
+    template<typename Action>
+    void iterate_impl(const Action& i_initialAction) const;
 };
 
 }

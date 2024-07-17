@@ -83,12 +83,12 @@ T* thread_local_storage<T,Allocator>::assign(Args&& ... i_args)
 	}
 }
 template<typename T, typename Allocator>
-T& thread_local_storage<T,Allocator>::get()
+auto thread_local_storage<T,Allocator>::get()
 {
 	return *reinterpret_cast<T*>(m_address);
 }
 template<typename T,typename Allocator>
-const T& thread_local_storage<T,Allocator>::get() const
+auto thread_local_storage<T,Allocator>::get() const
 {
 	return *reinterpret_cast<T*>(m_address);
 }

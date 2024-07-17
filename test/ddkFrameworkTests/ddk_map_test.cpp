@@ -115,10 +115,10 @@ TEST(DDKMultiMapTest,visitation)
 	provaMultiMap[std::string("adeu")][std::string("adeudeuadeu")] = 1090;
 	provaMultiMap[std::string("adeu")][std::string("adeudeu")] = 1100;
 
-	ddk::make_function([](const std::pair<const std::vector<std::string>,int&>& i_pair) 
-	{ 
-		printf("multimap value %s, %d. \n",ddk::formatter<std::string>::format(i_pair.first).c_str(),i_pair.second);
-	}) <<= ddk::view::order(ddk::reverse_order) <<= provaMultiMap;
+	//ddk::make_function([](const std::pair<const std::vector<std::string>,int&>& i_pair) 
+	//{ 
+	//	printf("multimap value %s, %d. \n",ddk::formatter<std::string>::format(i_pair.first).c_str(),i_pair.second);
+	//}) <<= ddk::view::order(ddk::reverse_order) <<= provaMultiMap;
 }
 
 #ifndef DDK_DEBUG

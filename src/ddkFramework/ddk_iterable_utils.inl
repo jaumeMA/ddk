@@ -6,160 +6,154 @@
 #include "ddk_async.h"
 #include "ddk_forwarding_iterable_value_callable.h"
 #include "ddk_one_to_n_action_adapter.h"
+#include "ddk_callable.h"
+#include "ddk_reference_wrapper.h"
 
 namespace ddk
 {
 
-template<typename Iterable, typename IIterable>
-Iterable make_iterable(IIterable&& i_iterable)
+template<typename Traits,typename Iterable,typename Allocator>
+auto make_iterable(Iterable&& i_iterable,const Allocator& i_allocator)
 {
-    typedef typename Iterable::traits traits;
+	typedef mpl::remove_qualifiers<Iterable> iterable_t;
+	typedef typename iterable_t::traits from_traits;
+	typedef Traits to_traits;
 
-    return Iterable{ make_distributed_reference<detail::iterable_impl<traits,IIterable>>(std::forward<IIterable>(i_iterable)) };
+	if constexpr (mpl::is_same_type<from_traits,to_traits>::value)
+	{
+		return make_distributed_reference<detail::view_iterable<iterable_t>>(i_allocator,std::forward<Iterable>(i_iterable));
+	}
+	else
+	{
+		typedef detail::transformed_iterable_impl<to_traits,from_traits,detail::iterable<iterable_t>,detail::traits_conversion_callable<from_traits,to_traits>> transformed_iterable;
+
+		return make_distributed_reference<detail::view_iterable<transformed_iterable>>(i_allocator,detail::view_iterable(std::forward<Iterable>(i_iterable)),detail::traits_conversion_callable<from_traits,to_traits>());
+	}
+}
+template<typename Traits,typename Iterable>
+auto make_iterable(Iterable&& i_iterable)
+{
+	return make_iterable<Traits>(std::forward<Iterable>(i_iterable),g_system_allocator);
 }
 
 TEMPLATE(typename Iterable)
-REQUIRED(IS_BASE_OF_ITERABLE(Iterable))
-Iterable deduce_iterable(Iterable&& i_iterable)
+REQUIRED(IS_ITERABLE_TYPE(Iterable))
+Iterable&& deduce_iterable(Iterable&& i_iterable)
 {
-	return i_iterable;
+	return std::forward<Iterable>(i_iterable);
 }
 
 TEMPLATE(typename Container)
-REQUIRED(IS_NOT_BASE_OF_ITERABLE(Container))
+REQUIRED(IS_NOT_ITERABLE_TYPE(Container),IS_DEDUCIBLE_ITERABLE_TYPE(Container))
 resolved_iterable<Container> deduce_iterable(Container&& i_iterable)
 {
-	typedef resolved_iterable<Container> iterable_type;
-	typedef typename iterable_type::traits traits;
-
-	return iterable_type{ make_distributed_reference<detail::iterable_impl<traits,Container>>(std::forward<Container>(i_iterable)) };
+	return { std::forward<Container>(i_iterable) };
 }
 
 }
 
-template<typename Function, typename Container>
-auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Container&& i_rhs)
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+auto operator<<=(const ddk::detail::iterable_transform<Function>& i_lhs, Iterable&& i_rhs)
 {
-	typedef typename ddk::resolved_iterable_traits<Container> traits_t;
 	typedef typename ddk::mpl::aqcuire_callable_return_type<Function>::type return_t;
-	typedef typename ddk::resolved_iterable_traits_as<Container,return_t> return_traits_t;
-	typedef ddk::detail::iterable<ddk::transformed_traits<typename return_traits_t::iterable_const_traits>> ret_type;
+	typedef ddk::resolved_iterable<Iterable> iterable_t;
+	typedef typename iterable_t::traits traits;
+	typedef typename traits::tags_t tags_t;
+	typedef typename traits::const_tags_t const_tags_t;
 
-	return ret_type{ ddk::detail::iterable<ddk::transformed_traits<return_traits_t>>(ddk::detail::make_iterable_impl<ddk::detail::transformed_iterable_impl<ddk::transformed_traits<return_traits_t>,traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_transform())) };
+	typedef typename tags_t::template drop_if<ddk::mpl::is_not_type<ddk::agnostic_sink_action_tag<typename traits::reference>>::template type>::type simplified_tags;
+	typedef typename ddk::mpl::action_tags_retrait<traits,ddk::detail::by_value_traits<return_t>,ddk::detail::reduce_type_traits,simplified_tags>::type transformed_tags;
+	typedef typename ddk::mpl::action_tags_retrait<traits,ddk::detail::by_value_traits<return_t>,ddk::detail::reduce_type_traits,const_tags_t>::type transformed_const_tags;
+
+	typedef ddk::detail::iterable_traits<ddk::detail::iterable_by_value_adaptor<return_t,transformed_tags,transformed_const_tags>> iterable_transformed_traits;
+	typedef ddk::detail::transformed_iterable_impl<iterable_transformed_traits,traits,iterable_t,Function> transformed_iterable;
+
+	return ddk::detail::iterable(transformed_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs));
 }
-template<typename Function,typename Container>
-ddk::detail::iterable<ddk::resolved_iterable_traits<Container>> operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Container&& i_rhs)
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+auto operator<<=(const ddk::detail::iterable_filter<Function>& i_lhs,Iterable&& i_rhs)
 {
-	typedef ddk::resolved_iterable_traits<Container> traits_t;
+	typedef ddk::resolved_iterable<Iterable> iterable_t;
+	typedef ddk::detail::filtered_iterable_impl<iterable_t,Function> filtered_iterable;
 
-	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::filtered_iterable_impl<traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_filter()));
+	return ddk::detail::iterable(filtered_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_filter()));
 }
-template<typename T,typename Iterable>
-ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs)
+TEMPLATE(typename T,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+auto operator<<=(const ddk::detail::iterable_order<T>& i_lhs, Iterable&& i_rhs)
 {
-	typedef ddk::resolved_iterable_traits<Iterable> traits_t;
+	typedef ddk::resolved_iterable<Iterable> iterable_t;
+	typedef ddk::detail::ordered_iterable_impl<iterable_t,T> ordered_iterable;
 
-	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::ordered_iterable_impl<T,traits_t>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.init(std::forward<Iterable>(i_rhs))));
+	return ddk::detail::iterable(ordered_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.order()));
 }
-template<typename Function,typename Iterable>
-ddk::detail::iterable<ddk::resolved_iterable_traits<Iterable>> operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable&& i_rhs)
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+auto operator<<=(const ddk::detail::iterable_constrain<Function>& i_lhs,Iterable&& i_rhs)
 {
-	typedef ddk::resolved_iterable_traits<Iterable> traits_t;
+	typedef ddk::resolved_iterable<Iterable> iterable_t;
+	typedef ddk::detail::constrained_iterable_impl<iterable_t,Function> constrained_iterable;
 
-	return ddk::detail::iterable<traits_t>(ddk::detail::make_iterable_impl<ddk::detail::constrained_iterable_impl<traits_t,Function>>(share(ddk::deduce_iterable(i_rhs)),i_lhs.get_constrain()));
+	return ddk::detail::iterable(constrained_iterable(ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs.get_constrain()));
 }
-TEMPLATE(typename Function, typename Iterable)
-REQUIRED(IS_CALLABLE(Function))
-auto operator<<=(Function&& i_lhs,Iterable&& i_rhs)
+TEMPLATE(typename Function,typename Iterable)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterable))
+auto operator<<=(const Function& i_lhs,Iterable&& i_rhs)
 {
-	typedef typename std::remove_reference<Function>::type function_t;
-	typedef typename ddk::mpl::static_if<IS_BASE_OF_ITERABLE_COND(Iterable),typename std::remove_reference<Iterable>::type,Iterable>::type iterable_t;
-
-	typedef typename ddk::mpl::static_if<ddk::concepts::is_iterable_valued_function<iterable_t,function_t>,ddk::co_iteration<iterable_t,function_t>,ddk::iteration<iterable_t,function_t>>::type ret_type;
-
-	return ret_type{ i_rhs,std::forward<Function>(i_lhs) };
+	return ddk::iteration{ ddk::deduce_iterable(std::forward<Iterable>(i_rhs)),i_lhs };
 }
 
 namespace ddk
 {
 
 TEMPLATE(typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> concat(Iterables&& ... i_iterables)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterables)...)
+auto concat(Iterables&& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
 
-    typedef detail::iterable<detail::union_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ ddk::detail::make_iterable_impl<ddk::detail::union_iterable_impl<ddk::detail::iterable<resolved_iterable_traits<Iterables>>...>>(deduce_iterable(std::forward<Iterables>(i_iterables)) ...) };
+	return detail::iterable{ detail::union_iterable_impl(deduce_iterable(std::forward<Iterables>(i_iterables)) ...) };
 }
 
 TEMPLATE(typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> fusion(Iterables&& ... i_iterables)
+REQUIRED(IS_DEDUCIBLE_ITERABLE_TYPE(Iterables)...)
+auto fusion(Iterables&& ... i_iterables)
 {
     static_assert(mpl::num_types<Iterables...> != 0, "You shall provider more than 0 iterables");
 
-    typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<iter::one_to_n_diagonal_action_adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(iter::one_to_n_diagonal_action_adapter{},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+	return detail::iterable{ detail::intersection_iterable_impl(deduce_iterable(std::forward<Iterables>(i_iterables)) ...)};
 }
-TEMPLATE(typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables)
-{
-	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//TEMPLATE(typename ... Iterables)
+//REQUIRED(IS_ITERABLE(Iterables)...)
+//detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> enumerate(Iterables&& ... i_iterables)
+//{
+//	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//
+//	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+//
+//	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<iter::one_to_n_enumerate_action_adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(iter::one_to_n_enumerate_action_adapter(std::forward<Iterables>(i_iterables)...),deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+//}
+//TEMPLATE(typename Adapter,typename ... Iterables)
+//REQUIRED(IS_ITERABLE(Iterables)...)
+//detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables)
+//{
+//	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//
+//	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+//
+//	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(Adapter{},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+//}
+//TEMPLATE(typename Adapter,typename ... Iterables)
+//REQUIRED(IS_ITERABLE(Iterables)...)
+//detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter,Iterables&& ... i_iterables)
+//{
+//	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
+//
+//	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
+//
+//	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(i_adapter,deduce_iterable(std::forward<Iterables>(i_iterables))...) };
+//}
 
-	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<iter::one_to_n_enumerate_action_adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(iter::one_to_n_enumerate_action_adapter{std::forward<Iterables>(i_iterables)...},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
-}
-TEMPLATE(typename Adapter,typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(Iterables&& ... i_iterables)
-{
-	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
-
-	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(Adapter{},deduce_iterable(std::forward<Iterables>(i_iterables))...) };
-}
-TEMPLATE(typename Adapter,typename ... Iterables)
-REQUIRED(IS_ITERABLE(Iterables)...)
-detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> combine(const Adapter& i_adapter,Iterables&& ... i_iterables)
-{
-	static_assert(mpl::num_types<Iterables...> != 0,"You shall provider more than 0 iterables");
-
-	typedef detail::iterable<detail::intersection_iterable_traits<resolved_iterable_traits<Iterables>...>> ret_type;
-
-	return ret_type{ detail::make_iterable_impl<detail::intersection_iterable_impl<Adapter,detail::iterable<resolved_iterable_traits<Iterables>> ...>>(i_adapter,deduce_iterable(std::forward<Iterables>(i_iterables))...) };
-}
-
-namespace iter
-{
-
-TEMPLATE(typename T)
-REQUIRED(IS_SIZEABLE(T))
-size_t size(const T& i_container)
-{
-	return i_container.size();
-}
-template<typename T>
-size_t size(const const_random_access_iterable<T>& i_iterable)
-{
-}
-
-template<template<typename,size_t...> typename T,typename R,size_t ... Dims>
-std::vector<size_t> dimension(const T<R,Dims...>& i_container)
-{
-	return { Dims... };
-}
-TEMPLATE(typename T)
-REQUIRED(IS_DIMENSIONABLE(T))
-inline auto dimension(const T& i_container)
-{
-	return i_container.dimension();
-}
-
-}
 }

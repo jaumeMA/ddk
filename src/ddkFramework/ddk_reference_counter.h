@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_atomics.h"
@@ -130,9 +138,9 @@ class share_control_block : public ReferenceCounter
 public:
 	typedef ReferenceCounter reference_counter;
 
-	share_control_block(T* i_ptr, const Deleter& i_deleter);
-
-	share_control_block& operator=(const share_control_block& other);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Deleter,Args...))
+	share_control_block(T* i_ptr, Args&& ... i_args);
 
 protected:
 	void destroy_shared_resource(short i_tagCategory) override;
@@ -173,7 +181,9 @@ class unique_control_block : public unique_reference_counter
 public:
 	typedef unique_reference_counter reference_counter;
 
-	unique_control_block(T* i_ptr, const Deleter& i_deleter);
+	TEMPLATE(typename ... Args)
+	REQUIRES(IS_CONSTRUCTIBLE(Deleter,Args...))
+	unique_control_block(T* i_ptr, Args&& ... i_args);
 
 private:
 	void destroy_unique_resource(short i_tagCategory) override;

@@ -10,7 +10,7 @@ namespace detail
 {
 
 template<typename Callable,typename Sink>
-start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -26,7 +26,7 @@ start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
 
 				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					ddk::eval(std::forward<Sink>(sink),std::move(res));
+					ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 				}
 
 				ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed);
@@ -54,11 +54,11 @@ start_result immediate_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	return make_result<start_result>(m_state.get());
 }
 template<typename Callable,typename Sink>
-cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
-		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		return ddk::success;
 	}
@@ -68,7 +68,7 @@ cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 		{
 			m_state = ExecutorState::Cancelled;
 
-			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 			return ddk::success;
 		}
@@ -88,7 +88,7 @@ cancel_result immediate_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 }
 
 template<typename Callable,typename Sink>
-start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 	{
@@ -104,7 +104,7 @@ start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
 
 				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					ddk::eval(std::forward<Sink>(sink),std::move(res));
+					ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 				}
 
 				return;
@@ -140,18 +140,18 @@ start_result fiber_executor::execute(Callable&& i_callable, Sink&& i_sink)
 
 		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 		{
-			ddk::eval(std::forward<Sink>(i_sink),std::move(res));
+			ddk::eval(std::forward<Sink>(i_sink),std::forward<callable_return_reference>(res));
 		}
 
 		return make_result<start_result>(m_state.get());
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
-		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		m_execContext.cancel();
 
@@ -163,7 +163,7 @@ cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 		{
 			m_state = ExecutorState::Cancelled;
 
-			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 			m_execContext.cancel();
 
@@ -185,20 +185,18 @@ cancel_result fiber_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 }
 
 template<typename Callable,typename Sink>
-start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
 		m_execContext.start([callable = std::forward<Callable>(i_callable),sink = i_sink,this]() mutable
 		{
-			try
+			exception_handler::open_scope([&]()
 			{
 				ddk::eval(std::forward<Callable>(callable));
-			}
-			catch (...)
-			{
-				m_execContext.add_failure();
-			}
+
+				m_execContext.add_success();
+			});
 
 			if (m_execContext.remove_pending_thread() == 0)
 			{
@@ -206,18 +204,16 @@ start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 
 				if (ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					if (m_execContext.has_failures())
-					{
-						//improve exception report
-						ddk::eval(std::forward<Sink>(sink),async_exception{ "Some threads triggered exception" });
-					}
-					else
+					if (m_execContext.has_succeed())
 					{
 						ddk::eval(std::forward<Sink>(sink),_void);
 					}
+					else
+					{
+						//improve exception report
+						ddk::eval(std::forward<Sink>(sink),async_exception{ "Some fibers triggered exception" });
+					}
 				}
-
-				m_execContext.clear_fibers();
 
 				m_execContext.notify_recipients(callable.policy() == SchedulerPolicy::FireAndReuse);
 			}
@@ -231,11 +227,11 @@ start_result fiber_sheaf_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
-		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		return ddk::success;
 	}
@@ -245,7 +241,7 @@ cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sin
 		{
 			m_state = ExecutorState::Cancelled;
 
-			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 			return ddk::success;
 		}
@@ -265,7 +261,7 @@ cancel_result fiber_sheaf_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sin
 }
 
 template<typename Callable,typename Sink>
-start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Executing))
 	{
@@ -281,7 +277,7 @@ start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
 
 				if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 				{
-					ddk::eval(std::forward<Sink>(sink),std::move(res));
+					ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 				}
 
 				return;
@@ -313,11 +309,11 @@ start_result thread_executor::execute(Callable&& i_callable, Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state, ExecutorState::Idle, ExecutorState::Cancelled))
 	{
-		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		m_execContext.cancel();
 
@@ -329,7 +325,7 @@ cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 		{
 			m_state = ExecutorState::Cancelled;
 
-			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 			m_execContext.cancel();
 
@@ -351,7 +347,7 @@ cancel_result thread_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 }
 
 template<typename Callable,typename Sink>
-start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
+constexpr start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -395,11 +391,11 @@ start_result thread_sheaf_executor::execute(Callable&& i_callable,Sink&& i_sink)
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
+constexpr cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
-		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		return ddk::success;
 	}
@@ -409,7 +405,7 @@ cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sin
 		{
 			m_state = ExecutorState::Cancelled;
 
-			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 			return ddk::success;
 		}
@@ -430,7 +426,7 @@ cancel_result thread_sheaf_executor::cancel(Callable&& i_cancelFunc,Sink&& i_sin
 
 template<typename Executor>
 template<typename Callable,typename Sink,typename ... Args>
-start_result on_time_context_executor<Executor>::execute(Callable&& i_callable,Sink&& i_sink,Args&& ... i_args)
+constexpr start_result on_time_context_executor<Executor>::execute(Callable&& i_callable,Sink&& i_sink,Args&& ... i_args)
 {
 	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
@@ -445,7 +441,7 @@ start_result on_time_context_executor<Executor>::execute(Callable&& i_callable,S
 }
 template<typename Executor>
 template<typename Callable,typename Sink>
-cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
+constexpr cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_cancelFunc,Sink&& i_sink)
 {
 	if (m_executor)
 	{
@@ -453,7 +449,7 @@ cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_cancelFunc
 	}
 	else if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
 	{
-		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		ddk::eval(i_sink,async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		return ddk::success;
 	}
@@ -465,16 +461,16 @@ cancel_result on_time_context_executor<Executor>::cancel(Callable&& i_cancelFunc
 template<typename Executor>
 executor_context_lent_ptr on_time_context_executor<Executor>::get_execution_context()
 {
-	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{};
+	return (m_executor) ? m_executor->get_execution_context() : executor_context_lent_ptr{ nullptr };
 }
 template<typename Executor>
 executor_context_const_lent_ptr on_time_context_executor<Executor>::get_execution_context() const
 {
-	return (m_executor) ? m_executor->get_execution_context() : executor_context_const_lent_ptr{};
+	return (m_executor) ? m_executor->get_execution_context() : executor_context_const_lent_ptr{ nullptr };
 }
 
 template<typename Callable,typename Sink>
-start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i_sink)
+constexpr start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i_sink)
 {
 	auto callable = [callable = std::forward<Callable>(i_callable),sink = i_sink,this]() mutable
 	{
@@ -488,7 +484,7 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 
 			if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Executed))
 			{
-				ddk::eval(std::forward<Sink>(sink),std::move(res));
+				ddk::eval(std::forward<Sink>(sink),std::forward<callable_return_reference>(res));
 			}
 
 			goto leave;
@@ -518,12 +514,14 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 		return;
 	};
 
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
+	if (ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Executing))
 	{
 		m_continuationToken = (m_execContext) ? m_execContext->enqueue(std::move(callable),m_depth) : continuation_token{ continuation_token::ntoken };
 
-		if(!m_continuationToken)
+		if (!m_continuationToken)
 		{
+			m_execContext = nullptr;
+
 			immediate_execution_context _immediateExecContext;
 
 			_immediateExecContext.start(std::move(callable),false);
@@ -537,47 +535,48 @@ start_result execution_context_executor::execute(Callable&& i_callable, Sink&& i
 	}
 }
 template<typename Callable,typename Sink>
-cancel_result execution_context_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
+constexpr cancel_result execution_context_executor::cancel(Callable&& i_cancelFunc, Sink&& i_sink)
 {
-	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled) ||
-	   ddk::atomic_compare_exchange(m_state,ExecutorState::Pending,ExecutorState::Cancelled))
+	if (m_execContext && m_execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
 	{
-		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+		if (ddk::eval(std::forward<Callable>(i_cancelFunc)))
+		{
+			m_state = ExecutorState::Cancelled;
+
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
+		}
 
 		m_execContext = nullptr;
+	}
+
+	if(ddk::atomic_compare_exchange(m_state,ExecutorState::Idle,ExecutorState::Cancelled))
+	{
+		ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
 		return ddk::success;
 	}
-	else 
+	else if (ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
 	{
-		if(ddk::atomic_compare_exchange(m_state,ExecutorState::Executing,ExecutorState::Cancelling))
+		if(ddk::eval(std::forward<Callable>(i_cancelFunc)))
 		{
-			if(m_execContext && m_execContext->dismiss(m_depth,std::move(m_continuationToken)) == false)
-			{
-				if(ddk::eval(std::forward<Callable>(i_cancelFunc)))
-				{
-					m_state = ExecutorState::Cancelled;
+			m_state = ExecutorState::Cancelled;
 
-					ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancel });
+			ddk::eval(std::forward<Sink>(i_sink),async_exception{ "task has been cancelled.", AsyncExceptionCode::Cancelled });
 
-					m_execContext = nullptr;
-
-					return ddk::success;
-				}
-
-				m_execContext = nullptr;
-			}
-
+			return ddk::success;
+		}
+		else
+		{
 			m_state = ExecutorState::Executing;
 
 			std::this_thread::yield();
 
 			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 		}
-		else
-		{
-			return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
-		}
+	}
+	else
+	{
+		return make_error<cancel_result>(CancelErrorCode::CancelAlreadyExecuted);
 	}
 }
 

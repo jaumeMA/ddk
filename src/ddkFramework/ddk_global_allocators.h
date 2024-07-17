@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_fixed_size_allocator.h"
@@ -18,11 +26,18 @@ template<typename Allocator>
 class fixed_size_or_allocator
 {
 public:
+	typedef Allocator allocator;
+	typedef typename Allocator::type type;
+	typedef typename Allocator::pointer pointer;
+	typedef typename Allocator::const_pointer const_pointer;
+	typedef typename Allocator::difference_type difference_type;
+
 	template<typename AAllocator>
 	fixed_size_or_allocator(size_t i_fixedSize,AAllocator&& i_secondaryAllocator);
 	template<typename AAllocator>
 	fixed_size_or_allocator(const slab_allocator& i_primaryAllocator, AAllocator&& i_secondaryAllocator);
 	void* allocate(size_t i_size) const;
+	void* reallocate(void* i_ptr, size_t i_size) const;
 	template<typename TT>
 	void deallocate(TT* i_ptr) const;
 

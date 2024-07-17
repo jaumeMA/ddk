@@ -4,12 +4,12 @@ namespace ddk
 {
 
 template<typename Callable>
-auto async(Callable&& i_callable)
+constexpr auto async(Callable&& i_callable)
 {
 	return async<system_allocator>(std::forward<Callable>(i_callable));
 }
 template<typename Allocator,typename Callable,typename ... Args>
-auto async(Callable&& i_callable,Args&& ... i_args)
+constexpr auto async(Callable&& i_callable,Args&& ... i_args)
 {
 	typedef typename mpl::aqcuire_callable_return_type<Callable>::type callable_return_type;
 

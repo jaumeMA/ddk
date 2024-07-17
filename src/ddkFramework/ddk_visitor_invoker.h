@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_template_helper.h"
@@ -189,7 +197,7 @@ public:
 		typedef Return(*funcType)(const visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -206,7 +214,7 @@ public:
 		typedef Return(*funcType)(visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -223,7 +231,7 @@ public:
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -240,7 +248,7 @@ public:
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -257,7 +265,7 @@ public:
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -274,7 +282,7 @@ public:
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::outer_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template outer_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -291,7 +299,7 @@ public:
 		typedef Return(*funcType)(const visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -308,7 +316,7 @@ public:
 		typedef Return(*funcType)(visitor&, const variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template inner_invoke<visitor, TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -325,7 +333,7 @@ public:
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -342,7 +350,7 @@ public:
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor, TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template inner_invoke<visitor, TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -359,7 +367,7 @@ public:
 		typedef Return(*funcType)(const visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{
@@ -376,7 +384,7 @@ public:
 		typedef Return(*funcType)(visitor&, variant_impl<Types...>&&);
 		typedef variant_visitor_invoker<Return, Types...> this_variant;
 
-		const funcType funcTable[_numTypes] = { &this_variant::inner_invoke<visitor,TypeIndexs> ... };
+		const funcType funcTable[_numTypes] = { &this_variant::template inner_invoke<visitor,TypeIndexs> ... };
 
 		if constexpr(std::is_same<void,Return>::value)
 		{

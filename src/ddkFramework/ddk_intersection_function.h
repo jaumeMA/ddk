@@ -1,7 +1,15 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_function_template_helper.h"
-#include "ddk_function_arguments.h"
+#include "ddk_function_arguments_template_helper.h"
 #include "ddk_function_impl.h"
 
 namespace ddk

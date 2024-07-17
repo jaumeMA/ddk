@@ -1,3 +1,11 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_arena.h"
@@ -5,8 +13,7 @@
 #include "ddk_function_concepts.h"
 #include "ddk_function_impl.h"
 #include "ddk_function_view.h"
-#include "ddk_tuple_template_helper.h"
-#include "ddk_function_arguments.h"
+#include "ddk_function_arguments_template_helper.h"
 #include "ddk_allocator_concepts.h"
 #include "ddk_system_allocator.h"
 #include "ddk_global_allocators.h"
@@ -15,6 +22,35 @@ namespace ddk
 {
 namespace detail
 {
+
+template<typename>
+struct aqcuire_nested_callable_ptr;
+
+template<typename Return,typename ... Args>
+struct aqcuire_nested_callable_ptr<Return(*)(Args...)>
+{
+    static auto resolve(detail::function_base<Return,Args...>& i_function);
+    static auto resolve(const detail::function_base<Return,Args...>& i_function);
+};
+template<typename Return,typename T,typename ... Args>
+struct aqcuire_nested_callable_ptr<Return(T::*)(Args...) const>
+{
+    static auto resolve(const detail::function_base<Return,Args...>& i_function);
+};
+template<typename Return,typename T,typename ... Args>
+struct aqcuire_nested_callable_ptr<Return(T::*)(Args...)>
+{
+    static auto resolve(detail::function_base<Return,Args...>& i_function);
+    static auto resolve(const detail::function_base<Return,Args...>& i_function);
+};
+template<typename Functor>
+struct aqcuire_nested_callable_ptr
+{
+    template<typename Return,typename ... Args>
+    static auto resolve(detail::function_base<Return,Args...>& i_function);
+    template<typename Return,typename ... Args>
+    static auto resolve(const detail::function_base<Return,Args...>& i_function);
+};
 
 template<typename,typename,typename>
 struct get_resolved_function;
@@ -34,7 +70,7 @@ template<typename Callable, typename Allocator, typename ... Args>
 using resolved_spec_callable = resolved_function<typename mpl::aqcuire_callable_return_type<mpl::remove_qualifiers<Callable>>::type,detail::unresolved_tuple<mpl::type_pack<Args...>,typename mpl::aqcuire_callable_args_type<mpl::remove_qualifiers<Callable>>::type>,Allocator>;
 
 template<typename Arg, typename T>
-using resolved_return_type = typename std::enable_if<is_function_argument<Arg>::value==false,T>::type;
+using resolved_return_type = typename std::enable_if<mpl::is_function_argument<Arg>::value==false,T>::type;
 
 template<typename,typename,typename>
 class function_impl;
@@ -75,13 +111,15 @@ public:
     inline bool operator==(std::nullptr_t) const;
     inline bool operator!=(std::nullptr_t) const;
 	TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
+    REQUIRES(IS_CONVERTIBLE(Args,Types)...)
 	inline Return inline_eval(Args&& ... args) const;
     TEMPLATE(typename ... Args)
-    REQUIRES(IS_CONSTRUCTIBLE(Types,Args)...)
+    REQUIRES(IS_CONVERTIBLE(Args,Types)...)
     inline Return inline_eval(const function_arguments<Args...>& i_args) const;
 	template<typename ... Args>
     inline NO_DISCARD_RETURN resolved_function<Return,detail::unresolved_types<mpl::type_pack<Args...>,Types...>,Allocator> operator()(Args&& ... args) const;
+    template<typename T>
+    T callable() const;
 
 private:
     template<size_t ... Indexs, typename ... Args>
@@ -130,6 +168,17 @@ template<typename Return,typename ... Types,typename Allocator>
 struct aqcuire_callable_args_type<function<Return(Types...),Allocator>>
 {
     typedef mpl::type_pack<Types...> type;
+};
+
+template<typename Return,typename ... Types,typename Allocator>
+struct _terse_callable<function<Return(function_arguments<Types...>),Allocator>>
+{
+    typedef function<Return(Types...),Allocator> type;
+};
+template<typename Return,typename ... Types,typename Allocator>
+struct _terse_callable<function<Return(Types...),Allocator>>
+{
+    typedef function<Return(Types...),Allocator> type;
 };
 
 }

@@ -1,11 +1,20 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// Author: Jaume Moragues
+// Distributed under the GNU Lesser General Public License, Version 3.0. (See a copy
+// at https://www.gnu.org/licenses/lgpl-3.0.ca.html)
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "ddk_embedded_type.h"
 #include "ddk_template_helper.h"
 #include "ddk_variadic_union.h"
 #include "ddk_static_visitor.h"
-#include "ddk_type_concepts.h"
+#include "ddk_class_rules.h"
 #include "ddk_function_concepts.h"
+#include "ddk_type_concepts.h"
 #include "ddk_concepts.h"
 
 namespace ddk
@@ -43,8 +52,8 @@ public:
     typedef mpl::type_pack<Types...> type_pack;
 
     constexpr variant_impl();
-    template<size_t Index, typename TType>
-    constexpr variant_impl(const mpl::static_number<Index>&, TType&& other);
+    template<size_t Index, typename ... Args>
+    constexpr variant_impl(const mpl::static_number<Index>&, Args&& ... i_args);
     constexpr variant_impl(const variant_impl& other);
     constexpr variant_impl(variant_impl&& other);
     template<typename ... TTypes>
@@ -97,7 +106,7 @@ public:
     template<size_t Pos>
     constexpr typename embedded_type<typename mpl::nth_type_of<Pos,Types...>::type>::pointer_type get_ptr();
     template<size_t Pos>
-	inline embedded_type<typename mpl::nth_type_of<Pos,Types...>::type> extract() &&;
+	inline typename mpl::nth_type_of<Pos,Types...>::type extract() &&;
     template<size_t Pos>
     constexpr bool is() const;
     constexpr unsigned char which() const;
@@ -122,6 +131,49 @@ private:
 };
 
 }
+
+template<typename ... Types>
+class variant : public detail::variant_impl<Types...>,contravariant_rules<Types...>
+{
+    static_assert(mpl::get_num_types<Types...>() > 0,"You have to provide at least one type to variant");
+    static_assert(mpl::get_num_types<Types...>() < 255,"You cannot provide more than 255 types to a variant!");
+
+    template<size_t Index>
+    using nth_type_of = typename mpl::nth_type_of<Index,Types...>::type;
+
+public:
+    using detail::variant_impl<Types...>::npos;
+    using detail::variant_impl<Types...>::variant_impl;
+
+    variant() = default;
+    TEMPLATE(typename TType)
+    REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_COPY_CONSTRUCTIBLE(TType))
+    constexpr variant(const variant<TType>& other);
+    TEMPLATE(typename TType)
+    REQUIRES(IS_NOT_AMONG_CONSTRUCTIBLE_TYPES(variant<TType>,Types...),IS_MOVE_CONSTRUCTIBLE(TType))
+    constexpr variant(variant<TType>&& other);
+    constexpr variant(const variant& other);
+    constexpr variant(variant&& other);
+    TEMPLATE(typename T)
+    REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+    constexpr variant(T&& i_value);
+    ~variant() = default;
+    variant& operator=(const variant& other);
+    variant& operator=(variant&& other);
+    TEMPLATE(typename T)
+    REQUIRES(IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+    variant& operator=(T&& i_value);
+    TEMPLATE(typename T,typename ... Args)
+    REQUIRES(IS_CONSTRUCTIBLE(T,Args...),IS_AMONG_CONSTRUCTIBLE_TYPES(T,Types...))
+    T& emplace(Args&& ... i_args);
+    template<typename T>
+    constexpr bool operator==(T&& other) const;
+    template<typename T>
+    constexpr bool operator!=(T&& other) const;
+    template<typename Type>
+    static constexpr bool contains();
+};
+
 }
 
 #include "ddk_variant_impl.inl"
