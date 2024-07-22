@@ -1,6 +1,8 @@
 DDK Library
 ===================
 
+This project has been moved to https://gitlab.com/dedekind1/ddk.
+
 The DDK library covers the following topics:
 
 * **Iterability**: The DDK library offers a set of classes capable to offering iterable visitation based on actions. This infrastructure offers:
